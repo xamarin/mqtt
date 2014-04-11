@@ -15,8 +15,8 @@ namespace Hermes
 	{
 		public Broker(int port)
 		{
-			if (port != 1833)
-				throw new ArgumentException("Must always be 1833");
+			if (port < 1800 || port > 2000)
+				throw new ArgumentException("Must always be between 1800 and 2000");
 		}
 	}
 }
