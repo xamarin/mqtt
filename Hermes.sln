@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\Hermes.props = src\Hermes.props
 		src\Hermes.targets = src\Hermes.targets
 		src\NuGet.proj = src\NuGet.proj
+		README.md = README.md
+		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
 Global

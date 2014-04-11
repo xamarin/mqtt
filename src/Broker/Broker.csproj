@@ -23,6 +23,12 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Hermes.licenseheader">
+      <Link>Hermes.licenseheader</Link>
+    </None>
+    <None Include="Broker.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
 </Project>
