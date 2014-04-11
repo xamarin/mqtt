@@ -4,11 +4,20 @@
 	<!-- Our own new custom properties -->
 	<PropertyGroup>
 		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-        <BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitignore))</BuildRoot>
+        <BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Hermes.sln))</BuildRoot>
         <BuildRoot Condition="!HasTrailingSlash('$(BuildRoot)')">$(BuildRoot)\</BuildRoot>
+		<SolutionDir>$(BuildRoot)</SolutionDir>
         <DropDirectory>$(BuildRoot)drops\</DropDirectory>
     </PropertyGroup>
 
+	<!-- NuGet -->
+	<PropertyGroup>
+		<RestorePackages>true</RestorePackages>
+		<BuildPackage>true</BuildPackage>
+		<RequireRestoreConsent>false</RequireRestoreConsent>
+		<DownloadNuGetExe>true</DownloadNuGetExe>
+	</PropertyGroup>
+	
 	<!-- Enable opening the solution in VS2012 and 2013 -->
 	<!-- This is the property that causes VS 2012+ to insist on one-way update of the project -->
 	<PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '11.0'">
