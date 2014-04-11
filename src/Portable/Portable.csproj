@@ -26,6 +26,13 @@
     </None>
     <None Include="Portable.nuspec" />
   </ItemGroup>
+  <ItemGroup>
+    <Version Include="..\Version.txt">
+      <Link>Properties\Version.txt</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Version>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
 </Project>

@@ -132,7 +132,7 @@ packages/
 !packages/build/
 
 # This is downloaded automatically by the targets
-/.nuget/NuGet.exe
+/nuget/NuGet.exe
 
 # Windows Azure Build Output
 csx/

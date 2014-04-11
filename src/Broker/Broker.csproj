@@ -29,6 +29,13 @@
     </None>
     <None Include="Broker.nuspec" />
   </ItemGroup>
+  <ItemGroup>
+    <Version Include="..\Version.txt">
+      <Link>Properties\Version.txt</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Version>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
 </Project>

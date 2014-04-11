@@ -13,12 +13,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "src\Tests\Tests.cs
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A5ABB89-2797-4946-8D46-F07144F616F3}"
 	ProjectSection(SolutionItems) = preProject
+		build.bat = build.bat
 		src\GlobalAssemblyInfo.cs = src\GlobalAssemblyInfo.cs
+		src\Hermes.proj = src\Hermes.proj
 		src\Hermes.props = src\Hermes.props
 		src\Hermes.targets = src\Hermes.targets
-		src\NuGet.proj = src\NuGet.proj
 		README.md = README.md
 		ReleaseNotes.md = ReleaseNotes.md
+		src\Version.txt = src\Version.txt
 	EndProjectSection
 EndProject
 Global
