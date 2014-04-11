@@ -10,11 +10,6 @@
 		<DropDirectory>$(BuildRoot)drops\</DropDirectory>
 	</PropertyGroup>
 
-	<!-- Allows overriding the version to build for assemblies and packages. -->
-	<PropertyGroup>
-		<_Version Condition="'$(Version)' != ''">$(Version)</_Version>
-	</PropertyGroup>
-
 	<!-- NuGet -->
 	<PropertyGroup>
 		<RestorePackages>true</RestorePackages>

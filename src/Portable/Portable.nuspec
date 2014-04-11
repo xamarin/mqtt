@@ -2,7 +2,7 @@
 <package>
     <metadata>
         <id>Hermes.Portable</id>
-        <version>1.0.0</version>
+        <version>$version$</version>
         <title>Hermes Portable: a shared lightweight library for the C# MQTT messenger</title>
         <authors>Daniel Cazzulino</authors>
         <owners>Daniel Cazzulino</owners>

@@ -1,3 +1,0 @@
-AssemblyVersion=2.0 
-FileVersion=2.0
-PackageVersion=2.0-pre
