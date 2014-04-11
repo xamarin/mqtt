@@ -11,6 +11,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "src\Client\Client
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "src\Tests\Tests.csproj", "{CC70B0BB-EC87-45D0-A4AE-2462F99D7573}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A5ABB89-2797-4946-8D46-F07144F616F3}"
+	ProjectSection(SolutionItems) = preProject
+		src\GlobalAssemblyInfo.cs = src\GlobalAssemblyInfo.cs
+		src\Hermes.props = src\Hermes.props
+		src\Hermes.targets = src\Hermes.targets
+		src\NuGet.proj = src\NuGet.proj
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

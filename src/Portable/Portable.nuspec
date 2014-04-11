@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Hermes.Portable</id>
+        <version>1.0.0</version>
+        <title>Hermes Portable: a shared lightweight library for the C# MQTT messenger</title>
+        <authors>Daniel Cazzulino</authors>
+        <owners>Daniel Cazzulino</owners>
+        <licenseUrl>http://clarius.io/hermes/license</licenseUrl>
+        <projectUrl>http://clarius.io/hermes/home</projectUrl>
+        <iconUrl>http://clarius.io/hermes/48.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Shared components between Hermes Broker and Client, written entirely in C#.</description>
+        <releaseNotes />
+        <copyright>Copyright 2012</copyright>
+        <tags>m2m iot sockets mqtt</tags>
+    </metadata>
+</package>
