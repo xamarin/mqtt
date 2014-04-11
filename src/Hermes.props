@@ -13,7 +13,7 @@
 	<!-- NuGet -->
 	<PropertyGroup>
 		<RestorePackages>true</RestorePackages>
-		<BuildPackage>true</BuildPackage>
+		<BuildPackage Condition="'$(Configuration)' == 'Release'">true</BuildPackage>
 		<RequireRestoreConsent>false</RequireRestoreConsent>
 		<DownloadNuGetExe>true</DownloadNuGetExe>
 	</PropertyGroup>
