@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hermes
 {
-    class Constants
+    public class Constants
     {
     }
 }
