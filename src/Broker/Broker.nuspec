@@ -1,16 +1,15 @@
 <?xml version="1.0"?>
 <package>
     <metadata>
-        <id>Hermes.Broker</id>
+        <id>$id$</id>
         <version>$version$</version>
         <title>Hermes Broker: a lightweight C# MQTT messenger</title>
-        <authors>Daniel Cazzulino</authors>
-        <owners>Daniel Cazzulino</owners>
+        <authors>$author$</authors>
         <licenseUrl>http://clarius.io/hermes/license</licenseUrl>
         <projectUrl>http://clarius.io/hermes/home</projectUrl>
         <iconUrl>http://clarius.io/hermes/48.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>A lightweight and high-performance MQTT broker written entirely in C#.</description>
+        <description>$description$</description>
         <releaseNotes />
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
