@@ -29,10 +29,6 @@
     <Compile Include="VersionInfoSpec.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Broker\Broker.csproj">
-      <Project>{1397ec83-6d03-4d81-95d5-5d11c766c43a}</Project>
-      <Name>Broker</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Client\Client.csproj">
       <Project>{d3eb8c4f-6cf4-4eb4-94e3-bca31767ae53}</Project>
       <Name>Client</Name>

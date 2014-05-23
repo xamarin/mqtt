@@ -1,7 +1,7 @@
 extensions: designer.cs generated.cs g.cs
 extensions: .cs .cpp .h
 /*
-   Copyright 2012 Clarius Consulting
+   Copyright 2014 NETFX
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@ extensions: .cs .cpp .h
 
 extensions:  .xml .config .xsd .resx .html
 <!-- 
-   Copyright 2012 Clarius Consulting
+   Copyright 2014 NETFX
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
