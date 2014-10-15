@@ -6,9 +6,9 @@ Minimalist and intuitive asynchronous MQTT messaging broker and client written e
 
 ## Installation
 
-Broker package:
+Server (broker) package:
 
-`Install-Package Hermes.Broker`
+`Install-Package Hermes.Server`
 
 Client package:
 
