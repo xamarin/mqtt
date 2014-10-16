@@ -18,6 +18,10 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Formatters\ConnectFormatter.cs" />
+    <Compile Include="Formatters\FormatterBase.cs" />
+    <Compile Include="Formatters\IFormatter.cs" />
+    <Compile Include="IChannel.cs" />
     <Compile Include="Messages\Connect.cs" />
     <Compile Include="Messages\ConnectAck.cs" />
     <Compile Include="Messages\ConnectionStatus.cs" />
