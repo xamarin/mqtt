@@ -18,6 +18,29 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Messages\Connect.cs" />
+    <Compile Include="Messages\ConnectAck.cs" />
+    <Compile Include="Messages\ConnectionStatus.cs" />
+    <Compile Include="Messages\Disconnect.cs" />
+    <Compile Include="Messages\IApplicationMessage.cs" />
+    <Compile Include="Messages\IMessage.cs" />
+    <Compile Include="Messages\Message.cs" />
+    <Compile Include="Messages\MessageType.cs" />
+    <Compile Include="Messages\PingRequest.cs" />
+    <Compile Include="Messages\PingResponse.cs" />
+    <Compile Include="Messages\Publish.cs" />
+    <Compile Include="Messages\PublishAck.cs" />
+    <Compile Include="Messages\PublishCompleted.cs" />
+    <Compile Include="Messages\PublishReceived.cs" />
+    <Compile Include="Messages\PublishRelease.cs" />
+    <Compile Include="Messages\QualityOfService.cs" />
+    <Compile Include="Messages\Subscribe.cs" />
+    <Compile Include="Messages\SubscribeAck.cs" />
+    <Compile Include="Messages\SubscribeReturnCode.cs" />
+    <Compile Include="Messages\Subscription.cs" />
+    <Compile Include="Messages\UnsubscribeAck.cs" />
+    <Compile Include="Messages\Unsubscribe.cs" />
+    <Compile Include="Messages\Will.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
