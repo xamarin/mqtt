@@ -65,7 +65,7 @@ namespace Hermes
 		{
 			var multiplier = 1;
 			var value = 0;
-			var index = 1;
+			var index = 0;
 			var encodedByte = default(byte);
 
 			do {
@@ -79,7 +79,7 @@ namespace Hermes
 				index++;
 			} while((encodedByte & 128) != 0);
 
-			arrayLength = index - 1;
+			arrayLength = index;
 
 			return value;
 		}
