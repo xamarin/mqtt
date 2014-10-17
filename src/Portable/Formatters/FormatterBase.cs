@@ -19,6 +19,7 @@ namespace Hermes.Formatters
 
 		protected abstract byte[] Format (T message);
 
+		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ReadAsync (byte[] packet)
 		{
 			var message = this.Format (packet);
@@ -26,6 +27,7 @@ namespace Hermes.Formatters
 			await this.reader.SendAsync (message);
 		}
 
+		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task WriteAsync (IMessage message)
 		{
 			var packet = this.Format (message as T);
