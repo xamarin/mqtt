@@ -1,0 +1,5 @@
+﻿{
+    "clientId": "BarClient",
+    "cleanSession": "true",
+    "keepAlive": "10"
+}
