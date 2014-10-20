@@ -71,15 +71,18 @@ namespace Tests
 		{
 			var bytes1 = new List<byte> ();
 
+			bytes1.Add (0x10);
 			bytes1.Add (0x40);
 
 			var bytes2 = new List<byte> ();
 
+			bytes2.Add (0x10);
 			bytes2.Add (193);
 			bytes2.Add (2);
 
 			var bytes3 = new List<byte> ();
 
+			bytes3.Add (0x20);
 			bytes3.Add (0xFF);
 			bytes3.Add (0xFF);
 			bytes3.Add (0xFF);
@@ -107,6 +110,7 @@ namespace Tests
 		{
 			var bytes = new List<byte> ();
 
+			bytes.Add (0x10);
 			bytes.Add (0xFF);
 			bytes.Add (0xFF);
 			bytes.Add (0xFF);

@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteExtensionsSpec.cs" />
+    <Compile Include="Formatters\ConnectAckFormatterSpec.cs" />
     <Compile Include="Formatters\ConnectFormatterSpec.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -52,6 +53,12 @@
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">
       <Link>Hermes.licenseheader</Link>
+    </None>
+    <None Include="Files\ConnectAck.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\ConnectAck.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Files\Connect_Min.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

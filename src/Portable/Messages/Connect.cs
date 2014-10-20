@@ -69,7 +69,7 @@ namespace Hermes.Messages
 
 		public static bool operator != (Connect connect, Connect other)
 		{
-			if (connect == null || other == null)
+			if ((object)connect == null || (object)other == null)
 				return !Object.Equals(connect, other);
 
 			return !connect.Equals(other);

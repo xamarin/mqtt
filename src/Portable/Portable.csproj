@@ -20,6 +20,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ByteExtensions.cs" />
+    <Compile Include="Formatters\ConnectAckFormatter.cs" />
     <Compile Include="Formatters\ConnectFormatter.cs" />
     <Compile Include="Formatters\Formatter.cs" />
     <Compile Include="Formatters\IFormatter.cs" />
@@ -55,7 +56,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="QualityOfServiceConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">

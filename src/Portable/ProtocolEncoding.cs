@@ -69,14 +69,13 @@ namespace Hermes
 			var encodedByte = default(byte);
 
 			do {
+				index++;
 				encodedByte = packet[index];
 				value += (encodedByte & 127) * multiplier;
 				multiplier *= 128;
 
-				if (multiplier > 128 * 128 * 128 * 128 || index > 3)
+				if (multiplier > 128 * 128 * 128 * 128 || index > 4)
 					throw new ProtocolException (Resources.ProtocolEncoding_MalformedRemainingLength);
-
-				index++;
 			} while((encodedByte & 128) != 0);
 
 			arrayLength = index;
