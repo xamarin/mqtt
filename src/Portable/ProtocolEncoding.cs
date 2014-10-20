@@ -73,7 +73,7 @@ namespace Hermes
 				value += (encodedByte & 127) * multiplier;
 				multiplier *= 128;
 
-				if (multiplier > 128 * 128 * 128 * 128)
+				if (multiplier > 128 * 128 * 128 * 128 || index > 3)
 					throw new ProtocolException (Resources.ProtocolEncoding_MalformedRemainingLength);
 
 				index++;

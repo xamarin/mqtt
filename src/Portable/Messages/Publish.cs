@@ -34,6 +34,6 @@ namespace Hermes.Messages
 
         public ushort? MessageId { get; private set; }
 
-		public IApplicationMessage Message { get; set; }
+		public byte[] Payload { get; set; }
     }
 }

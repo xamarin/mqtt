@@ -6,7 +6,7 @@ using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
-	public class ConnectFormatter : FormatterBase<Connect>
+	public class ConnectFormatter : Formatter<Connect>
 	{
 		public ConnectFormatter (IChannel<IMessage> reader, IChannel<byte[]> writer)
 			: base(reader, writer)
@@ -20,7 +20,7 @@ namespace Hermes.Formatters
 			ProtocolEncoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
 			var protocolLevelLength = 1;
-			var connectFlagsIndex = MQTT.PacketTypeLength + remainingLengthBytesLength + MQTT.NameLength + protocolLevelLength + 1;
+			var connectFlagsIndex = MQTT.PacketTypeLength + remainingLengthBytesLength + MQTT.NameLength + protocolLevelLength;
 			var connectFlags = packet.Byte (connectFlagsIndex);
 
 			var userNameFlag = connectFlags.IsSet (7);
@@ -31,11 +31,17 @@ namespace Hermes.Formatters
 			var cleanSession = connectFlags.IsSet (1);
 
 			var keepAliveLength = 2;
+			var keepAliveIndex = connectFlagsIndex + keepAliveLength;
+			var keepAliveBytes = packet.Bytes(keepAliveIndex, keepAliveLength);
+			var keepAlive = BitConverter.ToInt16 (keepAliveBytes, 0);
+
 			var payloadStartIndex = connectFlagsIndex + keepAliveLength + 1;
 			var nextIndex = 0;
 			var clientId = packet.GetString (payloadStartIndex, out nextIndex);
 
 			var connect = new Connect (clientId, cleanSession);
+
+			connect.KeepAlive = keepAlive;
 
 			if (willFlag) {
 				var willMessageIndex = 0;
@@ -170,7 +176,7 @@ namespace Hermes.Formatters
 
 		private bool IsValidClientId(string clientId)
 		{
-			var regex = new Regex ("a-zA-Z0-9");
+			var regex = new Regex ("[a-zA-Z0-9]");
 
 			return regex.IsMatch (clientId);
 		}

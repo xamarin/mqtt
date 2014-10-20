@@ -1,4 +1,6 @@
-﻿namespace Hermes.Messages
+﻿using System;
+
+namespace Hermes.Messages
 {
 	public class ConnectAck : Message
     {

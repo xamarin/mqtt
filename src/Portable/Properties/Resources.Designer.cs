@@ -71,6 +71,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Byte index must be from 1 to 8, starting from msb.
+        /// </summary>
+        internal static string ByteExtensions_InvalidByteIndex {
+            get {
+                return ResourceManager.GetString("ByteExtensions_InvalidByteIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Only numbers and letters are allowed for Client Id value.
         /// </summary>
         internal static string ConnectFormatter_ClientIdInvalid {

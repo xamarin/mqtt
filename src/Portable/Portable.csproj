@@ -21,14 +21,13 @@
     </Compile>
     <Compile Include="ByteExtensions.cs" />
     <Compile Include="Formatters\ConnectFormatter.cs" />
-    <Compile Include="Formatters\FormatterBase.cs" />
+    <Compile Include="Formatters\Formatter.cs" />
     <Compile Include="Formatters\IFormatter.cs" />
     <Compile Include="IChannel.cs" />
     <Compile Include="Messages\Connect.cs" />
     <Compile Include="Messages\ConnectAck.cs" />
     <Compile Include="Messages\ConnectionStatus.cs" />
     <Compile Include="Messages\Disconnect.cs" />
-    <Compile Include="Messages\IApplicationMessage.cs" />
     <Compile Include="Messages\IMessage.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />
@@ -56,11 +55,13 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="QualityOfServiceConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">
       <Link>Hermes.licenseheader</Link>
     </None>
+    <None Include="packages.config" />
     <None Include="Portable.nuspec" />
   </ItemGroup>
   <ItemGroup>
@@ -71,6 +72,11 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.5\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />

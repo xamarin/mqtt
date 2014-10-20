@@ -3,13 +3,13 @@ using Hermes.Messages;
 
 namespace Hermes.Formatters
 {
-	public abstract class FormatterBase<T> : IFormatter
+	public abstract class Formatter<T> : IFormatter
 		where T : class, IMessage
 	{
 		private readonly IChannel<IMessage> reader;
 		private readonly IChannel<byte[]> writer;
 
-		public FormatterBase (IChannel<IMessage> reader, IChannel<byte[]> writer)
+		public Formatter (IChannel<IMessage> reader, IChannel<byte[]> writer)
 		{
 			this.reader = reader;
 			this.writer = writer;

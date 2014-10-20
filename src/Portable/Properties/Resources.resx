@@ -120,6 +120,9 @@
   <data name="ByteExtensions_InvalidBitPosition" xml:space="preserve">
     <value>Bit position must be between 0 and 7</value>
   </data>
+  <data name="ByteExtensions_InvalidByteIndex" xml:space="preserve">
+    <value>Byte index must be from 1 to 8, starting from msb</value>
+  </data>
   <data name="ConnectFormatter_ClientIdInvalid" xml:space="preserve">
     <value>Only numbers and letters are allowed for Client Id value</value>
   </data>

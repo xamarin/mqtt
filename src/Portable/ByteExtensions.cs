@@ -39,14 +39,26 @@ namespace Hermes
             return Convert.ToByte(@byte ^ (1 << bit));
         }
 
-        public static byte Bits(this byte @byte, int index)
+        public static byte Bits(this byte @byte, int count)
         {
-            return Convert.ToByte(@byte >> index);
+            return Convert.ToByte(@byte >> 8 - count);
         }
 
         public static byte Bits(this byte @byte, int index, int count)
         {
-            var to = Convert.ToByte(@byte << 8 - (index + count));
+			if (index < 1 || index > 8)
+				throw new ArgumentOutOfRangeException("index", Resources.ByteExtensions_InvalidByteIndex);
+
+			if (index > 1) {
+				var i = 1;
+
+				do {
+					@byte = @byte.Unset (8 - i);
+					i++;
+				} while (i < index);
+			}
+
+            var to = Convert.ToByte(@byte << index - 1);
             var from = Convert.ToByte(to >> 8 - count);
 
             return from;
