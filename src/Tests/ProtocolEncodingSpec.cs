@@ -19,6 +19,14 @@ namespace Tests
 		}
 
 		[Fact]
+		public void when_encoding_string_with_exceeded_length_then_fails()
+		{
+			var text = this.GetRandomString (size: 65537);
+
+			Assert.Throws<ProtocolException>(() => ProtocolEncoding.EncodeString (text));
+		}
+
+		[Fact]
 		public void when_encoding_integer_big_endian_then_succeeds()
 		{
 			var number = 35000; //00000000 00000000 10001000 10111000
@@ -92,6 +100,38 @@ namespace Tests
 			Assert.Equal(321, remainingLength2);
 			Assert.Equal (4, arrayLength3);
 			Assert.Equal(268435455, remainingLength3);
+		}
+
+		[Fact]
+		public void when_decoding_malformed_remaining_length_then_fails()
+		{
+			var bytes = new List<byte> ();
+
+			bytes.Add (0xFF);
+			bytes.Add (0xFF);
+			bytes.Add (0xFF);
+			bytes.Add (0xFF);
+			bytes.Add (0x7F);
+
+			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+
+			var arrayLength = 0;
+
+			Assert.Throws<ProtocolException> (() => ProtocolEncoding.DecodeRemainingLength (bytes.ToArray (), out arrayLength));
+		}
+
+		private string GetRandomString(int size)
+		{
+			var random = new Random();
+			var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			var buffer = new char[size];
+
+			for (int i = 0; i < size; i++)
+			{
+				buffer[i] = chars[random.Next(chars.Length)];
+			}
+
+			return new string(buffer);
 		}
 	}
 }
