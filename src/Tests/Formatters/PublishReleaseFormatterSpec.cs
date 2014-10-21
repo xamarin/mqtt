@@ -10,45 +10,45 @@ using Xunit.Extensions;
 
 namespace Tests.Formatters
 {
-	public class ConnectAckFormatterSpec
+	public class PublishReleaseFormatterSpec
 	{
 		private readonly Mock<IChannel<IMessage>> messageChannel;
 		private readonly Mock<IChannel<byte[]>> byteChannel;
 
-		public ConnectAckFormatterSpec ()
+		public PublishReleaseFormatterSpec ()
 		{
 			this.messageChannel = new Mock<IChannel<IMessage>> ();
 			this.byteChannel = new Mock<IChannel<byte[]>> ();
 		}
 
 		[Theory]
-		[InlineData("Files/ConnectAck.packet", "Files/ConnectAck.json")]
-		public async Task when_reading_connect_ack_packet_then_succeeds(string packetPath, string jsonPath)
+		[InlineData("Files/PublishRelease.packet", "Files/PublishRelease.json")]
+		public async Task when_reading_publish_release_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var expectedConnectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
-			var sentConnectAck = default(ConnectAck);
+			var expectedPublishRelease = Packet.ReadMessage<PublishRelease> (jsonPath);
+			var sentPublishRelease = default(PublishRelease);
 
 			this.messageChannel
 				.Setup (c => c.SendAsync (It.IsAny<IMessage>()))
 				.Returns(Task.Delay(0))
 				.Callback<IMessage>(m =>  {
-					sentConnectAck = m as ConnectAck;
+					sentPublishRelease = m as PublishRelease;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new PublishReleaseFormatter (this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
 
-			Assert.Equal (expectedConnectAck, sentConnectAck);
+			Assert.Equal (expectedPublishRelease, sentPublishRelease);
 		}
 
 		[Theory]
-		[InlineData("Files/ConnectAck.json", "Files/ConnectAck.packet")]
-		public async Task when_writing_connect_ack_packet_then_succeeds(string jsonPath, string packetPath)
+		[InlineData("Files/PublishRelease.json", "Files/PublishRelease.packet")]
+		public async Task when_writing_publish_release_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -63,10 +63,10 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
-			var connectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
+			var formatter = new PublishReleaseFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var publishRelease = Packet.ReadMessage<PublishRelease> (jsonPath);
 
-			await formatter.WriteAsync (connectAck);
+			await formatter.WriteAsync (publishRelease);
 
 			Assert.Equal (expectedPacket, sentPacket);
 		}

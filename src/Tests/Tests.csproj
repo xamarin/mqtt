@@ -33,11 +33,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteExtensionsSpec.cs" />
+    <Compile Include="Formatters\DisconnectFormatterSpec.cs" />
+    <Compile Include="Formatters\PingResponseFormatterSpec.cs" />
+    <Compile Include="Formatters\UnsubscribeAckFormatterSpec.cs" />
+    <Compile Include="Formatters\SubscribeAckFormatterSpec.cs" />
+    <Compile Include="Formatters\PingRequestFormatterSpec.cs" />
+    <Compile Include="Formatters\UnsubscribeFormatterSpec.cs" />
+    <Compile Include="Formatters\SubscribeFormatterSpec.cs" />
+    <Compile Include="Formatters\PublishCompleteFormatterSpec.cs" />
+    <Compile Include="Formatters\PublishReleaseFormatterSpec.cs" />
+    <Compile Include="Formatters\PublishReceivedFormatterSpec.cs" />
+    <Compile Include="Formatters\PublishAckFormatterSpec.cs" />
     <Compile Include="Formatters\ConnectAckFormatterSpec.cs" />
+    <Compile Include="Formatters\PublishFormatterSpec.cs" />
     <Compile Include="Formatters\ConnectFormatterSpec.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtocolEncodingSpec.cs" />
+    <Compile Include="StringByteArrayConverter.cs" />
     <Compile Include="VersionInfoSpec.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -54,10 +67,97 @@
     <None Include="..\Hermes.licenseheader">
       <Link>Hermes.licenseheader</Link>
     </None>
+    <None Include="Files\Disconnect.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PingResponse.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PingRequest.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Publish_Min.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Publish_Min.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\UnsubscribeAck.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\UnsubscribeAck.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\SubscribeAck_MultiTopic.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\SubscribeAck_MultiTopic.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Subscribe_MultiTopic.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Subscribe_MultiTopic.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\SubscribeAck_SingleTopic.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\SubscribeAck_SingleTopic.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Unsubscribe_MultiTopic.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Unsubscribe_MultiTopic.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Unsubscribe_SingleTopic.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Unsubscribe_SingleTopic.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Subscribe_SingleTopic.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Subscribe_SingleTopic.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishComplete.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishComplete.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishRelease.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishRelease.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishReceived.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishReceived.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishAck.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\PublishAck.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Files\ConnectAck.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Files\ConnectAck.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Publish_Full.packet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\Publish_Full.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Files\Connect_Min.json">

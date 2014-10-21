@@ -27,7 +27,7 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_encoding_integer_big_endian_then_succeeds()
+		public void when_encoding_int32_big_endian_then_succeeds()
 		{
 			var number = 35000; //00000000 00000000 10001000 10111000
 			var encoded = ProtocolEncoding.EncodeBigEndian (number);
@@ -37,6 +37,17 @@ namespace Tests
 			Assert.Equal (0x00, encoded[1]);
 			Assert.Equal (Convert.ToByte ("10001000", fromBase: 2), encoded[2]);
 			Assert.Equal (Convert.ToByte ("10111000", fromBase: 2), encoded[3]);
+		}
+
+		[Fact]
+		public void when_encoding_uint16_big_endian_then_succeeds()
+		{
+			ushort number = 35000; //10001000 10111000
+			var encoded = ProtocolEncoding.EncodeBigEndian (number);
+
+			Assert.Equal (2, encoded.Length);
+			Assert.Equal (Convert.ToByte ("10001000", fromBase: 2), encoded[0]);
+			Assert.Equal (Convert.ToByte ("10111000", fromBase: 2), encoded[1]);
 		}
 
 		[Fact]

@@ -1,0 +1,8 @@
+﻿10010000 #Fixed Header Byte 1: MQTT Control Packet Type (9) + Flags (0)
+00000110 #Remaining Length (6)
+00000000 #Packet Identifier MSB (0)
+00001010 #Packet Identifier LSB (10)
+00000010 #Return code (2)
+00000001 #Return code (1)
+00000000 #Return code (0)
+00000001 #Return code (1)

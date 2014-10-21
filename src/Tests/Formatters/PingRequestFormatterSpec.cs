@@ -10,47 +10,44 @@ using Xunit.Extensions;
 
 namespace Tests.Formatters
 {
-	public class ConnectAckFormatterSpec
+	public class PingRequestFormatterSpec
 	{
 		private readonly Mock<IChannel<IMessage>> messageChannel;
 		private readonly Mock<IChannel<byte[]>> byteChannel;
 
-		public ConnectAckFormatterSpec ()
+		public PingRequestFormatterSpec ()
 		{
 			this.messageChannel = new Mock<IChannel<IMessage>> ();
 			this.byteChannel = new Mock<IChannel<byte[]>> ();
 		}
-
+		
 		[Theory]
-		[InlineData("Files/ConnectAck.packet", "Files/ConnectAck.json")]
-		public async Task when_reading_connect_ack_packet_then_succeeds(string packetPath, string jsonPath)
+		[InlineData("Files/PingRequest.packet")]
+		public async Task when_reading_ping_request_packet_then_succeeds(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var expectedConnectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
-			var sentConnectAck = default(ConnectAck);
+			var sentPingRequest = default(PingRequest);
 
 			this.messageChannel
 				.Setup (c => c.SendAsync (It.IsAny<IMessage>()))
 				.Returns(Task.Delay(0))
 				.Callback<IMessage>(m =>  {
-					sentConnectAck = m as ConnectAck;
+					sentPingRequest = m as PingRequest;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new PingRequestFormatter (this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
 
-			Assert.Equal (expectedConnectAck, sentConnectAck);
+			Assert.NotNull (sentPingRequest);
 		}
 
 		[Theory]
-		[InlineData("Files/ConnectAck.json", "Files/ConnectAck.packet")]
-		public async Task when_writing_connect_ack_packet_then_succeeds(string jsonPath, string packetPath)
+		[InlineData("Files/PingRequest.packet")]
+		public async Task when_writing_ping_request_packet_then_succeeds(string packetPath)
 		{
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
@@ -63,10 +60,10 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
-			var connectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
+			var formatter = new PingRequestFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var pingRequest = new PingRequest ();
 
-			await formatter.WriteAsync (connectAck);
+			await formatter.WriteAsync (pingRequest);
 
 			Assert.Equal (expectedPacket, sentPacket);
 		}

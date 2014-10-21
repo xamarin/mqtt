@@ -1,0 +1,21 @@
+﻿{
+    "messageId": "10",
+    "subscriptions": [
+        {
+            "topic": "foo/bar",
+            "requestedQualityOfService": "2"
+        },
+        {
+            "topic": "foo/test",
+            "requestedQualityOfService":  "1"
+        },
+        {
+            "topic": "a/b",
+            "requestedQualityOfService":  "0"
+        },
+        {
+            "topic": "test/foo",
+            "requestedQualityOfService":  "1"
+        }
+    ]
+}

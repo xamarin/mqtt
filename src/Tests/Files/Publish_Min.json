@@ -1,0 +1,6 @@
+﻿{
+    "qualityOfService": "0",
+    "duplicatedDelivery": "false",
+    "retain": "false",
+    "topic": "empty/messages"
+}

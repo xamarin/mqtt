@@ -1,0 +1,9 @@
+﻿{
+    "messageId": "10",
+    "subscriptions": [
+        {
+            "topic": "foo/bar",
+            "requestedQualityOfService":  "2"
+        }
+    ]
+}

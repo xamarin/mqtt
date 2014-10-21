@@ -10,45 +10,45 @@ using Xunit.Extensions;
 
 namespace Tests.Formatters
 {
-	public class ConnectAckFormatterSpec
+	public class UnsubscribeAckFormatterSpec
 	{
 		private readonly Mock<IChannel<IMessage>> messageChannel;
 		private readonly Mock<IChannel<byte[]>> byteChannel;
 
-		public ConnectAckFormatterSpec ()
+		public UnsubscribeAckFormatterSpec ()
 		{
 			this.messageChannel = new Mock<IChannel<IMessage>> ();
 			this.byteChannel = new Mock<IChannel<byte[]>> ();
 		}
 
 		[Theory]
-		[InlineData("Files/ConnectAck.packet", "Files/ConnectAck.json")]
-		public async Task when_reading_connect_ack_packet_then_succeeds(string packetPath, string jsonPath)
+		[InlineData("Files/UnsubscribeAck.packet", "Files/UnsubscribeAck.json")]
+		public async Task when_reading_unsubscribe_ack_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var expectedConnectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
-			var sentConnectAck = default(ConnectAck);
+			var expectedUnsubscribeAck = Packet.ReadMessage<UnsubscribeAck> (jsonPath);
+			var sentUnsubscribeAck = default(UnsubscribeAck);
 
 			this.messageChannel
 				.Setup (c => c.SendAsync (It.IsAny<IMessage>()))
 				.Returns(Task.Delay(0))
 				.Callback<IMessage>(m =>  {
-					sentConnectAck = m as ConnectAck;
+					sentUnsubscribeAck = m as UnsubscribeAck;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new UnsubscribeAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
 
-			Assert.Equal (expectedConnectAck, sentConnectAck);
+			Assert.Equal (expectedUnsubscribeAck, sentUnsubscribeAck);
 		}
 
 		[Theory]
-		[InlineData("Files/ConnectAck.json", "Files/ConnectAck.packet")]
-		public async Task when_writing_connect_ack_packet_then_succeeds(string jsonPath, string packetPath)
+		[InlineData("Files/UnsubscribeAck.json", "Files/UnsubscribeAck.packet")]
+		public async Task when_writing_unsubscribe_ack_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -63,10 +63,10 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
-			var connectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
+			var formatter = new UnsubscribeAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var unsubscribeAck = Packet.ReadMessage<UnsubscribeAck> (jsonPath);
 
-			await formatter.WriteAsync (connectAck);
+			await formatter.WriteAsync (unsubscribeAck);
 
 			Assert.Equal (expectedPacket, sentPacket);
 		}
