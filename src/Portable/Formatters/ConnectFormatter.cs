@@ -31,9 +31,8 @@ namespace Hermes.Formatters
 			var cleanSession = connectFlags.IsSet (1);
 
 			var keepAliveLength = 2;
-			var keepAliveIndex = connectFlagsIndex + keepAliveLength;
-			var keepAliveBytes = packet.Bytes(keepAliveIndex, keepAliveLength);
-			var keepAlive = BitConverter.ToInt16 (keepAliveBytes, 0);
+			var keepAliveBytes = packet.Bytes(connectFlagsIndex + 1, keepAliveLength);
+			var keepAlive = keepAliveBytes.ToUInt16 ();
 
 			var payloadStartIndex = connectFlagsIndex + keepAliveLength + 1;
 			var nextIndex = 0;

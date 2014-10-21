@@ -25,7 +25,7 @@ namespace Hermes.Messages
 
 		public bool CleanSession { get; set; }
 
-		public int KeepAlive { get; set; }
+		public ushort KeepAlive { get; set; }
 
 		public Will Will { get; set; }
 

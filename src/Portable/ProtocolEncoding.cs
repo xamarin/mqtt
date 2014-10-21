@@ -41,6 +41,17 @@ namespace Hermes
 			return bytes;
 		}
 
+		public static byte[] EncodeBigEndian(ushort number)
+		{
+			var bytes = BitConverter.GetBytes (number);
+
+			if (BitConverter.IsLittleEndian) {
+				Array.Reverse (bytes);
+			}
+
+			return bytes;
+		}
+
 		public static byte[] EncodeRemainingLength(int length)
 		{
 			var bytes = new List<byte> ();

@@ -4,19 +4,13 @@ using System.Linq;
 
 namespace Hermes.Messages
 {
-	public class Unsubscribe : Message
+	public class Unsubscribe : Message, IEquatable<Unsubscribe>
     {
         public Unsubscribe(ushort messageId, params string[] topics)
-            : this(messageId, (IEnumerable<string>)topics)
-        {
-
-        }
-
-        public Unsubscribe(ushort messageId, IEnumerable<string> topics)
             : base(MessageType.Unsubscribe)
         {
 			if (!topics.Any ())
-				throw new ArgumentException ();
+				throw new ArgumentException ("topics");
 
             this.MessageId = messageId;
             this.Topics = topics;
@@ -26,6 +20,47 @@ namespace Hermes.Messages
 
         public IEnumerable<string> Topics { get; private set; }
 
-        public bool DuplicatedDelivery { get; private set; }
-    }
+		public bool Equals (Unsubscribe other)
+		{
+			if (other == null)
+				return false;
+
+			return this.MessageId == other.MessageId &&
+				this.Topics.SequenceEqual(other.Topics);
+		}
+
+		public override bool Equals (object obj)
+		{
+			if (obj == null)
+				return false;
+
+			var unsubscribe = obj as Unsubscribe;
+
+			if (unsubscribe == null)
+				return false;
+
+			return this.Equals (unsubscribe);
+		}
+
+		public static bool operator == (Unsubscribe unsubscribe, Unsubscribe other)
+		{
+			if ((object)unsubscribe == null || (object)other == null)
+				return Object.Equals(unsubscribe, other);
+
+			return unsubscribe.Equals(other);
+		}
+
+		public static bool operator != (Unsubscribe unsubscribe, Unsubscribe other)
+		{
+			if ((object)unsubscribe == null || (object)other == null)
+				return !Object.Equals(unsubscribe, other);
+
+			return !unsubscribe.Equals(other);
+		}
+
+		public override int GetHashCode ()
+		{
+			return this.MessageId.GetHashCode () + this.Topics.GetHashCode ();
+		}
+	}
 }

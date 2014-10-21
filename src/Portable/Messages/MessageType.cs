@@ -8,7 +8,7 @@
         PublishAck = 0x04,
         PublishReceived = 0x05,
         PublishRelease = 0x06,
-        PublishCompleted = 0x07,
+        PublishComplete = 0x07,
         Subscribe = 0x08,
         SubscribeAck = 0x09,
         Unsubscribe = 0x0A,
