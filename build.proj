@@ -93,7 +93,6 @@
 
 	</Target>
 
-	<!-- Redefined from NuGet.targets since we build differently -->
 	<Target Name="BuildPackage" 
 			Inputs="@(NuSpec)" 
 			Outputs="%(Identity)-BATCH" 

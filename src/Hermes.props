@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<Import Project="..\packages\SemanticGit\build\SemanticGit.props" Condition="Exists('..\packages\SemanticGit\build\SemanticGit.props')" />
+	
 	<!-- Our own new custom properties -->
 	<PropertyGroup>
 		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-		<BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Hermes.sln))</BuildRoot>
-		<BuildRoot Condition="!HasTrailingSlash('$(BuildRoot)')">$(BuildRoot)\</BuildRoot>
-		<SolutionDir>$(BuildRoot)</SolutionDir>
-		<DropDirectory>$(BuildRoot)drops\</DropDirectory>
-	</PropertyGroup>
-
-	<!-- NuGet -->
-	<PropertyGroup>
-		<RestorePackages>true</RestorePackages>
-		<BuildPackage Condition="'$(Configuration)' == 'Release'">true</BuildPackage>
-		<RequireRestoreConsent>false</RequireRestoreConsent>
-		<DownloadNuGetExe>true</DownloadNuGetExe>
+		<SolutionDir>..\</SolutionDir>
 	</PropertyGroup>
 
 	<!-- Enable opening the solution in VS2012 and 2013 -->
@@ -57,17 +48,6 @@
 		<AvailableItemName Include="NuSpec">
 			<Visible>False</Visible>
 		</AvailableItemName>
-
-		<AvailableItemName Include="Version">
-			<Visible>False</Visible>
-		</AvailableItemName>
 	</ItemGroup>
-
-	<!-- By setting the custom tool in the item group definition, we don't require users to do it manually -->
-	<ItemDefinitionGroup>
-		<Version>
-			<Generator>MSBuild:Compile</Generator>
-		</Version>
-	</ItemDefinitionGroup>
 
 </Project>
