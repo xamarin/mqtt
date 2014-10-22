@@ -86,7 +86,7 @@
 			Targets="Build"
 			Properties="Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess);Version=$(Version)"/>
 
-		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive -Version $(Version)'
+		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive -Version $(Version) -Symbols'
 			  Condition="'%(Identity)' != ''" />
 		<Exec Command='"$(NuGetExePath)" Pack "@(PackageSpec)" -NoPackageAnalysis -NonInteractive -Version $(Version)'
 			  Condition="'%(Identity)' != ''" />
