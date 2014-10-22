@@ -4,10 +4,15 @@ if ($msbuilds.Count -eq 0) {
 }
 
 if (!(test-path ".\.nuget\NuGet.exe")) {
+	if (!(test-path ".\.nuget")) {
+		mkdir .nuget | out-null
+	}
+	write-host Downloading NuGet.exe...
     invoke-webrequest "https://nuget.org/nuget.exe" -outfile ".\.nuget\NuGet.exe"
 }
 
 if (test-path ".\packages.config") {
+	write-host Installing root-level NuGet packages...
     .\.nuget\NuGet.exe Install -OutputDirectory packages -ExcludeVersion
 }
 
