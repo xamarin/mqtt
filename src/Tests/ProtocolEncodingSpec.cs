@@ -11,9 +11,9 @@ namespace Tests
 		public void when_encoding_string_then_succeeds()
 		{
 			var text = "Foo";
-			var encoded = ProtocolEncoding.EncodeString (text);
+			var encoded = Protocol.Encoding.EncodeString (text);
 
-			Assert.Equal (MQTT.StringPrefixLength + text.Length, encoded.Length);
+			Assert.Equal (Protocol.StringPrefixLength + text.Length, encoded.Length);
 			Assert.Equal (0x00, encoded[0]);
 			Assert.Equal (0x03, encoded[1]);
 		}
@@ -23,14 +23,14 @@ namespace Tests
 		{
 			var text = this.GetRandomString (size: 65537);
 
-			Assert.Throws<ProtocolException>(() => ProtocolEncoding.EncodeString (text));
+			Assert.Throws<ProtocolException>(() => Protocol.Encoding.EncodeString (text));
 		}
 
 		[Fact]
 		public void when_encoding_int32_big_endian_then_succeeds()
 		{
 			var number = 35000; //00000000 00000000 10001000 10111000
-			var encoded = ProtocolEncoding.EncodeBigEndian (number);
+			var encoded = Protocol.Encoding.EncodeBigEndian (number);
 
 			Assert.Equal (4, encoded.Length);
 			Assert.Equal (0x00, encoded[0]);
@@ -43,7 +43,7 @@ namespace Tests
 		public void when_encoding_uint16_big_endian_then_succeeds()
 		{
 			ushort number = 35000; //10001000 10111000
-			var encoded = ProtocolEncoding.EncodeBigEndian (number);
+			var encoded = Protocol.Encoding.EncodeBigEndian (number);
 
 			Assert.Equal (2, encoded.Length);
 			Assert.Equal (Convert.ToByte ("10001000", fromBase: 2), encoded[0]);
@@ -59,9 +59,9 @@ namespace Tests
 
 			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
 
-			var encoded1 = ProtocolEncoding.EncodeRemainingLength (length1); //0x40
-			var encoded2 = ProtocolEncoding.EncodeRemainingLength (length2); //193 2
-			var encoded3 = ProtocolEncoding.EncodeRemainingLength (length3); //0xFF 0xFF 0xFF 0x7F
+			var encoded1 = Protocol.Encoding.EncodeRemainingLength (length1); //0x40
+			var encoded2 = Protocol.Encoding.EncodeRemainingLength (length2); //193 2
+			var encoded3 = Protocol.Encoding.EncodeRemainingLength (length3); //0xFF 0xFF 0xFF 0x7F
 
 			Assert.Equal (1, encoded1.Length);
 			Assert.Equal (0x40, encoded1[0]);
@@ -102,11 +102,11 @@ namespace Tests
 			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
 
 			var arrayLength1 = 0;
-			var remainingLength1 = ProtocolEncoding.DecodeRemainingLength (bytes1.ToArray(), out arrayLength1); //64
+			var remainingLength1 = Protocol.Encoding.DecodeRemainingLength (bytes1.ToArray(), out arrayLength1); //64
 			var arrayLength2 = 0;
-			var remainingLength2 = ProtocolEncoding.DecodeRemainingLength (bytes2.ToArray(), out arrayLength2); //321
+			var remainingLength2 = Protocol.Encoding.DecodeRemainingLength (bytes2.ToArray(), out arrayLength2); //321
 			var arrayLength3 = 0;
-			var remainingLength3 = ProtocolEncoding.DecodeRemainingLength (bytes3.ToArray(), out arrayLength3); //268435455
+			var remainingLength3 = Protocol.Encoding.DecodeRemainingLength (bytes3.ToArray(), out arrayLength3); //268435455
 
 			Assert.Equal (1, arrayLength1);
 			Assert.Equal(64, remainingLength1);
@@ -132,7 +132,7 @@ namespace Tests
 
 			var arrayLength = 0;
 
-			Assert.Throws<ProtocolException> (() => ProtocolEncoding.DecodeRemainingLength (bytes.ToArray (), out arrayLength));
+			Assert.Throws<ProtocolException> (() => Protocol.Encoding.DecodeRemainingLength (bytes.ToArray (), out arrayLength));
 		}
 
 		private string GetRandomString(int size)

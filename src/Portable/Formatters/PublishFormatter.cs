@@ -19,7 +19,7 @@ namespace Hermes.Formatters
 		protected override Publish Format (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
-			var remainingLength = ProtocolEncoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
 			var packetFlags = packet.Byte (0).Bits(5, 4);
 
@@ -53,7 +53,7 @@ namespace Hermes.Formatters
 
 			var variableHeader = this.GetVariableHeader (message);
 			var payloadLength = message.Payload == null ? 0 : message.Payload.Length;
-			var remainingLength = ProtocolEncoding.EncodeRemainingLength (variableHeader.Length + payloadLength);
+			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payloadLength);
 			var fixedHeader = this.GetFixedHeader (message, remainingLength);
 
 			packet.AddRange (fixedHeader);
@@ -92,12 +92,12 @@ namespace Hermes.Formatters
 		{
 			var variableHeader = new List<byte> ();
 
-			var topicBytes = ProtocolEncoding.EncodeString(message.Topic);
+			var topicBytes = Protocol.Encoding.EncodeString(message.Topic);
 
 			variableHeader.AddRange (topicBytes);
 
 			if (message.MessageId.HasValue) {
-				var messageIdBytes = ProtocolEncoding.EncodeBigEndian(message.MessageId.Value);
+				var messageIdBytes = Protocol.Encoding.EncodeBigEndian(message.MessageId.Value);
 
 				variableHeader.AddRange (messageIdBytes);
 			}

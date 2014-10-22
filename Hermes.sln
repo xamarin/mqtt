@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portable", "src\Portable\Portable.csproj", "{6481B999-0479-4162-AC53-5936CE5FD8BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "src\Client\Client.csproj", "{D3EB8C4F-6CF4-4EB4-94E3-BCA31767AE53}"
@@ -9,7 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "src\Tests\Tests.cs
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A5ABB89-2797-4946-8D46-F07144F616F3}"
 	ProjectSection(SolutionItems) = preProject
-		build.bat = build.bat
 		src\GlobalAssemblyInfo.cs = src\GlobalAssemblyInfo.cs
 		src\Hermes.proj = src\Hermes.proj
 		src\Hermes.props = src\Hermes.props

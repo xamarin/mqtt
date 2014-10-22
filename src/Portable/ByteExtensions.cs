@@ -84,16 +84,16 @@ namespace Hermes
 		{
 			var length = bytes.GetStringLenght (index);
 			
-			return Encoding.UTF8.GetString (bytes, index + MQTT.StringPrefixLength, length);
+			return Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
 		}
 
 		public static string GetString(this byte[] bytes, int index, out int nextIndex)
 		{
 			var length = bytes.GetStringLenght (index);
 
-			nextIndex = index + MQTT.StringPrefixLength + length;
+			nextIndex = index + Protocol.StringPrefixLength + length;
 
-			return Encoding.UTF8.GetString (bytes, index + MQTT.StringPrefixLength, length);
+			return Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
 		}
 
 		public static ushort ToUInt16 (this byte[] bytes)

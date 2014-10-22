@@ -20,9 +20,9 @@ namespace Hermes.Formatters
 		{
 			var remainingLengthBytesLength = 0;
 			
-			ProtocolEncoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
-			var connectAckFlagsIndex = MQTT.PacketTypeLength + remainingLengthBytesLength;
+			var connectAckFlagsIndex = Protocol.PacketTypeLength + remainingLengthBytesLength;
 			var sessionPresent = packet.Byte (connectAckFlagsIndex).IsSet(0);
 			var returnCode = (ConnectionStatus)packet.Byte (connectAckFlagsIndex + 1);
 
@@ -36,7 +36,7 @@ namespace Hermes.Formatters
 			var packet = new List<byte> ();
 
 			var variableHeader = this.GetVariableHeader (message);
-			var remainingLength = ProtocolEncoding.EncodeRemainingLength (variableHeader.Length);
+			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
 
 			packet.AddRange (fixedHeader);
