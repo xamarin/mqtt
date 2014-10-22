@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hermes.Messages;
 
 namespace Hermes.Formatters
@@ -22,13 +23,9 @@ namespace Hermes.Formatters
 			var packetIdentifier = packet.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
 
 			var headerLength = 1 + remainingLengthBytesLength + 2;
-			var returnCodes = new List<SubscribeReturnCode> ();
+			var returnCodes = packet.Bytes(headerLength).Select(b => (SubscribeReturnCode)b).ToArray();
 
-			foreach (var @byte in packet.Bytes(headerLength)) {
-				returnCodes.Add ((SubscribeReturnCode)@byte);
-			}
-
-			return new SubscribeAck (packetIdentifier, returnCodes.ToArray());
+			return new SubscribeAck (packetIdentifier, returnCodes);
 		}
 
 		protected override byte[] Write (SubscribeAck message)
@@ -75,13 +72,9 @@ namespace Hermes.Formatters
 
 		private byte[] GetPayload(SubscribeAck message)
 		{
-			var payload = new List<byte> ();
-
-			foreach (var returnCode in message.ReturnCodes) {
-				payload.Add (Convert.ToByte (returnCode));
-			}
-
-			return payload.ToArray ();
+			return message.ReturnCodes
+				.Select(c => Convert.ToByte(c))
+				.ToArray();
 		}
 	}
 }

@@ -2,14 +2,15 @@
 
 namespace Hermes.Messages
 {
-	public class ConnectAck : Message, IEquatable<ConnectAck>
+	public class ConnectAck : IMessage, IEquatable<ConnectAck>
     {
         public ConnectAck(ConnectionStatus status, bool existingSession)
-            : base(MessageType.ConnectAck)
         {
             this.Status = status;
 			this.ExistingSession = existingSession;
         }
+
+		public MessageType Type { get { return MessageType.ConnectAck; }}
 
         public ConnectionStatus Status { get; private set; }
 

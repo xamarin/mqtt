@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hermes.Messages;
 
 namespace Hermes.Formatters
@@ -24,7 +25,7 @@ namespace Hermes.Formatters
 			var headerLength = 1 + remainingLengthBytesLength + 2;
 			var subscriptions = this.GetSubscriptions(packet, headerLength, remainingLength);
 
-			return new Subscribe (packetIdentifier, subscriptions);
+			return new Subscribe (packetIdentifier, subscriptions.ToArray());
 		}
 
 		protected override byte[] Write (Subscribe message)
@@ -84,9 +85,8 @@ namespace Hermes.Formatters
 			return payload.ToArray ();
 		}
 
-		private Subscription[] GetSubscriptions(byte[] packet, int headerLength, int remainingLength)
+		private IEnumerable<Subscription> GetSubscriptions(byte[] packet, int headerLength, int remainingLength)
 		{
-			var subscriptions = new List<Subscription> ();
 			var index = headerLength;
 
 			//The packet is iterated until the last byte, knowing that a valid string is always preceded by two aditional bytes (string length)
@@ -95,11 +95,9 @@ namespace Hermes.Formatters
 				var topic = packet.GetString (index, out index);
 				var requestedQos = (QualityOfService)packet.Byte (index).Bits(7, 2);
 
-				subscriptions.Add(new Subscription(topic, requestedQos));
+				yield return new Subscription(topic, requestedQos);
 				index++;
 			} while (packet.Length - index + 1 >= 2);
-
-			return subscriptions.ToArray();
 		}
 	}
 }

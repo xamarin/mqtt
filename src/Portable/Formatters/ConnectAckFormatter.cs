@@ -30,44 +30,37 @@ namespace Hermes.Formatters
 
 		protected override byte[] Write (ConnectAck message)
 		{
-			var packet = new List<byte> ();
-
 			var variableHeader = this.GetVariableHeader (message);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
 
-			packet.AddRange (fixedHeader);
-			packet.AddRange (variableHeader);
+			var packet = new byte[fixedHeader.Length + variableHeader.Length];
+			fixedHeader.CopyTo(packet, 0);
+			variableHeader.CopyTo(packet, fixedHeader.Length);
 
-			return packet.ToArray();
+			return packet;
 		}
 
 		private byte[] GetFixedHeader(byte[] remainingLength)
 		{
-			var fixedHeader = new List<byte> ();
-
 			var flags = 0x00;
 			var type = Convert.ToInt32(MessageType.ConnectAck) << 4;
 
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 
-			fixedHeader.Add (fixedHeaderByte1);
-			fixedHeader.AddRange (remainingLength);
+			var fixedHeader = new byte[remainingLength.Length + 1];
+			fixedHeader[0] = fixedHeaderByte1;
+			remainingLength.CopyTo(fixedHeader, 1);
 
-			return fixedHeader.ToArray();
+			return fixedHeader;
 		}
 
 		private byte[] GetVariableHeader(ConnectAck message)
 		{
-			var variableHeader = new List<byte> ();
-
 			var connectAckFlagsByte = Convert.ToByte(message.ExistingSession);
 			var returnCodeByte = Convert.ToByte (message.Status);
 
-			variableHeader.Add (connectAckFlagsByte);
-			variableHeader.Add (returnCodeByte);
-
-			return variableHeader.ToArray();
+			return new[] { connectAckFlagsByte, returnCodeByte };
 		}
 	}
 }

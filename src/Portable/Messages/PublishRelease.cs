@@ -2,13 +2,14 @@
 
 namespace Hermes.Messages
 {
-	public class PublishRelease : Message, IEquatable<PublishRelease>
+	public class PublishRelease : IFlowMessage, IEquatable<PublishRelease>
     {
         public PublishRelease(ushort messageId)
-            : base(MessageType.PublishRelease)
         {
             this.MessageId = messageId;
         }
+
+		public MessageType Type { get { return MessageType.PublishRelease; }}
 
         public ushort MessageId { get; private set; }
 

@@ -1,10 +1,7 @@
 ﻿namespace Hermes.Messages
 {
-	public class PingResponse : Message
+	public class PingResponse : IMessage
     {
-        public PingResponse()
-            : base(MessageType.PingResponse)
-        {
-        }
+		public MessageType Type { get { return MessageType.PingResponse; }}
     }
 }
