@@ -10,6 +10,8 @@
 
 		public const int StringPrefixLength = 2;
 
+		public const int ClientIdMaxLength = 23;
+
 		public static readonly int NameLength = MQTT.Name.Length + MQTT.StringPrefixLength;
 	}
 }

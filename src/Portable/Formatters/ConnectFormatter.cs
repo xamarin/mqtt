@@ -20,19 +20,49 @@ namespace Hermes.Formatters
 
 		protected override Connect Format (byte[] packet)
 		{
+			var headerFlag = packet.Byte (0).Bits (5, 4);
+
+			if (headerFlag != 0x00) {
+				var error = string.Format (Resources.ConnectFormatter_InvalidHeaderFlag, headerFlag, typeof(Connect).Name, 0x00);
+
+				throw new ProtocolException (error);
+			}
+
 			var remainingLengthBytesLength = 0;
 			
 			ProtocolEncoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+
+			var protocolName = packet.GetString (MQTT.PacketTypeLength + remainingLengthBytesLength);
+
+			if (protocolName != MQTT.Name) {
+				var error = string.Format(Resources.ConnectFormatter_InvalidProtocolName, protocolName);
+
+				throw new ProtocolException (error);
+			}
 
 			var protocolLevelLength = 1;
 			var connectFlagsIndex = MQTT.PacketTypeLength + remainingLengthBytesLength + MQTT.NameLength + protocolLevelLength;
 			var connectFlags = packet.Byte (connectFlagsIndex);
 
+			if (connectFlags.IsSet (0))
+				throw new ProtocolException (Resources.ConnectFormatter_InvalidReservedFlag);
+
+			if (connectFlags.Bits (4, 2) == 0x03)
+				throw new ProtocolException (Resources.ConnectFormatter_InvalidQualityOfService);
+
+			var willFlag = connectFlags.IsSet (2);
+			var willRetain = connectFlags.IsSet (5);
+
+			if (!willFlag && willRetain)
+				throw new ProtocolException (Resources.ConnectFormatter_InvalidWillRetainFlag);
+
 			var userNameFlag = connectFlags.IsSet (7);
 			var passwordFlag = connectFlags.IsSet (6);
-			var willRetain = connectFlags.IsSet (5);
+			
+			if (!userNameFlag && passwordFlag)
+				throw new ProtocolException (Resources.ConnectFormatter_InvalidPasswordFlag);
+
 			var willQos = (QualityOfService)connectFlags.Bits (4, 2);
-			var willFlag = connectFlags.IsSet (2);
 			var cleanSession = connectFlags.IsSet (1);
 
 			var keepAliveLength = 2;
@@ -42,6 +72,18 @@ namespace Hermes.Formatters
 			var payloadStartIndex = connectFlagsIndex + keepAliveLength + 1;
 			var nextIndex = 0;
 			var clientId = packet.GetString (payloadStartIndex, out nextIndex);
+
+			if (string.IsNullOrEmpty (clientId))
+				throw new ProtocolConnectionException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdRequired);
+
+			if (clientId.Length > MQTT.ClientIdMaxLength)
+				throw new ProtocolConnectionException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
+
+			if (!this.IsValidClientId (clientId)) {
+				var error = string.Format (Resources.ConnectFormatter_InvalidClientIdFormat, clientId);
+
+				throw new ProtocolConnectionException (ConnectionStatus.IdentifierRejected, error);
+			}
 
 			var connect = new Connect (clientId, cleanSession);
 
@@ -116,6 +158,12 @@ namespace Hermes.Formatters
 			var userNameFlag = Convert.ToInt32 (!string.IsNullOrEmpty (message.UserName));
 			var passwordFlag = userNameFlag == 1 ? Convert.ToInt32 (!string.IsNullOrEmpty (message.Password)) : 0;
 
+			if (willFlag == 0 && willRetain == 1)
+				throw new ProtocolException (Resources.ConnectFormatter_InvalidWillRetainFlag);
+
+			if (userNameFlag == 0 && passwordFlag == 1)
+				throw new ProtocolException (Resources.ConnectFormatter_InvalidPasswordFlag);
+
 			cleanSession <<= 1;
 			willFlag <<= 2;
 			willQos <<= 3;
@@ -137,21 +185,21 @@ namespace Hermes.Formatters
 
 		private byte[] GetPayload(Connect message)
 		{
-			if (string.IsNullOrEmpty (message.ClientId)) {
+			if (string.IsNullOrEmpty (message.ClientId))
 				throw new ProtocolException (Resources.ConnectFormatter_ClientIdRequired);
-			}
+
+			if (message.ClientId.Length > MQTT.ClientIdMaxLength)
+				throw new ProtocolException (Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
 			if (!this.IsValidClientId (message.ClientId)) {
-				throw new ProtocolException (Resources.ConnectFormatter_ClientIdInvalid);
+				var error = string.Format (Resources.ConnectFormatter_InvalidClientIdFormat, message.ClientId);
+
+				throw new ProtocolException (error);
 			}
 
 			var payload = new List<byte> ();
 
 			var clientIdBytes = ProtocolEncoding.EncodeString(message.ClientId);
-
-			if (clientIdBytes.Length > 23) {
-				throw new ProtocolException (Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
-			}
 
 			payload.AddRange(clientIdBytes);
 
@@ -163,16 +211,19 @@ namespace Hermes.Formatters
 				payload.AddRange (willMessageBytes);
 			}
 
+			if (string.IsNullOrEmpty (message.UserName) && !string.IsNullOrEmpty (message.Password))
+				throw new ProtocolException (Resources.ConnectFormatter_PasswordNotAllowed);
+
 			if (!string.IsNullOrEmpty (message.UserName)) {
 				var userNameBytes = ProtocolEncoding.EncodeString(message.UserName);
 
 				payload.AddRange (userNameBytes);
+			}
 
-				if (!string.IsNullOrEmpty (message.Password)) {
-					var passwordBytes = ProtocolEncoding.EncodeString(message.Password);
+			if (!string.IsNullOrEmpty (message.Password)) {
+				var passwordBytes = ProtocolEncoding.EncodeString(message.Password);
 
-					payload.AddRange (passwordBytes);
-				}
+				payload.AddRange (passwordBytes);
 			}
 
 			return payload.ToArray ();
