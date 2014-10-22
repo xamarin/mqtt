@@ -38,7 +38,7 @@ namespace Tests.Formatters
 					sentPublishRelease = m as PublishRelease;
 				});
 
-			var formatter = new PublishReleaseFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<PublishRelease>(MessageType.PublishRelease, id => new PublishRelease(id), this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
@@ -63,7 +63,7 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new PublishReleaseFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<PublishRelease>(MessageType.PublishRelease, id => new PublishRelease(id), this.messageChannel.Object, this.byteChannel.Object);
 			var publishRelease = Packet.ReadMessage<PublishRelease> (jsonPath);
 
 			await formatter.WriteAsync (publishRelease);

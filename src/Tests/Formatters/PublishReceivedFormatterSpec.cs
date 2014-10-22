@@ -38,7 +38,7 @@ namespace Tests.Formatters
 					sentPublishReceived = m as PublishReceived;
 				});
 
-			var formatter = new PublishReceivedFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<PublishReceived>(MessageType.PublishReceived, id => new PublishReceived(id), this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
@@ -63,7 +63,7 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new PublishReceivedFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<PublishReceived>(MessageType.PublishReceived, id => new PublishReceived(id), this.messageChannel.Object, this.byteChannel.Object);
 			var publishReceived = Packet.ReadMessage<PublishReceived> (jsonPath);
 
 			await formatter.WriteAsync (publishReceived);

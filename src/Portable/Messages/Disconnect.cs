@@ -1,10 +1,7 @@
 ﻿namespace Hermes.Messages
 {
-	 public class Disconnect : Message
+	 public class Disconnect : IMessage
     {
-        public Disconnect()
-            : base(MessageType.Disconnect)
-        {
-        }
+		public MessageType Type { get { return MessageType.Disconnect; }}
     }
 }

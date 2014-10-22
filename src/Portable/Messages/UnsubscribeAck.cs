@@ -2,13 +2,14 @@
 
 namespace Hermes.Messages
 {
-	public class UnsubscribeAck : Message, IEquatable<UnsubscribeAck>
+	public class UnsubscribeAck : IFlowMessage, IEquatable<UnsubscribeAck>
     {
         public UnsubscribeAck(ushort messageId)
-            : base(MessageType.UnsubscribeAck)
         {
             this.MessageId = messageId;
         }
+
+		public MessageType Type { get { return MessageType.UnsubscribeAck; }}
 
         public ushort MessageId { get; private set; }
 

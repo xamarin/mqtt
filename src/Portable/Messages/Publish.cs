@@ -3,10 +3,9 @@ using System.Linq;
 
 namespace Hermes.Messages
 {
-	public class Publish : Message, IEquatable<Publish>
+	public class Publish : IMessage, IEquatable<Publish>
     {
         public Publish(QualityOfService qualityOfService, bool retain, string topic, ushort? messageId = null, bool duplicatedDelivery = false)
-            : base(MessageType.Publish)
         {
 			if (qualityOfService == QualityOfService.AtMostOnce && messageId != null)
                 throw new ArgumentException();
@@ -24,6 +23,8 @@ namespace Hermes.Messages
 			this.Topic = topic;
             this.MessageId = messageId;
         }
+
+		public MessageType Type { get { return MessageType.Publish; }}
 
 		public QualityOfService QualityOfService { get; private set; }
 
