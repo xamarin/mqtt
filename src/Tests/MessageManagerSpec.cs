@@ -19,9 +19,7 @@ namespace Tests
 			var formatter = new Mock<IFormatter> ();
 			var sentPacket = default(byte[]);
 
-			formatter
-				.Setup (f => f.CanFormat (It.Is<byte[]> (b => b == packet)))
-				.Returns (true);
+			formatter.Setup(f => f.MessageType).Returns(MessageType.Connect);
 
 			formatter
 				.Setup (f => f.ReadAsync (It.IsAny<byte[]> ()))
@@ -45,9 +43,7 @@ namespace Tests
 			var formatter = new Mock<IFormatter> ();
 			var sentMessage = default(Connect);
 
-			formatter
-				.Setup (f => f.CanFormat (It.Is<IMessage> (m => m is Connect && (Connect)m == message)))
-				.Returns (true);
+			formatter.Setup(f => f.MessageType).Returns(MessageType.Connect);
 
 			formatter
 				.Setup (f => f.WriteAsync (It.IsAny<IMessage> ()))

@@ -11,12 +11,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.PublishComplete;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.PublishComplete; } }
 
-		protected override PublishComplete Format (byte[] packet)
+		protected override PublishComplete Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			
@@ -30,7 +27,7 @@ namespace Hermes.Formatters
 			return publishComplete;
 		}
 
-		protected override byte[] Format (PublishComplete message)
+		protected override byte[] Write (PublishComplete message)
 		{
 			var packet = new List<byte> ();
 

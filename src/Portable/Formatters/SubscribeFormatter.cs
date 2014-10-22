@@ -11,12 +11,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.Subscribe;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.Subscribe; } }
 
-		protected override Subscribe Format (byte[] packet)
+		protected override Subscribe Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
@@ -30,7 +27,7 @@ namespace Hermes.Formatters
 			return new Subscribe (packetIdentifier, subscriptions);
 		}
 
-		protected override byte[] Format (Subscribe message)
+		protected override byte[] Write (Subscribe message)
 		{
 			var packet = new List<byte> ();
 

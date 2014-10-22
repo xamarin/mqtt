@@ -11,12 +11,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.Publish;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.Publish; } }
 
-		protected override Publish Format (byte[] packet)
+		protected override Publish Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
@@ -47,7 +44,7 @@ namespace Hermes.Formatters
 			return publish;
 		}
 
-		protected override byte[] Format (Publish message)
+		protected override byte[] Write (Publish message)
 		{
 			var packet = new List<byte> ();
 

@@ -11,12 +11,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.ConnectAck;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.ConnectAck; } }
 
-		protected override ConnectAck Format (byte[] packet)
+		protected override ConnectAck Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			
@@ -31,7 +28,7 @@ namespace Hermes.Formatters
 			return connectAck;
 		}
 
-		protected override byte[] Format (ConnectAck message)
+		protected override byte[] Write (ConnectAck message)
 		{
 			var packet = new List<byte> ();
 

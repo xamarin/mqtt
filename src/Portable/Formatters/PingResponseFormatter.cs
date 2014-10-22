@@ -10,17 +10,14 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.PingResponse;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.PingResponse; } }
 
-		protected override PingResponse Format (byte[] packet)
+		protected override PingResponse Read (byte[] packet)
 		{
 			return new PingResponse ();
 		}
 
-		protected override byte[] Format (PingResponse message)
+		protected override byte[] Write (PingResponse message)
 		{
 			var flags = 0x00;
 			var type = Convert.ToInt32(MessageType.PingResponse) << 4;
