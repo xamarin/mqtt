@@ -11,15 +11,12 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.Subscribe;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.Subscribe; } }
 
-		protected override Subscribe Format (byte[] packet)
+		protected override Subscribe Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
-			var remainingLength = ProtocolEncoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
 			var packetIdentifierStartIndex = remainingLengthBytesLength + 1;
 			var packetIdentifier = packet.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
@@ -30,13 +27,13 @@ namespace Hermes.Formatters
 			return new Subscribe (packetIdentifier, subscriptions);
 		}
 
-		protected override byte[] Format (Subscribe message)
+		protected override byte[] Write (Subscribe message)
 		{
 			var packet = new List<byte> ();
 
 			var variableHeader = this.GetVariableHeader (message);
 			var payload = this.GetPayload (message);
-			var remainingLength = ProtocolEncoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
+			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
 
 			packet.AddRange (fixedHeader);
@@ -65,7 +62,7 @@ namespace Hermes.Formatters
 		{
 			var variableHeader = new List<byte> ();
 
-			var messageIdBytes = ProtocolEncoding.EncodeBigEndian(message.MessageId);
+			var messageIdBytes = Protocol.Encoding.EncodeBigEndian(message.MessageId);
 
 			variableHeader.AddRange (messageIdBytes);
 
@@ -77,7 +74,7 @@ namespace Hermes.Formatters
 			var payload = new List<byte> ();
 
 			foreach (var subscription in message.Subscriptions) {
-				var topicBytes = ProtocolEncoding.EncodeString (subscription.Topic);
+				var topicBytes = Protocol.Encoding.EncodeString (subscription.Topic);
 				var requestedQosByte = Convert.ToByte (subscription.RequestedQualityOfService);
 
 				payload.AddRange (topicBytes);

@@ -11,18 +11,15 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.ConnectAck;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.ConnectAck; } }
 
-		protected override ConnectAck Format (byte[] packet)
+		protected override ConnectAck Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			
-			ProtocolEncoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
-			var connectAckFlagsIndex = MQTT.PacketTypeLength + remainingLengthBytesLength;
+			var connectAckFlagsIndex = Protocol.PacketTypeLength + remainingLengthBytesLength;
 			var sessionPresent = packet.Byte (connectAckFlagsIndex).IsSet(0);
 			var returnCode = (ConnectionStatus)packet.Byte (connectAckFlagsIndex + 1);
 
@@ -31,12 +28,12 @@ namespace Hermes.Formatters
 			return connectAck;
 		}
 
-		protected override byte[] Format (ConnectAck message)
+		protected override byte[] Write (ConnectAck message)
 		{
 			var packet = new List<byte> ();
 
 			var variableHeader = this.GetVariableHeader (message);
-			var remainingLength = ProtocolEncoding.EncodeRemainingLength (variableHeader.Length);
+			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
 
 			packet.AddRange (fixedHeader);

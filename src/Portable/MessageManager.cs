@@ -9,7 +9,7 @@ namespace Hermes
 {
 	public class MessageManager : IMessageManager
 	{
-		private readonly IEnumerable<IFormatter> formatters;
+		private readonly Dictionary<MessageType, IFormatter> formatters;
 
 		public MessageManager (params IFormatter[] formatters)
 			: this((IEnumerable<IFormatter>)formatters)
@@ -18,15 +18,16 @@ namespace Hermes
 
 		public MessageManager (IEnumerable<IFormatter> formatters)
 		{
-			this.formatters = formatters;
+			this.formatters = formatters.ToDictionary(f => f.MessageType);
 		}
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ManageAsync (byte[] packet)
 		{
-			var formatter = this.formatters.FirstOrDefault (f => f.CanFormat (packet));
+			var messageType = (MessageType)packet.Byte (0).Bits (4);
+			IFormatter formatter;
 
-			if (formatter == null)
+			if (!formatters.TryGetValue(messageType, out formatter))
 				throw new ProtocolException (Resources.MessageManager_PacketUnknown);
 
 			await formatter.ReadAsync (packet);
@@ -35,9 +36,9 @@ namespace Hermes
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ManageAsync (IMessage message)
 		{
-			var formatter = this.formatters.FirstOrDefault (f => f.CanFormat (message));
+			IFormatter formatter;
 
-			if (formatter == null)
+			if (!formatters.TryGetValue(message.Type, out formatter))
 				throw new ProtocolException (Resources.MessageManager_MessageUnknown);
 
 			await formatter.WriteAsync (message);

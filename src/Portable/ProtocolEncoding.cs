@@ -5,10 +5,10 @@ using Hermes.Properties;
 
 namespace Hermes
 {
-	public static class ProtocolEncoding
+	public class ProtocolEncoding
 	{
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public static byte[] EncodeString (string text)
+		public byte[] EncodeString (string text)
 		{
 			if (string.IsNullOrEmpty (text)) {
 				return new byte[] { };
@@ -21,7 +21,7 @@ namespace Hermes
 				throw new ProtocolException(Resources.DataRepresentationExtensions_StringMaxLengthExceeded);
 			}
 
-			var numberBytes = ProtocolEncoding.EncodeBigEndian (textBytes.Length);
+			var numberBytes = Protocol.Encoding.EncodeBigEndian (textBytes.Length);
 
 			bytes.Add (numberBytes[numberBytes.Length - 2]);
 			bytes.Add (numberBytes[numberBytes.Length - 1]);
@@ -30,7 +30,7 @@ namespace Hermes
 			return bytes.ToArray();
 		}
 
-		public static byte[] EncodeBigEndian(int number)
+		public byte[] EncodeBigEndian(int number)
 		{
 			var bytes = BitConverter.GetBytes (number);
 
@@ -41,7 +41,7 @@ namespace Hermes
 			return bytes;
 		}
 
-		public static byte[] EncodeBigEndian(ushort number)
+		public byte[] EncodeBigEndian(ushort number)
 		{
 			var bytes = BitConverter.GetBytes (number);
 
@@ -52,7 +52,7 @@ namespace Hermes
 			return bytes;
 		}
 
-		public static byte[] EncodeRemainingLength(int length)
+		public byte[] EncodeRemainingLength(int length)
 		{
 			var bytes = new List<byte> ();
 			var encoded = default(int);
@@ -72,7 +72,7 @@ namespace Hermes
 		}
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public static int DecodeRemainingLength(byte[] packet, out int arrayLength)
+		public int DecodeRemainingLength(byte[] packet, out int arrayLength)
 		{
 			var multiplier = 1;
 			var value = 0;

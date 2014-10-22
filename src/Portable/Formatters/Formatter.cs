@@ -4,6 +4,7 @@ using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
+	// TODO: remove T parameter here unless we really use the T somewhere?
 	public abstract class Formatter<T> : IFormatter
 		where T : class, IMessage
 	{
@@ -15,35 +16,25 @@ namespace Hermes.Formatters
 			this.reader = reader;
 			this.writer = writer;
 		}
+		
+		public abstract MessageType MessageType { get; }
 
-		protected abstract bool CanFormat (MessageType messageType);
+		protected abstract T Read (byte[] packet);
 
-		protected abstract T Format (byte[] packet);
-
-		protected abstract byte[] Format (T message);
-
-		public bool CanFormat (byte[] packet)
-		{
-			var messageType = (MessageType)packet.Byte (0).Bits (4);
-
-			return this.CanFormat (messageType);
-		}
-
-		public bool CanFormat (IMessage message)
-		{
-			return message.GetType () == typeof (T);
-		}
+		protected abstract byte[] Write (T message);
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ReadAsync (byte[] packet)
 		{
-			if (!this.CanFormat (packet)) {
+			var actualType = (MessageType)packet.Byte (0).Bits (4);
+
+			if (MessageType != actualType) {
 				var error = string.Format(Resources.Formatter_InvalidPacket, typeof(T).Name);
 
 				throw new ProtocolException (error);
 			}
 
-			var message = this.Format (packet);
+			var message = this.Read (packet);
 
 			await this.reader.SendAsync (message);
 		}
@@ -51,13 +42,13 @@ namespace Hermes.Formatters
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task WriteAsync (IMessage message)
 		{
-			if (!this.CanFormat (message)){
+			if (message.Type != MessageType) {
 				var error = string.Format(Resources.Formatter_InvalidMessage, typeof(T).Name);
 
 				throw new ProtocolException (error);
 			}
 
-			var packet = this.Format (message as T);
+			var packet = this.Write (message as T);
 
 			await this.writer.SendAsync (packet);
 		}
