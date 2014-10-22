@@ -61,7 +61,7 @@
     <Compile Include="Messages\UnsubscribeAck.cs" />
     <Compile Include="Messages\Unsubscribe.cs" />
     <Compile Include="Messages\Will.cs" />
-    <Compile Include="MQTT.cs" />
+    <Compile Include="Protocol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtocolEncoding.cs" />
     <Compile Include="ProtocolViolationException.cs" />

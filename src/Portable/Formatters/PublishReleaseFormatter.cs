@@ -20,9 +20,9 @@ namespace Hermes.Formatters
 		{
 			var remainingLengthBytesLength = 0;
 			
-			ProtocolEncoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
-			var packetIdentifierIndex = MQTT.PacketTypeLength + remainingLengthBytesLength;
+			var packetIdentifierIndex = Protocol.PacketTypeLength + remainingLengthBytesLength;
 			var packetIdentifierBytes = packet.Bytes (packetIdentifierIndex, 2);
 
 			var publishRelease = new PublishRelease (packetIdentifierBytes.ToUInt16 ());
@@ -35,7 +35,7 @@ namespace Hermes.Formatters
 			var packet = new List<byte> ();
 
 			var variableHeader = this.GetVariableHeader (message);
-			var remainingLength = ProtocolEncoding.EncodeRemainingLength (variableHeader.Length);
+			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
 
 			packet.AddRange (fixedHeader);
@@ -63,7 +63,7 @@ namespace Hermes.Formatters
 		{
 			var variableHeader = new List<byte> ();
 
-			var messageIdBytes = ProtocolEncoding.EncodeBigEndian(message.MessageId);
+			var messageIdBytes = Protocol.Encoding.EncodeBigEndian(message.MessageId);
 
 			variableHeader.AddRange (messageIdBytes);
 
