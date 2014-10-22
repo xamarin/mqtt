@@ -11,6 +11,11 @@ namespace Hermes.Formatters
 		{
 		}
 
+		protected override bool CanFormat (MessageType messageType)
+		{
+			return messageType == MessageType.PublishRelease;
+		}
+
 		protected override PublishRelease Format (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;

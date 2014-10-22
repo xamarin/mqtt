@@ -135,8 +135,20 @@
   <data name="DataRepresentationExtensions_StringMaxLengthExceeded" xml:space="preserve">
     <value>String value cannot exceed 65536 bytes of length</value>
   </data>
+  <data name="Formatter_InvalidMessage" xml:space="preserve">
+    <value>The message sent cannot be handled by {0}</value>
+  </data>
+  <data name="Formatter_InvalidPacket" xml:space="preserve">
+    <value>The packet sent cannot be handled by {0}</value>
+  </data>
   <data name="Formatter_MessageTypeNotAllowed" xml:space="preserve">
     <value>{0} message is not valid</value>
+  </data>
+  <data name="MessageManager_MessageUnknown" xml:space="preserve">
+    <value>The message received cannot be handled by any of the registered formatters</value>
+  </data>
+  <data name="MessageManager_PacketUnknown" xml:space="preserve">
+    <value>The received packet cannot be handled by any of the registered formatters</value>
   </data>
   <data name="ProtocolEncoding_MalformedRemainingLength" xml:space="preserve">
     <value>Malformed Remaining Length</value>

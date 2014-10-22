@@ -37,6 +37,8 @@
     <Compile Include="Formatters\UnsubscribeFormatter.cs" />
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IChannel.cs" />
+    <Compile Include="IMessageManager.cs" />
+    <Compile Include="MessageManager.cs" />
     <Compile Include="Messages\Connect.cs" />
     <Compile Include="Messages\ConnectAck.cs" />
     <Compile Include="Messages\ConnectionStatus.cs" />
@@ -62,6 +64,7 @@
     <Compile Include="MQTT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtocolEncoding.cs" />
+    <Compile Include="ProtocolViolationException.cs" />
     <Compile Include="ProtocolException.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

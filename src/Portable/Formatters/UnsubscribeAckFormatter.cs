@@ -11,6 +11,11 @@ namespace Hermes.Formatters
 		{
 		}
 
+		protected override bool CanFormat (MessageType messageType)
+		{
+			return messageType == MessageType.UnsubscribeAck;
+		}
+
 		protected override UnsubscribeAck Format (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;

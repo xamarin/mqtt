@@ -11,6 +11,11 @@ namespace Hermes.Formatters
 		{
 		}
 
+		protected override bool CanFormat (MessageType messageType)
+		{
+			return messageType == MessageType.PublishAck;
+		}
+
 		protected override PublishAck Format (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;

@@ -10,6 +10,11 @@ namespace Hermes.Formatters
 		{
 		}
 
+		protected override bool CanFormat (MessageType messageType)
+		{
+			return messageType == MessageType.PingRequest;
+		}
+
 		protected override PingRequest Format (byte[] packet)
 		{
 			return new PingRequest ();

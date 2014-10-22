@@ -13,6 +13,11 @@ namespace Hermes.Formatters
 		{
 		}
 
+		protected override bool CanFormat (MessageType messageType)
+		{
+			return messageType == MessageType.Connect;
+		}
+
 		protected override Connect Format (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;

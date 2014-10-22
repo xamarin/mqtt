@@ -10,6 +10,11 @@ namespace Hermes.Formatters
 		{
 		}
 
+		protected override bool CanFormat (MessageType messageType)
+		{
+			return messageType == MessageType.Disconnect;
+		}
+
 		protected override Disconnect Format (byte[] packet)
 		{
 			return new Disconnect ();
