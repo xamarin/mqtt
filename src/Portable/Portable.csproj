@@ -25,13 +25,9 @@
     <Compile Include="Formatters\Formatter.cs" />
     <Compile Include="Formatters\IFormatter.cs" />
     <Compile Include="Formatters\DisconnectFormatter.cs" />
+    <Compile Include="Formatters\FlowMessageFormatter.cs" />
     <Compile Include="Formatters\PingResponseFormatter.cs" />
     <Compile Include="Formatters\PingRequestFormatter.cs" />
-    <Compile Include="Formatters\PublishCompleteFormatter.cs" />
-    <Compile Include="Formatters\UnsubscribeAckFormatter.cs" />
-    <Compile Include="Formatters\PublishReleaseFormatter.cs" />
-    <Compile Include="Formatters\PublishReceivedFormatter.cs" />
-    <Compile Include="Formatters\PublishAckFormatter.cs" />
     <Compile Include="Formatters\PublishFormatter.cs" />
     <Compile Include="Formatters\SubscribeAckFormatter.cs" />
     <Compile Include="Formatters\UnsubscribeFormatter.cs" />
@@ -43,8 +39,8 @@
     <Compile Include="Messages\ConnectAck.cs" />
     <Compile Include="Messages\ConnectionStatus.cs" />
     <Compile Include="Messages\Disconnect.cs" />
+    <Compile Include="Messages\IFlowMessage.cs" />
     <Compile Include="Messages\IMessage.cs" />
-    <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />
     <Compile Include="Messages\PingRequest.cs" />
     <Compile Include="Messages\PingResponse.cs" />

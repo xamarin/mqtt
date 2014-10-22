@@ -2,17 +2,18 @@
 
 namespace Hermes.Messages
 {
-	public class PublishComplete : Message, IEquatable<PublishComplete>
-    {
-        public PublishComplete(ushort messageId)
-            : base(MessageType.PublishComplete)
-        {
-            this.MessageId = messageId;
-        }
+	public class PublishComplete : IFlowMessage, IEquatable<PublishComplete>
+	{
+		public PublishComplete(ushort messageId)
+		{
+			this.MessageId = messageId;
+		}
 
-        public ushort MessageId { get; private set; }
+		public MessageType Type { get { return MessageType.PublishComplete; } }
 
-		public bool Equals (PublishComplete other)
+		public ushort MessageId { get; private set; }
+
+		public bool Equals(PublishComplete other)
 		{
 			if (other == null)
 				return false;
@@ -20,7 +21,7 @@ namespace Hermes.Messages
 			return this.MessageId == other.MessageId;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -30,10 +31,10 @@ namespace Hermes.Messages
 			if (publishComplete == null)
 				return false;
 
-			return this.Equals (publishComplete);
+			return this.Equals(publishComplete);
 		}
 
-		public static bool operator == (PublishComplete publishComplete, PublishComplete other)
+		public static bool operator ==(PublishComplete publishComplete, PublishComplete other)
 		{
 			if ((object)publishComplete == null || (object)other == null)
 				return Object.Equals(publishComplete, other);
@@ -41,7 +42,7 @@ namespace Hermes.Messages
 			return publishComplete.Equals(other);
 		}
 
-		public static bool operator != (PublishComplete publishComplete, PublishComplete other)
+		public static bool operator !=(PublishComplete publishComplete, PublishComplete other)
 		{
 			if ((object)publishComplete == null || (object)other == null)
 				return !Object.Equals(publishComplete, other);
@@ -49,9 +50,9 @@ namespace Hermes.Messages
 			return !publishComplete.Equals(other);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return this.MessageId.GetHashCode ();
+			return this.MessageId.GetHashCode();
 		}
-    }
+	}
 }

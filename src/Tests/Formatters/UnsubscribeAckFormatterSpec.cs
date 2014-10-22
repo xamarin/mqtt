@@ -38,7 +38,7 @@ namespace Tests.Formatters
 					sentUnsubscribeAck = m as UnsubscribeAck;
 				});
 
-			var formatter = new UnsubscribeAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<UnsubscribeAck>(MessageType.UnsubscribeAck, id => new UnsubscribeAck(id), this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
@@ -63,7 +63,7 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new UnsubscribeAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<UnsubscribeAck>(MessageType.UnsubscribeAck, id => new UnsubscribeAck(id), this.messageChannel.Object, this.byteChannel.Object);
 			var unsubscribeAck = Packet.ReadMessage<UnsubscribeAck> (jsonPath);
 
 			await formatter.WriteAsync (unsubscribeAck);

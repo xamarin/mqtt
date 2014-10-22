@@ -4,15 +4,15 @@ using System.Linq;
 
 namespace Hermes.Messages
 {
-	public class Subscribe : Message, IEquatable<Subscribe>
+	public class Subscribe : IFlowMessage, IEquatable<Subscribe>
     {
         public Subscribe(ushort messageId, params Subscription[] subscriptions)
-             : base(MessageType.Subscribe)
         {
 			this.MessageId = messageId;
             this.Subscriptions = subscriptions;
         }
 
+		public MessageType Type { get { return MessageType.Subscribe; }}
         public ushort MessageId { get; private set; }
 
         public IEnumerable<Subscription> Subscriptions { get; private set; }

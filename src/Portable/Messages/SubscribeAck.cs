@@ -4,14 +4,15 @@ using System.Linq;
 
 namespace Hermes.Messages
 {
-	public class SubscribeAck : Message, IEquatable<SubscribeAck>
+	public class SubscribeAck : IMessage, IEquatable<SubscribeAck>
     {
         public SubscribeAck(ushort messageId, params SubscribeReturnCode[] returnCodes)
-            : base(MessageType.SubscribeAck)
         {
 			this.MessageId = messageId;
 			this.ReturnCodes = returnCodes;
         }
+
+		public MessageType Type { get { return MessageType.SubscribeAck; }}
 
         public ushort MessageId { get; private set; }
 

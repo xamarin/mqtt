@@ -38,7 +38,7 @@ namespace Tests.Formatters
 					sentPublishAck = m as PublishAck;
 				});
 
-			var formatter = new PublishAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<PublishAck>(MessageType.PublishAck, id => new PublishAck(id), this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
@@ -63,7 +63,7 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new PublishAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowMessageFormatter<PublishAck>(MessageType.PublishAck, id => new PublishAck(id), this.messageChannel.Object, this.byteChannel.Object);
 			var publishAck = Packet.ReadMessage<PublishAck> (jsonPath);
 
 			await formatter.WriteAsync (publishAck);

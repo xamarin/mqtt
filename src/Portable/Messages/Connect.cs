@@ -2,9 +2,9 @@
 
 namespace Hermes.Messages
 {
-	public class Connect : Message, IEquatable<Connect>
+	public class Connect : IMessage, IEquatable<Connect>
 	{
-		public Connect (string clientId, bool cleanSession) : base(MessageType.Connect)
+		public Connect (string clientId, bool cleanSession)
 		{
 			if (string.IsNullOrEmpty (clientId)) {
 				throw new ArgumentNullException ("clientId");
@@ -15,11 +15,13 @@ namespace Hermes.Messages
 			this.KeepAlive = 0;
 		}
 
-		public Connect () : base(MessageType.Connect)
+		public Connect ()
 		{
 			this.CleanSession = true;
 			this.KeepAlive = 0;
 		}
+
+		public MessageType Type { get { return MessageType.Connect; }}
 
 		public string ClientId { get; set; }
 
