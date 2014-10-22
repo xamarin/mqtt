@@ -1,0 +1,12 @@
+﻿00010000 #Fixed Header Byte 1: MQTT Control Packet Type (1) + Flags (0)
+00010101 #Remaining Length (21)
+00000000 #Protocol Name MSB (0)
+00000100 #Protocol Name LSB (4)
+"MQTT" #UTF8-encoded
+00000100 #Protocol Level (4)
+00101010 #Connect Flags: User Name (0), Password (0), Will Retain (1), Will QoS (01), Will Flag (0), Clean Session (1), Reserved (0)
+00000000 #Keep Alive MSB (0)
+00001010 #Keep Alive LSB (5)
+00000000 #ClientId MSB(0)
+00001001 #ClientId LSB(9)
+"BarClient" #UTF8-encoded

@@ -20,7 +20,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ByteExtensions.cs" />
-    <Compile Include="Exceptions\ProtocolConnectionException.cs" />
+    <Compile Include="Exceptions\ProtocolConnectException.cs" />
     <Compile Include="Formatters\ConnectAckFormatter.cs" />
     <Compile Include="Formatters\ConnectFormatter.cs" />
     <Compile Include="Formatters\Formatter.cs" />
