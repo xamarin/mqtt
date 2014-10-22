@@ -11,12 +11,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.SubscribeAck;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.SubscribeAck; } }
 
-		protected override SubscribeAck Format (byte[] packet)
+		protected override SubscribeAck Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
@@ -34,7 +31,7 @@ namespace Hermes.Formatters
 			return new SubscribeAck (packetIdentifier, returnCodes.ToArray());
 		}
 
-		protected override byte[] Format (SubscribeAck message)
+		protected override byte[] Write (SubscribeAck message)
 		{
 			var packet = new List<byte> ();
 

@@ -13,12 +13,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.Connect;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.Connect; } }
 
-		protected override Connect Format (byte[] packet)
+		protected override Connect Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			
@@ -70,7 +67,7 @@ namespace Hermes.Formatters
 			return connect;
 		}
 
-		protected override byte[] Format (Connect message)
+		protected override byte[] Write (Connect message)
 		{
 			var packet = new List<byte> ();
 

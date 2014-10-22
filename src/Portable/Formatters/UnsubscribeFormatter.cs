@@ -11,12 +11,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.Unsubscribe;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.Unsubscribe; } }
 
-		protected override Unsubscribe Format (byte[] packet)
+		protected override Unsubscribe Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
@@ -36,7 +33,7 @@ namespace Hermes.Formatters
 			return new Unsubscribe (packetIdentifier, topics.ToArray());
 		}
 
-		protected override byte[] Format (Unsubscribe message)
+		protected override byte[] Write (Unsubscribe message)
 		{
 			var packet = new List<byte> ();
 

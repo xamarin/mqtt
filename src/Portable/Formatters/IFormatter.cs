@@ -5,9 +5,10 @@ namespace Hermes.Formatters
 {
 	public interface IFormatter
 	{
-		bool CanFormat (byte[] packet);
-
-		bool CanFormat (IMessage message);
+		/// <summary>
+		/// Gets the type of message that this formatter support.
+		/// </summary>
+		MessageType MessageType { get; }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		Task ReadAsync (byte[] packet);

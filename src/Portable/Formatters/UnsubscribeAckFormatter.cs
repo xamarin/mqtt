@@ -11,12 +11,9 @@ namespace Hermes.Formatters
 		{
 		}
 
-		protected override bool CanFormat (MessageType messageType)
-		{
-			return messageType == MessageType.UnsubscribeAck;
-		}
+		public override MessageType MessageType { get { return Messages.MessageType.UnsubscribeAck; } }
 
-		protected override UnsubscribeAck Format (byte[] packet)
+		protected override UnsubscribeAck Read (byte[] packet)
 		{
 			var remainingLengthBytesLength = 0;
 			
@@ -30,7 +27,7 @@ namespace Hermes.Formatters
 			return publishReceived;
 		}
 
-		protected override byte[] Format (UnsubscribeAck message)
+		protected override byte[] Write (UnsubscribeAck message)
 		{
 			var packet = new List<byte> ();
 
