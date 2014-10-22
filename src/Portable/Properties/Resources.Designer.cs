@@ -116,11 +116,47 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The message sent cannot be handled by {0}.
+        /// </summary>
+        internal static string Formatter_InvalidMessage {
+            get {
+                return ResourceManager.GetString("Formatter_InvalidMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The packet sent cannot be handled by {0}.
+        /// </summary>
+        internal static string Formatter_InvalidPacket {
+            get {
+                return ResourceManager.GetString("Formatter_InvalidPacket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} message is not valid.
         /// </summary>
         internal static string Formatter_MessageTypeNotAllowed {
             get {
                 return ResourceManager.GetString("Formatter_MessageTypeNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The message received cannot be handled by any of the registered formatters.
+        /// </summary>
+        internal static string MessageManager_MessageUnknown {
+            get {
+                return ResourceManager.GetString("MessageManager_MessageUnknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The received packet cannot be handled by any of the registered formatters.
+        /// </summary>
+        internal static string MessageManager_PacketUnknown {
+            get {
+                return ResourceManager.GetString("MessageManager_PacketUnknown", resourceCulture);
             }
         }
         

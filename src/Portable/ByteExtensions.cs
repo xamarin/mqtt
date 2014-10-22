@@ -69,36 +69,45 @@ namespace Hermes
 			return bytes.Skip (index).Take (1).FirstOrDefault();
 		}
 
-		public static byte[] Bytes(this byte[] bytes, int fromIndex, int count)
+		public static byte[] Bytes(this byte[] bytes, int fromIndex, int count = 0)
 		{
-			return bytes.Skip (fromIndex).Take (count).ToArray();
+			var result = bytes.Skip (fromIndex);
+			
+			if(count > 0) {
+				result = result.Take (count).ToArray();
+			}
+
+			return result.ToArray();
 		}
 
 		public static string GetString(this byte[] bytes, int index)
 		{
 			var length = bytes.GetStringLenght (index);
 			
-			return Encoding.UTF8.GetString (bytes, index + MQTT.StringPrefixLength, length);
+			return Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
 		}
 
 		public static string GetString(this byte[] bytes, int index, out int nextIndex)
 		{
 			var length = bytes.GetStringLenght (index);
 
-			nextIndex = index + MQTT.StringPrefixLength + length;
+			nextIndex = index + Protocol.StringPrefixLength + length;
 
-			return Encoding.UTF8.GetString (bytes, index + MQTT.StringPrefixLength, length);
+			return Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
 		}
 
-		private static short GetStringLenght(this byte[] bytes, int index)
+		public static ushort ToUInt16 (this byte[] bytes)
 		{
-			var lengthBytes = bytes.Bytes (index, 2);
-
 			if (BitConverter.IsLittleEndian) {
-				Array.Reverse (lengthBytes);
+				Array.Reverse (bytes);
 			}
 
-			return BitConverter.ToInt16 (lengthBytes, 0);
+			return BitConverter.ToUInt16 (bytes, 0);
+		}
+
+		private static ushort GetStringLenght(this byte[] bytes, int index)
+		{
+			return bytes.Bytes (index, 2).ToUInt16 ();
 		}
 	}
 }

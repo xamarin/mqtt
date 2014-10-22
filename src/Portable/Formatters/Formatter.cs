@@ -1,8 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Hermes.Messages;
+using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
+	// TODO: remove T parameter here unless we really use the T somewhere?
 	public abstract class Formatter<T> : IFormatter
 		where T : class, IMessage
 	{
@@ -15,14 +17,24 @@ namespace Hermes.Formatters
 			this.writer = writer;
 		}
 
-		protected abstract T Format (byte[] packet);
+		protected abstract T Read (byte[] packet);
 
-		protected abstract byte[] Format (T message);
+		protected abstract byte[] Write (T message);
+
+		public abstract MessageType MessageType { get; }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ReadAsync (byte[] packet)
 		{
-			var message = this.Format (packet);
+			var actualType = (MessageType)packet.Byte (0).Bits (4);
+
+			if (MessageType != actualType) {
+				var error = string.Format(Resources.Formatter_InvalidPacket, typeof(T).Name);
+
+				throw new ProtocolException (error);
+			}
+
+			var message = this.Read (packet);
 
 			await this.reader.SendAsync (message);
 		}
@@ -30,7 +42,13 @@ namespace Hermes.Formatters
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task WriteAsync (IMessage message)
 		{
-			var packet = this.Format (message as T);
+			if (message.Type != MessageType) {
+				var error = string.Format(Resources.Formatter_InvalidMessage, typeof(T).Name);
+
+				throw new ProtocolException (error);
+			}
+
+			var packet = this.Write (message as T);
 
 			await this.writer.SendAsync (packet);
 		}

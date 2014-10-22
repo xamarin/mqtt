@@ -5,10 +5,10 @@ using Hermes.Properties;
 
 namespace Hermes
 {
-	public static class ProtocolEncoding
+	public class ProtocolEncoding
 	{
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public static byte[] EncodeString (string text)
+		public byte[] EncodeString (string text)
 		{
 			if (string.IsNullOrEmpty (text)) {
 				return new byte[] { };
@@ -21,7 +21,7 @@ namespace Hermes
 				throw new ProtocolException(Resources.DataRepresentationExtensions_StringMaxLengthExceeded);
 			}
 
-			var numberBytes = ProtocolEncoding.EncodeBigEndian (textBytes.Length);
+			var numberBytes = Protocol.Encoding.EncodeBigEndian (textBytes.Length);
 
 			bytes.Add (numberBytes[numberBytes.Length - 2]);
 			bytes.Add (numberBytes[numberBytes.Length - 1]);
@@ -30,7 +30,7 @@ namespace Hermes
 			return bytes.ToArray();
 		}
 
-		public static byte[] EncodeBigEndian(int number)
+		public byte[] EncodeBigEndian(int number)
 		{
 			var bytes = BitConverter.GetBytes (number);
 
@@ -41,7 +41,18 @@ namespace Hermes
 			return bytes;
 		}
 
-		public static byte[] EncodeRemainingLength(int length)
+		public byte[] EncodeBigEndian(ushort number)
+		{
+			var bytes = BitConverter.GetBytes (number);
+
+			if (BitConverter.IsLittleEndian) {
+				Array.Reverse (bytes);
+			}
+
+			return bytes;
+		}
+
+		public byte[] EncodeRemainingLength(int length)
 		{
 			var bytes = new List<byte> ();
 			var encoded = default(int);
@@ -61,7 +72,7 @@ namespace Hermes
 		}
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public static int DecodeRemainingLength(byte[] packet, out int arrayLength)
+		public int DecodeRemainingLength(byte[] packet, out int arrayLength)
 		{
 			var multiplier = 1;
 			var value = 0;
@@ -69,14 +80,13 @@ namespace Hermes
 			var encodedByte = default(byte);
 
 			do {
+				index++;
 				encodedByte = packet[index];
 				value += (encodedByte & 127) * multiplier;
 				multiplier *= 128;
 
-				if (multiplier > 128 * 128 * 128 * 128 || index > 3)
+				if (multiplier > 128 * 128 * 128 * 128 || index > 4)
 					throw new ProtocolException (Resources.ProtocolEncoding_MalformedRemainingLength);
-
-				index++;
 			} while((encodedByte & 128) != 0);
 
 			arrayLength = index;

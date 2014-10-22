@@ -54,7 +54,7 @@ namespace Hermes.Messages
 
 		public static bool operator != (Will will, Will other)
 		{
-			if (will == null || other == null)
+			if ((object)will == null || (object)other == null)
 				return !Object.Equals(will, other);
 
 			return !will.Equals(other);

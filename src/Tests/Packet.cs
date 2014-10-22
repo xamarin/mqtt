@@ -69,7 +69,7 @@ namespace Tests
 
 		private static T Deserialize<T>(string serialized)
         {
-			return JsonConvert.DeserializeObject<T> (serialized, new QualityOfServiceConverter());
+			return JsonConvert.DeserializeObject<T> (serialized, new StringByteArrayConverter());
         }
 	}
 }

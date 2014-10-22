@@ -6,5 +6,5 @@
             : base(MessageType.PingRequest)
         {
         }
-    }
+	}
 }

@@ -1,0 +1,5 @@
+﻿00110000 #Fixed Header Byte 1: MQTT Control Packet Type (3) + Flags (DUP(0), QoS (00), RETAIN(0))
+00010000 #Remaining Length (16)
+00000000 #Topic Name MSB (0)
+00001110 #Topic Name LSB (14)
+"empty/messages" #UTF8-encoded
