@@ -123,14 +123,35 @@
   <data name="ByteExtensions_InvalidByteIndex" xml:space="preserve">
     <value>Byte index must be from 1 to 8, starting from msb</value>
   </data>
-  <data name="ConnectFormatter_ClientIdInvalid" xml:space="preserve">
-    <value>Only numbers and letters are allowed for Client Id value</value>
-  </data>
   <data name="ConnectFormatter_ClientIdMaxLengthExceeded" xml:space="preserve">
     <value>Client Id cannot exceed 23 bytes</value>
   </data>
   <data name="ConnectFormatter_ClientIdRequired" xml:space="preserve">
     <value>Client Id value is cannot be null or empty</value>
+  </data>
+  <data name="ConnectFormatter_InvalidClientIdFormat" xml:space="preserve">
+    <value>{0} is an invalid ClientId. It must contain only numbers and letters</value>
+  </data>
+  <data name="ConnectFormatter_InvalidHeaderFlag" xml:space="preserve">
+    <value>Header Flag {0} is invalid for {1} message. Expected value: {2}</value>
+  </data>
+  <data name="ConnectFormatter_InvalidPasswordFlag" xml:space="preserve">
+    <value>Password Flag must be set to 0 if the User Name Flag is set to 0</value>
+  </data>
+  <data name="ConnectFormatter_InvalidProtocolName" xml:space="preserve">
+    <value>{0} is not a valid protocol name</value>
+  </data>
+  <data name="ConnectFormatter_InvalidQualityOfService" xml:space="preserve">
+    <value>Qos value must be from 0x00 to 0x02</value>
+  </data>
+  <data name="ConnectFormatter_InvalidReservedFlag" xml:space="preserve">
+    <value>Reserved Flag must be always set to 0</value>
+  </data>
+  <data name="ConnectFormatter_InvalidWillRetainFlag" xml:space="preserve">
+    <value>Will Retain Flag must be set to 0 if the Will Flag is set to 0</value>
+  </data>
+  <data name="ConnectFormatter_PasswordNotAllowed" xml:space="preserve">
+    <value>Password value must be null or empty if User value is null or empty</value>
   </data>
   <data name="DataRepresentationExtensions_StringMaxLengthExceeded" xml:space="preserve">
     <value>String value cannot exceed 65536 bytes of length</value>

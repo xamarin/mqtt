@@ -10,6 +10,8 @@
 
 		public const int StringPrefixLength = 2;
 
+		public const int ClientIdMaxLength = 23;
+
 		public static readonly int NameLength = Protocol.Name.Length + Protocol.StringPrefixLength;
 
 		public static ProtocolEncoding Encoding { get; private set; }

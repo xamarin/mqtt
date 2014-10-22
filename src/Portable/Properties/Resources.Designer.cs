@@ -80,15 +80,6 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only numbers and letters are allowed for Client Id value.
-        /// </summary>
-        internal static string ConnectFormatter_ClientIdInvalid {
-            get {
-                return ResourceManager.GetString("ConnectFormatter_ClientIdInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Client Id cannot exceed 23 bytes.
         /// </summary>
         internal static string ConnectFormatter_ClientIdMaxLengthExceeded {
@@ -103,6 +94,78 @@ namespace Hermes.Properties {
         internal static string ConnectFormatter_ClientIdRequired {
             get {
                 return ResourceManager.GetString("ConnectFormatter_ClientIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is an invalid ClientId. It must contain only numbers and letters.
+        /// </summary>
+        internal static string ConnectFormatter_InvalidClientIdFormat {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_InvalidClientIdFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} message. Expected value: {2}.
+        /// </summary>
+        internal static string ConnectFormatter_InvalidHeaderFlag {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_InvalidHeaderFlag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password Flag must be set to 0 if the User Name Flag is set to 0.
+        /// </summary>
+        internal static string ConnectFormatter_InvalidPasswordFlag {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_InvalidPasswordFlag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not a valid protocol name.
+        /// </summary>
+        internal static string ConnectFormatter_InvalidProtocolName {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_InvalidProtocolName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qos value must be from 0x00 to 0x02.
+        /// </summary>
+        internal static string ConnectFormatter_InvalidQualityOfService {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_InvalidQualityOfService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reserved Flag must be always set to 0.
+        /// </summary>
+        internal static string ConnectFormatter_InvalidReservedFlag {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_InvalidReservedFlag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Will Retain Flag must be set to 0 if the Will Flag is set to 0.
+        /// </summary>
+        internal static string ConnectFormatter_InvalidWillRetainFlag {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_InvalidWillRetainFlag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password value must be null or empty if User value is null or empty.
+        /// </summary>
+        internal static string ConnectFormatter_PasswordNotAllowed {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_PasswordNotAllowed", resourceCulture);
             }
         }
         

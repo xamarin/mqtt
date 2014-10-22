@@ -69,22 +69,21 @@ namespace Hermes
 			return bytes.Skip (index).Take (1).FirstOrDefault();
 		}
 
-		public static byte[] Bytes(this byte[] bytes, int fromIndex, int count = 0)
+		public static byte[] Bytes(this byte[] bytes, int fromIndex)
 		{
-			var result = bytes.Skip (fromIndex);
-			
-			if(count > 0) {
-				result = result.Take (count).ToArray();
-			}
+			return bytes.Skip (fromIndex).ToArray ();
+		}
 
-			return result.ToArray();
+		public static byte[] Bytes(this byte[] bytes, int fromIndex, int count)
+		{
+			return bytes.Skip (fromIndex).Take (count).ToArray();
 		}
 
 		public static string GetString(this byte[] bytes, int index)
 		{
 			var length = bytes.GetStringLenght (index);
 			
-			return Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
+			return length == 0 ? string.Empty : Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
 		}
 
 		public static string GetString(this byte[] bytes, int index, out int nextIndex)
@@ -93,7 +92,7 @@ namespace Hermes
 
 			nextIndex = index + Protocol.StringPrefixLength + length;
 
-			return Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
+			return length == 0 ? string.Empty : Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
 		}
 
 		public static ushort ToUInt16 (this byte[] bytes)

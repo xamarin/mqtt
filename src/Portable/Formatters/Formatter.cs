@@ -16,12 +16,12 @@ namespace Hermes.Formatters
 			this.reader = reader;
 			this.writer = writer;
 		}
+		
+		public abstract MessageType MessageType { get; }
 
 		protected abstract T Read (byte[] packet);
 
 		protected abstract byte[] Write (T message);
-
-		public abstract MessageType MessageType { get; }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ReadAsync (byte[] packet)

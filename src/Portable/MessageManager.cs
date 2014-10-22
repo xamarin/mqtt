@@ -26,6 +26,7 @@ namespace Hermes
 		{
 			var messageType = (MessageType)packet.Byte (0).Bits (4);
 			IFormatter formatter;
+
 			if (!formatters.TryGetValue(messageType, out formatter))
 				throw new ProtocolException (Resources.MessageManager_PacketUnknown);
 
@@ -36,6 +37,7 @@ namespace Hermes
 		public async Task ManageAsync (IMessage message)
 		{
 			IFormatter formatter;
+
 			if (!formatters.TryGetValue(message.Type, out formatter))
 				throw new ProtocolException (Resources.MessageManager_MessageUnknown);
 
