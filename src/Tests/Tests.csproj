@@ -33,11 +33,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteExtensionsSpec.cs" />
-    <Compile Include="Formatters\DisconnectFormatterSpec.cs" />
-    <Compile Include="Formatters\PingResponseFormatterSpec.cs" />
+    <Compile Include="Formatters\EmptyMessageFormatterSpec.cs" />
     <Compile Include="Formatters\UnsubscribeAckFormatterSpec.cs" />
     <Compile Include="Formatters\SubscribeAckFormatterSpec.cs" />
-    <Compile Include="Formatters\PingRequestFormatterSpec.cs" />
     <Compile Include="Formatters\UnsubscribeFormatterSpec.cs" />
     <Compile Include="Formatters\SubscribeFormatterSpec.cs" />
     <Compile Include="Formatters\PublishCompleteFormatterSpec.cs" />
