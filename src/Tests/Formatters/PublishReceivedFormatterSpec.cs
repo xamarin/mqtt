@@ -12,8 +12,8 @@ namespace Tests.Formatters
 {
 	public class PublishReceivedFormatterSpec
 	{
-		private readonly Mock<IChannel<IMessage>> messageChannel;
-		private readonly Mock<IChannel<byte[]>> byteChannel;
+		readonly Mock<IChannel<IMessage>> messageChannel;
+		readonly Mock<IChannel<byte[]>> byteChannel;
 
 		public PublishReceivedFormatterSpec ()
 		{

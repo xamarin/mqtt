@@ -1,12 +1,3 @@
 ﻿{
-    "cleanSession": "true",
-    "keepAlive": "10",
-    "will": { 
-        "topic": "problems/disconnect",
-        "qualityOfService": "1",
-        "retain": "true",
-        "message": "foo error"
-    },
-    "userName": "foo",
-    "password":  "1234"
+    "cleanSession": "true"
 }
