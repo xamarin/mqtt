@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Hermes.Messages;
 using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
-	// TODO: remove T parameter here unless we really use the T somewhere?
 	public abstract class Formatter<T> : IFormatter
 		where T : class, IMessage
 	{
@@ -51,6 +51,17 @@ namespace Hermes.Formatters
 			var packet = this.Write (message as T);
 
 			await this.writer.SendAsync (packet);
+		}
+
+		protected void ValidateHeaderFlag (byte[] packet, Func<MessageType, bool> messageTypePredicate, int expectedFlag)
+		{
+			var headerFlag = packet.Byte (0).Bits (5, 4);
+
+			if (messageTypePredicate(this.MessageType) && headerFlag != expectedFlag) {
+				var error = string.Format (Resources.Formatter_InvalidHeaderFlag, headerFlag, typeof(T).Name, expectedFlag);
+
+				throw new ProtocolException (error);
+			}
 		}
 	}
 }

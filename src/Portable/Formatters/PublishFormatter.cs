@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Hermes.Messages;
+using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
@@ -20,13 +22,24 @@ namespace Hermes.Formatters
 
 			var packetFlags = packet.Byte (0).Bits(5, 4);
 
-			var retainFlag = packetFlags.IsSet (0);
+			if (packetFlags.Bits (6, 2) == 0x03)
+				throw new ProtocolException (Resources.Formatter_InvalidQualityOfService);
+
 			var qos = (QualityOfService)packetFlags.Bits (6, 2);
 			var duplicated = packetFlags.IsSet (3);
+
+			if (qos == QualityOfService.AtMostOnce && duplicated)
+				throw new ProtocolException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
+
+			var retainFlag = packetFlags.IsSet (0);
 
 			var topicStartIndex = remainingLengthBytesLength + 1;
 			var nextIndex = 0;
 			var topic = packet.GetString (topicStartIndex, out nextIndex);
+
+			if (!this.IsValidTopicName (topic))
+				throw new ProtocolException (Resources.PublishFormatter_InvalidTopicName);
+
 			var variableHeaderLength = topic.Length + 2;
 			var messageId = default (ushort?);
 
@@ -35,7 +48,7 @@ namespace Hermes.Formatters
 				variableHeaderLength += 2;
 			}
 
-			var publish = new Publish (qos, retainFlag, topic, messageId, duplicated);
+			var publish = new Publish (topic, qos, retainFlag, duplicated, messageId);
 
 			if (remainingLength > variableHeaderLength) {
 				publish.Payload = packet.Bytes (variableHeaderLength + 2);
@@ -65,6 +78,9 @@ namespace Hermes.Formatters
 
 		private byte[] GetFixedHeader(Publish message, byte[] remainingLength)
 		{
+			if (message.QualityOfService == QualityOfService.AtMostOnce && message.DuplicatedDelivery)
+				throw new ProtocolException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
+
 			var fixedHeader = new List<byte> ();
 
 			var retain = Convert.ToInt32 (message.Retain);
@@ -87,6 +103,15 @@ namespace Hermes.Formatters
 
 		private byte[] GetVariableHeader(Publish message)
 		{
+			if (!this.IsValidTopicName (message.Topic))
+				throw new ProtocolException (Resources.PublishFormatter_InvalidTopicName);
+
+			if (message.MessageId.HasValue && message.QualityOfService == QualityOfService.AtMostOnce)
+					throw new ProtocolException (Resources.PublishFormatter_InvalidMessageId);
+
+			if(!message.MessageId.HasValue && message.QualityOfService != QualityOfService.AtMostOnce)
+				throw new ProtocolException (Resources.PublishFormatter_MessageIdRequired);
+
 			var variableHeader = new List<byte> ();
 
 			var topicBytes = Protocol.Encoding.EncodeString(message.Topic);
@@ -100,6 +125,14 @@ namespace Hermes.Formatters
 			}
 
 			return variableHeader.ToArray();
+		}
+
+		private bool IsValidTopicName (string topic)
+		{
+			return !string.IsNullOrEmpty (topic) &&
+				Encoding.UTF8.GetBytes(topic).Length <= 65536 &&
+				!topic.Contains ("#") &&
+				!topic.Contains ("+");
 		}
 	}
 }

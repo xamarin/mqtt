@@ -8,9 +8,6 @@ namespace Hermes.Messages
 	{
 		public Unsubscribe(ushort messageId, params string[] topics)
 		{
-			if (!topics.Any())
-				throw new ArgumentException("topics");
-
 			this.MessageId = messageId;
 			this.Topics = topics;
 		}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hermes.Messages;
+using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
@@ -16,6 +17,8 @@ namespace Hermes.Formatters
 
 		protected override SubscribeAck Read (byte[] packet)
 		{
+			this.ValidateHeaderFlag (packet, t => t == MessageType.SubscribeAck, 0x00);
+
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
@@ -23,7 +26,15 @@ namespace Hermes.Formatters
 			var packetIdentifier = packet.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
 
 			var headerLength = 1 + remainingLengthBytesLength + 2;
-			var returnCodes = packet.Bytes(headerLength).Select(b => (SubscribeReturnCode)b).ToArray();
+			var returnCodeBytes = packet.Bytes(headerLength);
+
+			if(!returnCodeBytes.Any())
+				throw new ViolationProtocolException(Resources.SubscribeAckFormatter_MissingReturnCodes);
+
+			if (returnCodeBytes.Any (b => !Enum.IsDefined (typeof (SubscribeReturnCode), b)))
+				throw new ViolationProtocolException (Resources.SubscribeAckFormatter_InvalidReturnCodes);
+				
+			var returnCodes = returnCodeBytes.Select(b => (SubscribeReturnCode)b).ToArray();
 
 			return new SubscribeAck (packetIdentifier, returnCodes);
 		}
@@ -72,6 +83,9 @@ namespace Hermes.Formatters
 
 		private byte[] GetPayload(SubscribeAck message)
 		{
+			if(message.ReturnCodes == null || !message.ReturnCodes.Any())
+				throw new ViolationProtocolException(Resources.SubscribeAckFormatter_MissingReturnCodes);
+
 			return message.ReturnCodes
 				.Select(c => Convert.ToByte(c))
 				.ToArray();

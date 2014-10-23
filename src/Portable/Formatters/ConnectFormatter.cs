@@ -17,13 +17,7 @@ namespace Hermes.Formatters
 
 		protected override Connect Read (byte[] packet)
 		{
-			var headerFlag = packet.Byte (0).Bits (5, 4);
-
-			if (headerFlag != 0x00) {
-				var error = string.Format (Resources.ConnectFormatter_InvalidHeaderFlag, headerFlag, typeof(Connect).Name, 0x00);
-
-				throw new ProtocolException (error);
-			}
+			this.ValidateHeaderFlag (packet, t => t == MessageType.Connect, 0x00);
 
 			var remainingLengthBytesLength = 0;
 			
@@ -45,7 +39,7 @@ namespace Hermes.Formatters
 				throw new ProtocolException (Resources.ConnectFormatter_InvalidReservedFlag);
 
 			if (connectFlags.Bits (4, 2) == 0x03)
-				throw new ProtocolException (Resources.ConnectFormatter_InvalidQualityOfService);
+				throw new ProtocolException (Resources.Formatter_InvalidQualityOfService);
 
 			var willFlag = connectFlags.IsSet (2);
 			var willRetain = connectFlags.IsSet (5);
@@ -71,15 +65,15 @@ namespace Hermes.Formatters
 			var clientId = packet.GetString (payloadStartIndex, out nextIndex);
 
 			if (string.IsNullOrEmpty (clientId))
-				throw new ProtocolConnectException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdRequired);
+				throw new ConnectProtocolException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdRequired);
 
 			if (clientId.Length > Protocol.ClientIdMaxLength)
-				throw new ProtocolConnectException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
+				throw new ConnectProtocolException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
 			if (!this.IsValidClientId (clientId)) {
 				var error = string.Format (Resources.ConnectFormatter_InvalidClientIdFormat, clientId);
 
-				throw new ProtocolConnectException (ConnectionStatus.IdentifierRejected, error);
+				throw new ConnectProtocolException (ConnectionStatus.IdentifierRejected, error);
 			}
 
 			var connect = new Connect (clientId, cleanSession);

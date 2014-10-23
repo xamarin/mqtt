@@ -5,18 +5,8 @@ namespace Hermes.Messages
 {
 	public class Publish : IMessage, IEquatable<Publish>
     {
-        public Publish(QualityOfService qualityOfService, bool retain, string topic, ushort? messageId = null, bool duplicatedDelivery = false)
+        public Publish(string topic, QualityOfService qualityOfService, bool retain, bool duplicatedDelivery, ushort? messageId = null)
         {
-			if (qualityOfService == QualityOfService.AtMostOnce && messageId != null)
-                throw new ArgumentException();
-
-			if (qualityOfService == QualityOfService.AtMostOnce && duplicatedDelivery) {
-				throw new ArgumentException ();
-			}
-
-            if (qualityOfService != QualityOfService.AtMostOnce && messageId == null)
-                throw new ArgumentNullException();
-			
             this.QualityOfService = qualityOfService;
 			this.DuplicatedDelivery = duplicatedDelivery;
 			this.Retain = retain;

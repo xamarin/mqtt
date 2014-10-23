@@ -13,6 +13,7 @@ namespace Hermes.Messages
         }
 
 		public MessageType Type { get { return MessageType.Subscribe; }}
+
         public ushort MessageId { get; private set; }
 
         public IEnumerable<Subscription> Subscriptions { get; private set; }

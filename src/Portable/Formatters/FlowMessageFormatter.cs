@@ -8,17 +8,16 @@
        http://www.apache.org/licenses/LICENSE-2.0
 */
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Hermes.Messages;
+using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
 	public class FlowMessageFormatter<T> : Formatter<T>
 		where T : class, IFlowMessage
 	{
-		MessageType messageType;
-		Func<ushort, T> messageFactory;
+		private readonly MessageType messageType;
+		private readonly Func<ushort, T> messageFactory;
 
 		public FlowMessageFormatter(MessageType messageType, Func<ushort, T> messageFactory, IChannel<IMessage> reader, IChannel<byte[]> writer)
 			: base(reader, writer)
@@ -31,6 +30,9 @@ namespace Hermes.Formatters
 
 		protected override T Read(byte[] packet)
 		{
+			this.ValidateHeaderFlag (packet, t => t == MessageType.PublishRelease, 0x02);
+			this.ValidateHeaderFlag (packet, t => t != MessageType.PublishRelease, 0x00);
+
 			var remainingLengthBytesLength = 0;
 			
 			Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
@@ -45,9 +47,7 @@ namespace Hermes.Formatters
 		{
 			var variableHeader = Protocol.Encoding.EncodeBigEndian(message.MessageId);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
-
 			var fixedHeader = this.GetFixedHeader (message.Type, remainingLength);
-
 			var packet = new byte[fixedHeader.Length + variableHeader.Length];
 
 			fixedHeader.CopyTo(packet, 0);
@@ -62,10 +62,9 @@ namespace Hermes.Formatters
 			// The flags for PUBREL are different than for the other flow messages.
 			var flags = messageType == Messages.MessageType.PublishRelease ? 0x02 : 0x00;
 			var type = Convert.ToInt32(messageType) << 4;
-
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
-
 			var fixedHeader = new byte[1 + remainingLength.Length];
+
 			fixedHeader[0] = fixedHeaderByte1;
 			remainingLength.CopyTo(fixedHeader, 1);
 
