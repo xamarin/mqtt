@@ -80,6 +80,24 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bits 7-1 from Acknowledge flags are reserved and must be set to 0.
+        /// </summary>
+        internal static string ConnectAckFormatter_InvalidAckFlags {
+            get {
+                return ResourceManager.GetString("ConnectAckFormatter_InvalidAckFlags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Session Present flag must be set to 0 for non-zero return codes.
+        /// </summary>
+        internal static string ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode {
+            get {
+                return ResourceManager.GetString("ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client Id cannot exceed 23 bytes.
         /// </summary>
         internal static string ConnectFormatter_ClientIdMaxLengthExceeded {
@@ -107,15 +125,6 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} message. Expected value: {2}.
-        /// </summary>
-        internal static string ConnectFormatter_InvalidHeaderFlag {
-            get {
-                return ResourceManager.GetString("ConnectFormatter_InvalidHeaderFlag", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Password Flag must be set to 0 if the User Name Flag is set to 0.
         /// </summary>
         internal static string ConnectFormatter_InvalidPasswordFlag {
@@ -130,15 +139,6 @@ namespace Hermes.Properties {
         internal static string ConnectFormatter_InvalidProtocolName {
             get {
                 return ResourceManager.GetString("ConnectFormatter_InvalidProtocolName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Qos value must be from 0x00 to 0x02.
-        /// </summary>
-        internal static string ConnectFormatter_InvalidQualityOfService {
-            get {
-                return ResourceManager.GetString("ConnectFormatter_InvalidQualityOfService", resourceCulture);
             }
         }
         
@@ -179,6 +179,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} message. Expected value: {2}.
+        /// </summary>
+        internal static string Formatter_InvalidHeaderFlag {
+            get {
+                return ResourceManager.GetString("Formatter_InvalidHeaderFlag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The message sent cannot be handled by {0}.
         /// </summary>
         internal static string Formatter_InvalidMessage {
@@ -193,6 +202,15 @@ namespace Hermes.Properties {
         internal static string Formatter_InvalidPacket {
             get {
                 return ResourceManager.GetString("Formatter_InvalidPacket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Qos value must be from 0x00 to 0x02.
+        /// </summary>
+        internal static string Formatter_InvalidQualityOfService {
+            get {
+                return ResourceManager.GetString("Formatter_InvalidQualityOfService", resourceCulture);
             }
         }
         
@@ -229,6 +247,78 @@ namespace Hermes.Properties {
         internal static string ProtocolEncoding_MalformedRemainingLength {
             get {
                 return ResourceManager.GetString("ProtocolEncoding_MalformedRemainingLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicated flag must be set to 0 if the QoS is 0.
+        /// </summary>
+        internal static string PublishFormatter_InvalidDuplicatedWithQoSZero {
+            get {
+                return ResourceManager.GetString("PublishFormatter_InvalidDuplicatedWithQoSZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Message Id is not allowed for packets with QoS 0.
+        /// </summary>
+        internal static string PublishFormatter_InvalidMessageId {
+            get {
+                return ResourceManager.GetString("PublishFormatter_InvalidMessageId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Topic name {0} is invalid. It cannot be null or empty and It must not contain wildcard characters .
+        /// </summary>
+        internal static string PublishFormatter_InvalidTopicName {
+            get {
+                return ResourceManager.GetString("PublishFormatter_InvalidTopicName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Message Id value is cannot be null or empty for packets with QoS 1 or 2.
+        /// </summary>
+        internal static string PublishFormatter_MessageIdRequired {
+            get {
+                return ResourceManager.GetString("PublishFormatter_MessageIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Return codes can only be valid QoS values or a failure code (0x80).
+        /// </summary>
+        internal static string SubscribeAckFormatter_InvalidReturnCodes {
+            get {
+                return ResourceManager.GetString("SubscribeAckFormatter_InvalidReturnCodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A subscribe acknowledge packet must contain at least one return code.
+        /// </summary>
+        internal static string SubscribeAckFormatter_MissingReturnCodes {
+            get {
+                return ResourceManager.GetString("SubscribeAckFormatter_MissingReturnCodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A subscribe packet must contain at least one Topic Filter / QoS pair.
+        /// </summary>
+        internal static string SubscribeFormatter_MissingTopicFilterQosPair {
+            get {
+                return ResourceManager.GetString("SubscribeFormatter_MissingTopicFilterQosPair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unsubscribe packet must contain at least one topic to unsubscribe.
+        /// </summary>
+        internal static string UnsubscribeFormatter_MissingTopics {
+            get {
+                return ResourceManager.GetString("UnsubscribeFormatter_MissingTopics", resourceCulture);
             }
         }
     }

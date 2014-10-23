@@ -22,7 +22,7 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/PublishComplete.packet", "Files/PublishComplete.json")]
+		[InlineData("Files/Packets/PublishComplete.packet", "Files/Messages/PublishComplete.json")]
 		public async Task when_reading_publish_complete_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -47,7 +47,21 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/PublishComplete.json", "Files/PublishComplete.packet")]
+		[InlineData("Files/Packets/PublishComplete_Invalid_HeaderFlag.packet")]
+		public void when_reading_invalid_publish_complete_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new FlowMessageFormatter<PublishComplete> (MessageType.PublishComplete, id => new PublishComplete(id), this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/PublishComplete.json", "Files/Packets/PublishComplete.packet")]
 		public async Task when_writing_publish_complete_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);

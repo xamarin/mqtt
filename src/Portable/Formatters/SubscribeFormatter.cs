@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hermes.Messages;
+using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
@@ -16,6 +17,8 @@ namespace Hermes.Formatters
 
 		protected override Subscribe Read (byte[] packet)
 		{
+			this.ValidateHeaderFlag (packet, t => t == MessageType.Subscribe, 0x02);
+
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
@@ -72,6 +75,9 @@ namespace Hermes.Formatters
 
 		private byte[] GetPayload(Subscribe message)
 		{
+			if(message.Subscriptions == null || !message.Subscriptions.Any())
+				throw new ViolationProtocolException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+
 			var payload = new List<byte> ();
 
 			foreach (var subscription in message.Subscriptions) {
@@ -87,13 +93,19 @@ namespace Hermes.Formatters
 
 		private IEnumerable<Subscription> GetSubscriptions(byte[] packet, int headerLength, int remainingLength)
 		{
+			if (packet.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
+				throw new ViolationProtocolException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+
 			var index = headerLength;
 
-			//The packet is iterated until the last byte, knowing that a valid string is always preceded by two aditional bytes (string length)
-			//TODO: Analyze wether we should throw an exception when the last bytes of the packet are not part of a valid string
 			do {
 				var topic = packet.GetString (index, out index);
-				var requestedQos = (QualityOfService)packet.Byte (index).Bits(7, 2);
+				var requestedQosByte = packet.Byte (index);
+
+				if (!Enum.IsDefined (typeof (QualityOfService), requestedQosByte))
+					throw new ViolationProtocolException (Resources.Formatter_InvalidQualityOfService);
+	
+				var requestedQos = (QualityOfService)requestedQosByte;
 
 				yield return new Subscription(topic, requestedQos);
 				index++;

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hermes.Messages;
+using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
@@ -15,6 +17,8 @@ namespace Hermes.Formatters
 
 		protected override Unsubscribe Read (byte[] packet)
 		{
+			this.ValidateHeaderFlag (packet, t => t == MessageType.Unsubscribe, 0x02);
+
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
 
@@ -22,6 +26,10 @@ namespace Hermes.Formatters
 			var packetIdentifier = packet.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
 
 			var index = 1 + remainingLengthBytesLength + 2;
+
+			if (packet.Length == index)
+				throw new ViolationProtocolException (Resources.UnsubscribeFormatter_MissingTopics);
+
 			var topics = new List<string> ();
 
 			do {
@@ -77,6 +85,9 @@ namespace Hermes.Formatters
 
 		private byte[] GetPayload(Unsubscribe message)
 		{
+			if(message.Topics == null || !message.Topics.Any())
+				throw new ViolationProtocolException (Resources.UnsubscribeFormatter_MissingTopics);
+
 			var payload = new List<byte> ();
 
 			foreach (var topic in message.Topics) {

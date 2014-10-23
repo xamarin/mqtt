@@ -22,8 +22,8 @@ namespace Tests.Formatters
 		}
 		
 		[Theory]
-		[InlineData("Files/Unsubscribe_SingleTopic.packet", "Files/Unsubscribe_SingleTopic.json")]
-		[InlineData("Files/Unsubscribe_MultiTopic.packet", "Files/Unsubscribe_MultiTopic.json")]
+		[InlineData("Files/Packets/Unsubscribe_SingleTopic.packet", "Files/Messages/Unsubscribe_SingleTopic.json")]
+		[InlineData("Files/Packets/Unsubscribe_MultiTopic.packet", "Files/Messages/Unsubscribe_MultiTopic.json")]
 		public async Task when_reading_unsubscribe_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -48,8 +48,36 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Unsubscribe_SingleTopic.json", "Files/Unsubscribe_SingleTopic.packet")]
-		[InlineData("Files/Unsubscribe_MultiTopic.json", "Files/Unsubscribe_MultiTopic.packet")]
+		[InlineData("Files/Packets/Unsubscribe_Invalid_HeaderFlag.packet")]
+		public void when_reading_invalid_unsubscribe_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new UnsubscribeFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Packets/Unsubscribe_Invalid_EmptyTopics.packet")]
+		public void when_reading_invalid_topic_in_unsubscribe_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new UnsubscribeFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ViolationProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Unsubscribe_SingleTopic.json", "Files/Packets/Unsubscribe_SingleTopic.packet")]
+		[InlineData("Files/Messages/Unsubscribe_MultiTopic.json", "Files/Packets/Unsubscribe_MultiTopic.packet")]
 		public async Task when_writing_unsubscribe_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
@@ -71,6 +99,20 @@ namespace Tests.Formatters
 			await formatter.WriteAsync (unsubscribe);
 
 			Assert.Equal (expectedPacket, sentPacket);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Unsubscribe_Invalid_EmptyTopics.json")]
+		public void when_writing_invalid_unsubscribe_packet_then_fails(string jsonPath)
+		{
+			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
+
+			var formatter = new UnsubscribeFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var unsubscribe = Packet.ReadMessage<Unsubscribe> (jsonPath);
+
+			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (unsubscribe).Wait());
+
+			Assert.True (ex.InnerException is ViolationProtocolException);
 		}
 	}
 }

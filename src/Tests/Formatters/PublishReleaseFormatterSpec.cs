@@ -22,7 +22,7 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/PublishRelease.packet", "Files/PublishRelease.json")]
+		[InlineData("Files/Packets/PublishRelease.packet", "Files/Messages/PublishRelease.json")]
 		public async Task when_reading_publish_release_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -47,7 +47,21 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/PublishRelease.json", "Files/PublishRelease.packet")]
+		[InlineData("Files/Packets/PublishRelease_Invalid_HeaderFlag.packet")]
+		public void when_reading_invalid_publish_release_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new FlowMessageFormatter<PublishRelease> (MessageType.PublishRelease, id => new PublishRelease(id), this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/PublishRelease.json", "Files/Packets/PublishRelease.packet")]
 		public async Task when_writing_publish_release_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);

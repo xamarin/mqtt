@@ -22,8 +22,8 @@ namespace Tests.Formatters
 		}
 		
 		[Theory]
-		[InlineData("Files/Connect_Full.packet", "Files/Connect_Full.json")]
-		[InlineData("Files/Connect_Min.packet", "Files/Connect_Min.json")]
+		[InlineData("Files/Packets/Connect_Full.packet", "Files/Messages/Connect_Full.json")]
+		[InlineData("Files/Packets/Connect_Min.packet", "Files/Messages/Connect_Min.json")]
 		public async Task when_reading_connect_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -48,8 +48,43 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Connect_Full.json", "Files/Connect_Full.packet")]
-		[InlineData("Files/Connect_Min.json", "Files/Connect_Min.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_HeaderFlag.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_ProtocolName.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_ConnectReservedFlag.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_QualityOfService.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_WillFlags.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_UserNamePassword.packet")]
+		public void when_reading_invalid_connect_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new ConnectFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Packets/Connect_Invalid_ClientIdEmpty.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_ClientIdBadFormat.packet")]
+		[InlineData("Files/Packets/Connect_Invalid_ClientIdInvalidLength.packet")]
+		public void when_reading_invalid_client_id_in_connect_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new ConnectFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ConnectProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Connect_Full.json", "Files/Packets/Connect_Full.packet")]
+		[InlineData("Files/Messages/Connect_Min.json", "Files/Packets/Connect_Min.packet")]
 		public async Task when_writing_connect_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
@@ -71,6 +106,23 @@ namespace Tests.Formatters
 			await formatter.WriteAsync (connect);
 
 			Assert.Equal (expectedPacket, sentPacket);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Connect_Invalid_UserNamePassword.json")]
+		[InlineData("Files/Messages/Connect_Invalid_ClientIdEmpty.json")]
+		[InlineData("Files/Messages/Connect_Invalid_ClientIdBadFormat.json")]
+		[InlineData("Files/Messages/Connect_Invalid_ClientIdInvalidLength.json")]
+		public void when_writing_invalid_connect_packet_then_fails(string jsonPath)
+		{
+			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
+
+			var formatter = new ConnectFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var connect = Packet.ReadMessage<Connect> (jsonPath);
+
+			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (connect).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
 		}
 	}
 }

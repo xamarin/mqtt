@@ -22,7 +22,7 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/UnsubscribeAck.packet", "Files/UnsubscribeAck.json")]
+		[InlineData("Files/Packets/UnsubscribeAck.packet", "Files/Messages/UnsubscribeAck.json")]
 		public async Task when_reading_unsubscribe_ack_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -47,7 +47,21 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/UnsubscribeAck.json", "Files/UnsubscribeAck.packet")]
+		[InlineData("Files/Packets/UnsubscribeAck_Invalid_HeaderFlag.packet")]
+		public void when_reading_invalid_unsubscribe_ack_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new FlowMessageFormatter<UnsubscribeAck> (MessageType.UnsubscribeAck, id => new UnsubscribeAck(id), this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/UnsubscribeAck.json", "Files/Packets/UnsubscribeAck.packet")]
 		public async Task when_writing_unsubscribe_ack_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);

@@ -14,7 +14,7 @@ namespace Tests
 		[Fact]
 		public async Task when_managing_packet_then_succeeds()
 		{
-			var packetPath = Path.Combine (Environment.CurrentDirectory, "Files/Connect_Full.packet");
+			var packetPath = Path.Combine (Environment.CurrentDirectory, "Files/Packets/Connect_Full.packet");
 			var packet = Packet.ReadAllBytes (packetPath);
 			var formatter = new Mock<IFormatter> ();
 			var sentPacket = default(byte[]);
@@ -38,7 +38,7 @@ namespace Tests
 		[Fact]
 		public async Task when_managing_message_then_succeeds()
 		{
-			var jsonPath = Path.Combine (Environment.CurrentDirectory, "Files/Connect_Full.json");
+			var jsonPath = Path.Combine (Environment.CurrentDirectory, "Files/Messages/Connect_Full.json");
 			var message = Packet.ReadMessage<Connect> (jsonPath);
 			var formatter = new Mock<IFormatter> ();
 			var sentMessage = default(Connect);
@@ -60,37 +60,29 @@ namespace Tests
 		}
 
 		[Fact]
-		public async Task when_managing_unknown_packet_then_fails()
+		public void when_managing_unknown_packet_then_fails()
 		{
-			var connectPacketPath = Path.Combine (Environment.CurrentDirectory, "Files/Connect_Full.packet");
+			var connectPacketPath = Path.Combine (Environment.CurrentDirectory, "Files/Packets/Connect_Full.packet");
 			var connectPacket = Packet.ReadAllBytes (connectPacketPath);
 			var formatter = new Mock<IFormatter> ();
 			var messageManager = new MessageManager (formatter.Object);
 
-			try {
-				 await messageManager.ManageAsync (connectPacket);
+			var ex = Assert.Throws<AggregateException> (() => messageManager.ManageAsync (connectPacket).Wait());
 
-				 Assert.True (false, "Test Error: Message Manager has no formatter registered for Connect packet, hence it should have failed");
-			} catch (Exception ex) {
-				Assert.True (ex is ProtocolException);
-			}
+			Assert.True (ex.InnerException is ProtocolException);
 		}
 
 		[Fact]
-		public async Task when_managing_unknown_message_then_fails()
+		public void when_managing_unknown_message_then_fails()
 		{
-			var jsonPath = Path.Combine (Environment.CurrentDirectory, "Files/Connect_Full.json");
+			var jsonPath = Path.Combine (Environment.CurrentDirectory, "Files/Messages/Connect_Full.json");
 			var message = Packet.ReadMessage<Connect> (jsonPath);
 			var formatter = new Mock<IFormatter> ();
 			var messageManager = new MessageManager (formatter.Object);
 
-			try {
-				 await messageManager.ManageAsync (message);
+			var ex = Assert.Throws<AggregateException> (() => messageManager.ManageAsync (message).Wait());
 
-				 Assert.True (false, "Test Error: Message Manager has no formatter registered for Connect message, hence it should have failed");
-			} catch (Exception ex) {
-				Assert.True (ex is ProtocolException);
-			}
+			Assert.True (ex.InnerException is ProtocolException);
 		}
 	}
 }

@@ -1,0 +1,2 @@
+﻿11000011 #Fixed Header Byte 1: MQTT Control Packet Type (12) + Flags (3) => Invalid Flag (should be 0)
+00000000 #Remaining Length (0)
