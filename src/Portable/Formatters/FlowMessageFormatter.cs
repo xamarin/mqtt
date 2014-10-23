@@ -16,8 +16,8 @@ namespace Hermes.Formatters
 	public class FlowMessageFormatter<T> : Formatter<T>
 		where T : class, IFlowMessage
 	{
-		private readonly MessageType messageType;
-		private readonly Func<ushort, T> messageFactory;
+		readonly MessageType messageType;
+		readonly Func<ushort, T> messageFactory;
 
 		public FlowMessageFormatter(MessageType messageType, Func<ushort, T> messageFactory, IChannel<IMessage> reader, IChannel<byte[]> writer)
 			: base(reader, writer)

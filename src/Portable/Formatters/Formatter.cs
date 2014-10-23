@@ -8,8 +8,8 @@ namespace Hermes.Formatters
 	public abstract class Formatter<T> : IFormatter
 		where T : class, IMessage
 	{
-		private readonly IChannel<IMessage> reader;
-		private readonly IChannel<byte[]> writer;
+		readonly IChannel<IMessage> reader;
+		readonly IChannel<byte[]> writer;
 
 		public Formatter (IChannel<IMessage> reader, IChannel<byte[]> writer)
 		{

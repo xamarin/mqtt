@@ -4,9 +4,9 @@ using Hermes.Messages;
 namespace Hermes.Formatters
 {
 	public class EmptyMessageFormatter <T> : Formatter<T>
-		where T : class, IMessage
+		where T : class, IMessage, new()
 	{
-		private readonly MessageType messageType;
+		readonly MessageType messageType;
 
 		public EmptyMessageFormatter (MessageType messageType, IChannel<IMessage> reader, IChannel<byte[]> writer)
 			: base(reader, writer)
@@ -20,7 +20,7 @@ namespace Hermes.Formatters
 		{
 			this.ValidateHeaderFlag (packet, t => t == this.messageType, 0x00);
 
-			return Activator.CreateInstance (typeof (T)) as T;
+			return new T();
 		}
 
 		protected override byte[] Write (T message)
