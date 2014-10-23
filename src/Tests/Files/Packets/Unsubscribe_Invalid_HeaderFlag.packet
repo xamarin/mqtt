@@ -1,0 +1,7 @@
+﻿10100001 #Fixed Header Byte 1: MQTT Control Packet Type (10) + Flags (1) => Invalid Flag (should be 0)
+00001011 #Remaining Length (11)
+00000000 #Packet Identifier MSB (0)
+00001010 #Packet Identifier LSB (10)
+00000000 #Topic MSB(0)
+00000111 #Topic LSB(7)
+"foo/bar" #UTF8-encoded

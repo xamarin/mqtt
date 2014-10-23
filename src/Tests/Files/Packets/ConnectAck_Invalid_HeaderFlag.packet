@@ -1,0 +1,4 @@
+﻿00100011 #Fixed Header Byte 1: MQTT Control Packet Type (2) + Flags (3) => Invalid Flag (should be 0)
+00000010 #Remaining Length (2)
+00000000 #Session Present (0)
+00000100 #Connect Return Code (0x04: Connection Refused, bad user name or password is malformed)

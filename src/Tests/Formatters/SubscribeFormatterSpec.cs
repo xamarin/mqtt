@@ -22,8 +22,8 @@ namespace Tests.Formatters
 		}
 		
 		[Theory]
-		[InlineData("Files/Subscribe_SingleTopic.packet", "Files/Subscribe_SingleTopic.json")]
-		[InlineData("Files/Subscribe_MultiTopic.packet", "Files/Subscribe_MultiTopic.json")]
+		[InlineData("Files/Packets/Subscribe_SingleTopic.packet", "Files/Messages/Subscribe_SingleTopic.json")]
+		[InlineData("Files/Packets/Subscribe_MultiTopic.packet", "Files/Messages/Subscribe_MultiTopic.json")]
 		public async Task when_reading_subscribe_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -48,8 +48,38 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Subscribe_SingleTopic.json", "Files/Subscribe_SingleTopic.packet")]
-		[InlineData("Files/Subscribe_MultiTopic.json", "Files/Subscribe_MultiTopic.packet")]
+		[InlineData("Files/Packets/Subscribe_Invalid_HeaderFlag.packet")]
+		public void when_reading_invalid_subscribe_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new SubscribeFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Packets/Subscribe_Invalid_TopicFilterQosPair.packet")]
+		[InlineData("Files/Packets/Subscribe_Invalid_TopicFilterQosPair2.packet")]
+		[InlineData("Files/Packets/Subscribe_Invalid_TopicFilterQos.packet")]
+		public void when_reading_invalid_topic_filter_in_subscribe_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new SubscribeFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ViolationProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Subscribe_SingleTopic.json", "Files/Packets/Subscribe_SingleTopic.packet")]
+		[InlineData("Files/Messages/Subscribe_MultiTopic.json", "Files/Packets/Subscribe_MultiTopic.packet")]
 		public async Task when_writing_subscribe_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
@@ -71,6 +101,20 @@ namespace Tests.Formatters
 			await formatter.WriteAsync (subscribe);
 
 			Assert.Equal (expectedPacket, sentPacket);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Subscribe_Invalid_EmptyTopicFilters.json")]
+		public void when_writing_invalid_subscribe_packet_then_fails(string jsonPath)
+		{
+			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
+
+			var formatter = new SubscribeFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var subscribe = Packet.ReadMessage<Subscribe> (jsonPath);
+
+			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (subscribe).Wait());
+
+			Assert.True (ex.InnerException is ViolationProtocolException);
 		}
 	}
 }

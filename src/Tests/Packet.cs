@@ -67,9 +67,29 @@ namespace Tests
 			return Deserialize<T> (text);
 		}
 
+		public static object ReadMessage (string path, Type type)
+		{
+			if (Path.GetExtension (path) != ".json") {
+				throw new ApplicationException (string.Format ("File extension {0} is invalid. .json file is expected", Path.GetExtension(path)));
+			}
+
+			if (!File.Exists (path)) {
+				throw new ApplicationException (string.Format ("The file {0} does not exists", path));
+			}
+
+			var text = File.ReadAllText (path);
+
+			return Deserialize (text, type);
+		}
+
 		private static T Deserialize<T>(string serialized)
         {
 			return JsonConvert.DeserializeObject<T> (serialized, new StringByteArrayConverter());
+        }
+
+		private static object Deserialize(string serialized, Type type)
+        {
+			return JsonConvert.DeserializeObject (serialized, type, new StringByteArrayConverter());
         }
 	}
 }

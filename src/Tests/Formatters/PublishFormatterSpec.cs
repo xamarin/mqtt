@@ -22,8 +22,8 @@ namespace Tests.Formatters
 		}
 		
 		[Theory]
-		[InlineData("Files/Publish_Full.packet", "Files/Publish_Full.json")]
-		[InlineData("Files/Publish_Min.packet", "Files/Publish_Min.json")]
+		[InlineData("Files/Packets/Publish_Full.packet", "Files/Messages/Publish_Full.json")]
+		[InlineData("Files/Packets/Publish_Min.packet", "Files/Messages/Publish_Min.json")]
 		public async Task when_reading_publish_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -48,8 +48,24 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Publish_Full.json", "Files/Publish_Full.packet")]
-		[InlineData("Files/Publish_Min.json", "Files/Publish_Min.packet")]
+		[InlineData("Files/Packets/Publish_Invalid_QualityOfService.packet")]
+		[InlineData("Files/Packets/Publish_Invalid_Duplicated.packet")]
+		[InlineData("Files/Packets/Publish_Invalid_Topic.packet")]
+		public void when_reading_invalid_publish_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new PublishFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Publish_Full.json", "Files/Packets/Publish_Full.packet")]
+		[InlineData("Files/Messages/Publish_Min.json", "Files/Packets/Publish_Min.packet")]
 		public async Task when_writing_publish_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
@@ -71,6 +87,22 @@ namespace Tests.Formatters
 			await formatter.WriteAsync (publish);
 
 			Assert.Equal (expectedPacket, sentPacket);
+		}
+
+		[Theory]
+		[InlineData("Files/Messages/Publish_Invalid_Duplicated.json")]
+		[InlineData("Files/Messages/Publish_Invalid_Topic.json")]
+		[InlineData("Files/Messages/Publish_Invalid_MessageId.json")]
+		public void when_writing_invalid_publish_packet_then_fails(string jsonPath)
+		{
+			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
+
+			var formatter = new PublishFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var publish = Packet.ReadMessage<Publish> (jsonPath);
+
+			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (publish).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
 		}
 	}
 }

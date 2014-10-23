@@ -22,7 +22,7 @@ namespace Tests.Formatters
 		}
 		
 		[Theory]
-		[InlineData("Files/PingResponse.packet")]
+		[InlineData("Files/Packets/PingResponse.packet")]
 		public async Task when_reading_ping_response_packet_then_succeeds(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -36,7 +36,7 @@ namespace Tests.Formatters
 					sentPingResponse = m as PingResponse;
 				});
 
-			var formatter = new PingResponseFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new EmptyMessageFormatter<PingResponse> (MessageType.PingResponse, this.messageChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
@@ -45,7 +45,21 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/PingResponse.packet")]
+		[InlineData("Files/Packets/PingResponse_Invalid_HeaderFlag.packet")]
+		public void when_reading_invalid_ping_response_packet_then_fails(string packetPath)
+		{
+			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+
+			var formatter = new EmptyMessageFormatter<PingResponse> (MessageType.PingResponse, this.messageChannel.Object, this.byteChannel.Object);
+			var packet = Packet.ReadAllBytes (packetPath);
+			
+			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Theory]
+		[InlineData("Files/Packets/PingResponse.packet")]
 		public async Task when_writing_ping_response_packet_then_succeeds(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
@@ -60,7 +74,7 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new PingResponseFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new EmptyMessageFormatter<PingResponse> (MessageType.PingResponse, this.messageChannel.Object, this.byteChannel.Object);
 			var pingResponse = new PingResponse ();
 
 			await formatter.WriteAsync (pingResponse);
