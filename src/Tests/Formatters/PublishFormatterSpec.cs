@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
-using Hermes.Messages;
+using Hermes.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
@@ -12,34 +12,34 @@ namespace Tests.Formatters
 {
 	public class PublishFormatterSpec
 	{
-		readonly Mock<IChannel<IMessage>> messageChannel;
+		readonly Mock<IChannel<IPacket>> packetChannel;
 		readonly Mock<IChannel<byte[]>> byteChannel;
 
 		public PublishFormatterSpec ()
 		{
-			this.messageChannel = new Mock<IChannel<IMessage>> ();
+			this.packetChannel = new Mock<IChannel<IPacket>> ();
 			this.byteChannel = new Mock<IChannel<byte[]>> ();
 		}
 		
 		[Theory]
-		[InlineData("Files/Packets/Publish_Full.packet", "Files/Messages/Publish_Full.json")]
-		[InlineData("Files/Packets/Publish_Min.packet", "Files/Messages/Publish_Min.json")]
+		[InlineData("Files/Binaries/Publish_Full.packet", "Files/Packets/Publish_Full.json")]
+		[InlineData("Files/Binaries/Publish_Min.packet", "Files/Packets/Publish_Min.json")]
 		public async Task when_reading_publish_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var expectedPublish = Packet.ReadMessage<Publish> (jsonPath);
+			var expectedPublish = Packet.ReadPacket<Publish> (jsonPath);
 			var sentPublish = default(Publish);
 
-			this.messageChannel
-				.Setup (c => c.SendAsync (It.IsAny<IMessage>()))
+			this.packetChannel
+				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
 				.Returns(Task.Delay(0))
-				.Callback<IMessage>(m =>  {
+				.Callback<IPacket>(m =>  {
 					sentPublish = m as Publish;
 				});
 
-			var formatter = new PublishFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
@@ -48,14 +48,14 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Packets/Publish_Invalid_QualityOfService.packet")]
-		[InlineData("Files/Packets/Publish_Invalid_Duplicated.packet")]
-		[InlineData("Files/Packets/Publish_Invalid_Topic.packet")]
+		[InlineData("Files/Binaries/Publish_Invalid_QualityOfService.packet")]
+		[InlineData("Files/Binaries/Publish_Invalid_Duplicated.packet")]
+		[InlineData("Files/Binaries/Publish_Invalid_Topic.packet")]
 		public void when_reading_invalid_publish_packet_then_fails(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new PublishFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
@@ -64,8 +64,8 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Messages/Publish_Full.json", "Files/Packets/Publish_Full.packet")]
-		[InlineData("Files/Messages/Publish_Min.json", "Files/Packets/Publish_Min.packet")]
+		[InlineData("Files/Packets/Publish_Full.json", "Files/Binaries/Publish_Full.packet")]
+		[InlineData("Files/Packets/Publish_Min.json", "Files/Binaries/Publish_Min.packet")]
 		public async Task when_writing_publish_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
@@ -81,8 +81,8 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new PublishFormatter (this.messageChannel.Object, this.byteChannel.Object);
-			var publish = Packet.ReadMessage<Publish> (jsonPath);
+			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
 			await formatter.WriteAsync (publish);
 
@@ -90,15 +90,15 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Messages/Publish_Invalid_Duplicated.json")]
-		[InlineData("Files/Messages/Publish_Invalid_Topic.json")]
-		[InlineData("Files/Messages/Publish_Invalid_MessageId.json")]
+		[InlineData("Files/Packets/Publish_Invalid_Duplicated.json")]
+		[InlineData("Files/Packets/Publish_Invalid_Topic.json")]
+		[InlineData("Files/Packets/Publish_Invalid_PacketId.json")]
 		public void when_writing_invalid_publish_packet_then_fails(string jsonPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new PublishFormatter (this.messageChannel.Object, this.byteChannel.Object);
-			var publish = Packet.ReadMessage<Publish> (jsonPath);
+			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (publish).Wait());
 

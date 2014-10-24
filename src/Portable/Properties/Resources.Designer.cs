@@ -179,20 +179,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} message. Expected value: {2}.
+        ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} packet. Expected value: {2}.
         /// </summary>
         internal static string Formatter_InvalidHeaderFlag {
             get {
                 return ResourceManager.GetString("Formatter_InvalidHeaderFlag", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The message sent cannot be handled by {0}.
-        /// </summary>
-        internal static string Formatter_InvalidMessage {
-            get {
-                return ResourceManager.GetString("Formatter_InvalidMessage", resourceCulture);
             }
         }
         
@@ -215,29 +206,20 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} message is not valid.
+        ///   Looks up a localized string similar to {0} packet is not valid.
         /// </summary>
-        internal static string Formatter_MessageTypeNotAllowed {
+        internal static string Formatter_PacketTypeNotAllowed {
             get {
-                return ResourceManager.GetString("Formatter_MessageTypeNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The message received cannot be handled by any of the registered formatters.
-        /// </summary>
-        internal static string MessageManager_MessageUnknown {
-            get {
-                return ResourceManager.GetString("MessageManager_MessageUnknown", resourceCulture);
+                return ResourceManager.GetString("Formatter_PacketTypeNotAllowed", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The received packet cannot be handled by any of the registered formatters.
         /// </summary>
-        internal static string MessageManager_PacketUnknown {
+        internal static string PacketManager_PacketUnknown {
             get {
-                return ResourceManager.GetString("MessageManager_PacketUnknown", resourceCulture);
+                return ResourceManager.GetString("PacketManager_PacketUnknown", resourceCulture);
             }
         }
         
@@ -251,11 +233,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occured while trying to get a Flow Type based on Message Type {0}.
+        ///   Looks up a localized string similar to An error occured while trying to get a Flow Type based on Packet Type {0}.
         /// </summary>
-        internal static string ProtocolFlowProvider_UnknownMessageType {
+        internal static string ProtocolFlowProvider_UnknownPacketType {
             get {
-                return ResourceManager.GetString("ProtocolFlowProvider_UnknownMessageType", resourceCulture);
+                return ResourceManager.GetString("ProtocolFlowProvider_UnknownPacketType", resourceCulture);
             }
         }
         
@@ -269,11 +251,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Message Id is not allowed for packets with QoS 0.
+        ///   Looks up a localized string similar to Packet Id is not allowed for packets with QoS 0.
         /// </summary>
-        internal static string PublishFormatter_InvalidMessageId {
+        internal static string PublishFormatter_InvalidPacketId {
             get {
-                return ResourceManager.GetString("PublishFormatter_InvalidMessageId", resourceCulture);
+                return ResourceManager.GetString("PublishFormatter_InvalidPacketId", resourceCulture);
             }
         }
         
@@ -287,11 +269,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Message Id value is cannot be null or empty for packets with QoS 1 or 2.
+        ///   Looks up a localized string similar to Packet Id value cannot be null or empty for packets with QoS 1 or 2.
         /// </summary>
-        internal static string PublishFormatter_MessageIdRequired {
+        internal static string PublishFormatter_PacketIdRequired {
             get {
-                return ResourceManager.GetString("PublishFormatter_MessageIdRequired", resourceCulture);
+                return ResourceManager.GetString("PublishFormatter_PacketIdRequired", resourceCulture);
             }
         }
         

@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Messages;
+using Hermes.Packets;
 
 namespace Hermes.Flows
 {
 	public interface IProtocolFlow
 	{
-		IMessage Apply (IMessage input);
+		IPacket Apply (IPacket input);
 	}
 }

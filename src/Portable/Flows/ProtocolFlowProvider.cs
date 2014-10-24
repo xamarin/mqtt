@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Hermes.Messages;
+using Hermes.Packets;
 using Hermes.Properties;
 
 namespace Hermes.Flows
@@ -15,13 +15,13 @@ namespace Hermes.Flows
 			this.flows.Add (ProtocolFlowType.Connect, new ConnectFlow ());
 		}
 
-		public IProtocolFlow Get(MessageType messageType)
+		public IProtocolFlow Get(PacketType packetType)
 		{
-			var flowType = this.GetFlowType (messageType);
+			var flowType = this.GetFlowType (packetType);
 			var flow = default (IProtocolFlow);
 
 			if (!this.flows.TryGetValue (flowType, out flow)) {
-				var error = string.Format (Resources.ProtocolFlowProvider_UnknownMessageType, messageType);
+				var error = string.Format (Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
 				
 				throw new ProtocolException (error);
 			}
@@ -29,35 +29,35 @@ namespace Hermes.Flows
 			return flow;
 		}
 
-		public ProtocolFlowType GetFlowType(MessageType messageType)
+		public ProtocolFlowType GetFlowType(PacketType packetType)
 		{
 			var flowType = default (ProtocolFlowType);
 
-			switch (messageType) {
-				case MessageType.Connect:
-				case MessageType.ConnectAck:
+			switch (packetType) {
+				case PacketType.Connect:
+				case PacketType.ConnectAck:
 					flowType = ProtocolFlowType.Connect;
 					break;
-				case MessageType.Publish:
-				case MessageType.PublishAck:
-				case MessageType.PublishReceived:
-				case MessageType.PublishRelease:
-				case MessageType.PublishComplete:
+				case PacketType.Publish:
+				case PacketType.PublishAck:
+				case PacketType.PublishReceived:
+				case PacketType.PublishRelease:
+				case PacketType.PublishComplete:
 					flowType = ProtocolFlowType.Publish;
 					break;
-				case MessageType.Subscribe:
-				case MessageType.SubscribeAck:
+				case PacketType.Subscribe:
+				case PacketType.SubscribeAck:
 					flowType = ProtocolFlowType.Subscribe;
 					break;
-				case MessageType.Unsubscribe:
-				case MessageType.UnsubscribeAck:
+				case PacketType.Unsubscribe:
+				case PacketType.UnsubscribeAck:
 					flowType = ProtocolFlowType.Unsubscribe;
 					break;
-				case MessageType.PingRequest:
-				case MessageType.PingResponse:
+				case PacketType.PingRequest:
+				case PacketType.PingResponse:
 					flowType = ProtocolFlowType.Ping;
 					break;
-				case MessageType.Disconnect:
+				case PacketType.Disconnect:
 					flowType = ProtocolFlowType.Disconnect;
 					break;
 			}

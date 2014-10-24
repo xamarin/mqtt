@@ -1,0 +1,8 @@
+﻿00111011 #Fixed Header Byte 1: MQTT Control Packet Type (3) + Flags (DUP(1), QoS (01), RETAIN(1))
+00110010 #Remaining Length (50)
+00000000 #Topic Name MSB (0)
+00000111 #Topic Name LSB (7)
+"foo/bar" #UTF8-encoded
+00000000 #Packet Identifier MSB (0)
+00001010 #Packet Identifier LSB (10)
+"this is the payload of this test packet" #UTF8-encoded

@@ -14,7 +14,7 @@ namespace Hermes
 	using System.Collections.Generic;
 	using System.Reactive;
 	using Hermes.Formatters;
-	using Hermes.Messages;
+	using Hermes.Packets;
 	using ReactiveSockets;
 
 	public class Server
@@ -29,16 +29,16 @@ namespace Hermes
 
 			this.server.Connections.Subscribe (socket => {
 				var binaryChannel = new BinaryChannel (socket);
-				var messageChannel = new MessageChannel (events);
-				var formatters = this.GetFormatters (messageChannel, binaryChannel);
-				var manager =  new MessageManager (formatters);
+				var packetChannel = new PacketChannel (events);
+				var formatters = this.GetFormatters (packetChannel, binaryChannel);
+				var manager =  new PacketManager (formatters);
 
 				binaryChannel.Received.Subscribe (async packet => {
 					await manager.ManageAsync (packet);
 				});
 
-				messageChannel.Received.Subscribe(async message => {
-					var output = Protocol.Flow.Get (message.Type).Apply (message);
+				packetChannel.Received.Subscribe(async packet => {
+					var output = Protocol.Flow.Get (packet.Type).Apply (packet);
 
 					await manager.ManageAsync (output);
 				});
@@ -47,24 +47,24 @@ namespace Hermes
 			this.server.Start ();
 		}
 
-		private IEnumerable<IFormatter> GetFormatters(IChannel<IMessage> reader, IChannel<byte[]> writer)
+		private IEnumerable<IFormatter> GetFormatters(IChannel<IPacket> reader, IChannel<byte[]> writer)
 		{
 			var formatters = new List<IFormatter> ();
 			
 			formatters.Add (new ConnectFormatter (reader, writer));
 			formatters.Add (new ConnectAckFormatter (reader, writer));
 			formatters.Add (new PublishFormatter (reader, writer));
-			formatters.Add (new FlowMessageFormatter<PublishAck>(MessageType.PublishAck, id => new PublishAck(id), reader, writer));
-			formatters.Add (new FlowMessageFormatter<PublishReceived>(MessageType.PublishReceived, id => new PublishReceived(id), reader, writer));
-			formatters.Add (new FlowMessageFormatter<PublishRelease>(MessageType.PublishRelease, id => new PublishRelease(id), reader, writer));
-			formatters.Add (new FlowMessageFormatter<PublishComplete>(MessageType.PublishComplete, id => new PublishComplete(id), reader, writer));
+			formatters.Add (new FlowPacketFormatter<PublishAck>(PacketType.PublishAck, id => new PublishAck(id), reader, writer));
+			formatters.Add (new FlowPacketFormatter<PublishReceived>(PacketType.PublishReceived, id => new PublishReceived(id), reader, writer));
+			formatters.Add (new FlowPacketFormatter<PublishRelease>(PacketType.PublishRelease, id => new PublishRelease(id), reader, writer));
+			formatters.Add (new FlowPacketFormatter<PublishComplete>(PacketType.PublishComplete, id => new PublishComplete(id), reader, writer));
 			formatters.Add (new SubscribeFormatter (reader, writer));
 			formatters.Add (new SubscribeAckFormatter (reader, writer));
 			formatters.Add (new UnsubscribeFormatter (reader, writer));
-			formatters.Add (new FlowMessageFormatter<UnsubscribeAck> (MessageType.UnsubscribeAck, id => new UnsubscribeAck(id), reader, writer));
-			formatters.Add (new EmptyMessageFormatter<PingRequest> (MessageType.PingRequest, reader, writer));
-			formatters.Add (new EmptyMessageFormatter<PingResponse> (MessageType.PingResponse, reader, writer));
-			formatters.Add (new EmptyMessageFormatter<Disconnect> (MessageType.Disconnect, reader, writer));
+			formatters.Add (new FlowPacketFormatter<UnsubscribeAck> (PacketType.UnsubscribeAck, id => new UnsubscribeAck(id), reader, writer));
+			formatters.Add (new EmptyPacketFormatter<PingRequest> (PacketType.PingRequest, reader, writer));
+			formatters.Add (new EmptyPacketFormatter<PingResponse> (PacketType.PingResponse, reader, writer));
+			formatters.Add (new EmptyPacketFormatter<Disconnect> (PacketType.Disconnect, reader, writer));
 
 			return formatters;
 		}

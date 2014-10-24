@@ -1,19 +1,19 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Messages;
+using Hermes.Packets;
 
 namespace Hermes.Formatters
 {
 	public interface IFormatter
 	{
 		/// <summary>
-		/// Gets the type of message that this formatter support.
+		/// Gets the type of packet that this formatter support.
 		/// </summary>
-		MessageType MessageType { get; }
+		PacketType PacketType { get; }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		Task ReadAsync (byte[] packet);
+		Task ReadAsync (byte[] bytes);
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		Task WriteAsync (IMessage message);
+		Task WriteAsync (IPacket packet);
 	}
 }

@@ -1,0 +1,7 @@
+﻿{
+    "qualityOfService": "0",
+    "duplicatedDelivery": "true",
+    "retain": "true",
+    "topic": "foo/bar",
+    "payload": "this is the payload of this test packet"
+}

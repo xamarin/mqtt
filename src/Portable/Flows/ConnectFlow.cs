@@ -1,14 +1,14 @@
 ﻿using System;
-using Hermes.Messages;
+using Hermes.Packets;
 
 namespace Hermes.Flows
 {
 	public class ConnectFlow : IProtocolFlow
 	{
-		public IMessage Apply (IMessage input)
+		public IPacket Apply (IPacket input)
 		{
-			//TODO: Here it goes the specific logic to produce the output message (ConnAck in this case) 
-			//based on the input message (Connect in this case)
+			//TODO: Here it goes the specific logic to produce the output packet (ConnAck in this case) 
+			//based on the input packet (Connect in this case)
 			throw new NotImplementedException ();
 		}
 	}

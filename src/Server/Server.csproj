@@ -39,7 +39,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="BinaryChannel.cs" />
-    <Compile Include="MessageChannel.cs" />
+    <Compile Include="PacketChannel.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Guard.cs" />
     <Compile Include="netfx\System\Reactive\EventStream.cs" />

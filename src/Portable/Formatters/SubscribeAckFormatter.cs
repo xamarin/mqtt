@@ -1,32 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hermes.Messages;
+using Hermes.Packets;
 using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
 	public class SubscribeAckFormatter : Formatter<SubscribeAck>
 	{
-		public SubscribeAckFormatter (IChannel<IMessage> reader, IChannel<byte[]> writer)
+		public SubscribeAckFormatter (IChannel<IPacket> reader, IChannel<byte[]> writer)
 			: base(reader, writer)
 		{
 		}
 
-		public override MessageType MessageType { get { return Messages.MessageType.SubscribeAck; } }
+		public override PacketType PacketType { get { return Packets.PacketType.SubscribeAck; } }
 
-		protected override SubscribeAck Read (byte[] packet)
+		protected override SubscribeAck Read (byte[] bytes)
 		{
-			this.ValidateHeaderFlag (packet, t => t == MessageType.SubscribeAck, 0x00);
+			this.ValidateHeaderFlag (bytes, t => t == PacketType.SubscribeAck, 0x00);
 
 			var remainingLengthBytesLength = 0;
-			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			var remainingLength = Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
 
 			var packetIdentifierStartIndex = remainingLengthBytesLength + 1;
-			var packetIdentifier = packet.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
+			var packetIdentifier = bytes.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
 
 			var headerLength = 1 + remainingLengthBytesLength + 2;
-			var returnCodeBytes = packet.Bytes(headerLength);
+			var returnCodeBytes = bytes.Bytes(headerLength);
 
 			if(!returnCodeBytes.Any())
 				throw new ViolationProtocolException(Resources.SubscribeAckFormatter_MissingReturnCodes);
@@ -39,20 +39,20 @@ namespace Hermes.Formatters
 			return new SubscribeAck (packetIdentifier, returnCodes);
 		}
 
-		protected override byte[] Write (SubscribeAck message)
+		protected override byte[] Write (SubscribeAck packet)
 		{
-			var packet = new List<byte> ();
+			var bytes = new List<byte> ();
 
-			var variableHeader = this.GetVariableHeader (message);
-			var payload = this.GetPayload (message);
+			var variableHeader = this.GetVariableHeader (packet);
+			var payload = this.GetPayload (packet);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
 
-			packet.AddRange (fixedHeader);
-			packet.AddRange (variableHeader);
-			packet.AddRange (payload);
+			bytes.AddRange (fixedHeader);
+			bytes.AddRange (variableHeader);
+			bytes.AddRange (payload);
 
-			return packet.ToArray();
+			return bytes.ToArray();
 		}
 
 		private byte[] GetFixedHeader(byte[] remainingLength)
@@ -60,7 +60,7 @@ namespace Hermes.Formatters
 			var fixedHeader = new List<byte> ();
 
 			var flags = 0x00;
-			var type = Convert.ToInt32(MessageType.SubscribeAck) << 4;
+			var type = Convert.ToInt32(PacketType.SubscribeAck) << 4;
 
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 
@@ -70,23 +70,23 @@ namespace Hermes.Formatters
 			return fixedHeader.ToArray();
 		}
 
-		private byte[] GetVariableHeader(SubscribeAck message)
+		private byte[] GetVariableHeader(SubscribeAck packet)
 		{
 			var variableHeader = new List<byte> ();
 
-			var messageIdBytes = Protocol.Encoding.EncodeBigEndian(message.MessageId);
+			var packetIdBytes = Protocol.Encoding.EncodeBigEndian(packet.PacketId);
 
-			variableHeader.AddRange (messageIdBytes);
+			variableHeader.AddRange (packetIdBytes);
 
 			return variableHeader.ToArray();
 		}
 
-		private byte[] GetPayload(SubscribeAck message)
+		private byte[] GetPayload(SubscribeAck packet)
 		{
-			if(message.ReturnCodes == null || !message.ReturnCodes.Any())
+			if(packet.ReturnCodes == null || !packet.ReturnCodes.Any())
 				throw new ViolationProtocolException(Resources.SubscribeAckFormatter_MissingReturnCodes);
 
-			return message.ReturnCodes
+			return packet.ReturnCodes
 				.Select(c => Convert.ToByte(c))
 				.ToArray();
 		}

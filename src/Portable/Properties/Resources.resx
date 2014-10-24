@@ -157,10 +157,7 @@
     <value>String value cannot exceed 65536 bytes of length</value>
   </data>
   <data name="Formatter_InvalidHeaderFlag" xml:space="preserve">
-    <value>Header Flag {0} is invalid for {1} message. Expected value: {2}</value>
-  </data>
-  <data name="Formatter_InvalidMessage" xml:space="preserve">
-    <value>The message sent cannot be handled by {0}</value>
+    <value>Header Flag {0} is invalid for {1} packet. Expected value: {2}</value>
   </data>
   <data name="Formatter_InvalidPacket" xml:space="preserve">
     <value>The packet sent cannot be handled by {0}</value>
@@ -168,32 +165,29 @@
   <data name="Formatter_InvalidQualityOfService" xml:space="preserve">
     <value>Qos value must be from 0x00 to 0x02</value>
   </data>
-  <data name="Formatter_MessageTypeNotAllowed" xml:space="preserve">
-    <value>{0} message is not valid</value>
+  <data name="Formatter_PacketTypeNotAllowed" xml:space="preserve">
+    <value>{0} packet is not valid</value>
   </data>
-  <data name="MessageManager_MessageUnknown" xml:space="preserve">
-    <value>The message received cannot be handled by any of the registered formatters</value>
-  </data>
-  <data name="MessageManager_PacketUnknown" xml:space="preserve">
+  <data name="PacketManager_PacketUnknown" xml:space="preserve">
     <value>The received packet cannot be handled by any of the registered formatters</value>
   </data>
   <data name="ProtocolEncoding_MalformedRemainingLength" xml:space="preserve">
     <value>Malformed Remaining Length</value>
   </data>
-  <data name="ProtocolFlowProvider_UnknownMessageType" xml:space="preserve">
-    <value>An error occured while trying to get a Flow Type based on Message Type {0}</value>
+  <data name="ProtocolFlowProvider_UnknownPacketType" xml:space="preserve">
+    <value>An error occured while trying to get a Flow Type based on Packet Type {0}</value>
   </data>
   <data name="PublishFormatter_InvalidDuplicatedWithQoSZero" xml:space="preserve">
     <value>Duplicated flag must be set to 0 if the QoS is 0</value>
   </data>
-  <data name="PublishFormatter_InvalidMessageId" xml:space="preserve">
-    <value>Message Id is not allowed for packets with QoS 0</value>
+  <data name="PublishFormatter_InvalidPacketId" xml:space="preserve">
+    <value>Packet Id is not allowed for packets with QoS 0</value>
   </data>
   <data name="PublishFormatter_InvalidTopicName" xml:space="preserve">
     <value>Topic name {0} is invalid. It cannot be null or empty and It must not contain wildcard characters </value>
   </data>
-  <data name="PublishFormatter_MessageIdRequired" xml:space="preserve">
-    <value>Message Id value is cannot be null or empty for packets with QoS 1 or 2</value>
+  <data name="PublishFormatter_PacketIdRequired" xml:space="preserve">
+    <value>Packet Id value cannot be null or empty for packets with QoS 1 or 2</value>
   </data>
   <data name="SubscribeAckFormatter_InvalidReturnCodes" xml:space="preserve">
     <value>Return codes can only be valid QoS values or a failure code (0x80)</value>

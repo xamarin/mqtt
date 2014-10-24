@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
-using Hermes.Messages;
+using Hermes.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
@@ -12,33 +12,33 @@ namespace Tests.Formatters
 {
 	public class ConnectAckFormatterSpec
 	{
-		readonly Mock<IChannel<IMessage>> messageChannel;
+		readonly Mock<IChannel<IPacket>> packetChannel;
 		readonly Mock<IChannel<byte[]>> byteChannel;
 
 		public ConnectAckFormatterSpec ()
 		{
-			this.messageChannel = new Mock<IChannel<IMessage>> ();
+			this.packetChannel = new Mock<IChannel<IPacket>> ();
 			this.byteChannel = new Mock<IChannel<byte[]>> ();
 		}
 
 		[Theory]
-		[InlineData("Files/Packets/ConnectAck.packet", "Files/Messages/ConnectAck.json")]
+		[InlineData("Files/Binaries/ConnectAck.packet", "Files/Packets/ConnectAck.json")]
 		public async Task when_reading_connect_ack_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var expectedConnectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
+			var expectedConnectAck = Packet.ReadPacket<ConnectAck> (jsonPath);
 			var sentConnectAck = default(ConnectAck);
 
-			this.messageChannel
-				.Setup (c => c.SendAsync (It.IsAny<IMessage>()))
+			this.packetChannel
+				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
 				.Returns(Task.Delay(0))
-				.Callback<IMessage>(m =>  {
+				.Callback<IPacket>(m =>  {
 					sentConnectAck = m as ConnectAck;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new ConnectAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			await formatter.ReadAsync (packet);
@@ -47,14 +47,14 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Packets/ConnectAck_Invalid_HeaderFlag.packet")]
-		[InlineData("Files/Packets/ConnectAck_Invalid_AckFlags.packet")]
-		[InlineData("Files/Packets/ConnectAck_Invalid_SessionPresent.packet")]
+		[InlineData("Files/Binaries/ConnectAck_Invalid_HeaderFlag.packet")]
+		[InlineData("Files/Binaries/ConnectAck_Invalid_AckFlags.packet")]
+		[InlineData("Files/Binaries/ConnectAck_Invalid_SessionPresent.packet")]
 		public void when_reading_invalid_connect_ack_packet_then_fails(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new ConnectAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
@@ -63,7 +63,7 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Messages/ConnectAck.json", "Files/Packets/ConnectAck.packet")]
+		[InlineData("Files/Packets/ConnectAck.json", "Files/Binaries/ConnectAck.packet")]
 		public async Task when_writing_connect_ack_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
@@ -79,8 +79,8 @@ namespace Tests.Formatters
 					sentPacket = b;
 				});
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
-			var connectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
+			var formatter = new ConnectAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var connectAck = Packet.ReadPacket<ConnectAck> (jsonPath);
 
 			await formatter.WriteAsync (connectAck);
 
@@ -88,13 +88,13 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Messages/ConnectAck_Invalid_SessionPresent.json")]
+		[InlineData("Files/Packets/ConnectAck_Invalid_SessionPresent.json")]
 		public void when_writing_invalid_connect_ack_packet_then_fails(string jsonPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new ConnectAckFormatter (this.messageChannel.Object, this.byteChannel.Object);
-			var connectAck = Packet.ReadMessage<ConnectAck> (jsonPath);
+			var formatter = new ConnectAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var connectAck = Packet.ReadPacket<ConnectAck> (jsonPath);
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (connectAck).Wait());
 

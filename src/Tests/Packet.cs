@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Hermes;
-using Hermes.Messages;
+using Hermes.Packets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -52,7 +52,7 @@ namespace Tests
 			return bytes.ToArray ();
 		}
 
-		public static T ReadMessage<T> (string path) where T : class, IMessage
+		public static T ReadPacket<T> (string path) where T : class, IPacket
 		{
 			if (Path.GetExtension (path) != ".json") {
 				throw new ApplicationException (string.Format ("File extension {0} is invalid. .json file is expected", Path.GetExtension(path)));
@@ -67,7 +67,7 @@ namespace Tests
 			return Deserialize<T> (text);
 		}
 
-		public static object ReadMessage (string path, Type type)
+		public static object ReadPacket (string path, Type type)
 		{
 			if (Path.GetExtension (path) != ".json") {
 				throw new ApplicationException (string.Format ("File extension {0} is invalid. .json file is expected", Path.GetExtension(path)));

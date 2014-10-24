@@ -1,50 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hermes.Messages;
+using Hermes.Packets;
 using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
 	public class SubscribeFormatter : Formatter<Subscribe>
 	{
-		public SubscribeFormatter (IChannel<IMessage> reader, IChannel<byte[]> writer)
+		public SubscribeFormatter (IChannel<IPacket> reader, IChannel<byte[]> writer)
 			: base(reader, writer)
 		{
 		}
 
-		public override MessageType MessageType { get { return Messages.MessageType.Subscribe; } }
+		public override PacketType PacketType { get { return Packets.PacketType.Subscribe; } }
 
-		protected override Subscribe Read (byte[] packet)
+		protected override Subscribe Read (byte[] bytes)
 		{
-			this.ValidateHeaderFlag (packet, t => t == MessageType.Subscribe, 0x02);
+			this.ValidateHeaderFlag (bytes, t => t == PacketType.Subscribe, 0x02);
 
 			var remainingLengthBytesLength = 0;
-			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			var remainingLength = Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
 
 			var packetIdentifierStartIndex = remainingLengthBytesLength + 1;
-			var packetIdentifier = packet.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
+			var packetIdentifier = bytes.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
 
 			var headerLength = 1 + remainingLengthBytesLength + 2;
-			var subscriptions = this.GetSubscriptions(packet, headerLength, remainingLength);
+			var subscriptions = this.GetSubscriptions(bytes, headerLength, remainingLength);
 
 			return new Subscribe (packetIdentifier, subscriptions.ToArray());
 		}
 
-		protected override byte[] Write (Subscribe message)
+		protected override byte[] Write (Subscribe packet)
 		{
-			var packet = new List<byte> ();
+			var bytes = new List<byte> ();
 
-			var variableHeader = this.GetVariableHeader (message);
-			var payload = this.GetPayload (message);
+			var variableHeader = this.GetVariableHeader (packet);
+			var payload = this.GetPayload (packet);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
 
-			packet.AddRange (fixedHeader);
-			packet.AddRange (variableHeader);
-			packet.AddRange (payload);
+			bytes.AddRange (fixedHeader);
+			bytes.AddRange (variableHeader);
+			bytes.AddRange (payload);
 
-			return packet.ToArray();
+			return bytes.ToArray();
 		}
 
 		private byte[] GetFixedHeader(byte[] remainingLength)
@@ -52,7 +52,7 @@ namespace Hermes.Formatters
 			var fixedHeader = new List<byte> ();
 
 			var flags = 0x02;
-			var type = Convert.ToInt32(MessageType.Subscribe) << 4;
+			var type = Convert.ToInt32(PacketType.Subscribe) << 4;
 
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 
@@ -62,25 +62,25 @@ namespace Hermes.Formatters
 			return fixedHeader.ToArray();
 		}
 
-		private byte[] GetVariableHeader(Subscribe message)
+		private byte[] GetVariableHeader(Subscribe packet)
 		{
 			var variableHeader = new List<byte> ();
 
-			var messageIdBytes = Protocol.Encoding.EncodeBigEndian(message.MessageId);
+			var packetIdBytes = Protocol.Encoding.EncodeBigEndian(packet.PacketId);
 
-			variableHeader.AddRange (messageIdBytes);
+			variableHeader.AddRange (packetIdBytes);
 
 			return variableHeader.ToArray();
 		}
 
-		private byte[] GetPayload(Subscribe message)
+		private byte[] GetPayload(Subscribe packet)
 		{
-			if(message.Subscriptions == null || !message.Subscriptions.Any())
+			if(packet.Subscriptions == null || !packet.Subscriptions.Any())
 				throw new ViolationProtocolException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var payload = new List<byte> ();
 
-			foreach (var subscription in message.Subscriptions) {
+			foreach (var subscription in packet.Subscriptions) {
 				var topicBytes = Protocol.Encoding.EncodeString (subscription.Topic);
 				var requestedQosByte = Convert.ToByte (subscription.RequestedQualityOfService);
 
@@ -91,16 +91,16 @@ namespace Hermes.Formatters
 			return payload.ToArray ();
 		}
 
-		private IEnumerable<Subscription> GetSubscriptions(byte[] packet, int headerLength, int remainingLength)
+		private IEnumerable<Subscription> GetSubscriptions(byte[] bytes, int headerLength, int remainingLength)
 		{
-			if (packet.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
+			if (bytes.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
 				throw new ViolationProtocolException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var index = headerLength;
 
 			do {
-				var topic = packet.GetString (index, out index);
-				var requestedQosByte = packet.Byte (index);
+				var topic = bytes.GetString (index, out index);
+				var requestedQosByte = bytes.Byte (index);
 
 				if (!Enum.IsDefined (typeof (QualityOfService), requestedQosByte))
 					throw new ViolationProtocolException (Resources.Formatter_InvalidQualityOfService);
@@ -109,7 +109,7 @@ namespace Hermes.Formatters
 
 				yield return new Subscription(topic, requestedQos);
 				index++;
-			} while (packet.Length - index + 1 >= 2);
+			} while (bytes.Length - index + 1 >= 2);
 		}
 	}
 }
