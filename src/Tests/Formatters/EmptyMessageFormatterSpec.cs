@@ -25,7 +25,7 @@ namespace Tests.Formatters
 		[InlineData("Files/Packets/PingResponse.packet", MessageType.PingResponse, typeof(PingResponse))]
 		[InlineData("Files/Packets/PingRequest.packet", MessageType.PingRequest, typeof(PingRequest))]
 		[InlineData("Files/Packets/Disconnect.packet", MessageType.Disconnect, typeof(Disconnect))]
-		public async Task when_reading_ping_response_packet_then_succeeds(string packetPath, MessageType messageType, Type type)
+		public async Task when_reading_empty_packet_then_succeeds(string packetPath, MessageType messageType, Type type)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
@@ -50,7 +50,7 @@ namespace Tests.Formatters
 		[InlineData("Files/Packets/PingResponse_Invalid_HeaderFlag.packet", MessageType.PingResponse, typeof(PingResponse))]
 		[InlineData("Files/Packets/PingRequest_Invalid_HeaderFlag.packet", MessageType.PingRequest, typeof(PingRequest))]
 		[InlineData("Files/Packets/Disconnect_Invalid_HeaderFlag.packet", MessageType.Disconnect, typeof(Disconnect))]
-		public void when_reading_invalid_ping_response_packet_then_fails(string packetPath, MessageType messageType, Type type)
+		public void when_reading_invalid_empty_packet_then_fails(string packetPath, MessageType messageType, Type type)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
@@ -66,7 +66,7 @@ namespace Tests.Formatters
 		[InlineData("Files/Packets/PingResponse.packet", MessageType.PingResponse, typeof(PingResponse))]
 		[InlineData("Files/Packets/PingRequest.packet", MessageType.PingRequest, typeof(PingRequest))]
 		[InlineData("Files/Packets/Disconnect.packet", MessageType.Disconnect, typeof(Disconnect))]
-		public async Task when_writing_ping_response_packet_then_succeeds(string packetPath, MessageType messageType, Type type)
+		public async Task when_writing_empty_packet_then_succeeds(string packetPath, MessageType messageType, Type type)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 

@@ -251,6 +251,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occured while trying to get a Flow Type based on Message Type {0}.
+        /// </summary>
+        internal static string ProtocolFlowProvider_UnknownMessageType {
+            get {
+                return ResourceManager.GetString("ProtocolFlowProvider_UnknownMessageType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicated flag must be set to 0 if the QoS is 0.
         /// </summary>
         internal static string PublishFormatter_InvalidDuplicatedWithQoSZero {

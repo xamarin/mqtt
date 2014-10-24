@@ -21,6 +21,10 @@
     </Compile>
     <Compile Include="ByteExtensions.cs" />
     <Compile Include="Exceptions\ConnectProtocolException.cs" />
+    <Compile Include="Flows\ConnectFlow.cs" />
+    <Compile Include="Flows\IProtocolFlow.cs" />
+    <Compile Include="Flows\ProtocolFlowProvider.cs" />
+    <Compile Include="Flows\ProtocolFlowType.cs" />
     <Compile Include="Formatters\ConnectAckFormatter.cs" />
     <Compile Include="Formatters\ConnectFormatter.cs" />
     <Compile Include="Formatters\Formatter.cs" />
@@ -71,7 +75,6 @@
     <None Include="..\Hermes.licenseheader">
       <Link>Hermes.licenseheader</Link>
     </None>
-    <None Include="packages.config" />
     <None Include="Portable.nuspec" />
   </ItemGroup>
   <ItemGroup>
@@ -83,11 +86,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.5\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
 </Project>

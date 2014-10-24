@@ -9,7 +9,7 @@ namespace Hermes
 {
 	public class MessageManager : IMessageManager
 	{
-		readonly Dictionary<MessageType, IFormatter> formatters;
+		readonly IDictionary<MessageType, IFormatter> formatters;
 
 		public MessageManager (params IFormatter[] formatters)
 			: this((IEnumerable<IFormatter>)formatters)

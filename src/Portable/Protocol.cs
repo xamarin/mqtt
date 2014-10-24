@@ -1,4 +1,6 @@
-﻿namespace Hermes
+﻿using Hermes.Flows;
+
+namespace Hermes
 {
 	public class Protocol
 	{
@@ -16,9 +18,12 @@
 
 		public static ProtocolEncoding Encoding { get; private set; }
 
+		public static ProtocolFlowProvider Flow { get; private set; }
+
 		static Protocol()
 		{
 			Encoding = new ProtocolEncoding();
+			Flow = new ProtocolFlowProvider ();
 		}
 	}
 }

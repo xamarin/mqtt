@@ -180,6 +180,9 @@
   <data name="ProtocolEncoding_MalformedRemainingLength" xml:space="preserve">
     <value>Malformed Remaining Length</value>
   </data>
+  <data name="ProtocolFlowProvider_UnknownMessageType" xml:space="preserve">
+    <value>An error occured while trying to get a Flow Type based on Message Type {0}</value>
+  </data>
   <data name="PublishFormatter_InvalidDuplicatedWithQoSZero" xml:space="preserve">
     <value>Duplicated flag must be set to 0 if the QoS is 0</value>
   </data>
