@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="$(SolutionDir)nuget\NuGet.targets" Condition="Exists('$(SolutionDir)nuget\NuGet.targets')" />
-
-	<!-- Override package version if specified as an msbuild property -->
-	<PropertyGroup>
-		<BuildCommand Condition="'$(_PackageVersion)' != ''">$(BuildCommand) -Version $(_PackageVersion)</BuildCommand>
-	</PropertyGroup>	
-	
-	<Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-		<PropertyGroup>
-			<ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-		</PropertyGroup>
-		<Error Condition="!Exists('$(SolutionDir)nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)nuget\NuGet.targets'))" />
-	</Target>
+	<Import Project="..\packages\SemanticGit\build\SemanticGit.targets" Condition="Exists('..\packages\SemanticGit\build\SemanticGit.targets')" />
 
 </Project>

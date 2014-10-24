@@ -11,8 +11,8 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyCompany("Clarius Labs")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("MobileEssentials")]
+[assembly: AssemblyCopyright("Copyright © MobileEssentials 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -23,6 +23,3 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("RELEASE")]
 #endif
 
-[assembly: AssemblyVersion("0.1.0")]
-// This attribute is used for the NuGet package version.
-[assembly: AssemblyInformationalVersion("0.1.0-pre")]
