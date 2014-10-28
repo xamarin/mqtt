@@ -31,8 +31,17 @@ namespace Hermes.Formatters
 				throw new ProtocolException (error);
 			}
 
+			var protocolLevelIndex = Protocol.PacketTypeLength + remainingLengthBytesLength + Protocol.NameLength;
+			var protocolLevel = bytes.Byte (protocolLevelIndex);
+
+			if (protocolLevel < Protocol.SupportedLevel) {
+				var error = string.Format(Resources.ConnectFormatter_UnsupportedLevel, protocolLevel);
+
+				throw new ConnectProtocolException (ConnectionStatus.UnacceptableProtocolVersion, error);
+			}
+
 			var protocolLevelLength = 1;
-			var connectFlagsIndex = Protocol.PacketTypeLength + remainingLengthBytesLength + Protocol.NameLength + protocolLevelLength;
+			var connectFlagsIndex = protocolLevelIndex + protocolLevelLength;
 			var connectFlags = bytes.Byte (connectFlagsIndex);
 
 			if (connectFlags.IsSet (0))
@@ -139,7 +148,7 @@ namespace Hermes.Formatters
 			var variableHeader = new List<byte> ();
 
 			var protocolNameBytes = Protocol.Encoding.EncodeString(Protocol.Name);
-			var protocolLevelByte = Convert.ToByte(Protocol.Level);
+			var protocolLevelByte = Convert.ToByte(Protocol.SupportedLevel);
 
 			var reserved = 0x00;
 			var cleanSession = Convert.ToInt32 (packet.CleanSession);

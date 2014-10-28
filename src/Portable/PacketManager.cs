@@ -21,6 +21,8 @@ namespace Hermes
 			this.formatters = formatters.ToDictionary(f => f.PacketType);
 		}
 
+		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
+		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ManageAsync (byte[] packet)
 		{
@@ -33,6 +35,8 @@ namespace Hermes
 			await formatter.ReadAsync (packet);
 		}
 
+		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
+		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ManageAsync (IPacket packet)
 		{

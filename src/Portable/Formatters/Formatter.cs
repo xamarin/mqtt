@@ -23,6 +23,8 @@ namespace Hermes.Formatters
 
 		protected abstract byte[] Write (T packet);
 
+		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
+		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task ReadAsync (byte[] bytes)
 		{
@@ -39,6 +41,8 @@ namespace Hermes.Formatters
 			await this.reader.SendAsync (packet);
 		}
 
+		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
+		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task WriteAsync (IPacket packet)
 		{

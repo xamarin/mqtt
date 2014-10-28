@@ -129,6 +129,12 @@
   <data name="ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode" xml:space="preserve">
     <value>Session Present flag must be set to 0 for non-zero return codes</value>
   </data>
+  <data name="ConnectFlow_NoErrorCodeDetected" xml:space="preserve">
+    <value>Only error codes are allowed to send an error connection acknowledge</value>
+  </data>
+  <data name="ConnectFlow_SecondConnectNotAllowed" xml:space="preserve">
+    <value>A second connect packet from the same client session is not allowed. The client will be disconnected</value>
+  </data>
   <data name="ConnectFormatter_ClientIdMaxLengthExceeded" xml:space="preserve">
     <value>Client Id cannot exceed 23 bytes</value>
   </data>
@@ -153,6 +159,9 @@
   <data name="ConnectFormatter_PasswordNotAllowed" xml:space="preserve">
     <value>Password value must be null or empty if User value is null or empty</value>
   </data>
+  <data name="ConnectFormatter_UnsupportedLevel" xml:space="preserve">
+    <value>Protocol Level {0} is not supported by the server</value>
+  </data>
   <data name="DataRepresentationExtensions_StringMaxLengthExceeded" xml:space="preserve">
     <value>String value cannot exceed 65536 bytes of length</value>
   </data>
@@ -176,6 +185,18 @@
   </data>
   <data name="ProtocolFlowProvider_UnknownPacketType" xml:space="preserve">
     <value>An error occured while trying to get a Flow Type based on Packet Type {0}</value>
+  </data>
+  <data name="ProtocolFlow_ConnectionRejected" xml:space="preserve">
+    <value>The connection {0} has been rejected and cannot accept any data</value>
+  </data>
+  <data name="ProtocolFlow_ConnectRequired" xml:space="preserve">
+    <value>A connection need to be established before sending any other packet</value>
+  </data>
+  <data name="ProtocolFlow_InvalidPacketType" xml:space="preserve">
+    <value>The packet type {0} is not valid for the flow {1}</value>
+  </data>
+  <data name="ProtocolFlow_NoActionRequired" xml:space="preserve">
+    <value>There is no action to do for the packet type {0}</value>
   </data>
   <data name="PublishFormatter_InvalidDuplicatedWithQoSZero" xml:space="preserve">
     <value>Duplicated flag must be set to 0 if the QoS is 0</value>

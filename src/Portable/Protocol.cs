@@ -6,7 +6,7 @@ namespace Hermes
 	{
 		public const string Name = "MQTT";
 
-		public const int Level = 4;
+		public const int SupportedLevel = 4;
 
 		public const int PacketTypeLength = 1;
 
@@ -18,12 +18,9 @@ namespace Hermes
 
 		public static ProtocolEncoding Encoding { get; private set; }
 
-		public static ProtocolFlowProvider Flow { get; private set; }
-
 		static Protocol()
 		{
 			Encoding = new ProtocolEncoding();
-			Flow = new ProtocolFlowProvider ();
 		}
 	}
 }

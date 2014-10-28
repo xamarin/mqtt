@@ -1,50 +1,21 @@
-﻿/*
-   Copyright 2014 NETFX
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-*/
+﻿using System.Collections.Generic;
+using Hermes.Formatters;
+using Hermes.Packets;
 
 namespace Hermes
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Reactive;
-	using Hermes.Formatters;
-	using Hermes.Packets;
-	using ReactiveSockets;
-
-	public class Server
+	public class PacketChannelFactory : IPacketChannelFactory
 	{
-		readonly IEventStream events;
-		readonly IReactiveListener server;
-
-		public Server(int port)
+		public IChannel<IPacket> CreateChannel (IBufferedChannel<byte> socket)
 		{
-			this.events = new EventStream ();
-			this.server = new ReactiveListener (port);
+			var binaryChannel = new BinaryChannel (socket);
 
-			this.server.Connections.Subscribe (socket => {
-				var binaryChannel = new BinaryChannel (socket);
-				var packetChannel = new PacketChannel (events);
-				var formatters = this.GetFormatters (packetChannel, binaryChannel);
-				var manager =  new PacketManager (formatters);
-
-				binaryChannel.Received.Subscribe (async packet => {
-					await manager.ManageAsync (packet);
-				});
-
-				packetChannel.Received.Subscribe(async packet => {
-					var output = Protocol.Flow.Get (packet.Type).Apply (packet);
-
-					await manager.ManageAsync (output);
-				});
-			});
-
-			this.server.Start ();
+			var formatters = this.GetFormatters();
+			var manager = new PacketManager (formatters);
+			
+			//TODO: Issue! Can't assign packet manager before it has the formatters assigned.  See PROPOSAL TODO's
+			//But I can't create the formatters until I have the packet channel (circular dependency)
+			return new PacketChannel (binaryChannel, manager);
 		}
 
 		private IEnumerable<IFormatter> GetFormatters(IChannel<IPacket> reader, IChannel<byte[]> writer)

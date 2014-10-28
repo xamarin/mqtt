@@ -54,6 +54,7 @@ namespace Tests.Formatters
 		[InlineData("Files/Binaries/Connect_Invalid_QualityOfService.packet")]
 		[InlineData("Files/Binaries/Connect_Invalid_WillFlags.packet")]
 		[InlineData("Files/Binaries/Connect_Invalid_UserNamePassword.packet")]
+		[InlineData("Files/Binaries/Connect_Invalid_ProtocolLevel.packet")]
 		public void when_reading_invalid_connect_packet_then_fails(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);

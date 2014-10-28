@@ -1,18 +1,27 @@
 ﻿using System.Collections.Generic;
 using Hermes.Packets;
 using Hermes.Properties;
+using Hermes.Storage;
 
 namespace Hermes.Flows
 {
-	public class ProtocolFlowProvider
+	public class ProtocolFlowProvider : IProtocolFlowProvider
 	{
 		readonly IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 
-		public ProtocolFlowProvider ()
+		public ProtocolFlowProvider (IProtocolConfiguration configuration, IClientManager clientManager, 
+			IRepository<ProtocolSession> sessionRepository, IRepository<RetainedMessage> retainedRepository,
+			IRepository<ConnectionWill> willRepository, IRepository<ConnectionRefused> connectionRefusedRepository, 
+			IRepository<ClientSubscription> subscriptionRepository)
 		{
 			this.flows = new Dictionary<ProtocolFlowType, IProtocolFlow> ();
 
-			this.flows.Add (ProtocolFlowType.Connect, new ConnectFlow ());
+			this.flows.Add (ProtocolFlowType.Connect, new ConnectFlow (sessionRepository, willRepository, connectionRefusedRepository));
+			this.flows.Add (ProtocolFlowType.Publish, new PublishFlow (configuration, clientManager, retainedRepository, subscriptionRepository, connectionRefusedRepository));
+			this.flows.Add (ProtocolFlowType.Subscribe, new SubscribeFlow (configuration, subscriptionRepository, connectionRefusedRepository));
+			this.flows.Add (ProtocolFlowType.Unsubscribe, new UnsubscribeFlow (subscriptionRepository, connectionRefusedRepository));
+			this.flows.Add (ProtocolFlowType.Ping, new PingFlow (connectionRefusedRepository));
+			this.flows.Add (ProtocolFlowType.Disconnect, new DisconnectFlow (sessionRepository, willRepository, connectionRefusedRepository));
 		}
 
 		public IProtocolFlow Get(PacketType packetType)

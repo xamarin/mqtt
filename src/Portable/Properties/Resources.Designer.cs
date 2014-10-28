@@ -98,6 +98,24 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Only error codes are allowed to send an error connection acknowledge.
+        /// </summary>
+        internal static string ConnectFlow_NoErrorCodeDetected {
+            get {
+                return ResourceManager.GetString("ConnectFlow_NoErrorCodeDetected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A second connect packet from the same client session is not allowed. The client will be disconnected.
+        /// </summary>
+        internal static string ConnectFlow_SecondConnectNotAllowed {
+            get {
+                return ResourceManager.GetString("ConnectFlow_SecondConnectNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client Id cannot exceed 23 bytes.
         /// </summary>
         internal static string ConnectFormatter_ClientIdMaxLengthExceeded {
@@ -170,6 +188,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Protocol Level {0} is not supported by the server.
+        /// </summary>
+        internal static string ConnectFormatter_UnsupportedLevel {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_UnsupportedLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to String value cannot exceed 65536 bytes of length.
         /// </summary>
         internal static string DataRepresentationExtensions_StringMaxLengthExceeded {
@@ -229,6 +256,42 @@ namespace Hermes.Properties {
         internal static string ProtocolEncoding_MalformedRemainingLength {
             get {
                 return ResourceManager.GetString("ProtocolEncoding_MalformedRemainingLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The connection {0} has been rejected and cannot accept any data.
+        /// </summary>
+        internal static string ProtocolFlow_ConnectionRejected {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_ConnectionRejected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A connection need to be established before sending any other packet.
+        /// </summary>
+        internal static string ProtocolFlow_ConnectRequired {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_ConnectRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The packet type {0} is not valid for the flow {1}.
+        /// </summary>
+        internal static string ProtocolFlow_InvalidPacketType {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_InvalidPacketType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no action to do for the packet type {0}.
+        /// </summary>
+        internal static string ProtocolFlow_NoActionRequired {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_NoActionRequired", resourceCulture);
             }
         }
         
