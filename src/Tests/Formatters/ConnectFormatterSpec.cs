@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
 using Hermes.Packets;
-using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -12,15 +11,6 @@ namespace Tests.Formatters
 {
 	public class ConnectFormatterSpec
 	{
-		readonly Mock<IChannel<IPacket>> packetChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
-
-		public ConnectFormatterSpec ()
-		{
-			this.packetChannel = new Mock<IChannel<IPacket>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
-		}
-		
 		[Theory]
 		[InlineData("Files/Binaries/Connect_Full.packet", "Files/Packets/Connect_Full.json")]
 		[InlineData("Files/Binaries/Connect_Min.packet", "Files/Packets/Connect_Min.json")]
@@ -30,21 +20,12 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedConnect = Packet.ReadPacket<Connect> (jsonPath);
-			var sentConnect = default(Connect);
-
-			this.packetChannel
-				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket>(m =>  {
-					sentConnect = m as Connect;
-				});
-
-			var formatter = new ConnectFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new ConnectFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedConnect, sentConnect);
+			Assert.Equal (expectedConnect, result);
 		}
 
 		[Theory]
@@ -59,10 +40,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new ConnectFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new ConnectFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -75,10 +56,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new ConnectFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new ConnectFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ConnectProtocolException);
 		}
@@ -92,21 +73,12 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
-
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
-
-			var formatter = new ConnectFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new ConnectFormatter ();
 			var connect = Packet.ReadPacket<Connect> (jsonPath);
 
-			await formatter.WriteAsync (connect);
+			var result = await formatter.FormatAsync (connect);
 
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 
 		[Theory]
@@ -118,10 +90,10 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new ConnectFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new ConnectFormatter ();
 			var connect = Packet.ReadPacket<Connect> (jsonPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (connect).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (connect).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}

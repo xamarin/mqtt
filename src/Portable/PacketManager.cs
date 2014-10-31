@@ -24,28 +24,32 @@ namespace Hermes
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public async Task ManageAsync (byte[] packet)
+		public async Task<IPacket> GetAsync (byte[] bytes)
 		{
-			var packetType = (PacketType)packet.Byte (0).Bits (4);
+			var packetType = (PacketType)bytes.Byte (0).Bits (4);
 			IFormatter formatter;
 
 			if (!formatters.TryGetValue(packetType, out formatter))
 				throw new ProtocolException (Resources.PacketManager_PacketUnknown);
 
-			await formatter.ReadAsync (packet);
+			var packet = await formatter.FormatAsync (bytes);
+
+			return packet;
 		}
 
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public async Task ManageAsync (IPacket packet)
+		public async Task<byte[]> GetAsync (IPacket packet)
 		{
 			IFormatter formatter;
 
 			if (!formatters.TryGetValue(packet.Type, out formatter))
 				throw new ProtocolException (Resources.PacketManager_PacketUnknown);
 
-			await formatter.WriteAsync (packet);
+			var bytes = await formatter.FormatAsync (packet);
+
+			return bytes;
 		}
 	}
 }

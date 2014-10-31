@@ -29,21 +29,12 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var sentPacket = default(IPacket);
-
-			this.packetChannel
-				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket>(m =>  {
-					sentPacket = m;
-				});
-
 			var formatter = this.GetFormatter (packetType, type);
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.NotNull (sentPacket);
+			Assert.NotNull (result);
 		}
 
 		[Theory]
@@ -57,7 +48,7 @@ namespace Tests.Formatters
 			var formatter = this.GetFormatter (packetType, type);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -71,28 +62,19 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
-
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
-
 			var formatter = this.GetFormatter (packetType, type);
 			var packet = Activator.CreateInstance (type) as IPacket;
 
-			await formatter.WriteAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 
 		private IFormatter GetFormatter(PacketType packetType, Type type)
 		{
 			var genericType = typeof (EmptyPacketFormatter<>);
 			var formatterType = genericType.MakeGenericType (type);
-			var formatter = Activator.CreateInstance (formatterType, packetType, this.packetChannel.Object, this.byteChannel.Object) as IFormatter;
+			var formatter = Activator.CreateInstance (formatterType, packetType) as IFormatter;
 
 			return formatter;
 		}

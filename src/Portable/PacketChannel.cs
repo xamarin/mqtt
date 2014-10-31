@@ -17,11 +17,9 @@ namespace Hermes
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 			this.subscription = innerChannel.Receiver.Subscribe (async bytes => {
-				//TODO: Proposal
-				//var packet = await this.converter.ConvertAsync(bytes);
+				var packet = await this.manager.GetAsync(bytes);
 
-				//this.subject.OnNext (packet); 
-				await this.manager.ManageAsync (bytes);
+				this.subject.OnNext (packet); 
 			}, onError: e => this.subject.OnError(e), onCompleted: () => this.subject.OnCompleted());
 		}
 
@@ -29,18 +27,9 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket packet)
 		{
-			//TODO: 
-			//This method should be used only to send packets to the client through the network
-			//This method will be called by the PacketManager, and it's WRONG
-			//We need some place to receive the packets sent by the PacketManager doing: this.subject.OnNext (packet); 
-			//This will allow the packets to be collected by the observers and then passed to the flow manager
+			var bytes = await this.manager.GetAsync (packet);
 
-			//TODO: Proposal
-			//var bytes = await this.converter.ConvertAsync(packet);
-
-			//this.innerChannel.SendAsync (bytes);
-
-			await this.manager.ManageAsync (packet);
+			await this.innerChannel.SendAsync (bytes);
 		}
 
 		public void Close ()

@@ -8,11 +8,6 @@ namespace Hermes.Formatters
 {
 	public class ConnectFormatter : Formatter<Connect>
 	{
-		public ConnectFormatter (IChannel<IPacket> reader, IChannel<byte[]> writer)
-			: base(reader, writer)
-		{
-		}
-
 		public override PacketType PacketType { get { return Packets.PacketType.Connect; } }
 
 		protected override Connect Read (byte[] bytes)

@@ -8,15 +8,6 @@ namespace Hermes.Formatters
 	public abstract class Formatter<T> : IFormatter
 		where T : class, IPacket
 	{
-		readonly IChannel<IPacket> reader;
-		readonly IChannel<byte[]> writer;
-
-		public Formatter (IChannel<IPacket> reader, IChannel<byte[]> writer)
-		{
-			this.reader = reader;
-			this.writer = writer;
-		}
-		
 		public abstract PacketType PacketType { get; }
 
 		protected abstract T Read (byte[] bytes);
@@ -26,7 +17,7 @@ namespace Hermes.Formatters
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public async Task ReadAsync (byte[] bytes)
+		public async Task<IPacket> FormatAsync (byte[] bytes)
 		{
 			var actualType = (PacketType)bytes.Byte (0).Bits (4);
 
@@ -36,15 +27,15 @@ namespace Hermes.Formatters
 				throw new ProtocolException (error);
 			}
 
-			var packet = this.Read (bytes);
+			var packet = await Task.Run(() => this.Read (bytes));
 
-			await this.reader.SendAsync (packet);
+			return packet;
 		}
 
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public async Task WriteAsync (IPacket packet)
+		public async Task<byte[]> FormatAsync (IPacket packet)
 		{
 			if (packet.Type != PacketType) {
 				var error = string.Format(Resources.Formatter_InvalidPacket, typeof(T).Name);
@@ -52,9 +43,9 @@ namespace Hermes.Formatters
 				throw new ProtocolException (error);
 			}
 
-			var bytes = this.Write (packet as T);
+			var bytes = await Task.Run(() => this.Write (packet as T));
 
-			await this.writer.SendAsync (bytes);
+			return bytes;
 		}
 
 		protected void ValidateHeaderFlag (byte[] bytes, Func<PacketType, bool> packetTypePredicate, int expectedFlag)

@@ -8,8 +8,7 @@ namespace Hermes.Formatters
 	{
 		readonly PacketType packetType;
 
-		public EmptyPacketFormatter (PacketType packetType, IChannel<IPacket> reader, IChannel<byte[]> writer)
-			: base(reader, writer)
+		public EmptyPacketFormatter (PacketType packetType)
 		{
 			this.packetType = packetType;
 		}

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
 using Hermes.Packets;
-using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -12,15 +11,6 @@ namespace Tests.Formatters
 {
 	public class PublishReceivedFormatterSpec
 	{
-		readonly Mock<IChannel<IPacket>> packetChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
-
-		public PublishReceivedFormatterSpec ()
-		{
-			this.packetChannel = new Mock<IChannel<IPacket>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
-		}
-
 		[Theory]
 		[InlineData("Files/Binaries/PublishReceived.packet", "Files/Packets/PublishReceived.json")]
 		public async Task when_reading_publish_received_packet_then_succeeds(string packetPath, string jsonPath)
@@ -29,21 +19,12 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedPublishReceived = Packet.ReadPacket<PublishReceived> (jsonPath);
-			var sentPublishReceived = default(PublishReceived);
-
-			this.packetChannel
-				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket>(m =>  {
-					sentPublishReceived = m as PublishReceived;
-				});
-
-			var formatter = new FlowPacketFormatter<PublishReceived>(PacketType.PublishReceived, id => new PublishReceived(id), this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowPacketFormatter<PublishReceived>(PacketType.PublishReceived, id => new PublishReceived(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedPublishReceived, sentPublishReceived);
+			Assert.Equal (expectedPublishReceived, result);
 		}
 
 		[Theory]
@@ -52,10 +33,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new FlowPacketFormatter<PublishReceived> (PacketType.PublishReceived, id => new PublishReceived(id), this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowPacketFormatter<PublishReceived> (PacketType.PublishReceived, id => new PublishReceived(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -68,21 +49,12 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
-
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
-
-			var formatter = new FlowPacketFormatter<PublishReceived>(PacketType.PublishReceived, id => new PublishReceived(id), this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowPacketFormatter<PublishReceived>(PacketType.PublishReceived, id => new PublishReceived(id));
 			var publishReceived = Packet.ReadPacket<PublishReceived> (jsonPath);
 
-			await formatter.WriteAsync (publishReceived);
+			var result = await formatter.FormatAsync (publishReceived);
 
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 	}
 }

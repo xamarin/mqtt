@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using Hermes;
 using Hermes.Packets;
 using Moq;
@@ -32,10 +33,16 @@ namespace Tests
 
 			innerChannel.Setup (x => x.Receiver).Returns (receiver);
 
-			var channel = new PacketChannel (innerChannel.Object);
-
 			var jsonPath = Path.Combine (Environment.CurrentDirectory, "Files/Packets/Connect_Full.json");
 			var expectedPacket = Packet.ReadPacket<Connect> (jsonPath);
+
+			var manager = new Mock<IPacketManager> ();
+
+			manager.Setup(x => x.GetAsync(It.IsAny<byte[]>()))
+				.Returns(Task.FromResult<IPacket>(expectedPacket));
+
+			var channel = new PacketChannel (innerChannel.Object, manager.Object);
+
 			var receivedPacket = default (IPacket);
 
 			channel.Receiver.Subscribe (packet => {

@@ -8,11 +8,6 @@ namespace Hermes.Formatters
 {
 	public class SubscribeFormatter : Formatter<Subscribe>
 	{
-		public SubscribeFormatter (IChannel<IPacket> reader, IChannel<byte[]> writer)
-			: base(reader, writer)
-		{
-		}
-
 		public override PacketType PacketType { get { return Packets.PacketType.Subscribe; } }
 
 		protected override Subscribe Read (byte[] bytes)

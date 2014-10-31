@@ -13,11 +13,11 @@ namespace Hermes.Formatters
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		Task ReadAsync (byte[] bytes);
+		Task<IPacket> FormatAsync (byte[] bytes);
 
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		Task WriteAsync (IPacket packet);
+		Task<byte[]> FormatAsync (IPacket packet);
 	}
 }

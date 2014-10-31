@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
@@ -15,24 +16,21 @@ namespace Tests
 		public async Task when_managing_packet_bytes_then_succeeds()
 		{
 			var packetPath = Path.Combine (Environment.CurrentDirectory, "Files/Binaries/Connect_Full.packet");
-			var packet = Packet.ReadAllBytes (packetPath);
+			var bytes = Packet.ReadAllBytes (packetPath);
+			var jsonPath = Path.Combine (Environment.CurrentDirectory, "Files/Packets/Connect_Full.json");
+			var packet = Packet.ReadPacket<Connect> (jsonPath);
 			var formatter = new Mock<IFormatter> ();
-			var sentPacket = default(byte[]);
 
 			formatter.Setup(f => f.PacketType).Returns(PacketType.Connect);
 
 			formatter
-				.Setup (f => f.ReadAsync (It.IsAny<byte[]> ()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]> (b => {
-					sentPacket = b;
-				});
+				.Setup (f => f.FormatAsync (It.Is<byte[]> (b => b.ToList().SequenceEqual(bytes))))
+				.Returns (Task.FromResult<IPacket>(packet));
 
 			var packetManager = new PacketManager (formatter.Object);
+			var result =  await packetManager.GetAsync (bytes);
 
-			await packetManager.ManageAsync (packet);
-
-			Assert.Equal (packet, sentPacket);
+			Assert.Equal (packet, result);
 		}
 
 		[Fact]
@@ -40,23 +38,20 @@ namespace Tests
 		{
 			var jsonPath = Path.Combine (Environment.CurrentDirectory, "Files/Packets/Connect_Full.json");
 			var packet = Packet.ReadPacket<Connect> (jsonPath);
+			var packetPath = Path.Combine (Environment.CurrentDirectory, "Files/Binaries/Connect_Full.packet");
+			var bytes = Packet.ReadAllBytes (packetPath);
 			var formatter = new Mock<IFormatter> ();
-			var sentPacket = default(Connect);
 
 			formatter.Setup(f => f.PacketType).Returns(PacketType.Connect);
 
 			formatter
-				.Setup (f => f.WriteAsync (It.IsAny<IPacket> ()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket> (m => {
-					sentPacket = m as Connect;
-				});
+				.Setup (f => f.FormatAsync (It.Is<IPacket> (p => (Connect)p == packet)))
+				.Returns (Task.FromResult(bytes));
 
 			var packetManager = new PacketManager (formatter.Object);
+			var result = await packetManager.GetAsync (packet);
 
-			await packetManager.ManageAsync (packet);
-
-			Assert.Equal (packet, sentPacket);
+			Assert.Equal (bytes, result);
 		}
 
 		[Fact]
@@ -67,7 +62,7 @@ namespace Tests
 			var formatter = new Mock<IFormatter> ();
 			var packetManager = new PacketManager (formatter.Object);
 
-			var ex = Assert.Throws<AggregateException> (() => packetManager.ManageAsync (connectPacket).Wait());
+			var ex = Assert.Throws<AggregateException> (() => packetManager.GetAsync (connectPacket).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -80,7 +75,7 @@ namespace Tests
 			var formatter = new Mock<IFormatter> ();
 			var packetManager = new PacketManager (formatter.Object);
 
-			var ex = Assert.Throws<AggregateException> (() => packetManager.ManageAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => packetManager.GetAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}

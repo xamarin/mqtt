@@ -30,21 +30,12 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedPublish = Packet.ReadPacket<Publish> (jsonPath);
-			var sentPublish = default(Publish);
-
-			this.packetChannel
-				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket>(m =>  {
-					sentPublish = m as Publish;
-				});
-
-			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new PublishFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedPublish, sentPublish);
+			Assert.Equal (expectedPublish, result);
 		}
 
 		[Theory]
@@ -55,10 +46,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new PublishFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -72,21 +63,12 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
-
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
-
-			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new PublishFormatter ();
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
-			await formatter.WriteAsync (publish);
+			var result = await formatter.FormatAsync (publish);
 
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 
 		[Theory]
@@ -97,10 +79,10 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new PublishFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new PublishFormatter ();
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (publish).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (publish).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}

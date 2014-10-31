@@ -6,11 +6,6 @@ namespace Hermes.Formatters
 {
 	public class ConnectAckFormatter : Formatter<ConnectAck>
 	{
-		public ConnectAckFormatter (IChannel<IPacket> reader, IChannel<byte[]> writer)
-			: base(reader, writer)
-		{
-		}
-
 		public override PacketType PacketType { get { return Packets.PacketType.ConnectAck; } }
 
 		protected override ConnectAck Read (byte[] bytes)

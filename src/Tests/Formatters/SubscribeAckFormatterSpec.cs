@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
 using Hermes.Packets;
-using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -12,15 +11,6 @@ namespace Tests.Formatters
 {
 	public class SubscribeAckFormatterSpec
 	{
-		readonly Mock<IChannel<IPacket>> packetChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
-
-		public SubscribeAckFormatterSpec ()
-		{
-			this.packetChannel = new Mock<IChannel<IPacket>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
-		}
-		
 		[Theory]
 		[InlineData("Files/Binaries/SubscribeAck_SingleTopic.packet", "Files/Packets/SubscribeAck_SingleTopic.json")]
 		[InlineData("Files/Binaries/SubscribeAck_MultiTopic.packet", "Files/Packets/SubscribeAck_MultiTopic.json")]
@@ -30,21 +20,12 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedSubscribeAck = Packet.ReadPacket<SubscribeAck> (jsonPath);
-			var sentSubscribeAck = default(SubscribeAck);
-
-			this.packetChannel
-				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket>(m =>  {
-					sentSubscribeAck = m as SubscribeAck;
-				});
-
-			var formatter = new SubscribeAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeAckFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedSubscribeAck, sentSubscribeAck);
+			Assert.Equal (expectedSubscribeAck, result);
 		}
 
 		[Theory]
@@ -53,10 +34,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new SubscribeAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeAckFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -68,10 +49,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new SubscribeAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeAckFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ViolationProtocolException);
 		}
@@ -85,21 +66,12 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
-
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
-
-			var formatter = new SubscribeAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeAckFormatter ();
 			var subscribeAck = Packet.ReadPacket<SubscribeAck> (jsonPath);
 
-			await formatter.WriteAsync (subscribeAck);
+			var result = await formatter.FormatAsync (subscribeAck);
 
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 
 		[Theory]
@@ -108,10 +80,10 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new SubscribeAckFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeAckFormatter ();
 			var subscribeAck = Packet.ReadPacket<SubscribeAck> (jsonPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (subscribeAck).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (subscribeAck).Wait());
 
 			Assert.True (ex.InnerException is ViolationProtocolException);
 		}

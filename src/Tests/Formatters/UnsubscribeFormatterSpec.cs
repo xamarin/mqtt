@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
 using Hermes.Packets;
-using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -12,15 +11,6 @@ namespace Tests.Formatters
 {
 	public class UnsubscribeFormatterSpec
 	{
-		readonly Mock<IChannel<IPacket>> packetChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
-
-		public UnsubscribeFormatterSpec ()
-		{
-			this.packetChannel = new Mock<IChannel<IPacket>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
-		}
-		
 		[Theory]
 		[InlineData("Files/Binaries/Unsubscribe_SingleTopic.packet", "Files/Packets/Unsubscribe_SingleTopic.json")]
 		[InlineData("Files/Binaries/Unsubscribe_MultiTopic.packet", "Files/Packets/Unsubscribe_MultiTopic.json")]
@@ -30,21 +20,12 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedUnsubscribe = Packet.ReadPacket<Unsubscribe> (jsonPath);
-			var sentUnsubscribe = default(Unsubscribe);
-
-			this.packetChannel
-				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket>(m =>  {
-					sentUnsubscribe = m as Unsubscribe;
-				});
-
-			var formatter = new UnsubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new UnsubscribeFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedUnsubscribe, sentUnsubscribe);
+			Assert.Equal (expectedUnsubscribe, result);
 		}
 
 		[Theory]
@@ -53,10 +34,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new UnsubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new UnsubscribeFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -67,10 +48,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new UnsubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new UnsubscribeFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ViolationProtocolException);
 		}
@@ -84,21 +65,12 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
-
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
-
-			var formatter = new UnsubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new UnsubscribeFormatter ();
 			var unsubscribe = Packet.ReadPacket<Unsubscribe> (jsonPath);
 
-			await formatter.WriteAsync (unsubscribe);
+			var result = await formatter.FormatAsync (unsubscribe);
 
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 
 		[Theory]
@@ -107,10 +79,10 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new UnsubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new UnsubscribeFormatter ();
 			var unsubscribe = Packet.ReadPacket<Unsubscribe> (jsonPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (unsubscribe).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (unsubscribe).Wait());
 
 			Assert.True (ex.InnerException is ViolationProtocolException);
 		}

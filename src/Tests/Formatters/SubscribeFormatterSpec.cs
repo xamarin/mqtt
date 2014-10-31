@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
 using Hermes.Packets;
-using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -12,15 +11,6 @@ namespace Tests.Formatters
 {
 	public class SubscribeFormatterSpec
 	{
-		readonly Mock<IChannel<IPacket>> packetChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
-
-		public SubscribeFormatterSpec ()
-		{
-			this.packetChannel = new Mock<IChannel<IPacket>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
-		}
-		
 		[Theory]
 		[InlineData("Files/Binaries/Subscribe_SingleTopic.packet", "Files/Packets/Subscribe_SingleTopic.json")]
 		[InlineData("Files/Binaries/Subscribe_MultiTopic.packet", "Files/Packets/Subscribe_MultiTopic.json")]
@@ -30,21 +20,12 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedSubscribe = Packet.ReadPacket<Subscribe> (jsonPath);
-			var sentSubscribe = default(Subscribe);
-
-			this.packetChannel
-				.Setup (c => c.SendAsync (It.IsAny<IPacket>()))
-				.Returns(Task.Delay(0))
-				.Callback<IPacket>(m =>  {
-					sentSubscribe = m as Subscribe;
-				});
-
-			var formatter = new SubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedSubscribe, sentSubscribe);
+			Assert.Equal (expectedSubscribe, result);
 		}
 
 		[Theory]
@@ -53,10 +34,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new SubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -69,10 +50,10 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new SubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ViolationProtocolException);
 		}
@@ -86,21 +67,12 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
-
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
-
-			var formatter = new SubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeFormatter ();
 			var subscribe = Packet.ReadPacket<Subscribe> (jsonPath);
 
-			await formatter.WriteAsync (subscribe);
+			var result = await formatter.FormatAsync (subscribe);
 
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 
 		[Theory]
@@ -109,10 +81,10 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new SubscribeFormatter (this.packetChannel.Object, this.byteChannel.Object);
+			var formatter = new SubscribeFormatter ();
 			var subscribe = Packet.ReadPacket<Subscribe> (jsonPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.WriteAsync (subscribe).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (subscribe).Wait());
 
 			Assert.True (ex.InnerException is ViolationProtocolException);
 		}
