@@ -77,11 +77,14 @@ namespace Hermes.Packets
 
 		public override int GetHashCode ()
 		{
-			var hashCode = this.QualityOfService.GetHashCode() +
-				this.DuplicatedDelivery.GetHashCode() +
-				this.Retain.GetHashCode() +
-				this.Topic.GetHashCode () +
-				BitConverter.ToString (this.Payload).GetHashCode ();
+			var hashCode = this.QualityOfService.GetHashCode () +
+				this.DuplicatedDelivery.GetHashCode () +
+				this.Retain.GetHashCode () +
+				this.Topic.GetHashCode ();
+
+			if (this.Payload != null) {
+				hashCode += BitConverter.ToString (this.Payload).GetHashCode ();
+			}
 
 			if (this.PacketId.HasValue) {
 				hashCode += this.PacketId.Value.GetHashCode ();

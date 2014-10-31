@@ -67,6 +67,9 @@ namespace Hermes
 					remainingLengthRead = true;
 				}
 
+				if (remainingLength == 0)
+					this.hasPacket = true;
+
 				return;
 			}
 
