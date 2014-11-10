@@ -8,29 +8,26 @@ namespace Hermes
 	public class ClientManager : IClientManager
 	{
 		//TODO: We should make this a ConcurrentDicionary (check about PCL compatibility)
-        static readonly IDictionary<string, IProtocolConnection> userConnections;
+        static readonly IDictionary<string, IChannel<IPacket>> clientConnections;
 
 		static ClientManager()
 		{
-			userConnections = new Dictionary<string, IProtocolConnection> ();
+			clientConnections = new Dictionary<string, IChannel<IPacket>> ();
 		}
 
-        public void Add(IProtocolConnection connection)
+        public void Add(string clientId, IChannel<IPacket> connection)
         {
-			if (connection.IsPending)
+			if (clientConnections.Any (c => c.Key == clientId))
 				throw new ProtocolException ();
 
-			if (userConnections.Any (c => c.Key == connection.ClientId))
-				throw new ProtocolException ();
-
-			userConnections.Add (connection.ClientId, connection);
+			clientConnections.Add (clientId, connection);
         }
 
         public async Task SendMessageAsync(string clientId, IPacket packet)
         {
-			var connection = default (IProtocolConnection);
+			var connection = default (IChannel<IPacket>);
 
-			if (!userConnections.TryGetValue (clientId, out connection))
+			if (!clientConnections.TryGetValue (clientId, out connection))
 				throw new ProtocolException ();
 
 			await connection.SendAsync (packet);
@@ -38,10 +35,10 @@ namespace Hermes
 
         public void Remove(string clientId)
         {
-            if (!userConnections.Any (c => c.Key == clientId))
+            if (!clientConnections.Any (c => c.Key == clientId))
 				throw new ProtocolException ();
 
-			userConnections.Remove (clientId);
+			clientConnections.Remove (clientId);
         }
 	}
 }

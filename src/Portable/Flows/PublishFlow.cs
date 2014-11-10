@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
@@ -13,17 +14,14 @@ namespace Hermes.Flows
 		readonly IClientManager clientManager;
 		readonly IRepository<RetainedMessage> retainedRepository;
 		readonly IRepository<ClientSubscription> subscriptionRepository;
-		readonly IRepository<ConnectionRefused> connectionRefusedRepository;
 		readonly IDictionary<QualityOfService, Func<Publish, IPacket>> publishRules;
 
-		public PublishFlow (IProtocolConfiguration configuration, IClientManager clientManager, IRepository<RetainedMessage> retainedRepository, 
-			IRepository<ClientSubscription> subscriptionRepository, IRepository<ConnectionRefused> connectionRefusedRepository)
+		public PublishFlow (IProtocolConfiguration configuration, IClientManager clientManager, IRepository<RetainedMessage> retainedRepository,  IRepository<ClientSubscription> subscriptionRepository)
 		{
 			this.configuration = configuration;
 			this.clientManager = clientManager;
 			this.retainedRepository = retainedRepository;
 			this.subscriptionRepository = subscriptionRepository;
-			this.connectionRefusedRepository = connectionRefusedRepository;
 
 			this.publishRules = new Dictionary<QualityOfService, Func<Publish, IPacket>> ();
 
@@ -32,38 +30,32 @@ namespace Hermes.Flows
 			this.publishRules.Add (QualityOfService.ExactlyOnce, RunQoS2Flow);
 		}
 
-		public IPacket Apply (IPacket input, IProtocolConnection connection)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.Publish && input.Type != PacketType.PublishAck && 
-				input.Type != PacketType.PublishReceived && input.Type != PacketType.PublishRelease &&
-				input.Type != PacketType.PublishComplete) {
+			if (input.Type == PacketType.PublishAck || input.Type == PacketType.PublishComplete)
+				return;
+
+			if (input.Type != PacketType.Publish && input.Type != PacketType.PublishReceived && 
+				input.Type != PacketType.PublishRelease) {
 				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Publish");
 
 				throw new ProtocolException(error);
 			}
 
-			if (this.connectionRefusedRepository.Exist (c => c.ConnectionId == connection.Id)) {
-				var error = string.Format (Resources.ProtocolFlow_ConnectionRejected, connection.Id);
-
-				throw new ProtocolException(error);
-			}
-
-			if (connection.IsPending)
-				throw new ProtocolException (Resources.ProtocolFlow_ConnectRequired);
-
-			if (input.Type == PacketType.PublishAck || input.Type == PacketType.PublishComplete)
-				return default (IPacket);
-
 			if (input.Type == PacketType.PublishReceived) {
 				var publishReceived = input as PublishReceived;
+				var ack = this.RunQoS2Flow (publishReceived);
 
-				return this.RunQoS2Flow (publishReceived);
+				await this.SendAckAsync (ack, channel);
+				return;
 			}
 
 			if (input.Type == PacketType.PublishRelease) {
 				var publishRelease = input as PublishRelease;
+				var ack = this.RunQoS2Flow (publishRelease);
 
-				return this.RunQoS2Flow (publishRelease);
+				await this.SendAckAsync (ack, channel);
+				return;
 			}
 
 			var publish = input as Publish;
@@ -79,7 +71,7 @@ namespace Hermes.Flows
 					var retainedMessage = new RetainedMessage {
 						Topic = publish.Topic,
 						QualityOfService = publish.QualityOfService,
-						Payload = Encoding.Unicode.GetString(publish.Payload, 0, publish.Payload.Length)
+						Payload = Encoding.UTF8.GetString(publish.Payload, 0, publish.Payload.Length)
 					};
 
 					this.retainedRepository.Create(retainedMessage);
@@ -98,16 +90,18 @@ namespace Hermes.Flows
 				//TODO: Generate Packet Id taking into account already used Packet Ids
 				ushort? packetId = requestedQos == QualityOfService.AtMostOnce ? null : (ushort?)new Random ().Next (0, ushort.MaxValue);
 
-				var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicatedDelivery: false, packetId: publish.PacketId);
+				var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicatedDelivery: false, packetId: packetId);
 
-				this.clientManager.SendMessageAsync (subscription.ClientId, subscriptionPublish);
+				await this.clientManager.SendMessageAsync (subscription.ClientId, subscriptionPublish);
 			}
 
 			var rule = default (Func<Publish, IPacket>);
 
 			this.publishRules.TryGetValue (qos, out rule);
 
-			return rule (publish);
+			var result = rule (publish);
+
+			await this.SendAckAsync (result, channel);
 		}
 
 		private IPacket RunQoS0Flow (Publish publish)
@@ -117,11 +111,17 @@ namespace Hermes.Flows
 
 		private IPacket RunQoS1Flow (Publish publish)
 		{
+			if(!publish.PacketId.HasValue)
+				throw new ProtocolException(Resources.PublishFlow_PacketIdRequired);
+
 			return new PublishAck (publish.PacketId.Value);
 		}
 
 		private IPacket RunQoS2Flow (Publish publish)
 		{
+			if(!publish.PacketId.HasValue)
+				throw new ProtocolException(Resources.PublishFlow_PacketIdRequired);
+
 			return new PublishReceived (publish.PacketId.Value);
 		}
 
@@ -133,6 +133,14 @@ namespace Hermes.Flows
 		private IPacket RunQoS2Flow (PublishRelease publishRelease)
 		{
 			return new PublishComplete(publishRelease.PacketId);
+		}
+
+		private async Task SendAckAsync(IPacket ack, IChannel<IPacket> channel) 
+		{
+			if (ack == default (IPacket))
+				return;
+
+			await channel.SendAsync(ack);
 		}
 	}
 }

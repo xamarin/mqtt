@@ -17,7 +17,7 @@ namespace Tests
 			var sockets = new Subject<IBufferedChannel<byte>> ();
 			var seconds = new Subject<Unit> ();
 			var server = new Server (sockets, seconds, Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) ==
-				Mock.Of<IChannel<IPacket>>(c => c.Receiver == new Subject<IPacket> ())));
+				Mock.Of<IChannel<IPacket>>(c => c.Receiver == new Subject<IPacket> ())), Mock.Of<IMessagingHandler>());
 			var socket = new Mock<IBufferedChannel<byte>> ();
 
 			sockets.OnNext (socket.Object);
@@ -35,7 +35,7 @@ namespace Tests
 			var sockets = new Subject<IBufferedChannel<byte>> ();
 			var seconds = new Subject<Unit> ();
 			var server = new Server (sockets, seconds, Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) ==
-				Mock.Of<IChannel<IPacket>>(c => c.Receiver == new Subject<IPacket> ())));
+				Mock.Of<IChannel<IPacket>>(c => c.Receiver == new Subject<IPacket> ())), Mock.Of<IMessagingHandler>());
 			var socket = new Mock<IBufferedChannel<byte>> ();
 
 			sockets.OnNext (socket.Object);
@@ -54,8 +54,9 @@ namespace Tests
 			var packets = new Subject<IPacket> ();
 			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
 			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var handler = Mock.Of<IMessagingHandler>();
 
-			var server = new Server (sockets, seconds, factory);
+			var server = new Server (sockets, seconds, factory, handler);
 			var receiver = new Subject<byte> ();
 			var socket = new Mock<IBufferedChannel<byte>> ();
 
@@ -80,8 +81,9 @@ namespace Tests
 			var packets = new Subject<IPacket> ();
 			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
 			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var handler = Mock.Of<IMessagingHandler>();
 
-			var server = new Server (sockets, seconds, factory);
+			var server = new Server (sockets, seconds, factory, handler);
 			var receiver = new Subject<byte> ();
 			var socket = new Mock<IBufferedChannel<byte>> ();
 
@@ -112,7 +114,9 @@ namespace Tests
 			factory.Setup (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()))
 				.Returns (channel);
 
-			var server = new Server (sockets, seconds, factory.Object);
+			var handler = Mock.Of<IMessagingHandler>();
+
+			var server = new Server (sockets, seconds, factory.Object, handler);
 			var receiver = new Subject<byte> ();
 			var socket = new Mock<IBufferedChannel<byte>> ();
 
@@ -133,8 +137,9 @@ namespace Tests
 			var packets = new Subject<IPacket> ();
 			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
 			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var handler = Mock.Of<IMessagingHandler>();
 
-			var server = new Server (sockets, seconds, factory);
+			var server = new Server (sockets, seconds, factory, handler);
 
 			sockets.OnNext (Mock.Of<IBufferedChannel<byte>> (x => x.Receiver == new Subject<byte> ()));
 
@@ -149,8 +154,9 @@ namespace Tests
 			var packets = new Subject<IPacket> ();
 			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
 			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var handler = Mock.Of<IMessagingHandler>();
 
-			var server = new Server (sockets, seconds, factory);
+			var server = new Server (sockets, seconds, factory, handler);
 			var receiver = new Subject<byte> ();
 			var socket = new Mock<IBufferedChannel<byte>> ();
 

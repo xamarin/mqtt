@@ -5,9 +5,9 @@ namespace Hermes
 {
 	public interface IClientManager
     {
-        void Add(IProtocolConnection connection);
+		void Add (string clientId, IChannel<IPacket> connection);
 
-        Task SendMessageAsync(string clientId, IPacket packet);
+		Task SendMessageAsync (string clientId, IPacket packet);
 
         void Remove(string clientId);
     }

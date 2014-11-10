@@ -1,4 +1,5 @@
-﻿using Hermes.Packets;
+﻿using System.Threading.Tasks;
+using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
 
@@ -6,40 +7,31 @@ namespace Hermes.Flows
 {
 	public class DisconnectFlow : IProtocolFlow
 	{
-		readonly IRepository<ProtocolSession> sessionRepository;
+		readonly IClientManager clientManager;
 		readonly IRepository<ConnectionWill> willRepository;
-		readonly IRepository<ConnectionRefused> connectionRefusedRepository;
 
-		public DisconnectFlow (IRepository<ProtocolSession> sessionRepository, IRepository<ConnectionWill> willRepository, 
-			IRepository<ConnectionRefused> connectionRefusedRepository)
+		public DisconnectFlow (IClientManager clientManager, IRepository<ConnectionWill> willRepository)
 		{
-			this.sessionRepository = sessionRepository;
+			this.clientManager = clientManager;
 			this.willRepository = willRepository;
-			this.connectionRefusedRepository = connectionRefusedRepository;
 		}
 
-		public IPacket Apply (IPacket input, IProtocolConnection connection)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.Disconnect) {
+			var disconnect = input as Disconnect;
+
+			if (disconnect == null) {
 				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Disconnect");
 
 				throw new ProtocolException(error);
 			}
 
-			if (this.connectionRefusedRepository.Exist (c => c.ConnectionId == connection.Id)) {
-				var error = string.Format (Resources.ProtocolFlow_ConnectionRejected, connection.Id);
+			this.willRepository.Delete (w => w.ClientId == clientId);
+			this.clientManager.Remove (clientId);
 
-				throw new ProtocolException(error);
-			}
+			channel.Close ();
 
-			if (connection.IsPending)
-				throw new ProtocolException (Resources.ProtocolFlow_ConnectRequired);
-
-			this.willRepository.Delete (w => w.ConnectionId == connection.Id);
-
-			connection.Disconnect ();
-
-			return default (IPacket);
+			return;
 		}
 	}
 }

@@ -305,6 +305,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Packet Id value is required for QoS major than 0.
+        /// </summary>
+        internal static string PublishFlow_PacketIdRequired {
+            get {
+                return ResourceManager.GetString("PublishFlow_PacketIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicated flag must be set to 0 if the QoS is 0.
         /// </summary>
         internal static string PublishFormatter_InvalidDuplicatedWithQoSZero {

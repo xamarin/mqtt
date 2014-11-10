@@ -24,7 +24,6 @@
     <Compile Include="ClientManager.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Flows\IProtocolFlowProvider.cs" />
     <Compile Include="Flows\PingFlow.cs" />
     <Compile Include="Flows\PublishFlow.cs" />
     <Compile Include="Flows\SubscribeFlow.cs" />
@@ -33,7 +32,6 @@
     <Compile Include="Flows\ConnectFlow.cs" />
     <Compile Include="Flows\DisconnectFlow.cs" />
     <Compile Include="Flows\IProtocolFlow.cs" />
-    <Compile Include="Flows\ProtocolFlowProvider.cs" />
     <Compile Include="Flows\ProtocolFlowType.cs" />
     <Compile Include="Formatters\ConnectAckFormatter.cs" />
     <Compile Include="Formatters\ConnectFormatter.cs" />
@@ -47,11 +45,13 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IBufferedChannel.cs" />
     <Compile Include="IChannel.cs" />
+    <Compile Include="IMessagingHandler.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
     <Compile Include="IClientManager.cs" />
     <Compile Include="IPacketManager.cs" />
     <Compile Include="IProtocolConfiguration.cs" />
     <Compile Include="IProtocolConnection.cs" />
+    <Compile Include="MessagingHandler.cs" />
     <Compile Include="PacketChannel.cs" />
     <Compile Include="PacketChannelFactory.cs" />
     <Compile Include="PacketManager.cs" />
@@ -90,7 +90,6 @@
     <Compile Include="Server.cs" />
     <Compile Include="Storage\RetainedMessage.cs" />
     <Compile Include="Storage\ClientSubscription.cs" />
-    <Compile Include="Storage\ConnectionRefused.cs" />
     <Compile Include="Storage\ConnectionWill.cs" />
     <Compile Include="Storage\InMemoryRepository.cs" />
     <Compile Include="Storage\IProtocolSession.cs" />

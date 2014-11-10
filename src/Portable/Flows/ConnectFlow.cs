@@ -1,4 +1,5 @@
-﻿using Hermes.Packets;
+﻿using System.Threading.Tasks;
+using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
 
@@ -10,42 +11,33 @@ namespace Hermes.Flows
 	{
 		readonly IRepository<ProtocolSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
-		readonly IRepository<ConnectionRefused> connectionRefusedRepository;
 
-		public ConnectFlow (IRepository<ProtocolSession> sessionRepository, IRepository<ConnectionWill> willRepository, 
-			IRepository<ConnectionRefused> connectionRefusedRepository)
+		public ConnectFlow (IRepository<ProtocolSession> sessionRepository, IRepository<ConnectionWill> willRepository)
 		{
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
-			this.connectionRefusedRepository = connectionRefusedRepository;
 		}
 
-		public IPacket Apply (IPacket input, IProtocolConnection connection)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.Connect && input.Type != PacketType.ConnectAck) {
+			if (input.Type == PacketType.ConnectAck)
+				return;
+
+			var connect = input as Connect;
+
+			if (connect == null) {
 				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Connect");
 
 				throw new ProtocolException(error);
 			}
-				
-			//TODO: Find a way of encapsulating this logic to avoid repeating it in each flow
-			if (this.connectionRefusedRepository.Exist (c => c.ConnectionId == connection.Id)) {
-				var error = string.Format (Resources.ProtocolFlow_ConnectionRejected, connection.Id);
 
-				throw new ProtocolException(error);
+			//if(this.activeClients.Any(c => c == clientId))
+			//	throw new ViolationProtocolException (Resources.ConnectFlow_SecondConnectNotAllowed);
 
-			}
-
-			if (!connection.IsPending)
-				throw new ViolationProtocolException (Resources.ConnectFlow_SecondConnectNotAllowed);
-
-			if(input.Type == PacketType.ConnectAck)
-				return default(IPacket);
-
+			//this.activeClients.Add (connect.ClientId);
+			
 			//TODO: Add exception handling to prevent any repository error
-
-			var connect = input as Connect;
-			var session = this.sessionRepository.Get (s => s.ClientId == connect.ClientId);
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 
 			if (connect.CleanSession && session != null) {
@@ -53,28 +45,18 @@ namespace Hermes.Flows
 			}
 
 			if (session == null) {
-				session = new ProtocolSession { ClientId = connect.ClientId, Clean = connect.CleanSession };
+				session = new ProtocolSession { ClientId = clientId, Clean = connect.CleanSession };
 
 				this.sessionRepository.Create (session);
 			}
 
 			if (connect.Will != null) {
-				var connectionWill = new ConnectionWill { ConnectionId = connection.Id, Will = connect.Will };
+				var connectionWill = new ConnectionWill { ClientId = clientId, Will = connect.Will };
 
 				this.willRepository.Create (connectionWill);
 			}
 
-			connection.Confirm (connect.ClientId);
-
-			return new ConnectAck (ConnectionStatus.Accepted, sessionPresent);
-		}
-
-		public IPacket GetError (ConnectionStatus status)
-		{
-			if (status == ConnectionStatus.Accepted)
-				throw new ProtocolException (Resources.ConnectFlow_NoErrorCodeDetected);
-
-			return new ConnectAck (status, existingSession: false);
+			await channel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent));
 		}
 	}
 }

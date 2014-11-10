@@ -49,6 +49,12 @@
   <ItemGroup>
     <Compile Include="BinaryChannelSpec.cs" />
     <Compile Include="ByteExtensionsSpec.cs" />
+    <Compile Include="Flows\ConnectFlowSpec.cs" />
+    <Compile Include="Flows\DisconnectFlowSpec.cs" />
+    <Compile Include="Flows\PingFlowSpec.cs" />
+    <Compile Include="Flows\PublishFlowSpec.cs" />
+    <Compile Include="Flows\SubscribeFlowSpec.cs" />
+    <Compile Include="Flows\UnsubscribeFlowSpec.cs" />
     <Compile Include="Formatters\EmptyPacketFormatterSpec.cs" />
     <Compile Include="Formatters\UnsubscribeAckFormatterSpec.cs" />
     <Compile Include="Formatters\SubscribeAckFormatterSpec.cs" />
@@ -339,6 +345,7 @@
   <ItemGroup>
     <Content Include="netfx\System\Reactive\Readme.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
 </Project>

@@ -222,4 +222,7 @@
   <data name="UnsubscribeFormatter_MissingTopics" xml:space="preserve">
     <value>An unsubscribe packet must contain at least one topic to unsubscribe</value>
   </data>
+  <data name="PublishFlow_PacketIdRequired" xml:space="preserve">
+    <value>Packet Id value is required for QoS major than 0</value>
+  </data>
 </root>
