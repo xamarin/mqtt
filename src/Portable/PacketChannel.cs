@@ -20,7 +20,7 @@ namespace Hermes
 				var packet = await this.manager.GetAsync(bytes);
 
 				this.subject.OnNext (packet); 
-			}, onError: e => this.subject.OnError(e), onCompleted: () => this.subject.OnCompleted());
+			}, onError: ex => this.subject.OnError(ex), onCompleted: () => this.subject.OnCompleted());
 		}
 
 		public IObservable<IPacket> Receiver { get { return this.subject; } }

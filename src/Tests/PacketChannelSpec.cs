@@ -191,5 +191,32 @@ namespace Tests
 			innerChannel.Verify (x => x.SendAsync (It.Is<byte[]> (b => b.ToList ().SequenceEqual (bytes))));
 			manager.Verify (x => x.GetAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)));
 		}
+
+		[Fact]
+		public void when_packet_channel_error_then_notifies()
+		{
+			var receiver = new Subject<byte[]> ();
+			var innerChannel = new Mock<IChannel<byte[]>>();
+
+			innerChannel.Setup (x => x.Receiver).Returns (receiver);
+
+			var manager = new Mock<IPacketManager> ();
+
+			var channel = new PacketChannel (innerChannel.Object, manager.Object);
+
+			var errorMessage = "Packet Exception";
+
+			receiver.OnError (new ProtocolException(errorMessage));
+
+			var errorReceived = default (Exception);
+
+			channel.Receiver.Subscribe (_ => { }, ex => {
+				errorReceived = ex;
+			});
+
+			Assert.NotNull (errorReceived);
+			Assert.True (errorReceived is ProtocolException);
+			Assert.Equal (errorMessage, (errorReceived as ProtocolException).Message);
+		}
 	}
 }

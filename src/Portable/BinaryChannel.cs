@@ -30,7 +30,7 @@ namespace Hermes
 				if (this.hasPacket) {
 					this.receiver.OnNext(this.GetPacket ());
 				}
-			}, onError: e => this.receiver.OnError(e), onCompleted: () => this.receiver.OnCompleted());
+			}, onError: ex => this.receiver.OnError(ex), onCompleted: () => this.receiver.OnCompleted());
 		}
 
 		public IObservable<byte[]> Receiver { get { return this.receiver; } }

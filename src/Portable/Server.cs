@@ -35,7 +35,7 @@ namespace Hermes
 				});
 
 				packet.Receiver.Subscribe (_ => { },
-					e => { socket.Close (); sockets.Remove (socket); },
+					ex => { socket.Close (); sockets.Remove (socket); },
 					() => { socket.Close (); sockets.Remove (socket); });
 			});
 		}

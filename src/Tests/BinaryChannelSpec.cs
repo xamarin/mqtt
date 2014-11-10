@@ -143,5 +143,30 @@ namespace Tests
 
 			innerChannel.Verify (x => x.SendAsync (It.Is<byte[]> (b => b.ToList ().SequenceEqual (bytes))));
 		}
+
+		[Fact]
+		public void when_binary_channel_error_then_notifies()
+		{
+			var receiver = new Subject<byte> ();
+			var innerChannel = new Mock<IBufferedChannel<byte>>();
+
+			innerChannel.Setup (x => x.Receiver).Returns (receiver);
+
+			var channel = new BinaryChannel (innerChannel.Object);
+
+			var errorMessage = "Binary Exception";
+
+			receiver.OnError (new ProtocolException(errorMessage));
+
+			var errorReceived = default (Exception);
+
+			channel.Receiver.Subscribe (_ => { }, ex => {
+				errorReceived = ex;
+			});
+
+			Assert.NotNull (errorReceived);
+			Assert.True (errorReceived is ProtocolException);
+			Assert.Equal (errorMessage, (errorReceived as ProtocolException).Message);
+		}
 	}
 }
