@@ -21,23 +21,25 @@ namespace Tests.Flows
 			var configuration = new Mock<IProtocolConfiguration> ();
 			var clientManager = new Mock<IClientManager> ();
 			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
 			var topic = "foo/bar";
 
-			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, subscriptionRepository.Object);
+			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, 
+				sessionRepository.Object, packetIdentifierRepository);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.AtLeastOnce;
-			var subscriptions = new List<ClientSubscription> ();
+			var sessions = new List<ClientSession> { new ClientSession {
+				ClientId = subscribedClientId,
+				Clean = false,
+				Subscriptions = new List<ClientSubscription> { 
+					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
+				}
+			}};
 
-			subscriptions.Add (new ClientSubscription { ClientId = subscribedClientId, RequestedQualityOfService = requestedQoS, TopicFilter = topic });
-
-			var retainedMessageCreated = false;
-
-			retainedRepository.Setup (r => r.Create (It.IsAny<RetainedMessage> ())).Callback (() => retainedMessageCreated = true);
-			subscriptionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSubscription, bool>>> ()))
-				.Returns (subscriptions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns (sessions.AsQueryable());
 			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.AtLeastOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
@@ -47,16 +49,12 @@ namespace Tests.Flows
 
 			var channel = new Mock<IChannel<IPacket>> ();
 
-			var packetResponseSent = false;
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ())).Callback (() => packetResponseSent = true);
-
 			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
+			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
 				It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == topic && ((Publish)p).QualityOfService == requestedQoS && ((Publish)p).PacketId.HasValue)));
-			Assert.False (retainedMessageCreated);
-			Assert.False (packetResponseSent);
+			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
 		[Fact]
@@ -65,23 +63,25 @@ namespace Tests.Flows
 			var configuration = new Mock<IProtocolConfiguration> ();
 			var clientManager = new Mock<IClientManager> ();
 			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
 			var topic = "foo/bar";
 
-			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, subscriptionRepository.Object);
+			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object,
+				sessionRepository.Object, packetIdentifierRepository);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
-			var subscriptions = new List<ClientSubscription> ();
+			var sessions = new List<ClientSession> { new ClientSession {
+				ClientId = subscribedClientId,
+				Clean = false,
+				Subscriptions = new List<ClientSubscription> { 
+					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
+				}
+			}};
 
-			subscriptions.Add (new ClientSubscription { ClientId = subscribedClientId, RequestedQualityOfService = requestedQoS, TopicFilter = topic });
-
-			var retainedMessageCreated = false;
-
-			retainedRepository.Setup (r => r.Create (It.IsAny<RetainedMessage> ())).Callback (() => retainedMessageCreated = true);
-			subscriptionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSubscription, bool>>> ()))
-				.Returns (subscriptions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
 			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.ExactlyOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
@@ -100,9 +100,9 @@ namespace Tests.Flows
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
+			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
 				It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == topic && ((Publish)p).QualityOfService == requestedQoS && ((Publish)p).PacketId.HasValue)));
-			Assert.False (retainedMessageCreated);
 			Assert.NotNull (response);
 
 			var publishAck = response as PublishAck;
@@ -117,23 +117,25 @@ namespace Tests.Flows
 			var configuration = new Mock<IProtocolConfiguration> ();
 			var clientManager = new Mock<IClientManager> ();
 			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
 			var topic = "foo/bar";
 
-			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, subscriptionRepository.Object);
+			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, 
+				sessionRepository.Object, packetIdentifierRepository);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
-			var subscriptions = new List<ClientSubscription> ();
+			var sessions = new List<ClientSession> { new ClientSession {
+				ClientId = subscribedClientId,
+				Clean = false,
+				Subscriptions = new List<ClientSubscription> { 
+					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
+				}
+			}};
 
-			subscriptions.Add (new ClientSubscription { ClientId = subscribedClientId, RequestedQualityOfService = requestedQoS, TopicFilter = topic });
-
-			var retainedMessageCreated = false;
-
-			retainedRepository.Setup (r => r.Create (It.IsAny<RetainedMessage> ())).Callback (() => retainedMessageCreated = true);
-			subscriptionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSubscription, bool>>> ()))
-				.Returns (subscriptions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
 			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.ExactlyOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
@@ -154,7 +156,7 @@ namespace Tests.Flows
 
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
 				It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == topic && ((Publish)p).QualityOfService == requestedQoS && ((Publish)p).PacketId.HasValue)));
-			Assert.False (retainedMessageCreated);
+			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			Assert.NotNull (response);
 
 			var publishAck = response as PublishReceived;
@@ -169,9 +171,11 @@ namespace Tests.Flows
 			var configuration = Mock.Of<IProtocolConfiguration> ();
 			var clientManager = Mock.Of<IClientManager> ();
 			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = Mock.Of<IRepository<ClientSubscription>> ();
+			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishFlow (configuration, clientManager, retainedRepository, subscriptionRepository);
+			var flow = new PublishFlow (configuration, clientManager, retainedRepository, 
+				sessionRepository, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
@@ -201,9 +205,11 @@ namespace Tests.Flows
 			var configuration = Mock.Of<IProtocolConfiguration> ();
 			var clientManager = Mock.Of<IClientManager> ();
 			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = Mock.Of<IRepository<ClientSubscription>> ();
+			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishFlow (configuration, clientManager, retainedRepository, subscriptionRepository);
+			var flow = new PublishFlow (configuration, clientManager, retainedRepository, 
+				sessionRepository, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
@@ -230,20 +236,20 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_publish_with_retain_then_retain_message_is_created()
 		{
-			var configuration = new Mock<IProtocolConfiguration> ();
-			var clientManager = new Mock<IClientManager> ();
+			var configuration = Mock.Of<IProtocolConfiguration> ();
+			var clientManager = Mock.Of<IClientManager> ();
 			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
 			var topic = "foo/bar";
 
-			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, subscriptionRepository.Object);
-
-			var subscriptions = new List<ClientSubscription> ();
+			var flow = new PublishFlow (configuration, clientManager, retainedRepository.Object, 
+				sessionRepository.Object, packetIdentifierRepository);
+			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid ().ToString (), Clean = false }};
 
 			retainedRepository.Setup (r => r.Get (It.IsAny<Expression<Func<RetainedMessage, bool>>>())).Returns (default(RetainedMessage));
-			subscriptionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSubscription, bool>>> ()))
-				.Returns (subscriptions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var qos = QualityOfService.AtMostOnce;
@@ -254,35 +260,31 @@ namespace Tests.Flows
 
 			var channel = new Mock<IChannel<IPacket>> ();
 
-			var packetResponseSent = false;
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ())).Callback (() => packetResponseSent = true);
-
 			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload == payload)));
-			Assert.False (packetResponseSent);
+			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
 		[Fact]
 		public async Task when_sending_publish_with_retain_then_retain_message_is_replaced()
 		{
-			var configuration = new Mock<IProtocolConfiguration> ();
-			var clientManager = new Mock<IClientManager> ();
+			var configuration = Mock.Of<IProtocolConfiguration> ();
+			var clientManager = Mock.Of<IClientManager> ();
 			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
 			var topic = "foo/bar";
 
-			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, subscriptionRepository.Object);
-
-			var subscriptions = new List<ClientSubscription> ();
+			var flow = new PublishFlow (configuration, clientManager, retainedRepository.Object, 
+				sessionRepository.Object, packetIdentifierRepository);
+			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid().ToString(), Clean = false }};
 
 			var existingRetainedMessage = new RetainedMessage();
 
 			retainedRepository.Setup (r => r.Get (It.IsAny<Expression<Func<RetainedMessage, bool>>>())).Returns (existingRetainedMessage);
-			subscriptionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSubscription, bool>>> ()))
-				.Returns (subscriptions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var qos = QualityOfService.AtMostOnce;
@@ -293,16 +295,11 @@ namespace Tests.Flows
 
 			var channel = new Mock<IChannel<IPacket>> ();
 
-			var packetResponseSent = false;
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ())).Callback (() => packetResponseSent = true);
-
 			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Delete (It.Is<RetainedMessage> (m => m == existingRetainedMessage)));
 			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload == payload)));
-
-			Assert.False (packetResponseSent);
+			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
 		[Fact]
@@ -311,23 +308,25 @@ namespace Tests.Flows
 			var configuration = new Mock<IProtocolConfiguration> ();
 			var clientManager = new Mock<IClientManager> ();
 			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
 			var topic = "foo/bar";
 
-			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, subscriptionRepository.Object);
+			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, 
+				sessionRepository.Object, packetIdentifierRepository);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
-			var subscriptions = new List<ClientSubscription> ();
+			var sessions = new List<ClientSession> { new ClientSession {
+				ClientId = subscribedClientId,
+				Clean = false,
+				Subscriptions = new List<ClientSubscription> { 
+					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
+				}
+			}};
 
-			subscriptions.Add (new ClientSubscription { ClientId = subscribedClientId, RequestedQualityOfService = requestedQoS, TopicFilter = topic });
-
-			var retainedMessageCreated = false;
-
-			retainedRepository.Setup (r => r.Create (It.IsAny<RetainedMessage> ())).Callback (() => retainedMessageCreated = true);
-			subscriptionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSubscription, bool>>> ()))
-				.Returns (subscriptions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
 
 			var supportedQos = QualityOfService.AtLeastOnce;
 
@@ -350,7 +349,7 @@ namespace Tests.Flows
 
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
 				It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == topic && ((Publish)p).QualityOfService == supportedQos && ((Publish)p).PacketId.HasValue)));
-			Assert.False (retainedMessageCreated);
+			retainedRepository.Verify(r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			Assert.NotNull (response);
 
 			var publishAck = response as PublishAck;
@@ -358,23 +357,80 @@ namespace Tests.Flows
 			Assert.NotNull (publishAck);
 		}
 
+		public async Task when_sending_publish_ack_then_packet_identifier_is_deleted()
+		{
+			var configuration = Mock.Of<IProtocolConfiguration> ();
+			var clientManager = Mock.Of<IClientManager> ();
+			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
+			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+
+			var clientId = Guid.NewGuid().ToString();
+			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
+			var publishAck = new PublishAck (packetId);
+
+			var flow = new PublishFlow (configuration, clientManager, retainedRepository, sessionRepository, packetIdentifierRepository.Object);
+
+			var channel = new Mock<IChannel<IPacket>> ();
+
+			var response = default(IPacket);
+
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+				.Callback<IPacket> (p => response = p)
+				.Returns(Task.Delay(0));
+
+			await flow.ExecuteAsync (clientId, publishAck, channel.Object);
+
+			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
+			Assert.Null (response);
+		}
+
+		public async Task when_sending_publish_complete_then_packet_identifier_is_deleted()
+		{
+			var configuration = Mock.Of<IProtocolConfiguration> ();
+			var clientManager = Mock.Of<IClientManager> ();
+			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
+			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+
+			var clientId = Guid.NewGuid().ToString();
+			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
+			var publishComplete = new PublishComplete (packetId);
+
+			var flow = new PublishFlow (configuration, clientManager, retainedRepository, sessionRepository, packetIdentifierRepository.Object);
+
+			var channel = new Mock<IChannel<IPacket>> ();
+
+			var response = default(IPacket);
+
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+				.Callback<IPacket> (p => response = p)
+				.Returns(Task.Delay(0));
+
+			await flow.ExecuteAsync (clientId, publishComplete, channel.Object);
+
+			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
+			Assert.Null (response);
+		}
+
 		[Fact]
 		public void when_sending_publish_with_qos_higher_than_zero_and_without_packet_id_then_fails()
 		{
 			var configuration = new Mock<IProtocolConfiguration> ();
-			var clientManager = new Mock<IClientManager> ();
-			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var clientManager = Mock.Of<IClientManager> ();
+			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
 			var topic = "foo/bar";
 
-			var flow = new PublishFlow (configuration.Object, clientManager.Object, retainedRepository.Object, subscriptionRepository.Object);
+			var flow = new PublishFlow (configuration.Object, clientManager, retainedRepository,
+				sessionRepository.Object, packetIdentifierRepository);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
-			var subscriptions = new List<ClientSubscription> ();
+			var sessions = new List<ClientSession> { new ClientSession { ClientId = subscribedClientId, Clean = false } };
 
-			subscriptionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSubscription, bool>>> ()))
-				.Returns (subscriptions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
 			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.ExactlyOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
@@ -401,9 +457,11 @@ namespace Tests.Flows
 			var configuration = Mock.Of<IProtocolConfiguration> ();
 			var clientManager = Mock.Of<IClientManager> ();
 			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var subscriptionRepository = Mock.Of<IRepository<ClientSubscription>> ();
+			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishFlow (configuration, clientManager, retainedRepository, subscriptionRepository);
+			var flow = new PublishFlow (configuration, clientManager, retainedRepository, 
+				sessionRepository, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var channel = new Mock<IChannel<IPacket>> ();

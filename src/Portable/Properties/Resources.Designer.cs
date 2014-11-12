@@ -107,15 +107,6 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A second connect packet from the same client session is not allowed. The client will be disconnected.
-        /// </summary>
-        internal static string ConnectFlow_SecondConnectNotAllowed {
-            get {
-                return ResourceManager.GetString("ConnectFlow_SecondConnectNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Client Id cannot exceed 23 bytes.
         /// </summary>
         internal static string ConnectFormatter_ClientIdMaxLengthExceeded {
@@ -346,6 +337,33 @@ namespace Hermes.Properties {
         internal static string PublishFormatter_PacketIdRequired {
             get {
                 return ResourceManager.GetString("PublishFormatter_PacketIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The first Packet sent from the Client to the Server must be a Connect Packet. The connection will be closed.
+        /// </summary>
+        internal static string Server_FirstPacketMustBeConnect {
+            get {
+                return ResourceManager.GetString("Server_FirstPacketMustBeConnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Server has not received a Connect Packet in a time fashion. The connection will be closed.
+        /// </summary>
+        internal static string Server_NoConnectReceived {
+            get {
+                return ResourceManager.GetString("Server_NoConnectReceived", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A second connect packet from the same client session is not allowed. The client will be disconnected and the connection closed.
+        /// </summary>
+        internal static string Server_SecondConnectNotAllowed {
+            get {
+                return ResourceManager.GetString("Server_SecondConnectNotAllowed", resourceCulture);
             }
         }
         

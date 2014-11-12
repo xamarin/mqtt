@@ -171,5 +171,123 @@ namespace Tests
 			Assert.Equal (1, server.ActiveClients.Count ());
 			Assert.Equal (clientId, server.ActiveClients.First ());
 		}
+
+		[Fact]
+		public void when_second_connect_received_then_disposes_socket()
+		{
+			var sockets = new Subject<IBufferedChannel<byte>> ();
+			var seconds = new Subject<Unit> ();
+
+			var packets = new Subject<IPacket> ();
+			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var handler = Mock.Of<IMessagingHandler>();
+
+			var server = new Server (sockets, seconds, factory, handler);
+			var receiver = new Subject<byte> ();
+			var socket = new Mock<IBufferedChannel<byte>> ();
+
+			socket.Setup (x => x.Receiver).Returns (receiver);
+
+			sockets.OnNext (socket.Object);
+			packets.OnNext (new Connect ());
+			packets.OnNext (new Connect ());
+
+			socket.Verify (x => x.Close ());
+		}
+
+		[Fact]
+		public void when_packet_received_before_connect_then_disposes_socket()
+		{
+			var sockets = new Subject<IBufferedChannel<byte>> ();
+			var seconds = new Subject<Unit> ();
+
+			var packets = new Subject<IPacket> ();
+			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var handler = Mock.Of<IMessagingHandler>();
+
+			var server = new Server (sockets, seconds, factory, handler);
+			var receiver = new Subject<byte> ();
+			var socket = new Mock<IBufferedChannel<byte>> ();
+
+			socket.Setup (x => x.Receiver).Returns (receiver);
+
+			sockets.OnNext (socket.Object);
+			packets.OnNext (new PingRequest ());
+
+			socket.Verify (x => x.Close ());
+		}
+
+		[Fact]
+		public void when_keep_alive_enabled_and_no_packet_received_then_disposes_socket ()
+		{
+			ushort keepAlive = 10;
+			var sockets = new Subject<IBufferedChannel<byte>> ();
+			var seconds = new Subject<Unit> ();
+
+			var packets = new Subject<IPacket> ();
+			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var server = new Server (sockets, seconds, factory, Mock.Of<IMessagingHandler>());
+			var socket = new Mock<IBufferedChannel<byte>> ();
+
+			sockets.OnNext (socket.Object);
+			packets.OnNext (new Connect { KeepAlive = keepAlive });
+
+			for (int i = 0; i < keepAlive * 1.5; i++) {
+				seconds.OnNext (Unit.Default);
+			}
+
+			socket.Verify (x => x.Close ());
+		}
+
+		[Fact]
+		public void when_keep_alive_enabled_and_packet_received_then_does_not_disposes_socket ()
+		{
+			ushort keepAlive = 10;
+			var sockets = new Subject<IBufferedChannel<byte>> ();
+			var seconds = new Subject<Unit> ();
+
+			var packets = new Subject<IPacket> ();
+			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var server = new Server (sockets, seconds, factory, Mock.Of<IMessagingHandler>());
+			var socket = new Mock<IBufferedChannel<byte>> ();
+
+			sockets.OnNext (socket.Object);
+			packets.OnNext (new Connect { KeepAlive = keepAlive });
+
+			for (int i = 0; i < keepAlive; i++) {
+				seconds.OnNext (Unit.Default);
+			}
+
+			packets.OnNext (new PingRequest());
+
+			socket.Verify (x => x.Close (), Times.Never);
+		}
+
+		[Fact]
+		public void when_keep_alive_disabled_and_no_packet_received_then_does_not_disposes_socket ()
+		{
+			ushort keepAlive = 0;
+			var sockets = new Subject<IBufferedChannel<byte>> ();
+			var seconds = new Subject<Unit> ();
+
+			var packets = new Subject<IPacket> ();
+			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
+			var server = new Server (sockets, seconds, factory, Mock.Of<IMessagingHandler>());
+			var socket = new Mock<IBufferedChannel<byte>> ();
+
+			sockets.OnNext (socket.Object);
+			packets.OnNext (new Connect { KeepAlive = keepAlive });
+
+			for (int i = 0; i < 1000; i++) {
+				seconds.OnNext (Unit.Default);
+			}
+
+			socket.Verify (x => x.Close (), Times.Never);
+		}
 	}
 }

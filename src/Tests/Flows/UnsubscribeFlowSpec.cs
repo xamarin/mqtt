@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Hermes;
@@ -15,18 +16,27 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_unsubscribing_existing_subscriptions_then_subscriptions_are_deleted_and_ack_is_sent()
 		{
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new UnsubscribeFlow (subscriptionRepository.Object);
+			var flow = new UnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var topic = "foo/bar/test";
 			var qos = QualityOfService.AtLeastOnce;
-			var existingSubscription = new ClientSubscription { ClientId = clientId, RequestedQualityOfService = qos, TopicFilter = topic };
+			var session = new ClientSession { 
+				ClientId = clientId,
+				Clean = false, 
+				Subscriptions = new List<ClientSubscription> { 
+					new ClientSubscription { ClientId = clientId, MaximumQualityOfService = qos, TopicFilter = topic } 
+				} 
+			};
+			var updatedSession = default(ClientSession);
 
-			subscriptionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSubscription, bool>>> ())).Returns (existingSubscription);
-
+			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
+			sessionRepository.Setup (r => r.Update (It.IsAny<ClientSession> ())).Callback<ClientSession> (s => updatedSession = s);
+			
 			var unsubscribe = new Unsubscribe (packetId, topic);
 
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -39,8 +49,8 @@ namespace Tests.Flows
 
 			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
-			subscriptionRepository.Verify (r => r.Delete (It.Is<ClientSubscription> (s => s == existingSubscription)));
 			Assert.NotNull (response);
+			Assert.Equal (0, updatedSession.Subscriptions.Count);
 
 			var unsubscribeAck = response as UnsubscribeAck;
 
@@ -51,16 +61,19 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_unsubscribing_not_existing_subscriptions_then_ack_is_sent()
 		{
-			var subscriptionRepository = new Mock<IRepository<ClientSubscription>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new UnsubscribeFlow (subscriptionRepository.Object);
+			var flow = new UnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
-			var deleteCalled = false;
+			var session = new ClientSession { 
+				ClientId = clientId,
+				Clean = false
+			};
 
-			subscriptionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSubscription, bool>>> ())).Returns (default(ClientSubscription));
-			subscriptionRepository.Setup (r => r.Delete (It.IsAny<ClientSubscription> ())).Callback(() => deleteCalled = true);
+			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
 			var unsubscribe = new Unsubscribe (packetId, "foo/bar");
 
@@ -74,21 +87,48 @@ namespace Tests.Flows
 
 			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
+			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
 			Assert.NotNull (response);
 
 			var unsubscribeAck = response as UnsubscribeAck;
 
 			Assert.NotNull (unsubscribeAck);
 			Assert.Equal (packetId, unsubscribeAck.PacketId);
-			Assert.False (deleteCalled);
+		}
+
+		[Fact]
+		public async Task when_sending_unsubscribe_ack_then_packet_identifier_is_deleted()
+		{
+			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+
+			var clientId = Guid.NewGuid().ToString();
+			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
+			var unsubscribeAck = new UnsubscribeAck (packetId);
+
+			var flow = new UnsubscribeFlow (sessionRepository, packetIdentifierRepository.Object);
+
+			var channel = new Mock<IChannel<IPacket>> ();
+
+			var response = default(IPacket);
+
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+				.Callback<IPacket> (p => response = p)
+				.Returns(Task.Delay(0));
+
+			await flow.ExecuteAsync (clientId, unsubscribeAck, channel.Object);
+
+			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
+			Assert.Null (response);
 		}
 
 		[Fact]
 		public void when_sending_invalid_packet_to_unsubscribe_then_fails()
 		{
-			var subscriptionRepository = Mock.Of<IRepository<ClientSubscription>> ();
+			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new UnsubscribeFlow (subscriptionRepository);
+			var flow = new UnsubscribeFlow (sessionRepository, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var channel = new Mock<IChannel<IPacket>> ();

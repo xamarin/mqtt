@@ -9,10 +9,10 @@ namespace Hermes.Flows
 	//TODO: Pending to add support for this:  If the ClientId represents a Client already connected to the Server then the Server MUST disconnect the existing Client
 	public class ConnectFlow : IProtocolFlow
 	{
-		readonly IRepository<ProtocolSession> sessionRepository;
+		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 
-		public ConnectFlow (IRepository<ProtocolSession> sessionRepository, IRepository<ConnectionWill> willRepository)
+		public ConnectFlow (IRepository<ClientSession> sessionRepository, IRepository<ConnectionWill> willRepository)
 		{
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
@@ -31,21 +31,17 @@ namespace Hermes.Flows
 				throw new ProtocolException(error);
 			}
 
-			//if(this.activeClients.Any(c => c == clientId))
-			//	throw new ViolationProtocolException (Resources.ConnectFlow_SecondConnectNotAllowed);
-
-			//this.activeClients.Add (connect.ClientId);
-			
 			//TODO: Add exception handling to prevent any repository error
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 
 			if (connect.CleanSession && session != null) {
 				this.sessionRepository.Delete(session);
+				session = null; //TODO: Verify if this is necessary
 			}
 
 			if (session == null) {
-				session = new ProtocolSession { ClientId = clientId, Clean = connect.CleanSession };
+				session = new ClientSession { ClientId = clientId, Clean = connect.CleanSession };
 
 				this.sessionRepository.Create (session);
 			}

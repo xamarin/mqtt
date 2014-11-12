@@ -4,23 +4,23 @@ namespace Hermes.Packets
 {
 	public class Subscription : IEquatable<Subscription>
     {
-        public Subscription(string topic, QualityOfService requestedQos)
+        public Subscription(string topicFilter, QualityOfService requestedQos)
         {
-            this.Topic = topic;
-            this.RequestedQualityOfService = requestedQos;
+            this.TopicFilter = topicFilter;
+            this.MaximumQualityOfService = requestedQos;
         }
 
-        public string Topic { get; set; }
+        public string TopicFilter { get; set; }
 
-        public QualityOfService RequestedQualityOfService { get; set; }
+        public QualityOfService MaximumQualityOfService { get; set; }
 
 		public bool Equals (Subscription other)
 		{
 			if (other == null)
 				return false;
 
-			return this.Topic == other.Topic &&
-				this.RequestedQualityOfService == other.RequestedQualityOfService;
+			return this.TopicFilter == other.TopicFilter &&
+				this.MaximumQualityOfService == other.MaximumQualityOfService;
 		}
 
 		public override bool Equals (object obj)
@@ -54,7 +54,7 @@ namespace Hermes.Packets
 
 		public override int GetHashCode ()
 		{
-			return this.Topic.GetHashCode () + this.RequestedQualityOfService.GetHashCode ();
+			return this.TopicFilter.GetHashCode () + this.MaximumQualityOfService.GetHashCode ();
 		}
 	}
 }

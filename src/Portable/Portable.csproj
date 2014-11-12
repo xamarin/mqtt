@@ -10,10 +10,11 @@
     <RootNamespace>Hermes</RootNamespace>
     <AssemblyName>Hermes.Portable</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile78</TargetFrameworkProfile>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <NuGetPackageImportStamp>0534a6ca</NuGetPackageImportStamp>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -21,7 +22,6 @@
     </Compile>
     <Compile Include="BinaryChannel.cs" />
     <Compile Include="ByteExtensions.cs" />
-    <Compile Include="ClientManager.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Flows\PingFlow.cs" />
@@ -88,13 +88,14 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Server.cs" />
+    <Compile Include="Storage\PacketIdentifier.cs" />
+    <Compile Include="Storage\PendingMessage.cs" />
     <Compile Include="Storage\RetainedMessage.cs" />
     <Compile Include="Storage\ClientSubscription.cs" />
     <Compile Include="Storage\ConnectionWill.cs" />
     <Compile Include="Storage\InMemoryRepository.cs" />
-    <Compile Include="Storage\IProtocolSession.cs" />
     <Compile Include="Storage\IRepository.cs" />
-    <Compile Include="Storage\ProtocolSession.cs" />
+    <Compile Include="Storage\ClientSession.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Hermes.Exceptions;
 using Hermes.Packets;
@@ -10,18 +11,26 @@ namespace Hermes.Flows
 	public class SubscribeFlow : IProtocolFlow
 	{
 		readonly IProtocolConfiguration configuration;
-		readonly IRepository<ClientSubscription> subscriptionRepository;
+		readonly IRepository<ClientSession> sessionRepository;
+		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
-		public SubscribeFlow (IProtocolConfiguration configuration, IRepository<ClientSubscription> subscriptionRepository)
+		public SubscribeFlow (IProtocolConfiguration configuration, IRepository<ClientSession> sessionRepository, 
+			IRepository<PacketIdentifier> packetIdentifierRepository)
 		{
 			this.configuration = configuration;
-			this.subscriptionRepository = subscriptionRepository;
+			this.sessionRepository = sessionRepository;
+			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if(input.Type == PacketType.SubscribeAck)
+			if (input.Type == PacketType.SubscribeAck) {
+				var subscribeAck = input as SubscribeAck;
+
+				this.packetIdentifierRepository.Delete (i => i.Value == subscribeAck.PacketId);
+
 				return;
+			}
 
 			var subscribe = input as Subscribe;
 
@@ -31,25 +40,23 @@ namespace Hermes.Flows
 				throw new ProtocolException(error);
 			}
 
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var returnCodes = new List<SubscribeReturnCode> ();
 
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
-					var existingSubscription = this.subscriptionRepository.Get (s => s.ClientId == clientId && s.TopicFilter == subscription.Topic);
+					var existingSubscription = session.Subscriptions.FirstOrDefault(s => s.TopicFilter == subscription.TopicFilter);
 
 					if (existingSubscription != null) {
-						existingSubscription.RequestedQualityOfService = subscription.RequestedQualityOfService;
-
-						this.subscriptionRepository.Update (existingSubscription);
+						existingSubscription.MaximumQualityOfService = subscription.MaximumQualityOfService;
 					} else {
-						this.subscriptionRepository.Create (new ClientSubscription { 
-							ClientId = clientId,
-							TopicFilter = subscription.Topic,
-							RequestedQualityOfService = subscription.RequestedQualityOfService });
+						session.Subscriptions.Add (new ClientSubscription { 
+							TopicFilter = subscription.TopicFilter,
+							MaximumQualityOfService = subscription.MaximumQualityOfService });
 					}
 
-					var supportedQos = subscription.RequestedQualityOfService > this.configuration.SupportedQualityOfService ?
-						this.configuration.SupportedQualityOfService : subscription.RequestedQualityOfService;
+					var supportedQos = subscription.MaximumQualityOfService > this.configuration.SupportedQualityOfService ?
+						this.configuration.SupportedQualityOfService : subscription.MaximumQualityOfService;
 					var returnCode = supportedQos.ToReturnCode ();
 
 					returnCodes.Add (returnCode);
@@ -58,6 +65,8 @@ namespace Hermes.Flows
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}
 			}
+
+			this.sessionRepository.Update (session);
 
 			await channel.SendAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()));
 		}

@@ -4,6 +4,6 @@ namespace Hermes
 {
 	public interface IMessagingHandler
 	{
-		void Handle (string clientId, IChannel<IPacket> channel);
+		void Handle (IChannel<IPacket> channel);
 	}
 }

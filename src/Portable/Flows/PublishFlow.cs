@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
+using System.Linq;
 
 namespace Hermes.Flows
 {
@@ -13,15 +14,19 @@ namespace Hermes.Flows
 		readonly IProtocolConfiguration configuration;
 		readonly IClientManager clientManager;
 		readonly IRepository<RetainedMessage> retainedRepository;
-		readonly IRepository<ClientSubscription> subscriptionRepository;
+		readonly IRepository<ClientSession> sessionRepository;
+		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IDictionary<QualityOfService, Func<Publish, IPacket>> publishRules;
 
-		public PublishFlow (IProtocolConfiguration configuration, IClientManager clientManager, IRepository<RetainedMessage> retainedRepository,  IRepository<ClientSubscription> subscriptionRepository)
+		public PublishFlow (IProtocolConfiguration configuration, IClientManager clientManager,
+			IRepository<RetainedMessage> retainedRepository, IRepository<ClientSession> sessionRepository, 
+			IRepository<PacketIdentifier> packetIdentifierRepository)
 		{
 			this.configuration = configuration;
 			this.clientManager = clientManager;
 			this.retainedRepository = retainedRepository;
-			this.subscriptionRepository = subscriptionRepository;
+			this.sessionRepository = sessionRepository;
+			this.packetIdentifierRepository = packetIdentifierRepository;
 
 			this.publishRules = new Dictionary<QualityOfService, Func<Publish, IPacket>> ();
 
@@ -32,8 +37,21 @@ namespace Hermes.Flows
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type == PacketType.PublishAck || input.Type == PacketType.PublishComplete)
+			if (input.Type == PacketType.PublishAck) {
+				var publishAck = input as PublishAck;
+
+				this.packetIdentifierRepository.Delete (i => i.Value == publishAck.PacketId);
+
 				return;
+			}
+
+			if (input.Type == PacketType.PublishComplete) {
+				var publishComplete = input as PublishComplete;
+
+				this.packetIdentifierRepository.Delete (i => i.Value == publishComplete.PacketId);
+
+				return;
+			}
 
 			if (input.Type != PacketType.Publish && input.Type != PacketType.PublishReceived && 
 				input.Type != PacketType.PublishRelease) {
@@ -81,14 +99,14 @@ namespace Hermes.Flows
 			var qos = publish.QualityOfService > this.configuration.SupportedQualityOfService ? 
 				this.configuration.SupportedQualityOfService : 
 				publish.QualityOfService;
-			var subscriptions = this.subscriptionRepository.GetAll(s => s.Matches(publish.Topic));
+			var sessions = this.sessionRepository.GetAll (); //TODO: Needs some refactoring over Repository and Storage strategy to try not doing this on memory (right now It's an IQueryable but doesn't work like that)
+			var subscriptions = sessions.SelectMany(s => s.Subscriptions).Where(x => x.Matches(publish.Topic));
 
 			foreach (var subscription in subscriptions) {
-				var requestedQos = subscription.RequestedQualityOfService > this.configuration.SupportedQualityOfService ? 
+				var requestedQos = subscription.MaximumQualityOfService > this.configuration.SupportedQualityOfService ? 
 					this.configuration.SupportedQualityOfService : 
-					subscription.RequestedQualityOfService;
-				//TODO: Generate Packet Id taking into account already used Packet Ids
-				ushort? packetId = requestedQos == QualityOfService.AtMostOnce ? null : (ushort?)new Random ().Next (0, ushort.MaxValue);
+					subscription.MaximumQualityOfService;
+				var packetId = this.GetPacketIdentifier (requestedQos);
 
 				var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicatedDelivery: false, packetId: packetId);
 
@@ -102,6 +120,28 @@ namespace Hermes.Flows
 			var result = rule (publish);
 
 			await this.SendAckAsync (result, channel);
+		}
+
+		private ushort? GetPacketIdentifier(QualityOfService qos)
+		{
+			var packetId = default (ushort?);
+
+			if(qos != QualityOfService.AtMostOnce) {
+				packetId = this.GetUnusedPacketIdentifier (new Random ());
+			}
+
+			return packetId;
+		}
+
+		private ushort GetUnusedPacketIdentifier(Random random)
+		{
+			var packetId = (ushort)random.Next (1, ushort.MaxValue);
+
+			if (this.packetIdentifierRepository.Exist (i => i.Value == packetId)) {
+				packetId = this.GetUnusedPacketIdentifier (random);
+			}
+
+			return packetId;
 		}
 
 		private IPacket RunQoS0Flow (Publish publish)

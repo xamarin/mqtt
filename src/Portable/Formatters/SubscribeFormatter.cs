@@ -76,8 +76,8 @@ namespace Hermes.Formatters
 			var payload = new List<byte> ();
 
 			foreach (var subscription in packet.Subscriptions) {
-				var topicBytes = Protocol.Encoding.EncodeString (subscription.Topic);
-				var requestedQosByte = Convert.ToByte (subscription.RequestedQualityOfService);
+				var topicBytes = Protocol.Encoding.EncodeString (subscription.TopicFilter);
+				var requestedQosByte = Convert.ToByte (subscription.MaximumQualityOfService);
 
 				payload.AddRange (topicBytes);
 				payload.Add (requestedQosByte);

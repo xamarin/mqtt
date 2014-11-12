@@ -15,14 +15,8 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_then_session_is_created_and_ack_is_sent()
 		{
-			var sessionRepository = new Mock<IRepository<ProtocolSession>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
-
-			var sessionDeleted = false;
-			var willCreated = false;
-
-			sessionRepository.Setup (r => r.Delete (It.IsAny<Expression<Func<ProtocolSession, bool>>> ())).Callback (() => sessionDeleted = true);
-			willRepository.Setup (r => r.Create (It.IsAny<ConnectionWill> ())).Callback (() => willCreated = true);
 
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
@@ -37,7 +31,10 @@ namespace Tests.Flows
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
-			sessionRepository.Verify (r => r.Create (It.Is<ProtocolSession> (s => s.ClientId == clientId && s.Clean == true)));
+			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
+			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
+			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
+
 			Assert.NotNull (sentPacket);
 
 			var connectAck = sentPacket as ConnectAck;
@@ -46,28 +43,18 @@ namespace Tests.Flows
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
 			Assert.False (connectAck.ExistingSession);
-			Assert.False (sessionDeleted);
-			Assert.False (willCreated);
 		}
 
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_without_clean_session_then_ack_is_sent()
 		{
-			var sessionRepository = new Mock<IRepository<ProtocolSession>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
-			var sessionCreated = false;
-			var sessionDeleted = false;
-			var willCreated = false;
-
-			sessionRepository.Setup (r => r.Create (It.IsAny<ProtocolSession> ())).Callback (() => sessionCreated = true);
-			sessionRepository.Setup (r => r.Delete (It.IsAny<Expression<Func<ProtocolSession, bool>>> ())).Callback (() => sessionDeleted = true);
-			willRepository.Setup (r => r.Create (It.IsAny<ConnectionWill> ())).Callback (() => willCreated = true);
-
 			var clientId = Guid.NewGuid ().ToString ();
-			var existingSession = new ProtocolSession { ClientId = clientId, Clean = false };
+			var existingSession = new ClientSession { ClientId = clientId, Clean = false };
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ProtocolSession, bool>>>()))
+			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
 				.Returns (existingSession);
 
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
@@ -82,31 +69,28 @@ namespace Tests.Flows
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
+			sessionRepository.Verify (r => r.Create (It.IsAny<ClientSession> ()), Times.Never);
+			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
+			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
+
 			var connectAck = sentPacket as ConnectAck;
 
 			Assert.NotNull (connectAck);
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
 			Assert.True (connectAck.ExistingSession);
-			Assert.False(sessionCreated);
-			Assert.False(sessionDeleted);
-			Assert.False(willCreated);
 		}
 
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_clean_session_then_session_is_deleted_and_ack_is_sent()
 		{
-			var sessionRepository = new Mock<IRepository<ProtocolSession>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
-			var willCreated = false;
-
-			willRepository.Setup (r => r.Create (It.IsAny<ConnectionWill> ())).Callback (() => willCreated = true);
-
 			var clientId = Guid.NewGuid ().ToString ();
-			var existingSession = new ProtocolSession { ClientId = clientId, Clean = true };
+			var existingSession = new ClientSession { ClientId = clientId, Clean = true };
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ProtocolSession, bool>>>()))
+			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
 				.Returns (existingSession);
 
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
@@ -123,24 +107,24 @@ namespace Tests.Flows
 
 			var connectAck = sentPacket as ConnectAck;
 
-			sessionRepository.Verify (r => r.Delete (It.Is<ProtocolSession> (s => s == existingSession)));
+			sessionRepository.Verify (r => r.Delete (It.Is<ClientSession> (s => s == existingSession)));
+			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
 
 			Assert.NotNull (connectAck);
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
 			Assert.False (connectAck.ExistingSession);
-			Assert.False(willCreated);
 		}
 
 		[Fact]
 		public async Task when_sending_connect_with_will_then_will_is_created_and_ack_is_sent()
 		{
-			var sessionRepository = new Mock<IRepository<ProtocolSession>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
 			var sessionDeleted = false;
 
-			sessionRepository.Setup (r => r.Delete (It.IsAny<Expression<Func<ProtocolSession, bool>>> ())).Callback (() => sessionDeleted = true);
+			sessionRepository.Setup (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Callback (() => sessionDeleted = true);
 
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
@@ -162,7 +146,7 @@ namespace Tests.Flows
 
 			var connectAck = sentPacket as ConnectAck;
 
-			sessionRepository.Verify (r => r.Create (It.Is<ProtocolSession> (s => s.ClientId == clientId && s.Clean == true)));
+			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
 			willRepository.Verify (r => r.Create (It.Is<ConnectionWill> (w => w.ClientId == clientId && w.Will == will)));
 
 			Assert.NotNull (connectAck);
@@ -175,7 +159,7 @@ namespace Tests.Flows
 		[Fact]
 		public void when_sending_invalid_packet_to_connect_then_fails()
 		{
-			var sessionRepository = new Mock<IRepository<ProtocolSession>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = Mock.Of<IRepository<ConnectionWill>> ();
 
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository);

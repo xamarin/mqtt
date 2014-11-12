@@ -17,9 +17,17 @@ namespace Hermes
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 			this.subscription = innerChannel.Receiver.Subscribe (async bytes => {
-				var packet = await this.manager.GetAsync(bytes);
+				try {
+					var packet = await this.manager.GetAsync(bytes);
 
-				this.subject.OnNext (packet); 
+					this.subject.OnNext (packet); 
+				} catch (ConnectProtocolException connEx) {
+					var errorAck = new ConnectAck (connEx.ReturnCode, existingSession: false);
+
+					this.SendAsync (errorAck).Wait();
+				} catch (ProtocolException ex) {
+					this.subject.OnError (ex);
+				}
 			}, onError: ex => this.subject.OnError(ex), onCompleted: () => this.subject.OnCompleted());
 		}
 

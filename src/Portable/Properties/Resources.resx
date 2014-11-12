@@ -132,8 +132,8 @@
   <data name="ConnectFlow_NoErrorCodeDetected" xml:space="preserve">
     <value>Only error codes are allowed to send an error connection acknowledge</value>
   </data>
-  <data name="ConnectFlow_SecondConnectNotAllowed" xml:space="preserve">
-    <value>A second connect packet from the same client session is not allowed. The client will be disconnected</value>
+  <data name="Server_SecondConnectNotAllowed" xml:space="preserve">
+    <value>A second connect packet from the same client session is not allowed. The client will be disconnected and the connection closed</value>
   </data>
   <data name="ConnectFormatter_ClientIdMaxLengthExceeded" xml:space="preserve">
     <value>Client Id cannot exceed 23 bytes</value>
@@ -224,5 +224,11 @@
   </data>
   <data name="PublishFlow_PacketIdRequired" xml:space="preserve">
     <value>Packet Id value is required for QoS major than 0</value>
+  </data>
+  <data name="Server_FirstPacketMustBeConnect" xml:space="preserve">
+    <value>The first Packet sent from the Client to the Server must be a Connect Packet. The connection will be closed</value>
+  </data>
+  <data name="Server_NoConnectReceived" xml:space="preserve">
+    <value>The Server has not received a Connect Packet in a time fashion. The connection will be closed</value>
   </data>
 </root>

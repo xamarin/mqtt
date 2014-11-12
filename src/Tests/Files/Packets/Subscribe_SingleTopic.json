@@ -2,8 +2,8 @@
     "packetId": "10",
     "subscriptions": [
         {
-            "topic": "foo/bar",
-            "requestedQualityOfService":  "2"
+            "topicFilter": "foo/bar",
+            "maximumQualityOfService":  "2"
         }
     ]
 }

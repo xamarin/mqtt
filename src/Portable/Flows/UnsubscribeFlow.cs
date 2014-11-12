@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
@@ -7,17 +8,24 @@ namespace Hermes.Flows
 {
 	public class UnsubscribeFlow : IProtocolFlow
 	{
-		readonly IRepository<ClientSubscription> subscriptionRepository;
+		readonly IRepository<ClientSession> sessionRepository;
+		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
-		public UnsubscribeFlow (IRepository<ClientSubscription> subscriptionRepository)
+		public UnsubscribeFlow (IRepository<ClientSession> sessionRepository, IRepository<PacketIdentifier> packetIdentifierRepository)
 		{
-			this.subscriptionRepository = subscriptionRepository;
+			this.sessionRepository = sessionRepository;
+			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if(input.Type == PacketType.UnsubscribeAck)
+			if (input.Type == PacketType.UnsubscribeAck) {
+				var unsubscribeAck = input as UnsubscribeAck;
+
+				this.packetIdentifierRepository.Delete (i => i.Value == unsubscribeAck.PacketId);
+
 				return;
+			}
 
 			var unsubscribe = input as Unsubscribe;
 
@@ -27,14 +35,17 @@ namespace Hermes.Flows
 				throw new ProtocolException(error);
 			}
 
-			foreach (var topic in unsubscribe.Topics) {
-				//TODO: Add exception handling to prevent any repository error
-				var existingSubscription = this.subscriptionRepository.Get (s => s.ClientId == clientId && s.TopicFilter == topic);
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
-				if (existingSubscription != null) {
-					this.subscriptionRepository.Delete (existingSubscription);
+			foreach (var topic in unsubscribe.Topics) {
+				var subscription = session.Subscriptions.FirstOrDefault (s => s.TopicFilter == topic);
+
+				if (subscription != null) {
+					session.Subscriptions.Remove (subscription);
 				}
 			}
+
+			this.sessionRepository.Update(session);
 
 			//TODO: Check this requirements of the spec:
 			//If a Server deletes a Subscription:

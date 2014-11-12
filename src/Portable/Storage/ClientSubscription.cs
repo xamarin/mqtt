@@ -8,6 +8,6 @@ namespace Hermes.Storage
 
 		public string TopicFilter { get; set; }
 
-		public QualityOfService RequestedQualityOfService { get; set; }
+		public QualityOfService MaximumQualityOfService { get; set; }
 	}
 }
