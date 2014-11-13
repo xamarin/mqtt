@@ -11,15 +11,19 @@ namespace Hermes.Flows
 	public class SubscribeFlow : IProtocolFlow
 	{
 		readonly IProtocolConfiguration configuration;
+		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
+		readonly IRepository<RetainedMessage> retainedRepository;
 
-		public SubscribeFlow (IProtocolConfiguration configuration, IRepository<ClientSession> sessionRepository, 
-			IRepository<PacketIdentifier> packetIdentifierRepository)
+		public SubscribeFlow (IProtocolConfiguration configuration, ITopicEvaluator topicEvaluator, IRepository<ClientSession> sessionRepository, 
+			IRepository<PacketIdentifier> packetIdentifierRepository, IRepository<RetainedMessage> retainedRepository)
 		{
 			this.configuration = configuration;
+			this.topicEvaluator = topicEvaluator;
 			this.sessionRepository = sessionRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
+			this.retainedRepository = retainedRepository;
 		}
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
@@ -45,14 +49,30 @@ namespace Hermes.Flows
 
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
-					var existingSubscription = session.Subscriptions.FirstOrDefault(s => s.TopicFilter == subscription.TopicFilter);
+					var clientSubscription = session.Subscriptions.FirstOrDefault(s => s.TopicFilter == subscription.TopicFilter);
 
-					if (existingSubscription != null) {
-						existingSubscription.MaximumQualityOfService = subscription.MaximumQualityOfService;
+					if (clientSubscription != null) {
+						clientSubscription.MaximumQualityOfService = subscription.MaximumQualityOfService;
 					} else {
-						session.Subscriptions.Add (new ClientSubscription { 
+						clientSubscription = new ClientSubscription { 
 							TopicFilter = subscription.TopicFilter,
-							MaximumQualityOfService = subscription.MaximumQualityOfService });
+							MaximumQualityOfService = subscription.MaximumQualityOfService 
+						};
+
+						session.Subscriptions.Add (clientSubscription);
+					}
+
+					var retainedMessages = this.retainedRepository.GetAll ().Where(r => this.topicEvaluator.Matches(r.Topic, clientSubscription.TopicFilter));
+
+					if (retainedMessages != null) {
+						foreach (var retainedMessage in retainedMessages) {
+							var packetId = this.packetIdentifierRepository.GetPacketIdentifier (retainedMessage.QualityOfService);
+							var publish = new Publish (retainedMessage.Topic, retainedMessage.QualityOfService, retain: true, duplicatedDelivery: false, packetId: packetId) {
+								Payload = retainedMessage.Payload
+							};
+
+							await channel.SendAsync (publish);
+						}
 					}
 
 					var supportedQos = subscription.MaximumQualityOfService > this.configuration.SupportedQualityOfService ?

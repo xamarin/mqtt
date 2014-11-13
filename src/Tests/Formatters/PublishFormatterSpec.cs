@@ -30,7 +30,8 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedPublish = Packet.ReadPacket<Publish> (jsonPath);
-			var formatter = new PublishFormatter ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicName(It.IsAny<string>()) == true);
+			var formatter = new PublishFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			var result = await formatter.FormatAsync (packet);
@@ -46,7 +47,8 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new PublishFormatter ();
+			var topicEvaluator = new TopicEvaluator ();
+			var formatter = new PublishFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
@@ -63,7 +65,8 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var formatter = new PublishFormatter ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicName(It.IsAny<string>()) == true);
+			var formatter = new PublishFormatter (topicEvaluator);
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
 			var result = await formatter.FormatAsync (publish);
@@ -79,7 +82,8 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new PublishFormatter ();
+			var topicEvaluator = new TopicEvaluator ();
+			var formatter = new PublishFormatter (topicEvaluator);
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (publish).Wait());

@@ -1,4 +1,5 @@
-﻿using Hermes.Flows;
+﻿using System;
+using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Storage;
 
@@ -60,10 +61,33 @@ namespace Hermes
 
 			return returnCode;
 		}
+	}
+}
 
-		public static bool Matches(this ClientSubscription subscription, string topic)
+namespace Hermes.Storage
+{
+	public static class StorageExtensions
+	{
+		public static ushort? GetPacketIdentifier(this IRepository<PacketIdentifier> repository, QualityOfService qos)
 		{
-			return true;
+			var packetId = default (ushort?);
+
+			if(qos != QualityOfService.AtMostOnce) {
+				packetId = GetUnusedPacketIdentifier (repository, new Random ());
+			}
+
+			return packetId;
+		}
+
+		private static ushort GetUnusedPacketIdentifier(IRepository<PacketIdentifier> repository, Random random)
+		{
+			var packetId = (ushort)random.Next (1, ushort.MaxValue);
+
+			if (repository.Exist (i => i.Value == packetId)) {
+				packetId = GetUnusedPacketIdentifier (repository, random);
+			}
+
+			return packetId;
 		}
 	}
 }

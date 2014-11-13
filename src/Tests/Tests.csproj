@@ -82,6 +82,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtocolEncodingSpec.cs" />
     <Compile Include="StringByteArrayConverter.cs" />
+    <Compile Include="TopicEvaluatorSpec.cs" />
     <Compile Include="VersionInfoSpec.cs" />
   </ItemGroup>
   <ItemGroup>

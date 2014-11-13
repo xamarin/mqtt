@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
 using Hermes.Packets;
+using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -20,7 +21,8 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedSubscribe = Packet.ReadPacket<Subscribe> (jsonPath);
-			var formatter = new SubscribeFormatter ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var formatter = new SubscribeFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			var result = await formatter.FormatAsync (packet);
@@ -34,7 +36,8 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new SubscribeFormatter ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var formatter = new SubscribeFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
@@ -50,7 +53,8 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new SubscribeFormatter ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var formatter = new SubscribeFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
@@ -67,7 +71,8 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var formatter = new SubscribeFormatter ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var formatter = new SubscribeFormatter (topicEvaluator);
 			var subscribe = Packet.ReadPacket<Subscribe> (jsonPath);
 
 			var result = await formatter.FormatAsync (subscribe);
@@ -81,7 +86,8 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new SubscribeFormatter ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var formatter = new SubscribeFormatter (topicEvaluator);
 			var subscribe = Packet.ReadPacket<Subscribe> (jsonPath);
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (subscribe).Wait());

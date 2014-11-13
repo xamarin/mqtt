@@ -231,4 +231,7 @@
   <data name="Server_NoConnectReceived" xml:space="preserve">
     <value>The Server has not received a Connect Packet in a time fashion. The connection will be closed</value>
   </data>
+  <data name="SubscribeFormatter_InvalidTopicFilter" xml:space="preserve">
+    <value>Topic filter {0} is invalid. See protocol specification for more details on Topic Filter rules: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718106</value>
+  </data>
 </root>

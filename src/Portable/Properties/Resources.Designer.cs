@@ -386,6 +386,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Topic filter {0} is invalid. See protocol specification for more details on Topic Filter rules: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718106.
+        /// </summary>
+        internal static string SubscribeFormatter_InvalidTopicFilter {
+            get {
+                return ResourceManager.GetString("SubscribeFormatter_InvalidTopicFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A subscribe packet must contain at least one Topic Filter / QoS pair.
         /// </summary>
         internal static string SubscribeFormatter_MissingTopicFilterQosPair {

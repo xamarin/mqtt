@@ -21,7 +21,8 @@ namespace Tests
 
 			bufferedChannel.Setup (x => x.Receiver).Returns (receiver);
 
-			var factory = new PacketChannelFactory ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> ();
+			var factory = new PacketChannelFactory (topicEvaluator);
 			var channel = factory.CreateChannel (bufferedChannel.Object);
 
 			Assert.NotNull (channel);

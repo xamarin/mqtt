@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Hermes.Packets;
 using Hermes.Properties;
 
@@ -8,6 +7,13 @@ namespace Hermes.Formatters
 {
 	public class PublishFormatter : Formatter<Publish>
 	{
+		readonly ITopicEvaluator topicEvaluator;
+
+		public PublishFormatter (ITopicEvaluator topicEvaluator)
+		{
+			this.topicEvaluator = topicEvaluator;
+		}
+
 		public override PacketType PacketType { get { return Packets.PacketType.Publish; } }
 
 		protected override Publish Read (byte[] bytes)
@@ -32,8 +38,11 @@ namespace Hermes.Formatters
 			var nextIndex = 0;
 			var topic = bytes.GetString (topicStartIndex, out nextIndex);
 
-			if (!this.IsValidTopicName (topic))
-				throw new ProtocolException (Resources.PublishFormatter_InvalidTopicName);
+			if (!this.topicEvaluator.IsValidTopicName (topic)) {
+				var error = string.Format(Resources.PublishFormatter_InvalidTopicName, topic);
+
+				throw new ProtocolException (error);
+			}
 
 			var variableHeaderLength = topic.Length + 2;
 			var packetId = default (ushort?);
@@ -98,7 +107,7 @@ namespace Hermes.Formatters
 
 		private byte[] GetVariableHeader(Publish packet)
 		{
-			if (!this.IsValidTopicName (packet.Topic))
+			if (!this.topicEvaluator.IsValidTopicName (packet.Topic))
 				throw new ProtocolException (Resources.PublishFormatter_InvalidTopicName);
 
 			if (packet.PacketId.HasValue && packet.QualityOfService == QualityOfService.AtMostOnce)
@@ -120,14 +129,6 @@ namespace Hermes.Formatters
 			}
 
 			return variableHeader.ToArray();
-		}
-
-		private bool IsValidTopicName (string topic)
-		{
-			return !string.IsNullOrEmpty (topic) &&
-				Encoding.UTF8.GetBytes(topic).Length <= 65536 &&
-				!topic.Contains ("#") &&
-				!topic.Contains ("+");
 		}
 	}
 }

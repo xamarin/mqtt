@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
-using System.Linq;
 
 namespace Hermes.Flows
 {
@@ -13,17 +12,19 @@ namespace Hermes.Flows
 	{
 		readonly IProtocolConfiguration configuration;
 		readonly IClientManager clientManager;
+		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<RetainedMessage> retainedRepository;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IDictionary<QualityOfService, Func<Publish, IPacket>> publishRules;
 
-		public PublishFlow (IProtocolConfiguration configuration, IClientManager clientManager,
+		public PublishFlow (IProtocolConfiguration configuration, IClientManager clientManager, ITopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository, IRepository<ClientSession> sessionRepository, 
 			IRepository<PacketIdentifier> packetIdentifierRepository)
 		{
 			this.configuration = configuration;
 			this.clientManager = clientManager;
+			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;
 			this.sessionRepository = sessionRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
@@ -53,13 +54,6 @@ namespace Hermes.Flows
 				return;
 			}
 
-			if (input.Type != PacketType.Publish && input.Type != PacketType.PublishReceived && 
-				input.Type != PacketType.PublishRelease) {
-				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Publish");
-
-				throw new ProtocolException(error);
-			}
-
 			if (input.Type == PacketType.PublishReceived) {
 				var publishReceived = input as PublishReceived;
 				var ack = this.RunQoS2Flow (publishReceived);
@@ -78,6 +72,12 @@ namespace Hermes.Flows
 
 			var publish = input as Publish;
 
+			if (publish == null) {
+				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Publish");
+
+				throw new ProtocolException(error);
+			}
+
 			if (publish.Retain) {
 				var existingRetainedMessage = this.retainedRepository.Get(r => r.Topic == publish.Topic);
 
@@ -89,7 +89,7 @@ namespace Hermes.Flows
 					var retainedMessage = new RetainedMessage {
 						Topic = publish.Topic,
 						QualityOfService = publish.QualityOfService,
-						Payload = Encoding.UTF8.GetString(publish.Payload, 0, publish.Payload.Length)
+						Payload = publish.Payload
 					};
 
 					this.retainedRepository.Create(retainedMessage);
@@ -100,14 +100,15 @@ namespace Hermes.Flows
 				this.configuration.SupportedQualityOfService : 
 				publish.QualityOfService;
 			var sessions = this.sessionRepository.GetAll (); //TODO: Needs some refactoring over Repository and Storage strategy to try not doing this on memory (right now It's an IQueryable but doesn't work like that)
-			var subscriptions = sessions.SelectMany(s => s.Subscriptions).Where(x => x.Matches(publish.Topic));
+			var subscriptions = sessions.SelectMany(s => s.Subscriptions).Where(x => this.topicEvaluator.Matches(publish.Topic, x.TopicFilter));
 
 			foreach (var subscription in subscriptions) {
 				var requestedQos = subscription.MaximumQualityOfService > this.configuration.SupportedQualityOfService ? 
 					this.configuration.SupportedQualityOfService : 
 					subscription.MaximumQualityOfService;
-				var packetId = this.GetPacketIdentifier (requestedQos);
+				var packetId = this.packetIdentifierRepository.GetPacketIdentifier (requestedQos);
 
+				//TODO: Figure out how to control the reception of a message and the duplicate delivery in case the ack is not received
 				var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicatedDelivery: false, packetId: packetId);
 
 				await this.clientManager.SendMessageAsync (subscription.ClientId, subscriptionPublish);
@@ -120,28 +121,6 @@ namespace Hermes.Flows
 			var result = rule (publish);
 
 			await this.SendAckAsync (result, channel);
-		}
-
-		private ushort? GetPacketIdentifier(QualityOfService qos)
-		{
-			var packetId = default (ushort?);
-
-			if(qos != QualityOfService.AtMostOnce) {
-				packetId = this.GetUnusedPacketIdentifier (new Random ());
-			}
-
-			return packetId;
-		}
-
-		private ushort GetUnusedPacketIdentifier(Random random)
-		{
-			var packetId = (ushort)random.Next (1, ushort.MaxValue);
-
-			if (this.packetIdentifierRepository.Exist (i => i.Value == packetId)) {
-				packetId = this.GetUnusedPacketIdentifier (random);
-			}
-
-			return packetId;
 		}
 
 		private IPacket RunQoS0Flow (Publish publish)

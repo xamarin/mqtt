@@ -8,6 +8,6 @@ namespace Hermes.Storage
 
 		public string Topic { get; set; }
 
-		public string Payload { get; set; }
+		public byte[] Payload { get; set; }
 	}
 }

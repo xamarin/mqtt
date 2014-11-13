@@ -8,6 +8,13 @@ namespace Hermes.Formatters
 {
 	public class SubscribeFormatter : Formatter<Subscribe>
 	{
+		readonly ITopicEvaluator topicEvaluator;
+
+		public SubscribeFormatter (ITopicEvaluator topicEvaluator)
+		{
+			this.topicEvaluator = topicEvaluator;
+		}
+
 		public override PacketType PacketType { get { return Packets.PacketType.Subscribe; } }
 
 		protected override Subscribe Read (byte[] bytes)
@@ -76,6 +83,12 @@ namespace Hermes.Formatters
 			var payload = new List<byte> ();
 
 			foreach (var subscription in packet.Subscriptions) {
+				if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
+					var error = string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
+
+					throw new ProtocolException (error);
+				}
+
 				var topicBytes = Protocol.Encoding.EncodeString (subscription.TopicFilter);
 				var requestedQosByte = Convert.ToByte (subscription.MaximumQualityOfService);
 
@@ -94,7 +107,14 @@ namespace Hermes.Formatters
 			var index = headerLength;
 
 			do {
-				var topic = bytes.GetString (index, out index);
+				var topicFilter = bytes.GetString (index, out index);
+
+				if (!this.topicEvaluator.IsValidTopicFilter (topicFilter)) {
+					var error = string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
+
+					throw new ProtocolException (error);
+				}
+
 				var requestedQosByte = bytes.Byte (index);
 
 				if (!Enum.IsDefined (typeof (QualityOfService), requestedQosByte))
@@ -102,7 +122,7 @@ namespace Hermes.Formatters
 	
 				var requestedQos = (QualityOfService)requestedQosByte;
 
-				yield return new Subscription(topic, requestedQos);
+				yield return new Subscription(topicFilter, requestedQos);
 				index++;
 			} while (bytes.Length - index + 1 >= 2);
 		}
