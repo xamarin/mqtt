@@ -9,5 +9,7 @@ namespace Hermes
 		QualityOfService SupportedQualityOfService { get; }
 
 		int ConnectTimeWindow { get; }
+
+		ushort KeepAlive { get; }
 	}
 }

@@ -11,22 +11,24 @@ namespace Hermes
 	{
 		readonly IObservable<IBufferedChannel<byte>> socketListener;
 		readonly IObservable<Unit> timeListener;
+		readonly IProtocolConfiguration configuration;
 		readonly IPacketChannelFactory factory;
 		readonly IMessagingHandler handler;
 		readonly IList<IBufferedChannel<byte>> sockets = new List<IBufferedChannel<byte>> ();
 		readonly IList<string> activeClients = new List<string> ();
 
-		public Server (IObservable<IBufferedChannel<byte>> socketListener, IObservable<Unit> timeListener, IPacketChannelFactory factory, IMessagingHandler handler)
+		public Server (IObservable<IBufferedChannel<byte>> socketListener, IObservable<Unit> timeListener, IProtocolConfiguration configuration, IPacketChannelFactory factory, IMessagingHandler handler)
 		{
 			this.socketListener = socketListener;
 			this.timeListener = timeListener;
+			this.configuration = configuration;
 			this.factory = factory;
 			this.handler = handler;
 
 			this.socketListener.Subscribe (socket => {
 				this.sockets.Add (socket);
 
-				var timeout = this.timeListener.Skip (59).Take (1).Subscribe (_ => {
+				var timeout = this.timeListener.Skip (this.configuration.ConnectTimeWindow).Take (1).Subscribe (_ => {
 					//tracer.Error (Resources.Server_NoConnectReceived);
 					socket.Close ();
 				});

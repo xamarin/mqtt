@@ -1,7 +1,6 @@
 ﻿using System;
 using Hermes.Flows;
 using Hermes.Packets;
-using Hermes.Storage;
 
 namespace Hermes
 {
@@ -73,18 +72,18 @@ namespace Hermes.Storage
 			var packetId = default (ushort?);
 
 			if(qos != QualityOfService.AtMostOnce) {
-				packetId = GetUnusedPacketIdentifier (repository, new Random ());
+				packetId = repository.GetUnusedPacketIdentifier (new Random ());
 			}
 
 			return packetId;
 		}
 
-		private static ushort GetUnusedPacketIdentifier(IRepository<PacketIdentifier> repository, Random random)
+		public static ushort GetUnusedPacketIdentifier(this IRepository<PacketIdentifier> repository, Random random)
 		{
 			var packetId = (ushort)random.Next (1, ushort.MaxValue);
 
 			if (repository.Exist (i => i.Value == packetId)) {
-				packetId = GetUnusedPacketIdentifier (repository, random);
+				packetId = repository.GetUnusedPacketIdentifier (random);
 			}
 
 			return packetId;
