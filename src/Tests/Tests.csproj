@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="BinaryChannelSpec.cs" />
     <Compile Include="ByteExtensionsSpec.cs" />
+    <Compile Include="ClientSpec.cs" />
     <Compile Include="Flows\ConnectFlowSpec.cs" />
     <Compile Include="Flows\DisconnectFlowSpec.cs" />
     <Compile Include="Flows\PingFlowSpec.cs" />
