@@ -9,29 +9,32 @@ namespace Hermes
 	{
 		readonly IChannel<byte[]> innerChannel;
 		readonly IPacketManager manager;
-        readonly IDisposable subscription;
-        readonly Subject<IPacket> subject = new Subject<IPacket>();
+        readonly Subject<IPacket> receiver;
+		readonly IDisposable subscription;
 
 		public PacketChannel (IChannel<byte[]> innerChannel, IPacketManager manager)
 		{
 			this.innerChannel = innerChannel;
 			this.manager = manager;
+
+			this.receiver = new Subject<IPacket> ();
+
 			this.subscription = innerChannel.Receiver.Subscribe (async bytes => {
 				try {
 					var packet = await this.manager.GetAsync(bytes);
 
-					this.subject.OnNext (packet); 
+					this.receiver.OnNext (packet); 
 				} catch (ConnectProtocolException connEx) {
 					var errorAck = new ConnectAck (connEx.ReturnCode, existingSession: false);
 
 					this.SendAsync (errorAck).Wait();
 				} catch (ProtocolException ex) {
-					this.subject.OnError (ex);
+					this.receiver.OnError (ex);
 				}
-			}, onError: ex => this.subject.OnError(ex), onCompleted: () => this.subject.OnCompleted());
+			}, onError: ex => this.receiver.OnError(ex), onCompleted: () => this.receiver.OnCompleted());
 		}
 
-		public IObservable<IPacket> Receiver { get { return this.subject; } }
+		public IObservable<IPacket> Receiver { get { return this.receiver; } }
 
 		public async Task SendAsync (IPacket packet)
 		{
@@ -42,8 +45,9 @@ namespace Hermes
 
 		public void Close ()
 		{
+			this.innerChannel.Close ();
 			this.subscription.Dispose ();
-			this.subject.Dispose ();
+			this.receiver.Dispose ();
 		}
 	}
 }

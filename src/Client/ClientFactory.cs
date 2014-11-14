@@ -1,32 +1,28 @@
 ﻿using System.Reactive;
-using Hermes.Storage;
 using System.Reactive.Subjects;
+using Hermes.Storage;
+using ReactiveSockets;
 
 namespace Hermes
 {
-	public class ClientFactory : IClientFactory
+	public class ClientFactory
 	{
-		readonly string serverAddress;
-		readonly IProtocolConfiguration configuration;
-		readonly ISocketFactory socketFactory;
-
-		public ClientFactory (string serverAddress, IProtocolConfiguration configuration, ISocketFactory socketFactory)
+		public static IClient Create (string serverAddress, IProtocolConfiguration configuration)
 		{
-			this.serverAddress = serverAddress;
-			this.configuration = configuration;
-			this.socketFactory = socketFactory;
-		}
+			var reactiveSocket = new ReactiveClient (serverAddress, configuration.Port);
 
-		public IClient CreateClient ()
-		{
-			var socket = this.socketFactory.CreateSocket (this.serverAddress);
+			reactiveSocket.ConnectAsync ().Wait ();
+
+			var socket = new Socket (reactiveSocket);
+
 			var topicEvaluator = new TopicEvaluator();
 			var packetChannelFactory = new PacketChannelFactory (topicEvaluator); //TODO: We need to inject this, but it currently affects Client experience creating factories
 			var channel = packetChannelFactory.CreateChannel (socket);
-			//var time = new Su
+
+			var timeListener = new Subject<Unit> ();
 			var packetIdentifierRepository = new InMemoryRepository<PacketIdentifier>(); //TODO: We need to inject this, but it currently affects Client experience creating factories
 
-			return default (IClient); //new Client (channel, this.configuration, packetIdentifierRepository);
+			return new Client (channel, timeListener, configuration, packetIdentifierRepository);
 		}
 	}
 }

@@ -6,10 +6,12 @@ namespace Hermes
 	{
 		int Port { get; }
 
-		QualityOfService SupportedQualityOfService { get; }
+		QualityOfService MaximumQualityOfService { get; }
 
 		int ConnectTimeWindow { get; }
 
 		ushort KeepAlive { get; }
+
+		int AckTimeout { get; }
 	}
 }

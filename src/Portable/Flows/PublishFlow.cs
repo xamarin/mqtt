@@ -96,15 +96,15 @@ namespace Hermes.Flows
 				}
 			}
 
-			var qos = publish.QualityOfService > this.configuration.SupportedQualityOfService ? 
-				this.configuration.SupportedQualityOfService : 
+			var qos = publish.QualityOfService > this.configuration.MaximumQualityOfService ? 
+				this.configuration.MaximumQualityOfService : 
 				publish.QualityOfService;
 			var sessions = this.sessionRepository.GetAll (); //TODO: Needs some refactoring over Repository and Storage strategy to try not doing this on memory (right now It's an IQueryable but doesn't work like that)
 			var subscriptions = sessions.SelectMany(s => s.Subscriptions).Where(x => this.topicEvaluator.Matches(publish.Topic, x.TopicFilter));
 
 			foreach (var subscription in subscriptions) {
-				var requestedQos = subscription.MaximumQualityOfService > this.configuration.SupportedQualityOfService ? 
-					this.configuration.SupportedQualityOfService : 
+				var requestedQos = subscription.MaximumQualityOfService > this.configuration.MaximumQualityOfService ? 
+					this.configuration.MaximumQualityOfService : 
 					subscription.MaximumQualityOfService;
 				var packetId = this.packetIdentifierRepository.GetPacketIdentifier (requestedQos);
 

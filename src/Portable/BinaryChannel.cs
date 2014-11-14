@@ -16,6 +16,7 @@ namespace Hermes
 		readonly IList<byte> buffer;
 		readonly IBufferedChannel<byte> innerChannel;
 		readonly Subject<byte[]> receiver;
+		readonly IDisposable subscription;
 
 		public BinaryChannel (IBufferedChannel<byte> innerChannel)
 		{
@@ -24,7 +25,8 @@ namespace Hermes
 
 			this.receiver = new Subject<byte[]> ();
 			this.innerChannel = innerChannel;
-			this.innerChannel.Receiver.Subscribe (@byte => {
+
+			this.subscription = this.innerChannel.Receiver.Subscribe (@byte => {
 				this.Process (@byte);
 
 				if (this.hasPacket) {
@@ -43,6 +45,8 @@ namespace Hermes
 		public void Close ()
 		{
 			this.innerChannel.Close ();
+			this.subscription.Dispose ();
+			this.receiver.Dispose ();
 		}
 
 		private void Process (byte @byte)

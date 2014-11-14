@@ -75,8 +75,8 @@ namespace Hermes.Flows
 						}
 					}
 
-					var supportedQos = subscription.MaximumQualityOfService > this.configuration.SupportedQualityOfService ?
-						this.configuration.SupportedQualityOfService : subscription.MaximumQualityOfService;
+					var supportedQos = subscription.MaximumQualityOfService > this.configuration.MaximumQualityOfService ?
+						this.configuration.MaximumQualityOfService : subscription.MaximumQualityOfService;
 					var returnCode = supportedQos.ToReturnCode ();
 
 					returnCodes.Add (returnCode);
