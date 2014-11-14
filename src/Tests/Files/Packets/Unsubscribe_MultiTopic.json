@@ -1,0 +1,4 @@
+﻿{
+    "packetId": "10",
+    "topics": [ "foo/bar", "foo/test", "a/b", "test/foo" ]
+}

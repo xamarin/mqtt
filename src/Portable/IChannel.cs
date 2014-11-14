@@ -5,7 +5,7 @@ namespace Hermes
 {
 	public interface IChannel<T>
     {
-        IObservable<T> Received { get; }
+        IObservable<T> Receiver { get; }
 
         Task SendAsync(T message);
 

@@ -1,8 +1,0 @@
-﻿{
-    "qualityOfService": "1",
-    "duplicatedDelivery": "true",
-    "retain": "true",
-    "topic": "foo/bar",
-    "messageId": "10",
-    "payload": "this is the payload of this test message"
-}

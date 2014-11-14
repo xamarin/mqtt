@@ -98,6 +98,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Only error codes are allowed to send an error connection acknowledge.
+        /// </summary>
+        internal static string ConnectFlow_NoErrorCodeDetected {
+            get {
+                return ResourceManager.GetString("ConnectFlow_NoErrorCodeDetected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client Id cannot exceed 23 bytes.
         /// </summary>
         internal static string ConnectFormatter_ClientIdMaxLengthExceeded {
@@ -170,6 +179,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Protocol Level {0} is not supported by the server.
+        /// </summary>
+        internal static string ConnectFormatter_UnsupportedLevel {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_UnsupportedLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to String value cannot exceed 65536 bytes of length.
         /// </summary>
         internal static string DataRepresentationExtensions_StringMaxLengthExceeded {
@@ -179,20 +197,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} message. Expected value: {2}.
+        ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} packet. Expected value: {2}.
         /// </summary>
         internal static string Formatter_InvalidHeaderFlag {
             get {
                 return ResourceManager.GetString("Formatter_InvalidHeaderFlag", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The message sent cannot be handled by {0}.
-        /// </summary>
-        internal static string Formatter_InvalidMessage {
-            get {
-                return ResourceManager.GetString("Formatter_InvalidMessage", resourceCulture);
             }
         }
         
@@ -215,29 +224,20 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} message is not valid.
+        ///   Looks up a localized string similar to {0} packet is not valid.
         /// </summary>
-        internal static string Formatter_MessageTypeNotAllowed {
+        internal static string Formatter_PacketTypeNotAllowed {
             get {
-                return ResourceManager.GetString("Formatter_MessageTypeNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The message received cannot be handled by any of the registered formatters.
-        /// </summary>
-        internal static string MessageManager_MessageUnknown {
-            get {
-                return ResourceManager.GetString("MessageManager_MessageUnknown", resourceCulture);
+                return ResourceManager.GetString("Formatter_PacketTypeNotAllowed", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The received packet cannot be handled by any of the registered formatters.
         /// </summary>
-        internal static string MessageManager_PacketUnknown {
+        internal static string PacketManager_PacketUnknown {
             get {
-                return ResourceManager.GetString("MessageManager_PacketUnknown", resourceCulture);
+                return ResourceManager.GetString("PacketManager_PacketUnknown", resourceCulture);
             }
         }
         
@@ -251,6 +251,60 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The connection {0} has been rejected and cannot accept any data.
+        /// </summary>
+        internal static string ProtocolFlow_ConnectionRejected {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_ConnectionRejected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A connection need to be established before sending any other packet.
+        /// </summary>
+        internal static string ProtocolFlow_ConnectRequired {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_ConnectRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The packet type {0} is not valid for the flow {1}.
+        /// </summary>
+        internal static string ProtocolFlow_InvalidPacketType {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_InvalidPacketType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no action to do for the packet type {0}.
+        /// </summary>
+        internal static string ProtocolFlow_NoActionRequired {
+            get {
+                return ResourceManager.GetString("ProtocolFlow_NoActionRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occured while trying to get a Flow Type based on Packet Type {0}.
+        /// </summary>
+        internal static string ProtocolFlowProvider_UnknownPacketType {
+            get {
+                return ResourceManager.GetString("ProtocolFlowProvider_UnknownPacketType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packet Id value is required for QoS major than 0.
+        /// </summary>
+        internal static string PublishFlow_PacketIdRequired {
+            get {
+                return ResourceManager.GetString("PublishFlow_PacketIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicated flag must be set to 0 if the QoS is 0.
         /// </summary>
         internal static string PublishFormatter_InvalidDuplicatedWithQoSZero {
@@ -260,11 +314,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Message Id is not allowed for packets with QoS 0.
+        ///   Looks up a localized string similar to Packet Id is not allowed for packets with QoS 0.
         /// </summary>
-        internal static string PublishFormatter_InvalidMessageId {
+        internal static string PublishFormatter_InvalidPacketId {
             get {
-                return ResourceManager.GetString("PublishFormatter_InvalidMessageId", resourceCulture);
+                return ResourceManager.GetString("PublishFormatter_InvalidPacketId", resourceCulture);
             }
         }
         
@@ -278,11 +332,38 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Message Id value is cannot be null or empty for packets with QoS 1 or 2.
+        ///   Looks up a localized string similar to Packet Id value cannot be null or empty for packets with QoS 1 or 2.
         /// </summary>
-        internal static string PublishFormatter_MessageIdRequired {
+        internal static string PublishFormatter_PacketIdRequired {
             get {
-                return ResourceManager.GetString("PublishFormatter_MessageIdRequired", resourceCulture);
+                return ResourceManager.GetString("PublishFormatter_PacketIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The first Packet sent from the Client to the Server must be a Connect Packet. The connection will be closed.
+        /// </summary>
+        internal static string Server_FirstPacketMustBeConnect {
+            get {
+                return ResourceManager.GetString("Server_FirstPacketMustBeConnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Server has not received a Connect Packet in a time fashion. The connection will be closed.
+        /// </summary>
+        internal static string Server_NoConnectReceived {
+            get {
+                return ResourceManager.GetString("Server_NoConnectReceived", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A second connect packet from the same client session is not allowed. The client will be disconnected and the connection closed.
+        /// </summary>
+        internal static string Server_SecondConnectNotAllowed {
+            get {
+                return ResourceManager.GetString("Server_SecondConnectNotAllowed", resourceCulture);
             }
         }
         
@@ -301,6 +382,15 @@ namespace Hermes.Properties {
         internal static string SubscribeAckFormatter_MissingReturnCodes {
             get {
                 return ResourceManager.GetString("SubscribeAckFormatter_MissingReturnCodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Topic filter {0} is invalid. See protocol specification for more details on Topic Filter rules: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718106.
+        /// </summary>
+        internal static string SubscribeFormatter_InvalidTopicFilter {
+            get {
+                return ResourceManager.GetString("SubscribeFormatter_InvalidTopicFilter", resourceCulture);
             }
         }
         

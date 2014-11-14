@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Hermes.Messages;
+using Hermes.Packets;
 using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
 	public class PublishFormatter : Formatter<Publish>
 	{
-		public PublishFormatter (IChannel<IMessage> reader, IChannel<byte[]> writer)
-			: base(reader, writer)
+		readonly ITopicEvaluator topicEvaluator;
+
+		public PublishFormatter (ITopicEvaluator topicEvaluator)
 		{
+			this.topicEvaluator = topicEvaluator;
 		}
 
-		public override MessageType MessageType { get { return Messages.MessageType.Publish; } }
+		public override PacketType PacketType { get { return Packets.PacketType.Publish; } }
 
-		protected override Publish Read (byte[] packet)
+		protected override Publish Read (byte[] bytes)
 		{
 			var remainingLengthBytesLength = 0;
-			var remainingLength = Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			var remainingLength = Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
 
-			var packetFlags = packet.Byte (0).Bits(5, 4);
+			var packetFlags = bytes.Byte (0).Bits(5, 4);
 
 			if (packetFlags.Bits (6, 2) == 0x03)
 				throw new ProtocolException (Resources.Formatter_InvalidQualityOfService);
@@ -35,63 +36,66 @@ namespace Hermes.Formatters
 
 			var topicStartIndex = remainingLengthBytesLength + 1;
 			var nextIndex = 0;
-			var topic = packet.GetString (topicStartIndex, out nextIndex);
+			var topic = bytes.GetString (topicStartIndex, out nextIndex);
 
-			if (!this.IsValidTopicName (topic))
-				throw new ProtocolException (Resources.PublishFormatter_InvalidTopicName);
+			if (!this.topicEvaluator.IsValidTopicName (topic)) {
+				var error = string.Format(Resources.PublishFormatter_InvalidTopicName, topic);
+
+				throw new ProtocolException (error);
+			}
 
 			var variableHeaderLength = topic.Length + 2;
-			var messageId = default (ushort?);
+			var packetId = default (ushort?);
 
 			if (qos != QualityOfService.AtMostOnce) {
-				messageId = packet.Bytes (nextIndex, 2).ToUInt16 ();
+				packetId = bytes.Bytes (nextIndex, 2).ToUInt16 ();
 				variableHeaderLength += 2;
 			}
 
-			var publish = new Publish (topic, qos, retainFlag, duplicated, messageId);
+			var publish = new Publish (topic, qos, retainFlag, duplicated, packetId);
 
 			if (remainingLength > variableHeaderLength) {
-				publish.Payload = packet.Bytes (variableHeaderLength + 2);
+				publish.Payload = bytes.Bytes (variableHeaderLength + 2);
 			}
 
 			return publish;
 		}
 
-		protected override byte[] Write (Publish message)
+		protected override byte[] Write (Publish packet)
 		{
-			var packet = new List<byte> ();
+			var bytes = new List<byte> ();
 
-			var variableHeader = this.GetVariableHeader (message);
-			var payloadLength = message.Payload == null ? 0 : message.Payload.Length;
+			var variableHeader = this.GetVariableHeader (packet);
+			var payloadLength = packet.Payload == null ? 0 : packet.Payload.Length;
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payloadLength);
-			var fixedHeader = this.GetFixedHeader (message, remainingLength);
+			var fixedHeader = this.GetFixedHeader (packet, remainingLength);
 
-			packet.AddRange (fixedHeader);
-			packet.AddRange (variableHeader);
+			bytes.AddRange (fixedHeader);
+			bytes.AddRange (variableHeader);
 
-			if (message.Payload != null) {
-				packet.AddRange (message.Payload);
+			if (packet.Payload != null) {
+				bytes.AddRange (packet.Payload);
 			}
 
-			return packet.ToArray();
+			return bytes.ToArray();
 		}
 
-		private byte[] GetFixedHeader(Publish message, byte[] remainingLength)
+		private byte[] GetFixedHeader(Publish packet, byte[] remainingLength)
 		{
-			if (message.QualityOfService == QualityOfService.AtMostOnce && message.DuplicatedDelivery)
+			if (packet.QualityOfService == QualityOfService.AtMostOnce && packet.DuplicatedDelivery)
 				throw new ProtocolException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
 
 			var fixedHeader = new List<byte> ();
 
-			var retain = Convert.ToInt32 (message.Retain);
-			var qos = Convert.ToInt32(message.QualityOfService);
-			var duplicated = Convert.ToInt32 (message.DuplicatedDelivery);
+			var retain = Convert.ToInt32 (packet.Retain);
+			var qos = Convert.ToInt32(packet.QualityOfService);
+			var duplicated = Convert.ToInt32 (packet.DuplicatedDelivery);
 
 			qos <<= 1;
 			duplicated <<= 3;
 
 			var flags = Convert.ToByte(retain | qos | duplicated);
-			var type = Convert.ToInt32(MessageType.Publish) << 4;
+			var type = Convert.ToInt32(PacketType.Publish) << 4;
 
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 
@@ -101,38 +105,30 @@ namespace Hermes.Formatters
 			return fixedHeader.ToArray();
 		}
 
-		private byte[] GetVariableHeader(Publish message)
+		private byte[] GetVariableHeader(Publish packet)
 		{
-			if (!this.IsValidTopicName (message.Topic))
+			if (!this.topicEvaluator.IsValidTopicName (packet.Topic))
 				throw new ProtocolException (Resources.PublishFormatter_InvalidTopicName);
 
-			if (message.MessageId.HasValue && message.QualityOfService == QualityOfService.AtMostOnce)
-					throw new ProtocolException (Resources.PublishFormatter_InvalidMessageId);
+			if (packet.PacketId.HasValue && packet.QualityOfService == QualityOfService.AtMostOnce)
+					throw new ProtocolException (Resources.PublishFormatter_InvalidPacketId);
 
-			if(!message.MessageId.HasValue && message.QualityOfService != QualityOfService.AtMostOnce)
-				throw new ProtocolException (Resources.PublishFormatter_MessageIdRequired);
+			if(!packet.PacketId.HasValue && packet.QualityOfService != QualityOfService.AtMostOnce)
+				throw new ProtocolException (Resources.PublishFormatter_PacketIdRequired);
 
 			var variableHeader = new List<byte> ();
 
-			var topicBytes = Protocol.Encoding.EncodeString(message.Topic);
+			var topicBytes = Protocol.Encoding.EncodeString(packet.Topic);
 
 			variableHeader.AddRange (topicBytes);
 
-			if (message.MessageId.HasValue) {
-				var messageIdBytes = Protocol.Encoding.EncodeBigEndian(message.MessageId.Value);
+			if (packet.PacketId.HasValue) {
+				var packetIdBytes = Protocol.Encoding.EncodeBigEndian(packet.PacketId.Value);
 
-				variableHeader.AddRange (messageIdBytes);
+				variableHeader.AddRange (packetIdBytes);
 			}
 
 			return variableHeader.ToArray();
-		}
-
-		private bool IsValidTopicName (string topic)
-		{
-			return !string.IsNullOrEmpty (topic) &&
-				Encoding.UTF8.GetBytes(topic).Length <= 65536 &&
-				!topic.Contains ("#") &&
-				!topic.Contains ("+");
 		}
 	}
 }

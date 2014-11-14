@@ -1,5 +1,5 @@
 ﻿using System;
-using Hermes.Messages;
+using Hermes.Packets;
 
 namespace Hermes
 {

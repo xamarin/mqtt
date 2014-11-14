@@ -1,33 +1,28 @@
 ﻿using System;
-using Hermes.Messages;
+using Hermes.Packets;
 using Hermes.Properties;
 
 namespace Hermes.Formatters
 {
 	public class ConnectAckFormatter : Formatter<ConnectAck>
 	{
-		public ConnectAckFormatter (IChannel<IMessage> reader, IChannel<byte[]> writer)
-			: base(reader, writer)
-		{
-		}
+		public override PacketType PacketType { get { return Packets.PacketType.ConnectAck; } }
 
-		public override MessageType MessageType { get { return Messages.MessageType.ConnectAck; } }
-
-		protected override ConnectAck Read (byte[] packet)
+		protected override ConnectAck Read (byte[] bytes)
 		{
-			this.ValidateHeaderFlag (packet, t => t == MessageType.ConnectAck, 0x00);
+			this.ValidateHeaderFlag (bytes, t => t == PacketType.ConnectAck, 0x00);
 
 			var remainingLengthBytesLength = 0;
 			
-			Protocol.Encoding.DecodeRemainingLength (packet, out remainingLengthBytesLength);
+			Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
 
 			var connectAckFlagsIndex = Protocol.PacketTypeLength + remainingLengthBytesLength;
 
-			if (packet.Byte (connectAckFlagsIndex).Bits (7) != 0x00)
+			if (bytes.Byte (connectAckFlagsIndex).Bits (7) != 0x00)
 				throw new ProtocolException (Resources.ConnectAckFormatter_InvalidAckFlags);
 
-			var sessionPresent = packet.Byte (connectAckFlagsIndex).IsSet(0);
-			var returnCode = (ConnectionStatus)packet.Byte (connectAckFlagsIndex + 1);
+			var sessionPresent = bytes.Byte (connectAckFlagsIndex).IsSet(0);
+			var returnCode = (ConnectionStatus)bytes.Byte (connectAckFlagsIndex + 1);
 
 			if (returnCode != ConnectionStatus.Accepted && sessionPresent)
 				throw new ProtocolException (Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
@@ -37,23 +32,23 @@ namespace Hermes.Formatters
 			return connectAck;
 		}
 
-		protected override byte[] Write (ConnectAck message)
+		protected override byte[] Write (ConnectAck packet)
 		{
-			var variableHeader = this.GetVariableHeader (message);
+			var variableHeader = this.GetVariableHeader (packet);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
 			var fixedHeader = this.GetFixedHeader (remainingLength);
-			var packet = new byte[fixedHeader.Length + variableHeader.Length];
+			var bytes = new byte[fixedHeader.Length + variableHeader.Length];
 
-			fixedHeader.CopyTo(packet, 0);
-			variableHeader.CopyTo(packet, fixedHeader.Length);
+			fixedHeader.CopyTo(bytes, 0);
+			variableHeader.CopyTo(bytes, fixedHeader.Length);
 
-			return packet;
+			return bytes;
 		}
 
 		private byte[] GetFixedHeader(byte[] remainingLength)
 		{
 			var flags = 0x00;
-			var type = Convert.ToInt32(MessageType.ConnectAck) << 4;
+			var type = Convert.ToInt32(PacketType.ConnectAck) << 4;
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 			var fixedHeader = new byte[remainingLength.Length + 1];
 
@@ -63,13 +58,13 @@ namespace Hermes.Formatters
 			return fixedHeader;
 		}
 
-		private byte[] GetVariableHeader(ConnectAck message)
+		private byte[] GetVariableHeader(ConnectAck packet)
 		{
-			if (message.Status != ConnectionStatus.Accepted && message.ExistingSession)
+			if (packet.Status != ConnectionStatus.Accepted && packet.ExistingSession)
 				throw new ProtocolException (Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
 
-			var connectAckFlagsByte = Convert.ToByte(message.ExistingSession);
-			var returnCodeByte = Convert.ToByte (message.Status);
+			var connectAckFlagsByte = Convert.ToByte(packet.ExistingSession);
+			var returnCodeByte = Convert.ToByte (packet.Status);
 
 			return new[] { connectAckFlagsByte, returnCodeByte };
 		}

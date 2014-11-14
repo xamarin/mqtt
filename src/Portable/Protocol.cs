@@ -1,10 +1,12 @@
-﻿namespace Hermes
+﻿using Hermes.Flows;
+
+namespace Hermes
 {
 	public class Protocol
 	{
 		public const string Name = "MQTT";
 
-		public const int Level = 4;
+		public const int SupportedLevel = 4;
 
 		public const int PacketTypeLength = 1;
 

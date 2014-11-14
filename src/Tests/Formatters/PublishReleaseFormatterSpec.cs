@@ -3,8 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Hermes;
 using Hermes.Formatters;
-using Hermes.Messages;
-using Moq;
+using Hermes.Packets;
 using Xunit;
 using Xunit.Extensions;
 
@@ -12,77 +11,50 @@ namespace Tests.Formatters
 {
 	public class PublishReleaseFormatterSpec
 	{
-		readonly Mock<IChannel<IMessage>> messageChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
-
-		public PublishReleaseFormatterSpec ()
-		{
-			this.messageChannel = new Mock<IChannel<IMessage>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
-		}
-
 		[Theory]
-		[InlineData("Files/Packets/PublishRelease.packet", "Files/Messages/PublishRelease.json")]
+		[InlineData("Files/Binaries/PublishRelease.packet", "Files/Packets/PublishRelease.json")]
 		public async Task when_reading_publish_release_packet_then_succeeds(string packetPath, string jsonPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var expectedPublishRelease = Packet.ReadMessage<PublishRelease> (jsonPath);
-			var sentPublishRelease = default(PublishRelease);
-
-			this.messageChannel
-				.Setup (c => c.SendAsync (It.IsAny<IMessage>()))
-				.Returns(Task.Delay(0))
-				.Callback<IMessage>(m =>  {
-					sentPublishRelease = m as PublishRelease;
-				});
-
-			var formatter = new FlowMessageFormatter<PublishRelease>(MessageType.PublishRelease, id => new PublishRelease(id), this.messageChannel.Object, this.byteChannel.Object);
+			var expectedPublishRelease = Packet.ReadPacket<PublishRelease> (jsonPath);
+			var formatter = new FlowPacketFormatter<PublishRelease>(PacketType.PublishRelease, id => new PublishRelease(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			await formatter.ReadAsync (packet);
+			var result = await formatter.FormatAsync (packet);
 
-			Assert.Equal (expectedPublishRelease, sentPublishRelease);
+			Assert.Equal (expectedPublishRelease, result);
 		}
 
 		[Theory]
-		[InlineData("Files/Packets/PublishRelease_Invalid_HeaderFlag.packet")]
+		[InlineData("Files/Binaries/PublishRelease_Invalid_HeaderFlag.packet")]
 		public void when_reading_invalid_publish_release_packet_then_fails(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new FlowMessageFormatter<PublishRelease> (MessageType.PublishRelease, id => new PublishRelease(id), this.messageChannel.Object, this.byteChannel.Object);
+			var formatter = new FlowPacketFormatter<PublishRelease> (PacketType.PublishRelease, id => new PublishRelease(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 			
-			var ex = Assert.Throws<AggregateException> (() => formatter.ReadAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
 
 		[Theory]
-		[InlineData("Files/Messages/PublishRelease.json", "Files/Packets/PublishRelease.packet")]
+		[InlineData("Files/Packets/PublishRelease.json", "Files/Binaries/PublishRelease.packet")]
 		public async Task when_writing_publish_release_packet_then_succeeds(string jsonPath, string packetPath)
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var sentPacket = default(byte[]);
+			var formatter = new FlowPacketFormatter<PublishRelease>(PacketType.PublishRelease, id => new PublishRelease(id));
+			var publishRelease = Packet.ReadPacket<PublishRelease> (jsonPath);
 
-			this.byteChannel
-				.Setup (c => c.SendAsync (It.IsAny<byte[]>()))
-				.Returns(Task.Delay(0))
-				.Callback<byte[]>(b =>  {
-					sentPacket = b;
-				});
+			var result = await formatter.FormatAsync (publishRelease);
 
-			var formatter = new FlowMessageFormatter<PublishRelease>(MessageType.PublishRelease, id => new PublishRelease(id), this.messageChannel.Object, this.byteChannel.Object);
-			var publishRelease = Packet.ReadMessage<PublishRelease> (jsonPath);
-
-			await formatter.WriteAsync (publishRelease);
-
-			Assert.Equal (expectedPacket, sentPacket);
+			Assert.Equal (expectedPacket, result);
 		}
 	}
 }

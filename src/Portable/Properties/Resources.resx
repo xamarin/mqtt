@@ -129,6 +129,12 @@
   <data name="ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode" xml:space="preserve">
     <value>Session Present flag must be set to 0 for non-zero return codes</value>
   </data>
+  <data name="ConnectFlow_NoErrorCodeDetected" xml:space="preserve">
+    <value>Only error codes are allowed to send an error connection acknowledge</value>
+  </data>
+  <data name="Server_SecondConnectNotAllowed" xml:space="preserve">
+    <value>A second connect packet from the same client session is not allowed. The client will be disconnected and the connection closed</value>
+  </data>
   <data name="ConnectFormatter_ClientIdMaxLengthExceeded" xml:space="preserve">
     <value>Client Id cannot exceed 23 bytes</value>
   </data>
@@ -153,14 +159,14 @@
   <data name="ConnectFormatter_PasswordNotAllowed" xml:space="preserve">
     <value>Password value must be null or empty if User value is null or empty</value>
   </data>
+  <data name="ConnectFormatter_UnsupportedLevel" xml:space="preserve">
+    <value>Protocol Level {0} is not supported by the server</value>
+  </data>
   <data name="DataRepresentationExtensions_StringMaxLengthExceeded" xml:space="preserve">
     <value>String value cannot exceed 65536 bytes of length</value>
   </data>
   <data name="Formatter_InvalidHeaderFlag" xml:space="preserve">
-    <value>Header Flag {0} is invalid for {1} message. Expected value: {2}</value>
-  </data>
-  <data name="Formatter_InvalidMessage" xml:space="preserve">
-    <value>The message sent cannot be handled by {0}</value>
+    <value>Header Flag {0} is invalid for {1} packet. Expected value: {2}</value>
   </data>
   <data name="Formatter_InvalidPacket" xml:space="preserve">
     <value>The packet sent cannot be handled by {0}</value>
@@ -168,29 +174,41 @@
   <data name="Formatter_InvalidQualityOfService" xml:space="preserve">
     <value>Qos value must be from 0x00 to 0x02</value>
   </data>
-  <data name="Formatter_MessageTypeNotAllowed" xml:space="preserve">
-    <value>{0} message is not valid</value>
+  <data name="Formatter_PacketTypeNotAllowed" xml:space="preserve">
+    <value>{0} packet is not valid</value>
   </data>
-  <data name="MessageManager_MessageUnknown" xml:space="preserve">
-    <value>The message received cannot be handled by any of the registered formatters</value>
-  </data>
-  <data name="MessageManager_PacketUnknown" xml:space="preserve">
+  <data name="PacketManager_PacketUnknown" xml:space="preserve">
     <value>The received packet cannot be handled by any of the registered formatters</value>
   </data>
   <data name="ProtocolEncoding_MalformedRemainingLength" xml:space="preserve">
     <value>Malformed Remaining Length</value>
   </data>
+  <data name="ProtocolFlowProvider_UnknownPacketType" xml:space="preserve">
+    <value>An error occured while trying to get a Flow Type based on Packet Type {0}</value>
+  </data>
+  <data name="ProtocolFlow_ConnectionRejected" xml:space="preserve">
+    <value>The connection {0} has been rejected and cannot accept any data</value>
+  </data>
+  <data name="ProtocolFlow_ConnectRequired" xml:space="preserve">
+    <value>A connection need to be established before sending any other packet</value>
+  </data>
+  <data name="ProtocolFlow_InvalidPacketType" xml:space="preserve">
+    <value>The packet type {0} is not valid for the flow {1}</value>
+  </data>
+  <data name="ProtocolFlow_NoActionRequired" xml:space="preserve">
+    <value>There is no action to do for the packet type {0}</value>
+  </data>
   <data name="PublishFormatter_InvalidDuplicatedWithQoSZero" xml:space="preserve">
     <value>Duplicated flag must be set to 0 if the QoS is 0</value>
   </data>
-  <data name="PublishFormatter_InvalidMessageId" xml:space="preserve">
-    <value>Message Id is not allowed for packets with QoS 0</value>
+  <data name="PublishFormatter_InvalidPacketId" xml:space="preserve">
+    <value>Packet Id is not allowed for packets with QoS 0</value>
   </data>
   <data name="PublishFormatter_InvalidTopicName" xml:space="preserve">
     <value>Topic name {0} is invalid. It cannot be null or empty and It must not contain wildcard characters </value>
   </data>
-  <data name="PublishFormatter_MessageIdRequired" xml:space="preserve">
-    <value>Message Id value is cannot be null or empty for packets with QoS 1 or 2</value>
+  <data name="PublishFormatter_PacketIdRequired" xml:space="preserve">
+    <value>Packet Id value cannot be null or empty for packets with QoS 1 or 2</value>
   </data>
   <data name="SubscribeAckFormatter_InvalidReturnCodes" xml:space="preserve">
     <value>Return codes can only be valid QoS values or a failure code (0x80)</value>
@@ -203,5 +221,17 @@
   </data>
   <data name="UnsubscribeFormatter_MissingTopics" xml:space="preserve">
     <value>An unsubscribe packet must contain at least one topic to unsubscribe</value>
+  </data>
+  <data name="PublishFlow_PacketIdRequired" xml:space="preserve">
+    <value>Packet Id value is required for QoS major than 0</value>
+  </data>
+  <data name="Server_FirstPacketMustBeConnect" xml:space="preserve">
+    <value>The first Packet sent from the Client to the Server must be a Connect Packet. The connection will be closed</value>
+  </data>
+  <data name="Server_NoConnectReceived" xml:space="preserve">
+    <value>The Server has not received a Connect Packet in a time fashion. The connection will be closed</value>
+  </data>
+  <data name="SubscribeFormatter_InvalidTopicFilter" xml:space="preserve">
+    <value>Topic filter {0} is invalid. See protocol specification for more details on Topic Filter rules: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718106</value>
   </data>
 </root>

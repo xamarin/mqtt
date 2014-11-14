@@ -1,0 +1,21 @@
+﻿{
+    "packetId": "10",
+    "subscriptions": [
+        {
+            "topicFilter": "foo/bar",
+            "maximumQualityOfService": "2"
+        },
+        {
+            "topicFilter": "foo/test",
+            "maximumQualityOfService":  "1"
+        },
+        {
+            "topicFilter": "a/b",
+            "maximumQualityOfService":  "0"
+        },
+        {
+            "topicFilter": "test/foo",
+            "maximumQualityOfService":  "1"
+        }
+    ]
+}
