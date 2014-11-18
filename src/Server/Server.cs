@@ -17,8 +17,12 @@ namespace Hermes
 		readonly IList<IBufferedChannel<byte>> sockets = new List<IBufferedChannel<byte>> ();
 		readonly IList<string> activeClients = new List<string> ();
 
-		public Server (IObservable<IBufferedChannel<byte>> socketListener, IObservable<Unit> timeListener, IProtocolConfiguration configuration, 
-			IPacketChannelFactory factory, IMessagingHandler handler)
+		public Server (
+			IObservable<IBufferedChannel<byte>> socketListener, 
+			IObservable<Unit> timeListener, 
+			IProtocolConfiguration configuration, 
+			IPacketChannelFactory factory, 
+			IMessagingHandler handler)
 		{
 			this.socketListener = socketListener;
 			this.timeListener = timeListener;

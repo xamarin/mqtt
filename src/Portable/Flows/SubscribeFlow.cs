@@ -55,6 +55,7 @@ namespace Hermes.Flows
 						clientSubscription.MaximumQualityOfService = subscription.MaximumQualityOfService;
 					} else {
 						clientSubscription = new ClientSubscription { 
+							ClientId = clientId,
 							TopicFilter = subscription.TopicFilter,
 							MaximumQualityOfService = subscription.MaximumQualityOfService 
 						};

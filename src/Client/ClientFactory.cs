@@ -8,7 +8,7 @@ namespace Hermes
 	public class ClientFactory
 	{
 		public static IClient Create (string serverAddress, IProtocolConfiguration configuration)
-		{
+		{	
 			var reactiveSocket = new ReactiveClient (serverAddress, configuration.Port);
 
 			reactiveSocket.ConnectAsync ().Wait ();

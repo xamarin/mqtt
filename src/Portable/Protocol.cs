@@ -6,6 +6,8 @@ namespace Hermes
 	{
 		public const string Name = "MQTT";
 
+		public const int DefaultPort = 1883;
+
 		public const int SupportedLevel = 4;
 
 		public const int PacketTypeLength = 1;
