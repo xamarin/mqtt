@@ -18,11 +18,9 @@ namespace Hermes
 
 		Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false);
 
-		Task SubscribeAsync (string topicFilter);
-
 		Task SubscribeAsync (string topicFilter, QualityOfService qos);
 
-		Task PublishAsync (ApplicationMessage message, bool retain = false);
+		Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false);
 
 		Task UnsubscribeAsync (params string[] topics);
 

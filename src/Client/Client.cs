@@ -93,11 +93,6 @@ namespace Hermes
 			});
 		}
 
-		public async Task SubscribeAsync (string topicFilter)
-		{
-			await this.SubscribeAsync (topicFilter, this.configuration.MaximumQualityOfService);
-		}
-
 		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)
 		{
 			var packetId = this.packetIdentifierRepository.GetUnusedPacketIdentifier(new Random());
@@ -108,10 +103,10 @@ namespace Hermes
 			this.packetTimers.Add (packetId, this.GetTimer());
 		}
 
-		public async Task PublishAsync (ApplicationMessage message, bool retain = false)
+		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
 		{
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(this.configuration.MaximumQualityOfService);
-			var publish = new Publish (message.Topic, this.configuration.MaximumQualityOfService, retain, duplicatedDelivery: false, packetId: packetId);
+			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(qos);
+			var publish = new Publish (message.Topic, qos, retain, duplicatedDelivery: false, packetId: packetId);
 
 			await this.SendPacket (publish);
 
