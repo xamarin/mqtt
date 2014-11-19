@@ -42,7 +42,7 @@ namespace Tests.Flows
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns (sessions.AsQueryable());
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.AtLeastOnce);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (QualityOfService.AtLeastOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var publish = new Publish (topic, QualityOfService.AtMostOnce, retain: false, duplicatedDelivery: false);
@@ -86,7 +86,7 @@ namespace Tests.Flows
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.ExactlyOnce);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (QualityOfService.ExactlyOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -142,7 +142,7 @@ namespace Tests.Flows
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.ExactlyOnce);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (QualityOfService.ExactlyOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -342,7 +342,7 @@ namespace Tests.Flows
 
 			var supportedQos = QualityOfService.AtLeastOnce;
 
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (supportedQos);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (supportedQos);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -448,7 +448,7 @@ namespace Tests.Flows
 			var sessions = new List<ClientSession> { new ClientSession { ClientId = subscribedClientId, Clean = false } };
 
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.ExactlyOnce);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (QualityOfService.ExactlyOnce);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var publish = new Publish (topic, QualityOfService.AtLeastOnce, retain: false, duplicatedDelivery: false);
