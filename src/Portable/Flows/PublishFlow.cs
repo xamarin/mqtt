@@ -122,7 +122,9 @@ namespace Hermes.Flows
 
 			var result = rule (publish);
 
-			await this.SendAckAsync (result, channel);
+			if (result != default (IPacket)) {
+				await this.SendAckAsync (result, channel);
+			}
 		}
 
 		private IPacket RunQoS0Flow (Publish publish)
@@ -158,9 +160,6 @@ namespace Hermes.Flows
 
 		private async Task SendAckAsync(IPacket ack, IChannel<IPacket> channel) 
 		{
-			if (ack == default (IPacket))
-				return;
-
 			await channel.SendAsync(ack);
 		}
 	}

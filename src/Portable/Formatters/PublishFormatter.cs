@@ -34,7 +34,7 @@ namespace Hermes.Formatters
 
 			var retainFlag = packetFlags.IsSet (0);
 
-			var topicStartIndex = remainingLengthBytesLength + 1;
+			var topicStartIndex = 1 + remainingLengthBytesLength;
 			var nextIndex = 0;
 			var topic = bytes.GetString (topicStartIndex, out nextIndex);
 
@@ -55,7 +55,9 @@ namespace Hermes.Formatters
 			var publish = new Publish (topic, qos, retainFlag, duplicated, packetId);
 
 			if (remainingLength > variableHeaderLength) {
-				publish.Payload = bytes.Bytes (variableHeaderLength + 2);
+				var payloadStartIndex = 1 + remainingLengthBytesLength + variableHeaderLength;
+
+				publish.Payload = bytes.Bytes (payloadStartIndex);
 			}
 
 			return publish;
