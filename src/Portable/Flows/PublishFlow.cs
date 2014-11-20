@@ -109,7 +109,9 @@ namespace Hermes.Flows
 				var packetId = this.packetIdentifierRepository.GetPacketIdentifier (requestedQos);
 
 				//TODO: Figure out how to control the reception of a message and the duplicate delivery in case the ack is not received
-				var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicatedDelivery: false, packetId: packetId);
+				var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicatedDelivery: false, packetId: packetId) {
+					Payload = publish.Payload
+				};
 
 				await this.clientManager.SendMessageAsync (subscription.ClientId, subscriptionPublish);
 			}
@@ -120,7 +122,9 @@ namespace Hermes.Flows
 
 			var result = rule (publish);
 
-			await this.SendAckAsync (result, channel);
+			if (result != default (IPacket)) {
+				await this.SendAckAsync (result, channel);
+			}
 		}
 
 		private IPacket RunQoS0Flow (Publish publish)
@@ -156,9 +160,6 @@ namespace Hermes.Flows
 
 		private async Task SendAckAsync(IPacket ack, IChannel<IPacket> channel) 
 		{
-			if (ack == default (IPacket))
-				return;
-
 			await channel.SendAsync(ack);
 		}
 	}

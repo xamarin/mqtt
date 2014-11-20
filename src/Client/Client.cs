@@ -106,7 +106,10 @@ namespace Hermes
 		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
 		{
 			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(qos);
-			var publish = new Publish (message.Topic, qos, retain, duplicatedDelivery: false, packetId: packetId);
+			var publish = new Publish (message.Topic, qos, retain, duplicatedDelivery: false, packetId: packetId)
+			{
+				Payload = message.Payload
+			};
 
 			await this.SendPacket (publish);
 

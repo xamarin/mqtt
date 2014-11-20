@@ -11,7 +11,7 @@ namespace Hermes
 		bool readStarted;
 		bool remainingLengthRead;
 		int remainingLength;
-		bool hasPacket;
+		bool isPacketProcessed;
 
 		readonly IList<byte> buffer;
 		readonly IBufferedChannel<byte> innerChannel;
@@ -29,7 +29,7 @@ namespace Hermes
 			this.subscription = this.innerChannel.Receiver.Subscribe (@byte => {
 				this.Process (@byte);
 
-				if (this.hasPacket) {
+				if (this.isPacketProcessed) {
 					this.receiver.OnNext(this.GetPacket ());
 				}
 			}, onError: ex => this.receiver.OnError(ex), onCompleted: () => this.receiver.OnCompleted());
@@ -51,7 +51,7 @@ namespace Hermes
 
 		private void Process (byte @byte)
 		{
-			if (this.hasPacket) {
+			if (this.isPacketProcessed) {
 				return;
 			}
 
@@ -65,21 +65,22 @@ namespace Hermes
 
 			if (!this.remainingLengthRead)
 			{
-				remainingLength += Convert.ToInt32(@byte);
-
 				if ((@byte & 128) == 0) {
-					remainingLengthRead = true;
-				}
+					var bytesLenght = default (int);
 
-				if (remainingLength == 0)
-					this.hasPacket = true;
+					this.remainingLength = Protocol.Encoding.DecodeRemainingLength(buffer.ToArray(), out bytesLenght);
+					this.remainingLengthRead = true;
+
+					if (remainingLength == 0)
+						this.isPacketProcessed = true;
+				}
 
 				return;
 			}
 
 			if (remainingLength == 1)
 			{
-				this.hasPacket = true;
+				this.isPacketProcessed = true;
 			}
 			else
 			{
@@ -89,7 +90,7 @@ namespace Hermes
 
 		private byte[] GetPacket()
 		{
-			if (!this.hasPacket)
+			if (!this.isPacketProcessed)
 				return default (byte[]);
 
 			var packet = this.buffer.ToArray ();
@@ -105,7 +106,7 @@ namespace Hermes
 			this.readStarted = false;
 			this.remainingLengthRead = false;
 			this.remainingLength = 0;
-			this.hasPacket = false;
+			this.isPacketProcessed = false;
 		}
 	}
 }

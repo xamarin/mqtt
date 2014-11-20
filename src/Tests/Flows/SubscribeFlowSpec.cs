@@ -27,7 +27,7 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
 
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.AtLeastOnce);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (QualityOfService.AtLeastOnce);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
 			var flow = new SubscribeFlow (configuration.Object, topicEvaluator.Object, sessionRepository.Object, packetIdentifierRepository, retainedMessageRepository);
@@ -74,7 +74,7 @@ namespace Tests.Flows
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
 
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.AtLeastOnce);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (QualityOfService.AtLeastOnce);
 
 			var clientId = Guid.NewGuid().ToString();
 			var fooQoS = QualityOfService.AtLeastOnce;
@@ -183,7 +183,7 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
 
-			configuration.Setup (c => c.SupportedQualityOfService).Returns (QualityOfService.AtLeastOnce);
+			configuration.Setup (c => c.MaximumQualityOfService).Returns (QualityOfService.AtLeastOnce);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
 			var fooQoS = QualityOfService.AtLeastOnce;
