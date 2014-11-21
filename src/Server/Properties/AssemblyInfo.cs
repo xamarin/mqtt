@@ -12,5 +12,5 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Hermes.Broker")]
-[assembly: AssemblyDescription("A lightweight and high-performance MQTT broker.")]
+[assembly: AssemblyTitle("Hermes.Server")]
+[assembly: AssemblyDescription("A lightweight and high-performance MQTT server/broker.")]
