@@ -72,7 +72,7 @@
 			Targets="Build"
 			Properties="Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)"/>
 
-		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive'
+		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive -Symbols'
 			  Condition="'%(Identity)' != ''" />
 		<Exec Command='"$(NuGetExePath)" Pack "@(PackageSpec)" -NoPackageAnalysis -NonInteractive'
 			  Condition="'%(Identity)' != ''" />
@@ -90,29 +90,6 @@
 			  Condition="'%(Identity)' != ''" />
 		<Exec Command='"$(NuGetExePath)" Pack "@(PackageSpec)" -NoPackageAnalysis -NonInteractive -Version $(Version)'
 			  Condition="'%(Identity)' != ''" />
-
-	</Target>
-
-	<Target Name="BuildPackage" 
-			Inputs="@(NuSpec)" 
-			Outputs="%(Identity)-BATCH" 
-			DependsOnTargets="RestorePackages;SemanticGit:GetVersion">
-		<PropertyGroup>
-			<ReleaseNotesPath>%(NuSpec.RootDir)%(NuSpec.Directory)ReleaseNotes.txt</ReleaseNotesPath>
-			<ReleaseNotes Condition="Exists('$(ReleaseNotesPath)')">$([System.IO.File]::ReadAllText('$(ReleaseNotesPath)'))</ReleaseNotes>
-		</PropertyGroup>
-
-		<Message Text="Updating %(NuSpec.Filename)%(NuSpec.Extension) release notes from existing file"
-				 Condition="'$(ReleaseNotes)' != ''"
-				 Importance="normal" />
-
-		<XmlPoke XmlInputPath="@(NuSpec)" 
-				 Query="/package/metadata/releaseNotes" 
-				 Value="$(ReleaseNotes)"
-				 Condition="'$(ReleaseNotes)' != ''" />
-
-		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)$(_PreRelease)&quot;"
-              ContinueOnError="false" />
 
 	</Target>
 

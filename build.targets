@@ -21,7 +21,7 @@
 	<Target Name="BeforeBuild" DependsOnTargets="SemanticGit:GetVersion" Condition="'$(Version)' == ''">
 
 		<PropertyGroup>
-			<Version>$(_Major).$(_Minor).$(_Patch)</Version>
+			<Version>$(_Major).$(_Minor).$(_Patch)$(_PreRelease)</Version>
 		</PropertyGroup>
 		
 	</Target>
