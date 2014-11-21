@@ -1,4 +1,4 @@
-# ![Icon](http://clarius.io/hermes/64px.png)![Spacer](http://clarius.io/hermes/spacer.png)![Tagline](http://clarius.io/hermes/tagline.png)
+# ![Icon](http://www.mobileessentials.org/img/hermes/logo/64px.png)![Spacer](http://www.mobileessentials.org/img/hermes/logo/spacer.png)![Tagline](http://www.mobileessentials.org/img/hermes/logo/tagline.png)
 
 
 Minimalist and intuitive asynchronous MQTT messaging broker and client written entirely in C#
