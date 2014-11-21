@@ -33,7 +33,7 @@
 			<_HermesPackages Include="@(_AllHermesPackages)" Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
 		</ItemGroup>
 
-		<Exec Command='"$(NuGetExePath)" Push "%(_HermesPackages.Identity)"' />
+		<Exec Command='"$(NuGetExePath)" Push "%(_HermesPackages.Identity)" -Source https://www.nuget.org' />
 		
 	</Target>
 
