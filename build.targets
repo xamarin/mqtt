@@ -21,8 +21,19 @@
 	<Target Name="BeforeBuild" DependsOnTargets="SemanticGit:GetVersion" Condition="'$(Version)' == ''">
 
 		<PropertyGroup>
-			<Version>$(_Major).$(_Minor).$(_Patch)</Version>
+			<Version>$(_Major).$(_Minor).$(_Patch)$(_PreRelease)</Version>
 		</PropertyGroup>
+		
+	</Target>
+
+	<Target Name="AfterBuild" Condition="'$(AutoPush)' == 'true'">
+
+		<ItemGroup>
+			<_AllHermesPackages Include="Hermes.*.nupkg" />
+			<_HermesPackages Include="@(_AllHermesPackages)" Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
+		</ItemGroup>
+
+		<Exec Command='"$(NuGetExePath)" Push "%(_HermesPackages.Identity)"' />
 		
 	</Target>
 
