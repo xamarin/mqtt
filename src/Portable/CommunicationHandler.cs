@@ -13,7 +13,7 @@ namespace Hermes
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 
-		public CommunicationHandler (IClientManager clientManager, 
+		public CommunicationHandler (IClientManager clientManager,
 			IProtocolFlowProvider flowProvider,
 			ProtocolConfiguration configuration)
 		{
@@ -28,12 +28,12 @@ namespace Hermes
 			var clientId = string.Empty;
 			var keepAlive = 0;
 
-			var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var packetDueTime = new TimeSpan (0, 0, this.configuration.WaitingTimeoutSecs);
 
 			channel.Receiver
 				.FirstAsync ()
 				.Timeout (packetDueTime)
-				.Subscribe(async packet => {
+				.Subscribe (async packet => {
 					var connect = packet as Connect;
 
 					if (connect == null) {
@@ -49,14 +49,14 @@ namespace Hermes
 
 					channel.Receiver
 						.Skip (1)
-						.Timeout (GetKeepAliveTolerance(keepAlive))
-						.Subscribe(_ => {}, ex => {
+						.Timeout (GetKeepAliveTolerance (keepAlive))
+						.Subscribe (_ => { }, ex => {
 							var message = string.Format (Resources.CommunicationHandler_KeepAliveTimeExceeded, keepAlive);
 
-							context.PushError (message, ex);	
+							context.PushError (message, ex);
 						});
 				}, ex => {
-					context.PushError (Resources.CommunicationHandler_NoConnectReceived, ex);	
+					context.PushError (Resources.CommunicationHandler_NoConnectReceived, ex);
 				});
 
 			channel.Receiver
@@ -76,14 +76,14 @@ namespace Hermes
 			return context;
 		}
 
-		private async Task DispatchPacketAsync(IPacket packet, string clientId, ICommunicationContext context)
+		private async Task DispatchPacketAsync (IPacket packet, string clientId, ICommunicationContext context)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
-
-			await flow.ExecuteAsync (clientId, packet, context);
+			if (flow != null)
+				await flow.ExecuteAsync (clientId, packet, context);
 		}
 
-		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
+		private static TimeSpan GetKeepAliveTolerance (int keepAlive)
 		{
 			if (keepAlive == 0)
 				keepAlive = 2 ^ 32 - 2; //Max accepted value of TimeSpan
