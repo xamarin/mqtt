@@ -13,5 +13,8 @@
         <releaseNotes />
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
-    </metadata>
+		<dependencies>
+			<dependency id="Hermes.Portable" />
+		</dependencies>
+	</metadata>
 </package>
