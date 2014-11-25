@@ -12,14 +12,22 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A5ABB89-2797-4946-8D46-F07144F616F3}"
 	ProjectSection(SolutionItems) = preProject
 		src\GlobalAssemblyInfo.cs = src\GlobalAssemblyInfo.cs
-		src\Hermes.proj = src\Hermes.proj
 		src\Hermes.props = src\Hermes.props
 		src\Hermes.targets = src\Hermes.targets
+		packages.config = packages.config
 		README.md = README.md
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "src\Server\Server.csproj", "{1397EC83-6D03-4D81-95D5-5D11C766C43A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{E887D106-44B8-46EF-9BCC-FF68AD1A1B71}"
+	ProjectSection(SolutionItems) = preProject
+		build.proj = build.proj
+		build.props = build.props
+		build.ps1 = build.ps1
+		build.targets = build.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,5 +54,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E887D106-44B8-46EF-9BCC-FF68AD1A1B71} = {1A5ABB89-2797-4946-8D46-F07144F616F3}
 	EndGlobalSection
 EndGlobal

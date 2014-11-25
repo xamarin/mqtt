@@ -1,4 +1,4 @@
-# ![Icon](http://clarius.io/hermes/64px.png)![Spacer](http://clarius.io/hermes/spacer.png)![Tagline](http://clarius.io/hermes/tagline.png)
+# ![Icon](http://www.mobileessentials.org/img/hermes/logo/64px.png)![Spacer](http://www.mobileessentials.org/img/hermes/logo/spacer.png)![Tagline](http://www.mobileessentials.org/img/hermes/logo/tagline.png)
 
 
 Minimalist and intuitive asynchronous MQTT messaging broker and client written entirely in C#
@@ -8,12 +8,12 @@ Minimalist and intuitive asynchronous MQTT messaging broker and client written e
 
 Server (broker) package:
 
-`Install-Package Hermes.Server`
+`Install-Package Hermes.Server -Pre`
 
 Client package:
 
-`Install-Package Hermes.Client`
+`Install-Package Hermes.Client -Pre`
 
 To debug with full symbols and sources the above packages, setup SymbolSource in the Visual Studio debugging options as explained in the [SymbolSource site](http://www.symbolsource.org/Public/Home/VisualStudio)
 
-[![Hermes Build Status](https://www.myget.org/BuildSource/Badge/hermes?identifier=f9f079cb-d81e-4e86-ad36-e2302901d794)](https://www.myget.org/)
+[![Hermes Build Status](https://www.myget.org/BuildSource/Badge/hermes?identifier=8a2033e6-103a-40b8-b047-33fb5492ee73)](https://www.myget.org/)
