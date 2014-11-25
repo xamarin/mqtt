@@ -47,7 +47,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 			var formatter = new PublishFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
@@ -82,7 +82,7 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 			var formatter = new PublishFormatter (topicEvaluator);
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 

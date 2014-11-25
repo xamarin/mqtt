@@ -11,7 +11,7 @@ namespace Tests
 		//public void when_creating_client_then_it_is_not_connected()
 		//{
 		//	var address = "192.168.1.1";
-		//	var configuration = new Mock<IProtocolConfiguration>();
+		//	var configuration = new Mock<ProtocolConfiguration>();
 		//	var socketFactory = new Mock<ISocketFactory>();
 
 		//	var socket = new Mock<IBufferedChannel<byte>>();

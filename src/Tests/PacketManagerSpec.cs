@@ -48,7 +48,7 @@ namespace Tests
 				.Returns (Task.FromResult<IPacket>((IPacket)packet));
 
 			var packetManager = new PacketManager (formatter.Object);
-			var result =  await packetManager.GetAsync (bytes);
+			var result =  await packetManager.GetPacketAsync (bytes);
 
 			Assert.Equal (packet, result);
 		}
@@ -88,7 +88,7 @@ namespace Tests
 				.Returns (Task.FromResult(bytes));
 
 			var packetManager = new PacketManager (formatter.Object);
-			var result = await packetManager.GetAsync (packet);
+			var result = await packetManager.GetBytesAsync (packet);
 
 			Assert.Equal (bytes, result);
 		}
@@ -113,7 +113,7 @@ namespace Tests
 				.Returns (Task.FromResult(bytes));
 
 			var packetManager = new PacketManager (formatter.Object);
-			var result = await packetManager.GetAsync (packet);
+			var result = await packetManager.GetBytesAsync (packet);
 
 			Assert.Equal (bytes, result);
 		}
@@ -146,7 +146,7 @@ namespace Tests
 			var formatter = new Mock<IFormatter> ();
 			var packetManager = new PacketManager (formatter.Object);
 
-			var ex = Assert.Throws<AggregateException> (() => packetManager.GetAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => packetManager.GetPacketAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -176,7 +176,7 @@ namespace Tests
 			var formatter = new Mock<IFormatter> ();
 			var packetManager = new PacketManager (formatter.Object);
 
-			var ex = Assert.Throws<AggregateException> (() => packetManager.GetAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException> (() => packetManager.GetBytesAsync (packet).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
