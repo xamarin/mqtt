@@ -1,6 +1,4 @@
-﻿using Hermes.Flows;
-
-namespace Hermes
+﻿namespace Hermes
 {
 	public class Protocol
 	{
@@ -10,9 +8,15 @@ namespace Hermes
 
 		public const int SupportedLevel = 4;
 
-		public const int PacketTypeLength = 1;
+		public const string SingleLevelTopicWildcard = "+";
+
+		public const string MultiLevelTopicWildcard = "#";
+
+		public const int MaxIntegerLength = 65535;
 
 		public const int StringPrefixLength = 2;
+
+		public const int PacketTypeLength = 1;
 
 		public const int ClientIdMaxLength = 23;
 

@@ -26,6 +26,11 @@
     <Compile Include="ClientFactory.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
+    <Compile Include="External\Diagnostics\Tracer\Tracer.cs" />
+    <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="IClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Socket.cs" />

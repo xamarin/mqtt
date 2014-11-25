@@ -71,7 +71,7 @@ namespace Hermes.Formatters
 		{
 			var variableHeader = new List<byte> ();
 
-			var packetIdBytes = Protocol.Encoding.EncodeBigEndian(packet.PacketId);
+			var packetIdBytes = Protocol.Encoding.EncodeInteger(packet.PacketId);
 
 			variableHeader.AddRange (packetIdBytes);
 

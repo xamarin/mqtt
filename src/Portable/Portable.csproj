@@ -24,9 +24,13 @@
     </Compile>
     <Compile Include="BinaryChannel.cs" />
     <Compile Include="ByteExtensions.cs" />
+    <Compile Include="ClientManager.cs" />
+    <Compile Include="CommunicationContext.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Flows\IFlowProvider.cs" />
     <Compile Include="Flows\PingFlow.cs" />
+    <Compile Include="Flows\ProtocolFlowProvider.cs" />
     <Compile Include="Flows\PublishFlow.cs" />
     <Compile Include="Flows\SubscribeFlow.cs" />
     <Compile Include="Flows\UnsubscribeFlow.cs" />
@@ -47,14 +51,13 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IBufferedChannel.cs" />
     <Compile Include="IChannel.cs" />
-    <Compile Include="IMessagingHandler.cs" />
+    <Compile Include="ICommunicationContext.cs" />
+    <Compile Include="ICommunicationHandler.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
     <Compile Include="IClientManager.cs" />
     <Compile Include="IPacketManager.cs" />
-    <Compile Include="IProtocolConfiguration.cs" />
-    <Compile Include="IProtocolConnection.cs" />
     <Compile Include="ITopicEvaluator.cs" />
-    <Compile Include="MessagingHandler.cs" />
+    <Compile Include="CommunicationHandler.cs" />
     <Compile Include="PacketChannel.cs" />
     <Compile Include="PacketChannelFactory.cs" />
     <Compile Include="PacketManager.cs" />

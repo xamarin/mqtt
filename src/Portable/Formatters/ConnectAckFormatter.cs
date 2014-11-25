@@ -60,10 +60,10 @@ namespace Hermes.Formatters
 
 		private byte[] GetVariableHeader(ConnectAck packet)
 		{
-			if (packet.Status != ConnectionStatus.Accepted && packet.ExistingSession)
+			if (packet.Status != ConnectionStatus.Accepted && packet.SessionPresent)
 				throw new ProtocolException (Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
 
-			var connectAckFlagsByte = Convert.ToByte(packet.ExistingSession);
+			var connectAckFlagsByte = Convert.ToByte(packet.SessionPresent);
 			var returnCodeByte = Convert.ToByte (packet.Status);
 
 			return new[] { connectAckFlagsByte, returnCodeByte };

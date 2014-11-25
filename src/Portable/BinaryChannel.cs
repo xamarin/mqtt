@@ -46,7 +46,7 @@ namespace Hermes
 		{
 			this.innerChannel.Close ();
 			this.subscription.Dispose ();
-			this.receiver.Dispose ();
+			this.receiver.OnCompleted ();
 		}
 
 		private void Process (byte @byte)

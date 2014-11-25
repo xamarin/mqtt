@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Hermes.Packets;
 
 namespace Hermes.Storage
 {
@@ -6,6 +6,6 @@ namespace Hermes.Storage
 	{
 		public string ClientId { get; set; }
 
-		public Packets.Will Will { get; set; }
+		public Will Will { get; set; }
 	}
 }

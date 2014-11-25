@@ -16,7 +16,7 @@ namespace Hermes
 
 		readonly IChannel<IPacket> channel;
 		readonly IObservable<Unit> timeListener;
-		readonly IProtocolConfiguration configuration;
+		readonly ProtocolConfiguration configuration;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
 		readonly IDictionary<ushort, IDisposable> packetTimers;
@@ -24,7 +24,7 @@ namespace Hermes
 		IDisposable keepAliveTimer;
 		IDisposable connectTimer;
 
-        public Client(IChannel<IPacket> channel, IObservable<Unit> timeListener, IProtocolConfiguration configuration, IRepository<PacketIdentifier> packetIdentifierRepository)
+        public Client(IChannel<IPacket> channel, IObservable<Unit> timeListener, ProtocolConfiguration configuration, IRepository<PacketIdentifier> packetIdentifierRepository)
         {
 			this.channel = channel;
 			this.timeListener = timeListener;
@@ -81,14 +81,14 @@ namespace Hermes
 				UserName = credentials.UserName,
 				Password = credentials.Password,
 				Will = will,
-				KeepAlive = this.configuration.KeepAlive
+				KeepAlive = this.configuration.KeepAliveSecs
 			};
 
 			await this.SendPacket (connect);
 
 			this.Id = credentials.ClientId;
 
-			this.connectTimer = this.timeListener.Skip (this.configuration.AckTimeout).Take (1).Subscribe (_ => {
+			this.connectTimer = this.timeListener.Skip (this.configuration.WaitingTimeoutSecs).Take (1).Subscribe (_ => {
 				this.channel.Close ();
 			});
 		}
@@ -147,7 +147,7 @@ namespace Hermes
 
 		private IDisposable GetTimer()
 		{
-			return this.timeListener.Skip (this.configuration.AckTimeout).Take (1).Subscribe (_ => {
+			return this.timeListener.Skip (this.configuration.WaitingTimeoutSecs).Take (1).Subscribe (_ => {
 				this.channel.Close ();
 			});
 		}
@@ -165,10 +165,10 @@ namespace Hermes
 
 		private void StartKeepAliveTimer()
 		{
-			if (configuration.KeepAlive == 0)
+			if (configuration.KeepAliveSecs == 0)
 				return;
 
-			this.keepAliveTimer = this.timeListener.Skip (configuration.KeepAlive).Take (1).Subscribe (async _ => {
+			this.keepAliveTimer = this.timeListener.Skip (configuration.KeepAliveSecs).Take (1).Subscribe (async _ => {
 				var ping = new PingRequest ();
 
 				await this.channel.SendAsync(ping);

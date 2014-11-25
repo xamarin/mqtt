@@ -80,6 +80,51 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The client {0} is not connected and cannot receive messages.
+        /// </summary>
+        internal static string ClientManager_ClientIdNotFound {
+            get {
+                return ResourceManager.GetString("ClientManager_ClientIdNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The first Packet sent from the Client to the Server must be a Connect Packet..
+        /// </summary>
+        internal static string CommunicationHandler_FirstPacketMustBeConnect {
+            get {
+                return ResourceManager.GetString("CommunicationHandler_FirstPacketMustBeConnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The time without receiving a control packet has exceeded the expected Keep Alive of {0} secs..
+        /// </summary>
+        internal static string CommunicationHandler_KeepAliveTimeExceeded {
+            get {
+                return ResourceManager.GetString("CommunicationHandler_KeepAliveTimeExceeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A connect packet has not been received for this network connection in the expected time..
+        /// </summary>
+        internal static string CommunicationHandler_NoConnectReceived {
+            get {
+                return ResourceManager.GetString("CommunicationHandler_NoConnectReceived", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A second connect packet from the same client session is not allowed. The client will be disconnected and the connection closed.
+        /// </summary>
+        internal static string CommunicationHandler_SecondConnectNotAllowed {
+            get {
+                return ResourceManager.GetString("CommunicationHandler_SecondConnectNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bits 7-1 from Acknowledge flags are reserved and must be set to 0.
         /// </summary>
         internal static string ConnectAckFormatter_InvalidAckFlags {
@@ -188,15 +233,6 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to String value cannot exceed 65536 bytes of length.
-        /// </summary>
-        internal static string DataRepresentationExtensions_StringMaxLengthExceeded {
-            get {
-                return ResourceManager.GetString("DataRepresentationExtensions_StringMaxLengthExceeded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Header Flag {0} is invalid for {1} packet. Expected value: {2}.
         /// </summary>
         internal static string Formatter_InvalidHeaderFlag {
@@ -242,11 +278,29 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Integer values are expected to be of two bytes length. The max value supported is 65536.
+        /// </summary>
+        internal static string ProtocolEncoding_IntegerMaxValueExceeded {
+            get {
+                return ResourceManager.GetString("ProtocolEncoding_IntegerMaxValueExceeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Malformed Remaining Length.
         /// </summary>
         internal static string ProtocolEncoding_MalformedRemainingLength {
             get {
                 return ResourceManager.GetString("ProtocolEncoding_MalformedRemainingLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to String value cannot exceed 65536 bytes of length.
+        /// </summary>
+        internal static string ProtocolEncoding_StringMaxLengthExceeded {
+            get {
+                return ResourceManager.GetString("ProtocolEncoding_StringMaxLengthExceeded", resourceCulture);
             }
         }
         
@@ -341,33 +395,6 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The first Packet sent from the Client to the Server must be a Connect Packet. The connection will be closed.
-        /// </summary>
-        internal static string Server_FirstPacketMustBeConnect {
-            get {
-                return ResourceManager.GetString("Server_FirstPacketMustBeConnect", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The Server has not received a Connect Packet in a time fashion. The connection will be closed.
-        /// </summary>
-        internal static string Server_NoConnectReceived {
-            get {
-                return ResourceManager.GetString("Server_NoConnectReceived", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A second connect packet from the same client session is not allowed. The client will be disconnected and the connection closed.
-        /// </summary>
-        internal static string Server_SecondConnectNotAllowed {
-            get {
-                return ResourceManager.GetString("Server_SecondConnectNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Return codes can only be valid QoS values or a failure code (0x80).
         /// </summary>
         internal static string SubscribeAckFormatter_InvalidReturnCodes {
@@ -400,6 +427,24 @@ namespace Hermes.Properties {
         internal static string SubscribeFormatter_MissingTopicFilterQosPair {
             get {
                 return ResourceManager.GetString("SubscribeFormatter_MissingTopicFilterQosPair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The topic filter {0} is invalid according to the protocol rules and configuration.
+        /// </summary>
+        internal static string TopicEvaluator_InvalidTopicFilter {
+            get {
+                return ResourceManager.GetString("TopicEvaluator_InvalidTopicFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The topic name {0} is invalid according to the protocol rules.
+        /// </summary>
+        internal static string TopicEvaluator_InvalidTopicName {
+            get {
+                return ResourceManager.GetString("TopicEvaluator_InvalidTopicName", resourceCulture);
             }
         }
         

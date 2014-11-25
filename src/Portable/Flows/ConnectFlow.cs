@@ -5,8 +5,6 @@ using Hermes.Storage;
 
 namespace Hermes.Flows
 {
-	//TODO: Pending to add Session State entity and behavior
-	//TODO: Pending to add support for this:  If the ClientId represents a Client already connected to the Server then the Server MUST disconnect the existing Client
 	public class ConnectFlow : IProtocolFlow
 	{
 		readonly IRepository<ClientSession> sessionRepository;
@@ -18,7 +16,7 @@ namespace Hermes.Flows
 			this.willRepository = willRepository;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
 		{
 			if (input.Type == PacketType.ConnectAck)
 				return;
@@ -31,13 +29,12 @@ namespace Hermes.Flows
 				throw new ProtocolException(error);
 			}
 
-			//TODO: Add exception handling to prevent any repository error
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 
 			if (connect.CleanSession && session != null) {
 				this.sessionRepository.Delete(session);
-				session = null; //TODO: Verify if this is necessary
+				session = null;
 			}
 
 			if (session == null) {
@@ -52,7 +49,7 @@ namespace Hermes.Flows
 				this.willRepository.Create (connectionWill);
 			}
 
-			await channel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent));
+			await context.PushDeliveryAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent));
 		}
 	}
 }

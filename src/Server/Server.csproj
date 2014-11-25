@@ -44,6 +44,11 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
+    <Compile Include="External\Diagnostics\Tracer\Tracer.cs" />
+    <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="netfx\System\Guard.cs" />
     <Compile Include="netfx\System\Reactive\EventPattern.cs" />
     <Compile Include="netfx\System\Reactive\EventStream.cs" />

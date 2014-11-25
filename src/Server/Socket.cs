@@ -33,7 +33,7 @@ namespace Hermes
 		{
 			this.reactiveSocket.Dispose ();
 			this.subscription.Dispose ();
-			this.receiver.Dispose ();
+			this.receiver.OnCompleted ();
 		}
 	}
 }

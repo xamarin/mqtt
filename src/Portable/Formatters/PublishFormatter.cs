@@ -125,7 +125,7 @@ namespace Hermes.Formatters
 			variableHeader.AddRange (topicBytes);
 
 			if (packet.PacketId.HasValue) {
-				var packetIdBytes = Protocol.Encoding.EncodeBigEndian(packet.PacketId.Value);
+				var packetIdBytes = Protocol.Encoding.EncodeInteger(packet.PacketId.Value);
 
 				variableHeader.AddRange (packetIdBytes);
 			}
