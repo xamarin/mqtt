@@ -16,14 +16,14 @@ namespace Tests.Flows
 			var flow = new PingFlow ();
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, new PingRequest(), context.Object);
+			await flow.ExecuteAsync (clientId, new PingRequest(), channel.Object);
 
 			var pingResponse = sentPacket as PingResponse;
 
@@ -37,14 +37,14 @@ namespace Tests.Flows
 			var flow = new PingFlow ();
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Disconnect(), context.Object).Wait());
+			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Disconnect(), channel.Object).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}

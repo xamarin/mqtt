@@ -10,6 +10,7 @@ namespace Hermes
 		readonly IChannel<byte[]> innerChannel;
 		readonly IPacketManager manager;
         readonly Subject<IPacket> receiver;
+		readonly Subject<IPacket> sender;
 		readonly IDisposable subscription;
 
 		public PacketChannel (IChannel<byte[]> innerChannel, IPacketManager manager)
@@ -18,7 +19,7 @@ namespace Hermes
 			this.manager = manager;
 
 			this.receiver = new Subject<IPacket> ();
-
+			this.sender = new Subject<IPacket> ();
 			this.subscription = innerChannel.Receiver.Subscribe (async bytes => {
 				try {
 					var packet = await this.manager.GetPacketAsync(bytes);
@@ -37,11 +38,15 @@ namespace Hermes
 
 		public IObservable<IPacket> Receiver { get { return this.receiver; } }
 
+		public IObservable<IPacket> Sender { get { return this.sender; } }
+
 		public async Task SendAsync (IPacket packet)
 		{
 			var bytes = await this.manager.GetBytesAsync (packet);
 
 			await this.innerChannel.SendAsync (bytes);
+
+			this.sender.OnNext (packet);
 		}
 
 		public void Close ()
@@ -49,6 +54,7 @@ namespace Hermes
 			this.innerChannel.Close ();
 			this.subscription.Dispose ();
 			this.receiver.OnCompleted ();
+			this.sender.OnCompleted ();
 		}
 	}
 }

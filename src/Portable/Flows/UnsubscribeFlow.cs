@@ -17,7 +17,7 @@ namespace Hermes.Flows
 			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type == PacketType.UnsubscribeAck) {
 				var unsubscribeAck = input as UnsubscribeAck;
@@ -53,7 +53,7 @@ namespace Hermes.Flows
 			//It MUST complete the delivery of any QoS 1 or QoS 2 messages which it has started to send to the Client [MQTT-3.10.4-3].
 			//It MAY continue to deliver any existing messages buffered for delivery to the Client.
 
-			await context.PushDeliveryAsync(new UnsubscribeAck (unsubscribe.PacketId));
+			await channel.SendAsync(new UnsubscribeAck (unsubscribe.PacketId));
 		}
 	}
 }

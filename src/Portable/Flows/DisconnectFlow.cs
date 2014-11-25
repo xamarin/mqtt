@@ -16,7 +16,7 @@ namespace Hermes.Flows
 			this.willRepository = willRepository;
 		}
 
-		public Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
+		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			var disconnect = input as Disconnect;
 
@@ -30,7 +30,7 @@ namespace Hermes.Flows
 				this.willRepository.Delete (w => w.ClientId == clientId);
 				this.clientManager.RemoveClient (clientId);
 
-				context.Dispose ();
+				channel.Close ();
 			});
 		}
 	}

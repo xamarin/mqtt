@@ -7,6 +7,8 @@ namespace Hermes
     {
         IObservable<T> Receiver { get; }
 
+		IObservable<T> Sender { get; }
+
         Task SendAsync(T message);
 
 		void Close();

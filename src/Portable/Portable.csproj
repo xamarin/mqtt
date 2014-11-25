@@ -21,7 +21,6 @@
     <Compile Include="BinaryChannel.cs" />
     <Compile Include="ByteExtensions.cs" />
     <Compile Include="ClientManager.cs" />
-    <Compile Include="CommunicationContext.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Flows\IFlowProvider.cs" />
@@ -47,13 +46,10 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IBufferedChannel.cs" />
     <Compile Include="IChannel.cs" />
-    <Compile Include="ICommunicationContext.cs" />
-    <Compile Include="ICommunicationHandler.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
     <Compile Include="IClientManager.cs" />
     <Compile Include="IPacketManager.cs" />
     <Compile Include="ITopicEvaluator.cs" />
-    <Compile Include="CommunicationHandler.cs" />
     <Compile Include="PacketChannel.cs" />
     <Compile Include="PacketChannelFactory.cs" />
     <Compile Include="PacketManager.cs" />
@@ -90,6 +86,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Storage\InMemoryRepositoryFactory.cs" />
+    <Compile Include="Storage\IRepositoryFactory.cs" />
     <Compile Include="Storage\PacketIdentifier.cs" />
     <Compile Include="Storage\PendingMessage.cs" />
     <Compile Include="Storage\RetainedMessage.cs" />

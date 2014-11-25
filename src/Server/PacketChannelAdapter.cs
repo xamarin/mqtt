@@ -4,16 +4,22 @@ using System.Threading.Tasks;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
+using Hermes.Storage;
 
 namespace Hermes
 {
-	public class CommunicationHandler : ICommunicationHandler
+	public class PacketChannelAdapter : IPacketChannelAdapter
 	{
 		readonly IClientManager clientManager;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 
-		public CommunicationHandler (IClientManager clientManager, 
+		public PacketChannelAdapter (IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
+			: this(new ClientManager(), new ProtocolFlowProvider(repositoryFactory, configuration), configuration)
+		{
+		}
+
+		public PacketChannelAdapter (IClientManager clientManager, 
 			IProtocolFlowProvider flowProvider,
 			ProtocolConfiguration configuration)
 		{
@@ -22,9 +28,9 @@ namespace Hermes
 			this.configuration = configuration;
 		}
 
-		public ICommunicationContext Handle (IChannel<IPacket> channel)
+		public IChannel<IPacket> Adapt (IChannel<IPacket> channel)
 		{
-			var context = new CommunicationContext ();
+			var protocolChannel = new ProtocolChannel (channel);
 			var clientId = string.Empty;
 			var keepAlive = 0;
 
@@ -37,7 +43,7 @@ namespace Hermes
 					var connect = packet as Connect;
 
 					if (connect == null) {
-						context.PushError (Resources.CommunicationHandler_FirstPacketMustBeConnect);
+						protocolChannel.NotifyError (Resources.PacketChannelAdapter_FirstPacketMustBeConnect);
 						return;
 					}
 
@@ -45,42 +51,39 @@ namespace Hermes
 					keepAlive = connect.KeepAlive;
 					this.clientManager.AddClient (clientId, channel);
 
-					await this.DispatchPacketAsync (connect, clientId, context);
+					await this.DispatchPacketAsync (connect, clientId, protocolChannel);
 
 					channel.Receiver
 						.Skip (1)
 						.Timeout (GetKeepAliveTolerance(keepAlive))
 						.Subscribe(_ => {}, ex => {
-							var message = string.Format (Resources.CommunicationHandler_KeepAliveTimeExceeded, keepAlive);
+							var message = string.Format (Resources.PacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
 
-							context.PushError (message, ex);	
+							protocolChannel.NotifyError (message, ex);	
 						});
 				}, ex => {
-					context.PushError (Resources.CommunicationHandler_NoConnectReceived, ex);	
+					protocolChannel.NotifyError (Resources.PacketChannelAdapter_NoConnectReceived, ex);	
 				});
 
 			channel.Receiver
 				.Skip (1)
 				.Subscribe (async packet => {
-					if (context.IsFaulted)
-						return;
-
 					if (packet is Connect) {
-						context.PushError (Resources.CommunicationHandler_SecondConnectNotAllowed);
+						protocolChannel.NotifyError (Resources.PacketChannelAdapter_SecondConnectNotAllowed);
 						return;
 					}
 
-					await this.DispatchPacketAsync (packet, clientId, context);
+					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
 				});
 
-			return context;
+			return protocolChannel;
 		}
 
-		private async Task DispatchPacketAsync(IPacket packet, string clientId, ICommunicationContext context)
+		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
 
-			await flow.ExecuteAsync (clientId, packet, context);
+			await flow.ExecuteAsync (clientId, packet, channel);
 		}
 
 		private static TimeSpan GetKeepAliveTolerance(int keepAlive)

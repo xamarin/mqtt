@@ -22,14 +22,14 @@ namespace Tests.Flows
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var connect = new Connect (clientId, cleanSession: true);
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, context.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -60,14 +60,14 @@ namespace Tests.Flows
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
 			var connect = new Connect (clientId, cleanSession: false);
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, context.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			sessionRepository.Verify (r => r.Create (It.IsAny<ClientSession> ()), Times.Never);
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -96,14 +96,14 @@ namespace Tests.Flows
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
 			var connect = new Connect (clientId, cleanSession: true);
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, context.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 
@@ -131,14 +131,14 @@ namespace Tests.Flows
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
 			var connect = new Connect (clientId, cleanSession: false);
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, context.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 
@@ -160,14 +160,14 @@ namespace Tests.Flows
 
 			connect.Will = will;
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, context.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 
@@ -191,14 +191,14 @@ namespace Tests.Flows
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var invalid = new PingRequest ();
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, invalid, context.Object).Wait());
+			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, invalid, channel.Object).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}

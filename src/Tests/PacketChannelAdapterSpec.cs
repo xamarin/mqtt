@@ -9,24 +9,24 @@ using Xunit;
 
 namespace Tests
 {
-	public class CommunicationHandlerSpec
+	public class PacketChannelAdapterSpec
 	{
 		[Fact]
-		public void when_handling_channel_then_context_is_returned()
+		public void when_adapting_packet_channel_then_protocol_channel_is_returned()
 		{
 			var clientManager = new Mock<IClientManager> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration  { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 
-			Assert.NotNull (context);
+			Assert.NotNull (protocolChannel);
 		}
 
 		[Fact]
@@ -40,14 +40,14 @@ namespace Tests
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<PacketType> ())).Returns (flow.Object);
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 
 			var clientId = Guid.NewGuid().ToString();
 			var connect = new Connect (clientId, cleanSession: true);
@@ -57,8 +57,8 @@ namespace Tests
 			receiver.OnNext (publish);
 
 			flowProvider.Verify (p => p.GetFlow (It.Is<PacketType> (t => t == PacketType.Publish)));
-			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Connect), It.IsAny<ICommunicationContext> ()));
-			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Publish), It.IsAny<ICommunicationContext> ()));
+			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Connect), It.IsAny<IChannel<IPacket>> ()));
+			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Publish), It.IsAny<IChannel<IPacket>> ()));
 		}
 
 		[Fact]
@@ -67,21 +67,21 @@ namespace Tests
 			var clientManager = new Mock<IClientManager> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 
 			var clientId = Guid.NewGuid().ToString();
 			var connect = new Connect (clientId, cleanSession: true);
 
 			receiver.OnNext (connect);
 
-			clientManager.Verify (m => m.AddClient (It.Is<string> (s => s == clientId), It.Is<IChannel<IPacket>> (c => c == channel.Object)));
+			clientManager.Verify (m => m.AddClient (It.Is<string> (s => s == clientId), It.Is<IChannel<IPacket>> (c => c == packetChannel.Object)));
 		}
 
 		[Fact]
@@ -91,17 +91,17 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 			var timeoutOccured = false;
 			
-			context.PendingDeliveries.Subscribe (_ => { }, ex => {
+			protocolChannel.Sender.Subscribe (_ => { }, ex => {
 				timeoutOccured = true;
 			});
 
@@ -117,17 +117,17 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 			var timeoutOccured = false;
 			
-			context.PendingDeliveries.Subscribe (_ => { }, ex => {
+			protocolChannel.Receiver.Subscribe (_ => { }, ex => {
 				timeoutOccured = true;
 			});
 
@@ -145,17 +145,17 @@ namespace Tests
 			var clientManager = new Mock<IClientManager> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 			var errorOccured = false;
 			
-			context.PendingDeliveries.Subscribe (_ => { }, ex => {
+			protocolChannel.Sender.Subscribe (_ => { }, ex => {
 				errorOccured = true;
 			});
 
@@ -170,17 +170,17 @@ namespace Tests
 			var clientManager = new Mock<IClientManager> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 			var errorOccured = false;
 			
-			context.PendingDeliveries.Subscribe (_ => { }, ex => {
+			protocolChannel.Sender.Subscribe (_ => { }, ex => {
 				errorOccured = true;
 			});
 
@@ -203,17 +203,17 @@ namespace Tests
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 			var timeoutOccured = false;
 			
-			context.PendingDeliveries.Subscribe (_ => { }, ex => {
+			protocolChannel.Sender.Subscribe (_ => { }, ex => {
 				timeoutOccured = true;
 			});
 
@@ -238,17 +238,17 @@ namespace Tests
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 			var timeoutOccured = false;
 			
-			context.PendingDeliveries.Subscribe (_ => { }, ex => {
+			protocolChannel.Sender.Subscribe (_ => { }, ex => {
 				timeoutOccured = true;
 			});
 
@@ -272,17 +272,17 @@ namespace Tests
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var handler = new CommunicationHandler (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var packetChannel = new Mock<IChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 
-			var context = handler.Handle (channel.Object);
+			var protocolChannel = adapter.Adapt (packetChannel.Object);
 			var timeoutOccured = false;
 			
-			context.PendingDeliveries.Subscribe (_ => { }, ex => {
+			protocolChannel.Sender.Subscribe (_ => { }, ex => {
 				timeoutOccured = true;
 			});
 

@@ -16,6 +16,7 @@ namespace Hermes
 		readonly IList<byte> buffer;
 		readonly IBufferedChannel<byte> innerChannel;
 		readonly Subject<byte[]> receiver;
+		readonly Subject<byte[]> sender;
 		readonly IDisposable subscription;
 
 		public BinaryChannel (IBufferedChannel<byte> innerChannel)
@@ -24,6 +25,7 @@ namespace Hermes
 			this.remainingLength = 0;
 
 			this.receiver = new Subject<byte[]> ();
+			this.sender = new Subject<byte[]> ();
 			this.innerChannel = innerChannel;
 
 			this.subscription = this.innerChannel.Receiver.Subscribe (@byte => {
@@ -37,9 +39,13 @@ namespace Hermes
 
 		public IObservable<byte[]> Receiver { get { return this.receiver; } }
 
+		public IObservable<byte[]> Sender { get { return this.sender; } }
+
 		public async Task SendAsync (byte[] message)
 		{
 			await this.innerChannel.SendAsync (message);
+
+			this.sender.OnNext (message);
 		}
 
 		public void Close ()
@@ -47,6 +53,7 @@ namespace Hermes
 			this.innerChannel.Close ();
 			this.subscription.Dispose ();
 			this.receiver.OnCompleted ();
+			this.sender.OnCompleted ();
 		}
 
 		private void Process (byte @byte)

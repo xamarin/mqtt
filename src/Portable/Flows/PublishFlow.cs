@@ -36,7 +36,7 @@ namespace Hermes.Flows
 			this.publishRules.Add (QualityOfService.ExactlyOnce, RunQoS2Flow);
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type == PacketType.PublishAck) {
 				var publishAck = input as PublishAck;
@@ -58,7 +58,7 @@ namespace Hermes.Flows
 				var publishReceived = input as PublishReceived;
 				var ack = this.RunQoS2Flow (publishReceived);
 
-				await this.SendAckAsync (ack, context);
+				await this.SendAckAsync (ack, channel);
 				return;
 			}
 
@@ -66,7 +66,7 @@ namespace Hermes.Flows
 				var publishRelease = input as PublishRelease;
 				var ack = this.RunQoS2Flow (publishRelease);
 
-				await this.SendAckAsync (ack, context);
+				await this.SendAckAsync (ack, channel);
 				return;
 			}
 
@@ -123,7 +123,7 @@ namespace Hermes.Flows
 			var result = rule (publish);
 
 			if (result != default (IPacket)) {
-				await this.SendAckAsync (result, context);
+				await this.SendAckAsync (result, channel);
 			}
 		}
 
@@ -158,9 +158,9 @@ namespace Hermes.Flows
 			return new PublishComplete(publishRelease.PacketId);
 		}
 
-		private async Task SendAckAsync(IPacket ack, ICommunicationContext context) 
+		private async Task SendAckAsync(IPacket ack, IChannel<IPacket> channel) 
 		{
-			await context.PushDeliveryAsync(ack);
+			await channel.SendAsync(ack);
 		}
 	}
 }

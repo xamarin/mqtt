@@ -16,6 +16,9 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Server\ReactiveSocketChannel.cs">
+      <Link>ReactiveSocketChannel.cs</Link>
+    </Compile>
     <Compile Include="ApplicationMessage.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientCredentials.cs" />
@@ -29,7 +32,6 @@
     <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="IClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Socket.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">

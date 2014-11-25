@@ -9,10 +9,20 @@ namespace Hermes.Flows
 	{
 		readonly IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 
-		public ProtocolFlowProvider (IClientManager clientManager, ITopicEvaluator topicEvaluator, IRepository<ClientSession> sessionRepository, 
-			IRepository<RetainedMessage> retainedRepository, IRepository<ConnectionWill> willRepository, IRepository<PacketIdentifier> packetIdentifierRepository, ProtocolConfiguration configuration)
+		public ProtocolFlowProvider (IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
+			: this(new ClientManager(), new TopicEvaluator(configuration), repositoryFactory, configuration)
+		{
+		}
+
+		public ProtocolFlowProvider (IClientManager clientManager, ITopicEvaluator topicEvaluator,
+			IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
 		{
 			this.flows = new Dictionary<ProtocolFlowType, IProtocolFlow>();
+
+			var sessionRepository = repositoryFactory.CreateRepository<ClientSession>();
+			var willRepository = repositoryFactory.CreateRepository<ConnectionWill> ();
+			var retainedRepository = repositoryFactory.CreateRepository<RetainedMessage> ();
+			var packetIdentifierRepository = repositoryFactory.CreateRepository<PacketIdentifier> ();
 
 			this.flows.Add (ProtocolFlowType.Connect, new ConnectFlow (sessionRepository, willRepository));
 			this.flows.Add (ProtocolFlowType.Publish, new PublishFlow (configuration, clientManager, topicEvaluator, retainedRepository, sessionRepository, packetIdentifierRepository));

@@ -21,14 +21,14 @@ namespace Tests.Flows
 			var flow = new DisconnectFlow (clientManager.Object, willRepository.Object);
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var disconnect = new Disconnect ();
 
-			await flow.ExecuteAsync (clientId, disconnect, context.Object);
+			await flow.ExecuteAsync (clientId, disconnect, channel.Object);
 
 			clientManager.Verify (m => m.RemoveClient (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
-			context.Verify (c => c.Dispose ());
+			channel.Verify (c => c.Close ());
 		}
 
 		[Fact]
@@ -41,14 +41,14 @@ namespace Tests.Flows
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var invalid = new Connect (clientId, cleanSession: true);
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			Assert.Throws<ProtocolException> (() => flow.ExecuteAsync (clientId, invalid, context.Object).Wait());
+			Assert.Throws<ProtocolException> (() => flow.ExecuteAsync (clientId, invalid, channel.Object).Wait());
 		}
 	}
 }

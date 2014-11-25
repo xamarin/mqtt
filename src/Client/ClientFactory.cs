@@ -13,7 +13,7 @@ namespace Hermes
 
 			reactiveSocket.ConnectAsync ().Wait ();
 
-			var socket = new Socket (reactiveSocket);
+			var socket = new ReactiveSocketChannel (reactiveSocket);
 
 			var topicEvaluator = new TopicEvaluator(configuration);
 			var packetChannelFactory = new PacketChannelFactory (topicEvaluator); //TODO: We need to inject this, but it currently affects Client experience creating factories

@@ -51,7 +51,7 @@
     <Compile Include="ByteExtensionsSpec.cs" />
     <Compile Include="ClientManagerSpec.cs" />
     <Compile Include="ClientSpec.cs" />
-    <Compile Include="CommunicationHandlerSpec.cs" />
+    <Compile Include="PacketChannelAdapterSpec.cs" />
     <Compile Include="Flows\ConnectFlowSpec.cs" />
     <Compile Include="Flows\DisconnectFlowSpec.cs" />
     <Compile Include="Flows\PingFlowSpec.cs" />

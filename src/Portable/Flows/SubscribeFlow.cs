@@ -26,7 +26,7 @@ namespace Hermes.Flows
 			this.retainedRepository = retainedRepository;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type == PacketType.SubscribeAck) {
 				var subscribeAck = input as SubscribeAck;
@@ -77,7 +77,7 @@ namespace Hermes.Flows
 								Payload = retainedMessage.Payload
 							};
 
-							await context.PushDeliveryAsync (publish);
+							await channel.SendAsync (publish);
 						}
 					}
 
@@ -93,7 +93,7 @@ namespace Hermes.Flows
 
 			this.sessionRepository.Update (session);
 
-			await context.PushDeliveryAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()));
+			await channel.SendAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()));
 		}
 	}
 }

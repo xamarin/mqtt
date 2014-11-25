@@ -29,9 +29,7 @@ namespace Tests
 		public void when_getting_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
 			var flowProvider = new ProtocolFlowProvider (Mock.Of<IClientManager> (),
-				Mock.Of<ITopicEvaluator> (), Mock.Of<IRepository<ClientSession>> (),
-				Mock.Of<IRepository<RetainedMessage>> (), Mock.Of<IRepository<ConnectionWill>> (),
-				Mock.Of<IRepository<PacketIdentifier>> (), new ProtocolConfiguration ());
+				Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryFactory>(), new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 

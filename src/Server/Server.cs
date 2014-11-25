@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using Hermes.Diagnostics;
 using Hermes.Packets;
+using Hermes.Storage;
 
 namespace Hermes
 {
@@ -13,20 +14,27 @@ namespace Hermes
 		readonly IObservable<IBufferedChannel<byte>> socketProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly IPacketChannelFactory channelFactory;
-		readonly ICommunicationHandler communicationHandler;
+		readonly IPacketChannelAdapter channelAdapter;
 
 		readonly IList<IBufferedChannel<byte>> sockets = new List<IBufferedChannel<byte>> ();
 		readonly IList<string> activeClients = new List<string> ();
 
+		public Server (IObservable<ReactiveSocketChannel> socketProvider, IRepositoryFactory repositoryFactory, 
+			ProtocolConfiguration configuration)
+			: this(socketProvider, new PacketChannelFactory(new TopicEvaluator(configuration)), 
+				new PacketChannelAdapter(repositoryFactory, configuration), configuration)
+		{
+		}
+
 		public Server (
 			IObservable<IBufferedChannel<byte>> socketProvider, 
 			IPacketChannelFactory channelFactory, 
-			ICommunicationHandler communicationHandler,
+			IPacketChannelAdapter channelAdapter,
 			ProtocolConfiguration configuration)
 		{
 			this.socketProvider = socketProvider;
 			this.channelFactory = channelFactory;
-			this.communicationHandler = communicationHandler;
+			this.channelAdapter = channelAdapter;
 			this.configuration = configuration;
 
 			this.socketProvider.Subscribe (
@@ -72,14 +80,12 @@ namespace Hermes
 			
 			var clientId = string.Empty;
 
-			var channel = this.channelFactory.CreateChannel (socket);
-			var context = this.communicationHandler.Handle (channel);
+			var packetChannel = this.channelFactory.CreateChannel (socket);
+			var protocolChannel = this.channelAdapter.Adapt (packetChannel);
 
-			context.PendingDeliveries.Subscribe (async packet => {
+			protocolChannel.Sender.Subscribe (packet => {
 				if(packet is ConnectAck)
 					this.activeClients.Add (clientId);
-
-				await channel.SendAsync (packet);
 			}, ex => {
 				tracer.Error (ex.Message);
 				this.CloseSocket (socket);
@@ -87,11 +93,11 @@ namespace Hermes
 				this.CloseSocket (socket);	
 			});
 
-			channel.Receiver.OfType<Connect> ().Subscribe (connect => {
+			protocolChannel.Receiver.OfType<Connect> ().Subscribe (connect => {
 				clientId = connect.ClientId;
 			});
 
-			channel.Receiver.Subscribe (_ => {}, ex => { 
+			protocolChannel.Receiver.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex.Message);
 				this.CloseSocket (socket);
 			}, () => { 

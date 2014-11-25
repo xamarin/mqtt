@@ -17,42 +17,18 @@ namespace Tests
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
-			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
-			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == new Subject<IPacket> ());
-			var handler = new Mock<ICommunicationHandler> ();
+			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == packetChannel);
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == new Subject<IPacket> () && c.Receiver == packets);
+			var adapter = new Mock<IPacketChannelAdapter> ();
 
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
 
-			var server = new Server (sockets, factory, handler.Object, configuration);
+			var server = new Server (sockets, factory, adapter.Object, configuration);
 
 			sockets.OnNext (Mock.Of<IBufferedChannel<byte>> (x => x.Receiver == new Subject<byte> ()));
 
 			Assert.Equal (1, server.ActiveSockets);
-		}
-
-		[Fact]
-		public void when_delivery_is_received_then_packet_is_sent()
-		{
-			var sockets = new Subject<IBufferedChannel<byte>> ();
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
-
-			var packets = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>>();
-			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel.Object);
-			var deliveries = new Subject<IPacket> ();
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == deliveries);
-			var handler = new Mock<ICommunicationHandler> ();
-
-			channel.Setup(c => c.Receiver).Returns(packets);
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
-
-			var server = new Server (sockets, factory, handler.Object, configuration);
-
-			sockets.OnNext (Mock.Of<IBufferedChannel<byte>> (x => x.Receiver == new Subject<byte> ()));
-			deliveries.OnNext (new PingResponse());
-
-			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PingResponse)));
 		}
 
 		[Fact]
@@ -62,15 +38,15 @@ namespace Tests
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
-			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
-			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
-			var deliveries = new Subject<IPacket> ();
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == deliveries);
-			var handler = new Mock<ICommunicationHandler> ();
+			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == packetChannel);
+			var sender = new Subject<IPacket> ();
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == sender && c.Receiver == packets);
+			var adapter = new Mock<IPacketChannelAdapter> ();
 
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
 
-			var server = new Server (sockets, factory, handler.Object, configuration);
+			var server = new Server (sockets, factory, adapter.Object, configuration);
 
 			sockets.OnNext (Mock.Of<IBufferedChannel<byte>> (x => x.Receiver == new Subject<byte> ()));
 			packets.OnNext (new Connect (Guid.NewGuid ().ToString (), cleanSession: true));
@@ -85,47 +61,94 @@ namespace Tests
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
-			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
-			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
-			var deliveries = new Subject<IPacket> ();
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == deliveries);
-			var handler = new Mock<ICommunicationHandler> ();
+			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == packetChannel);
+			var sender = new Subject<IPacket> ();
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == sender && c.Receiver == packets);
+			var adapter = new Mock<IPacketChannelAdapter> ();
 
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
 
-			var server = new Server (sockets, factory, handler.Object, configuration);
+			var server = new Server (sockets, factory, adapter.Object, configuration);
 
 			sockets.OnNext (Mock.Of<IBufferedChannel<byte>> (x => x.Receiver == new Subject<byte> ()));
-			deliveries.OnNext (new ConnectAck (ConnectionStatus.Accepted, existingSession: false));
+			sender.OnNext (new ConnectAck (ConnectionStatus.Accepted, existingSession: false));
 
 			Assert.Equal (1, server.ActiveClients.Count());
 		}
 
 		[Fact]
-		public void when_deliveries_error_then_closes_connection_and_decreases_connection_list ()
+		public void when_server_closed_then_pending_connection_is_closed ()
+		{
+			var sockets = new Subject<IBufferedChannel<byte>> ();
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == new Subject<IPacket> () && c.Receiver == new Subject<IPacket>());
+			var adapter = new Mock<IPacketChannelAdapter> ();
+
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
+
+			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
+			var server = new Server (sockets, Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) ==
+				Mock.Of<IChannel<IPacket>>(c => c.Receiver == new Subject<IPacket> ())), adapter.Object, configuration);
+			
+			var socket = new Mock<IBufferedChannel<byte>> ();
+
+			sockets.OnNext (socket.Object);
+			server.Close ();
+
+			socket.Verify (x => x.Close ());
+		}
+
+		[Fact]
+		public void when_receiver_completed_then_closes_connection ()
 		{
 			var sockets = new Subject<IBufferedChannel<byte>> ();
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
-			var packets = new Subject<IPacket> ();
-			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
-			var factory = new Mock<IPacketChannelFactory> ();
 
-			factory.Setup (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()))
-				.Returns (channel);
+			var packets = new Subject<IPacket> ();
+			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == packetChannel);
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == new Subject<IPacket>() && c.Receiver == packets);
+			var adapter = new Mock<IPacketChannelAdapter> ();
+
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
+
+			var server = new Server (sockets, factory, adapter.Object, configuration);
+			var receiver = new Subject<byte> ();
+			var socket = new Mock<IBufferedChannel<byte>> ();
+
+			socket.Setup (x => x.Receiver).Returns (receiver);
+
+			sockets.OnNext (socket.Object);
+			packets.OnCompleted ();
+
+			socket.Verify (x => x.Close ());
+		}
+
+		[Fact]
+		public void when_receiver_error_then_closes_connection_and_decreases_connection_list ()
+		{
+			var sockets = new Subject<IBufferedChannel<byte>> ();
+			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			IObserver<IPacket> observer = null;
-			var deliveries = new Mock<IObservable<IPacket>> ();
+			var packets = new Mock<IObservable<IPacket>> ();
 
-			deliveries.Setup (x => x.Subscribe (It.IsAny<IObserver<IPacket>> ()))
+			packets.Setup (x => x.Subscribe (It.IsAny<IObserver<IPacket>> ()))
 				.Callback<IObserver<IPacket>> (o => observer = o)
 				.Returns (Mock.Of<IDisposable> ());
 
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == deliveries.Object);
-			var handler = new Mock<ICommunicationHandler> ();
+			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets.Object);
+			var factory = new Mock<IPacketChannelFactory> ();
 
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
+			factory.Setup (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()))
+				.Returns (packetChannel);
 
-			var server = new Server (sockets, factory.Object, handler.Object, configuration);
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == new Subject<IPacket>() && c.Receiver == packets.Object);
+			var adapter = new Mock<IPacketChannelAdapter> ();
+
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
+
+			var server = new Server (sockets, factory.Object, adapter.Object, configuration);
 			var receiver = new Subject<byte> ();
 			var socket = new Mock<IBufferedChannel<byte>> ();
 
@@ -139,104 +162,58 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_deliveries_completed_then_closes_connection_and_decreases_connection_list ()
+		public void when_sender_completed_then_closes_connection ()
 		{
 			var sockets = new Subject<IBufferedChannel<byte>> ();
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
-			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
-			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
-			var deliveries = new Subject<IPacket> ();
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == deliveries);
-			var handler = new Mock<ICommunicationHandler> ();
+			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
+			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == packetChannel);
+			var sender = new Subject<IPacket> ();
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == sender && c.Receiver == packets);
+			var adapter = new Mock<IPacketChannelAdapter> ();
 
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
 
-			var server = new Server (sockets, factory, handler.Object, configuration);
+			var server = new Server (sockets, factory, adapter.Object, configuration);
 			var receiver = new Subject<byte> ();
 			var socket = new Mock<IBufferedChannel<byte>> ();
 
 			socket.Setup (x => x.Receiver).Returns (receiver);
 
 			sockets.OnNext (socket.Object);
-			deliveries.OnCompleted ();
+			sender.OnCompleted ();
 
 			socket.Verify (x => x.Close ());
 		}
 
 		[Fact]
-		public void when_server_closed_then_pending_connection_is_closed ()
-		{
-			var sockets = new Subject<IBufferedChannel<byte>> ();
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == new Subject<IPacket> ());
-			var handler = new Mock<ICommunicationHandler> ();
-
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
-
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
-			var server = new Server (sockets, Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) ==
-				Mock.Of<IChannel<IPacket>>(c => c.Receiver == new Subject<IPacket> ())), handler.Object, configuration);
-			
-			var socket = new Mock<IBufferedChannel<byte>> ();
-
-			sockets.OnNext (socket.Object);
-			server.Close ();
-
-			socket.Verify (x => x.Close ());
-		}
-
-		[Fact]
-		public void when_packets_completed_then_closes_connection ()
+		public void when_sender_error_then_closes_connection_and_decreases_connection_list ()
 		{
 			var sockets = new Subject<IBufferedChannel<byte>> ();
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
-			var packets = new Subject<IPacket> ();
-			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
-			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == channel);
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == new Subject<IPacket> ());
-			var handler = new Mock<ICommunicationHandler> ();
-
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
-
-			var server = new Server (sockets, factory, handler.Object, configuration);
-			var receiver = new Subject<byte> ();
-			var socket = new Mock<IBufferedChannel<byte>> ();
-
-			socket.Setup (x => x.Receiver).Returns (receiver);
-
-			sockets.OnNext (socket.Object);
-			packets.OnCompleted ();
-
-			socket.Verify (x => x.Close ());
-		}
-
-		[Fact]
-		public void when_packets_error_then_closes_connection_and_decreases_connection_list ()
-		{
-			var sockets = new Subject<IBufferedChannel<byte>> ();
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
-
-			IObserver<IPacket> observer = null;
-			var packets = new Mock<IObservable<IPacket>> ();
-
-			packets.Setup (x => x.Subscribe (It.IsAny<IObserver<IPacket>> ()))
-				.Callback<IObserver<IPacket>> (o => observer = o)
-				.Returns (Mock.Of<IDisposable> ());
-
-			var channel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets.Object);
+			var packets = new Subject<IPacket>();
+			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
 			var factory = new Mock<IPacketChannelFactory> ();
 
 			factory.Setup (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()))
-				.Returns (channel);
+				.Returns (packetChannel);
 
-			var context = Mock.Of<ICommunicationContext> (c => c.PendingDeliveries == new Subject<IPacket> ());
-			var handler = new Mock<ICommunicationHandler> ();
+			IObserver<IPacket> observer = null;
+			var sender = new Mock<IObservable<IPacket>> ();
 
-			handler.Setup (h => h.Handle (It.IsAny<IChannel<IPacket>> ())).Returns (context);
+			sender.Setup (x => x.Subscribe (It.IsAny<IObserver<IPacket>> ()))
+				.Callback<IObserver<IPacket>> (o => observer = o)
+				.Returns (Mock.Of<IDisposable> ());
 
-			var server = new Server (sockets, factory.Object, handler.Object, configuration);
+			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == sender.Object && c.Receiver == packets);
+			var adapter = new Mock<IPacketChannelAdapter> ();
+
+			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
+
+			var server = new Server (sockets, factory.Object, adapter.Object, configuration);
 			var receiver = new Subject<byte> ();
 			var socket = new Mock<IBufferedChannel<byte>> ();
 

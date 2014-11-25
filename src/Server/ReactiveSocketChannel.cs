@@ -5,13 +5,13 @@ using ReactiveSockets;
 
 namespace Hermes
 {
-	public class Socket : IBufferedChannel<byte>
+	public class ReactiveSocketChannel : IBufferedChannel<byte>
 	{
 		readonly Subject<byte> receiver;
 		readonly IReactiveSocket reactiveSocket;
 		readonly IDisposable subscription;
 
-		public Socket (IReactiveSocket reactiveSocket)
+		public ReactiveSocketChannel (IReactiveSocket reactiveSocket)
 		{
 			this.reactiveSocket = reactiveSocket;
 

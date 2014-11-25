@@ -48,14 +48,14 @@ namespace Tests.Flows
 
 			publish.Payload = Encoding.UTF8.GetBytes ("Publish Flow Test");
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
-			await flow.ExecuteAsync (clientId, publish, context.Object);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
 				It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == topic && ((Publish)p).QualityOfService == requestedQoS && ((Publish)p).PacketId.HasValue)));
-			context.Verify (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()), Times.Never);
+			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
 		[Fact]
@@ -92,15 +92,15 @@ namespace Tests.Flows
 
 			publish.Payload = Encoding.UTF8.GetBytes ("Publish Flow Test");
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, publish, context.Object);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
@@ -147,15 +147,15 @@ namespace Tests.Flows
 
 			publish.Payload = Encoding.UTF8.GetBytes ("Publish Flow Test");
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, publish, context.Object);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
 				It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == topic && ((Publish)p).QualityOfService == requestedQoS && ((Publish)p).PacketId.HasValue)));
@@ -185,15 +185,15 @@ namespace Tests.Flows
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, publishReceived, context.Object);
+			await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
 
 			Assert.NotNull (response);
 
@@ -220,15 +220,15 @@ namespace Tests.Flows
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishRelease = new PublishRelease (packetId);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, publishRelease, context.Object);
+			await flow.ExecuteAsync (clientId, publishRelease, channel.Object);
 
 			Assert.NotNull (response);
 
@@ -264,12 +264,12 @@ namespace Tests.Flows
 
 			publish.Payload = Encoding.UTF8.GetBytes (payload);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
-			await flow.ExecuteAsync (clientId, publish, context.Object);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
-			context.Verify (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()), Times.Never);
+			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
 		[Fact]
@@ -300,13 +300,13 @@ namespace Tests.Flows
 
 			publish.Payload = Encoding.UTF8.GetBytes (payload);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
-			await flow.ExecuteAsync (clientId, publish, context.Object);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Delete (It.Is<RetainedMessage> (m => m == existingRetainedMessage)));
 			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
-			context.Verify (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()), Times.Never);
+			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
 		[Fact]
@@ -343,14 +343,14 @@ namespace Tests.Flows
 
 			publish.Payload = Encoding.UTF8.GetBytes ("Publish Flow Test");
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, publish, context.Object);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			clientManager.Verify (m => m.SendMessageAsync (It.Is<string> (s => s == subscribedClientId),
 				It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == topic && ((Publish)p).QualityOfService == configuration.MaximumQualityOfService && ((Publish)p).PacketId.HasValue)));
@@ -378,15 +378,15 @@ namespace Tests.Flows
 
 			var flow = new PublishFlow (configuration, clientManager, topicEvaluator.Object, retainedRepository, sessionRepository, packetIdentifierRepository.Object);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, publishAck, context.Object);
+			await flow.ExecuteAsync (clientId, publishAck, channel.Object);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			Assert.Null (response);
@@ -408,15 +408,15 @@ namespace Tests.Flows
 
 			var flow = new PublishFlow (configuration, clientManager, topicEvaluator.Object, retainedRepository, sessionRepository, packetIdentifierRepository.Object);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, publishComplete, context.Object);
+			await flow.ExecuteAsync (clientId, publishComplete, channel.Object);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			Assert.Null (response);
@@ -447,15 +447,15 @@ namespace Tests.Flows
 
 			publish.Payload = Encoding.UTF8.GetBytes ("Publish Flow Test");
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, context.Object).Wait());
+			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -474,14 +474,14 @@ namespace Tests.Flows
 				sessionRepository, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Disconnect(), context.Object).Wait());
+			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Disconnect(), channel.Object).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}

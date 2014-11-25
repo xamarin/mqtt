@@ -16,7 +16,7 @@ namespace Hermes.Flows
 			this.willRepository = willRepository;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type == PacketType.ConnectAck)
 				return;
@@ -49,7 +49,7 @@ namespace Hermes.Flows
 				this.willRepository.Create (connectionWill);
 			}
 
-			await context.PushDeliveryAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent));
+			await channel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent));
 		}
 	}
 }

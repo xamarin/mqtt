@@ -59,5 +59,41 @@ namespace Hermes.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PacketChannelAdapter_FirstPacketMustBeConnect {
+            get {
+                return ResourceManager.GetString("PacketChannelAdapter_FirstPacketMustBeConnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PacketChannelAdapter_KeepAliveTimeExceeded {
+            get {
+                return ResourceManager.GetString("PacketChannelAdapter_KeepAliveTimeExceeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PacketChannelAdapter_NoConnectReceived {
+            get {
+                return ResourceManager.GetString("PacketChannelAdapter_NoConnectReceived", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PacketChannelAdapter_SecondConnectNotAllowed {
+            get {
+                return ResourceManager.GetString("PacketChannelAdapter_SecondConnectNotAllowed", resourceCulture);
+            }
+        }
     }
 }

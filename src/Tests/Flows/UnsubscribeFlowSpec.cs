@@ -39,15 +39,15 @@ namespace Tests.Flows
 			
 			var unsubscribe = new Unsubscribe (packetId, topic);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync(clientId, unsubscribe, context.Object);
+			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
 			Assert.NotNull (response);
 			Assert.Equal (0, updatedSession.Subscriptions.Count);
@@ -77,15 +77,15 @@ namespace Tests.Flows
 
 			var unsubscribe = new Unsubscribe (packetId, "foo/bar");
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync(clientId, unsubscribe, context.Object);
+			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
 			Assert.NotNull (response);
@@ -108,15 +108,15 @@ namespace Tests.Flows
 
 			var flow = new UnsubscribeFlow (sessionRepository, packetIdentifierRepository.Object);
 
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, unsubscribeAck, context.Object);
+			await flow.ExecuteAsync (clientId, unsubscribeAck, channel.Object);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			Assert.Null (response);
@@ -131,14 +131,14 @@ namespace Tests.Flows
 			var flow = new UnsubscribeFlow (sessionRepository, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var context = new Mock<ICommunicationContext> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
-			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Publish("test", QualityOfService.AtMostOnce, false, false), context.Object).Wait());
+			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Publish("test", QualityOfService.AtMostOnce, false, false), channel.Object).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
