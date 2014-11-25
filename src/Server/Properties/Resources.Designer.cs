@@ -59,14 +59,5 @@ namespace Hermes.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A connect packet has notbeen received for this network connection.
-        /// </summary>
-        internal static string ProtocolConnection_ConnectNotReceived {
-            get {
-                return ResourceManager.GetString("ProtocolConnection_ConnectNotReceived", resourceCulture);
-            }
-        }
     }
 }

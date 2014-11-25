@@ -24,7 +24,7 @@ namespace Hermes
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public async Task<IPacket> GetAsync (byte[] bytes)
+		public async Task<IPacket> GetPacketAsync (byte[] bytes)
 		{
 			var packetType = (PacketType)bytes.Byte (0).Bits (4);
 			IFormatter formatter;
@@ -40,7 +40,7 @@ namespace Hermes
 		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		public async Task<byte[]> GetAsync (IPacket packet)
+		public async Task<byte[]> GetBytesAsync (IPacket packet)
 		{
 			IFormatter formatter;
 

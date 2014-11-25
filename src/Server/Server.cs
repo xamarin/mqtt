@@ -1,90 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive;
 using System.Reactive.Linq;
+using Hermes.Diagnostics;
 using Hermes.Packets;
 
 namespace Hermes
 {
-	//TODO: Add Tracing compatible with PCL
 	public class Server : IDisposable
 	{
-		readonly IObservable<IBufferedChannel<byte>> socketListener;
-		readonly IObservable<Unit> timeListener;
-		readonly IProtocolConfiguration configuration;
-		readonly IPacketChannelFactory factory;
-		readonly IMessagingHandler handler;
+		static readonly ITracer tracer = Tracer.Get<Server> ();
+
+		readonly IObservable<IBufferedChannel<byte>> socketProvider;
+		readonly ProtocolConfiguration configuration;
+		readonly IPacketChannelFactory channelFactory;
+		readonly ICommunicationHandler communicationHandler;
+
 		readonly IList<IBufferedChannel<byte>> sockets = new List<IBufferedChannel<byte>> ();
 		readonly IList<string> activeClients = new List<string> ();
 
 		public Server (
-			IObservable<IBufferedChannel<byte>> socketListener, 
-			IObservable<Unit> timeListener, 
-			IProtocolConfiguration configuration, 
-			IPacketChannelFactory factory, 
-			IMessagingHandler handler)
+			IObservable<IBufferedChannel<byte>> socketProvider, 
+			IPacketChannelFactory channelFactory, 
+			ICommunicationHandler communicationHandler,
+			ProtocolConfiguration configuration)
 		{
-			this.socketListener = socketListener;
-			this.timeListener = timeListener;
+			this.socketProvider = socketProvider;
+			this.channelFactory = channelFactory;
+			this.communicationHandler = communicationHandler;
 			this.configuration = configuration;
-			this.factory = factory;
-			this.handler = handler;
 
-			this.socketListener.Subscribe (socket => {
-				this.sockets.Add (socket);
-
-				var timeout = this.timeListener.Skip (this.configuration.ConnectTimeWindow).Take (1).Subscribe (_ => {
-					//tracer.Error (Resources.Server_NoConnectReceived);
-					socket.Close ();
-				});
-
-				var isConnected = false;
-				var packet = this.factory.CreateChannel (socket);
-
-				this.handler.Handle (packet);
-
-				var keepAlive = 0;
-				var keepAliveTimeout = default (IDisposable);
-
-				packet.Receiver.OfType<Connect> ().Subscribe (connect => {
-					if (isConnected) {
-						//tracer.Error (Resources.Server_SecondConnectNotAllowed);
-						socket.Close (); 
-						sockets.Remove (socket);
-						return;
-					}
-						 
-					timeout.Dispose ();
-					isConnected = true;
-					keepAlive = connect.KeepAlive;
-					this.activeClients.Add (connect.ClientId);
-				});
-
-				packet.Receiver.Subscribe (p => {
-					if (!isConnected && !(p is Connect)) {
-						//tracer.Error (Resources.Server_FirstPacketMustBeConnect);
-						socket.Close (); 
-						sockets.Remove (socket);
-					}
-
-					//TODO: Need to analyze keep alive monitoring also for delivered messages to clients
-					if (keepAlive > 0) {
-						if (keepAliveTimeout != null) {
-							keepAliveTimeout.Dispose ();
-						}
-
-						keepAliveTimeout = this.timeListener.Skip ((int)(keepAlive* 1.5) - 1).Take (1).Subscribe (_ => {
-							socket.Close ();
-						});
-					}
-				}, ex => { socket.Close (); sockets.Remove (socket); }, 
-				() => { socket.Close (); sockets.Remove (socket); });
-			});
-		}
-
-		~Server ()
-		{
-			Dispose (false);
+			this.socketProvider.Subscribe (
+				socket => this.ProcessSocket(socket), 
+				ex => { tracer.Error (ex.Message); }, 
+				() => {}	
+			);
 		}
 
 		public int ActiveSockets { get { return this.sockets.Count; } }
@@ -96,7 +45,17 @@ namespace Hermes
 			this.Dispose (true);
 		}
 
-		protected void Dispose (bool disposing)
+		public void Dispose ()
+		{
+			this.Dispose (true);
+		}
+
+		void IDisposable.Dispose ()
+		{
+			this.Dispose (true);
+		}
+
+		protected virtual void Dispose (bool disposing)
 		{
 			if (disposing) {
 				foreach (var channel in sockets) {
@@ -107,9 +66,43 @@ namespace Hermes
 			}
 		}
 
-		void IDisposable.Dispose ()
+		private void ProcessSocket(IBufferedChannel<byte> socket)
 		{
-			this.Dispose (true);
+			this.sockets.Add (socket);
+			
+			var clientId = string.Empty;
+
+			var channel = this.channelFactory.CreateChannel (socket);
+			var context = this.communicationHandler.Handle (channel);
+
+			context.PendingDeliveries.Subscribe (async packet => {
+				if(packet is ConnectAck)
+					this.activeClients.Add (clientId);
+
+				await channel.SendAsync (packet);
+			}, ex => {
+				tracer.Error (ex.Message);
+				this.CloseSocket (socket);
+			}, () => {
+				this.CloseSocket (socket);	
+			});
+
+			channel.Receiver.OfType<Connect> ().Subscribe (connect => {
+				clientId = connect.ClientId;
+			});
+
+			channel.Receiver.Subscribe (_ => {}, ex => { 
+				tracer.Error (ex.Message);
+				this.CloseSocket (socket);
+			}, () => { 
+				this.CloseSocket (socket);
+			});
+		}
+
+		private void CloseSocket(IBufferedChannel<byte> socket)
+		{
+			this.sockets.Remove (socket);
+			socket.Close ();
 		}
 	}
 }

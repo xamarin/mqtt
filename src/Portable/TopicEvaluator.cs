@@ -1,11 +1,26 @@
 ﻿using System.Linq;
+using Hermes.Properties;
 
 namespace Hermes
 {
 	public class TopicEvaluator : ITopicEvaluator
 	{
+		readonly ProtocolConfiguration configuration;
+
+		public TopicEvaluator (ProtocolConfiguration configuration)
+		{
+			this.configuration = configuration;
+		}
+
 		public bool IsValidTopicFilter (string topicFilter)
 		{
+			if (!this.configuration.AllowWildcardsInTopicFilters) {
+				if (topicFilter.Contains (Protocol.SingleLevelTopicWildcard) ||
+					topicFilter.Contains (Protocol.MultiLevelTopicWildcard))
+					return false;
+
+			}
+
 			if (string.IsNullOrEmpty (topicFilter))
 				return false;
 
@@ -37,8 +52,21 @@ namespace Hermes
 				!topicName.Contains ("+");
 		}
 
+		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public bool Matches (string topicName, string topicFilter)
 		{
+			if (!this.IsValidTopicName (topicName)) { 
+				var message = string.Format(Resources.TopicEvaluator_InvalidTopicName, topicName);
+
+				throw new ProtocolException (message);
+			}
+
+			if (!this.IsValidTopicFilter (topicFilter)) { 
+				var message = string.Format(Resources.TopicEvaluator_InvalidTopicFilter, topicFilter);
+
+				throw new ProtocolException (message);
+			}
+
 			var topicFilterParts = topicFilter.Split ('/');
 			var topicNameParts = topicName.Split ('/');
 

@@ -49,7 +49,9 @@
   <ItemGroup>
     <Compile Include="BinaryChannelSpec.cs" />
     <Compile Include="ByteExtensionsSpec.cs" />
+    <Compile Include="ClientManagerSpec.cs" />
     <Compile Include="ClientSpec.cs" />
+    <Compile Include="CommunicationHandlerSpec.cs" />
     <Compile Include="Flows\ConnectFlowSpec.cs" />
     <Compile Include="Flows\DisconnectFlowSpec.cs" />
     <Compile Include="Flows\PingFlowSpec.cs" />
@@ -69,6 +71,7 @@
     <Compile Include="Formatters\PublishFormatterSpec.cs" />
     <Compile Include="Formatters\ConnectFormatterSpec.cs" />
     <Compile Include="PacketChannelSpec.cs" />
+    <Compile Include="ProtocolFlowProviderSpec.cs" />
     <Compile Include="ServerSpec.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Guard.cs" />

@@ -17,11 +17,11 @@ namespace Hermes
 			var bytes = new List<byte> ();
 			var textBytes = Encoding.UTF8.GetBytes (text);
 
-			if(textBytes.Length > 65536) {
-				throw new ProtocolException(Resources.DataRepresentationExtensions_StringMaxLengthExceeded);
+			if(textBytes.Length > Protocol.MaxIntegerLength) {
+				throw new ProtocolException(Resources.ProtocolEncoding_StringMaxLengthExceeded);
 			}
 
-			var numberBytes = Protocol.Encoding.EncodeBigEndian (textBytes.Length);
+			var numberBytes = Protocol.Encoding.EncodeInteger (textBytes.Length);
 
 			bytes.Add (numberBytes[numberBytes.Length - 2]);
 			bytes.Add (numberBytes[numberBytes.Length - 1]);
@@ -30,18 +30,17 @@ namespace Hermes
 			return bytes.ToArray();
 		}
 
-		public byte[] EncodeBigEndian(int number)
+		/// <exception cref="ProtocolException">ProtocolException</exception>
+		public byte[] EncodeInteger(int number)
 		{
-			var bytes = BitConverter.GetBytes (number);
-
-			if (BitConverter.IsLittleEndian) {
-				Array.Reverse (bytes);
+			if(number > Protocol.MaxIntegerLength){
+				throw new ProtocolException(Resources.ProtocolEncoding_IntegerMaxValueExceeded);
 			}
 
-			return bytes;
+			return this.EncodeInteger ((ushort)number);
 		}
 
-		public byte[] EncodeBigEndian(ushort number)
+		public byte[] EncodeInteger(ushort number)
 		{
 			var bytes = BitConverter.GetBytes (number);
 

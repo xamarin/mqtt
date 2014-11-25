@@ -21,13 +21,14 @@ namespace Hermes
 
 			this.subscription = innerChannel.Receiver.Subscribe (async bytes => {
 				try {
-					var packet = await this.manager.GetAsync(bytes);
+					var packet = await this.manager.GetPacketAsync(bytes);
 
 					this.receiver.OnNext (packet); 
 				} catch (ConnectProtocolException connEx) {
 					var errorAck = new ConnectAck (connEx.ReturnCode, existingSession: false);
 
 					this.SendAsync (errorAck).Wait();
+					this.receiver.OnError (connEx);
 				} catch (ProtocolException ex) {
 					this.receiver.OnError (ex);
 				}
@@ -38,7 +39,7 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket packet)
 		{
-			var bytes = await this.manager.GetAsync (packet);
+			var bytes = await this.manager.GetBytesAsync (packet);
 
 			await this.innerChannel.SendAsync (bytes);
 		}
@@ -47,7 +48,7 @@ namespace Hermes
 		{
 			this.innerChannel.Close ();
 			this.subscription.Dispose ();
-			this.receiver.Dispose ();
+			this.receiver.OnCompleted ();
 		}
 	}
 }

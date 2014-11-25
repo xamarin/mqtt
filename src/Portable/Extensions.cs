@@ -86,6 +86,8 @@ namespace Hermes.Storage
 				packetId = repository.GetUnusedPacketIdentifier (random);
 			}
 
+			repository.Create (new PacketIdentifier { Value = packetId });
+
 			return packetId;
 		}
 	}

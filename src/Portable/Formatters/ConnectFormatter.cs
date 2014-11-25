@@ -164,7 +164,7 @@ namespace Hermes.Formatters
 			userNameFlag <<= 7;
 
 			var connectFlagsByte = Convert.ToByte(reserved | cleanSession | willFlag | willQos | willRetain | passwordFlag | userNameFlag);
-			var keepAliveBytes = Protocol.Encoding.EncodeBigEndian(packet.KeepAlive);
+			var keepAliveBytes = Protocol.Encoding.EncodeInteger(packet.KeepAlive);
 
 			variableHeader.AddRange (protocolNameBytes);
 			variableHeader.Add (protocolLevelByte);

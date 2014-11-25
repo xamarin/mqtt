@@ -15,7 +15,7 @@ namespace Tests
 		[InlineData("/")]
 		public void when_evaluating_valid_topic_name_then_is_valid(string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.True (topicEvaluator.IsValidTopicName(topicName));
 		}
@@ -26,7 +26,7 @@ namespace Tests
 		[InlineData("")]
 		public void when_evaluating_invalid_topic_name_then_is_invalid(string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.False (topicEvaluator.IsValidTopicName(topicName));
 		}
@@ -42,7 +42,7 @@ namespace Tests
 		[InlineData("/")]
 		public void when_evaluating_valid_topic_filter_then_is_valid(string topicFilter)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.True (topicEvaluator.IsValidTopicFilter(topicFilter));
 		}
@@ -55,7 +55,20 @@ namespace Tests
 		[InlineData("foo/#/bar")]
 		public void when_evaluating_invalid_topic_filter_then_is_invalid(string topicFilter)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
+
+			Assert.False (topicEvaluator.IsValidTopicFilter(topicFilter));
+		}
+
+		[Theory]
+		[InlineData("foo/#")]
+		[InlineData("#")]
+		[InlineData("foo/+/+/bar")]
+		[InlineData("+/bar/test")]
+		public void when_evaluating_topic_filter_with_wildcards_and_configuration_does_not_allow_wildcards_then_is_invalid(string topicFilter)
+		{
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration { 
+				AllowWildcardsInTopicFilters = false });
 
 			Assert.False (topicEvaluator.IsValidTopicFilter(topicFilter));
 		}
@@ -74,9 +87,9 @@ namespace Tests
 		[InlineData("#", "games/table tennis/players/ranking")]
 		[InlineData("Accounts payable", "Accounts payable")]
 		[InlineData("/", "/")]
-		public void when_evaluating_valid_topic_name_with_multi_level_wildcard_topic_filter_then_matches(string topicFilter, string topicName)
+		public void when_matching_valid_topic_name_with_multi_level_wildcard_topic_filter_then_matches(string topicFilter, string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.True (topicEvaluator.Matches (topicName, topicFilter));
 		}
@@ -87,9 +100,9 @@ namespace Tests
 		[InlineData("sport/+", "sport/")]
 		[InlineData("+/+", "/finance")]
 		[InlineData("/+", "/finance")]
-		public void when_evaluating_valid_topic_name_with_single_level_wildcard_topic_filter_then_matches(string topicFilter, string topicName)
+		public void when_matching_valid_topic_name_with_single_level_wildcard_topic_filter_then_matches(string topicFilter, string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.True (topicEvaluator.Matches (topicName, topicFilter));
 		}
@@ -103,9 +116,9 @@ namespace Tests
 		[InlineData("+/foo/+/bar/#", "sport/foo/players/bar")]
 		[InlineData("+/foo/+/bar/#", "game/foo/ranking/bar/test/player1")]
 		[InlineData("+/foo/+/bar/#", "game/foo/ranking/bar/test/player1/")]
-		public void when_evaluating_valid_topic_name_with_mixed_wildcards_topic_filter_then_matches(string topicFilter, string topicName)
+		public void when_matching_valid_topic_name_with_mixed_wildcards_topic_filter_then_matches(string topicFilter, string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.True (topicEvaluator.Matches (topicName, topicFilter));
 		}
@@ -117,9 +130,9 @@ namespace Tests
 		[InlineData("$SYS/#", "$SYS/")]
 		[InlineData("$SYS/monitor/+", "$SYS/monitor/Clients")]
 		[InlineData("$/+/test", "$/foo/test")]
-		public void when_evaluating_reserved_topic_names_then_matches(string topicFilter, string topicName)
+		public void when_matching_reserved_topic_names_then_matches(string topicFilter, string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.True (topicEvaluator.Matches (topicName, topicFilter));
 		}
@@ -128,9 +141,9 @@ namespace Tests
 		[InlineData("sport/tennis/+", "sport/tennis/player1/ranking")]
 		[InlineData("sport/+", "sport")]
 		[InlineData("+", "/finance")]
-		public void when_evaluating_invalid_topic_name_with_single_level_wildcard_topic_filter_then_does_not_match(string topicFilter, string topicName)
+		public void when_matching_invalid_topic_name_with_single_level_wildcard_topic_filter_then_does_not_match(string topicFilter, string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.False (topicEvaluator.Matches (topicName, topicFilter));
 		}
@@ -141,9 +154,9 @@ namespace Tests
 		[InlineData("FOO/BAR/TEST", "FOO/bar/TEST")]
 		[InlineData("+/BAR/TEST", "FOO/BAR/TESt")]
 		[InlineData("ACCOUNTS", "Accounts")]
-		public void when_evaluating_topic_name_and_topic_filter_with_different_case_then_does_not_match(string topicFilter, string topicName)
+		public void when_matching_topic_name_and_topic_filter_with_different_case_then_does_not_match(string topicFilter, string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.False (topicEvaluator.Matches (topicName, topicFilter));
 		}
@@ -153,11 +166,35 @@ namespace Tests
 		[InlineData("#", "$SYS/test/foo")]
 		[InlineData("+/monitor/#", "$/monitor/Clients")]
 		[InlineData("+/monitor/Clients", "$SYS/monitor/Clients")]
-		public void when_evaluating_reserved_topic_names_with_starting_wildcards_then_does_not_match(string topicFilter, string topicName)
+		public void when_matching_reserved_topic_names_with_starting_wildcards_then_does_not_match(string topicFilter, string topicName)
 		{
-			var topicEvaluator = new TopicEvaluator ();
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
 			Assert.False (topicEvaluator.Matches (topicName, topicFilter));
+		}
+
+		[Theory]
+		[InlineData("foo/+")]
+		[InlineData("#")]
+		[InlineData("")]
+		public void when_matching_with_invalid_topic_name_then_fails(string topicName)
+		{
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
+
+			Assert.Throws<ProtocolException> (() => topicEvaluator.Matches (topicName, "#"));
+		}
+
+		[Theory]
+		[InlineData("foo/#/#")]
+		[InlineData("foo/bar#/")]
+		[InlineData("foo/bar+/test")]
+		[InlineData("")]
+		[InlineData("foo/#/bar")]
+		public void when_matching_with_invalid_topic_filter_then_fails(string topicFilter)
+		{
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
+
+			Assert.Throws<ProtocolException> (() => topicEvaluator.Matches ("foo", topicFilter));
 		}
 	}
 }

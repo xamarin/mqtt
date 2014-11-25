@@ -8,7 +8,7 @@ namespace Tests
 	public class ProtocolEncodingSpec
 	{
 		[Fact]
-		public void when_encoding_string_then_succeeds()
+		public void when_encoding_string_then_prefix_length_is_added()
 		{
 			var text = "Foo";
 			var encoded = Protocol.Encoding.EncodeString (text);
@@ -27,27 +27,33 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_encoding_int32_big_endian_then_succeeds()
+		public void when_encoding_int32_minor_than_max_protocol_length_then_is_encoded_big_endian()
 		{
 			var number = 35000; //00000000 00000000 10001000 10111000
-			var encoded = Protocol.Encoding.EncodeBigEndian (number);
-
-			Assert.Equal (4, encoded.Length);
-			Assert.Equal (0x00, encoded[0]);
-			Assert.Equal (0x00, encoded[1]);
-			Assert.Equal (Convert.ToByte ("10001000", fromBase: 2), encoded[2]);
-			Assert.Equal (Convert.ToByte ("10111000", fromBase: 2), encoded[3]);
-		}
-
-		[Fact]
-		public void when_encoding_uint16_big_endian_then_succeeds()
-		{
-			ushort number = 35000; //10001000 10111000
-			var encoded = Protocol.Encoding.EncodeBigEndian (number);
+			var encoded = Protocol.Encoding.EncodeInteger (number);
 
 			Assert.Equal (2, encoded.Length);
 			Assert.Equal (Convert.ToByte ("10001000", fromBase: 2), encoded[0]);
 			Assert.Equal (Convert.ToByte ("10111000", fromBase: 2), encoded[1]);
+		}
+
+		[Fact]
+		public void when_encoding_uint16_then_succeeds_is_encoded_big_endian()
+		{
+			ushort number = 35000; //10001000 10111000
+			var encoded = Protocol.Encoding.EncodeInteger (number);
+
+			Assert.Equal (2, encoded.Length);
+			Assert.Equal (Convert.ToByte ("10001000", fromBase: 2), encoded[0]);
+			Assert.Equal (Convert.ToByte ("10111000", fromBase: 2), encoded[1]);
+		}
+		
+		[Fact]
+		public void when_encoding_int32_major_than_max_protocol_length_then_fails()
+		{
+			var number = 310934; //00000000 00000100 10111110 10010110
+			
+			Assert.Throws<ProtocolException>(() => Protocol.Encoding.EncodeInteger (number));
 		}
 
 		[Fact]
@@ -57,7 +63,7 @@ namespace Tests
 			var length2 = 321; //00000001 01000001
 			var length3 = 268435455; //00001111 11111111 11111111 11111111;
 
-			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349213
 
 			var encoded1 = Protocol.Encoding.EncodeRemainingLength (length1); //0x40
 			var encoded2 = Protocol.Encoding.EncodeRemainingLength (length2); //193 2
@@ -99,7 +105,7 @@ namespace Tests
 			bytes3.Add (0xFF);
 			bytes3.Add (0x7F);
 
-			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349213
 
 			var arrayLength1 = 0;
 			var remainingLength1 = Protocol.Encoding.DecodeRemainingLength (bytes1.ToArray(), out arrayLength1); //64
@@ -128,7 +134,7 @@ namespace Tests
 			bytes.Add (0xFF);
 			bytes.Add (0x7F);
 
-			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html
+			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349213
 
 			var arrayLength = 0;
 

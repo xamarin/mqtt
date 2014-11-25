@@ -7,7 +7,7 @@ namespace Hermes
 {
 	public class ClientFactory
 	{
-		public static IClient Create (string serverAddress, IProtocolConfiguration configuration)
+		public static IClient Create (string serverAddress, ProtocolConfiguration configuration)
 		{	
 			var reactiveSocket = new ReactiveClient (serverAddress, configuration.Port);
 
@@ -15,7 +15,7 @@ namespace Hermes
 
 			var socket = new Socket (reactiveSocket);
 
-			var topicEvaluator = new TopicEvaluator();
+			var topicEvaluator = new TopicEvaluator(configuration);
 			var packetChannelFactory = new PacketChannelFactory (topicEvaluator); //TODO: We need to inject this, but it currently affects Client experience creating factories
 			var channel = packetChannelFactory.CreateChannel (socket);
 

@@ -58,7 +58,7 @@ namespace Tests
 
 			var manager = new Mock<IPacketManager> ();
 
-			manager.Setup(x => x.GetAsync(It.IsAny<byte[]>()))
+			manager.Setup(x => x.GetPacketAsync(It.IsAny<byte[]>()))
 				.Returns(Task.FromResult<IPacket>(expectedPacket));
 
 			var channel = new PacketChannel (innerChannel.Object, manager.Object);
@@ -93,7 +93,7 @@ namespace Tests
 			var expectedPacket = Activator.CreateInstance (packetType);
 			var manager = new Mock<IPacketManager> ();
 
-			manager.Setup(x => x.GetAsync(It.IsAny<byte[]>()))
+			manager.Setup(x => x.GetPacketAsync(It.IsAny<byte[]>()))
 				.Returns(Task.FromResult<IPacket>((IPacket)expectedPacket));
 
 			var channel = new PacketChannel (innerChannel.Object, manager.Object);
@@ -150,7 +150,7 @@ namespace Tests
 
 			var manager = new Mock<IPacketManager> ();
 
-			manager.Setup(x => x.GetAsync(It.IsAny<IPacket>()))
+			manager.Setup(x => x.GetBytesAsync(It.IsAny<IPacket>()))
 				.Returns(Task.FromResult(bytes));
 
 			var channel = new PacketChannel (innerChannel.Object, manager.Object);
@@ -158,7 +158,7 @@ namespace Tests
 			await channel.SendAsync (packet);
 
 			innerChannel.Verify (x => x.SendAsync (It.Is<byte[]> (b => b.ToList ().SequenceEqual (bytes))));
-			manager.Verify (x => x.GetAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)));
+			manager.Verify (x => x.GetBytesAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)));
 		}
 
 		[Theory]
@@ -182,7 +182,7 @@ namespace Tests
 
 			var manager = new Mock<IPacketManager> ();
 
-			manager.Setup(x => x.GetAsync(It.IsAny<IPacket>()))
+			manager.Setup(x => x.GetBytesAsync(It.IsAny<IPacket>()))
 				.Returns(Task.FromResult(bytes));
 
 			var channel = new PacketChannel (innerChannel.Object, manager.Object);
@@ -190,7 +190,7 @@ namespace Tests
 			await channel.SendAsync (packet);
 
 			innerChannel.Verify (x => x.SendAsync (It.Is<byte[]> (b => b.ToList ().SequenceEqual (bytes))));
-			manager.Verify (x => x.GetAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)));
+			manager.Verify (x => x.GetBytesAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)));
 		}
 
 		[Fact]

@@ -6,7 +6,7 @@ namespace Hermes.Flows
 {
 	public class PingFlow : IProtocolFlow
 	{
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
 		{
 			if (input.Type == PacketType.PingResponse)
 				return;
@@ -19,7 +19,7 @@ namespace Hermes.Flows
 				throw new ProtocolException(error);
 			}
 
-			await channel.SendAsync(new PingResponse());
+			await context.PushDeliveryAsync(new PingResponse());
 		}
 	}
 }

@@ -22,14 +22,14 @@ namespace Tests.Flows
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var connect = new Connect (clientId, cleanSession: true);
-			var channel = new Mock<IChannel<IPacket>> ();
+			var context = new Mock<ICommunicationContext> ();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, context.Object);
 
 			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -42,11 +42,11 @@ namespace Tests.Flows
 			Assert.NotNull (connectAck);
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
-			Assert.False (connectAck.ExistingSession);
+			Assert.False (connectAck.SessionPresent);
 		}
 
 		[Fact]
-		public async Task when_sending_connect_with_existing_session_and_without_clean_session_then_ack_is_sent()
+		public async Task when_sending_connect_with_existing_session_and_without_clean_session_then_session_is_not_deleted_and_ack_is_sent_with_session_present()
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
@@ -60,14 +60,14 @@ namespace Tests.Flows
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
 			var connect = new Connect (clientId, cleanSession: false);
-			var channel = new Mock<IChannel<IPacket>> ();
+			var context = new Mock<ICommunicationContext> ();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, context.Object);
 
 			sessionRepository.Verify (r => r.Create (It.IsAny<ClientSession> ()), Times.Never);
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -78,11 +78,11 @@ namespace Tests.Flows
 			Assert.NotNull (connectAck);
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
-			Assert.True (connectAck.ExistingSession);
+			Assert.True (connectAck.SessionPresent);
 		}
 
 		[Fact]
-		public async Task when_sending_connect_with_existing_session_and_clean_session_then_session_is_deleted_and_ack_is_sent()
+		public async Task when_sending_connect_with_existing_session_and_clean_session_then_session_is_deleted_and_ack_is_sent_with_session_present()
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
@@ -96,24 +96,53 @@ namespace Tests.Flows
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
 			var connect = new Connect (clientId, cleanSession: true);
-			var channel = new Mock<IChannel<IPacket>> ();
+			var context = new Mock<ICommunicationContext> ();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, context.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 
 			sessionRepository.Verify (r => r.Delete (It.Is<ClientSession> (s => s == existingSession)));
+			sessionRepository.Verify (r => r.Create(It.Is<ClientSession> (s => s.Clean == true)));
 			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
 
 			Assert.NotNull (connectAck);
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
-			Assert.False (connectAck.ExistingSession);
+			Assert.False (connectAck.SessionPresent);
+		}
+
+		[Fact]
+		public async Task when_sending_connect_without_existing_session_and_without_clean_session_then_ack_is_sent_with_no_session_present()
+		{
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+
+			var clientId = Guid.NewGuid ().ToString ();
+
+			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
+				.Returns (default(ClientSession));
+
+			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
+
+			var connect = new Connect (clientId, cleanSession: false);
+			var context = new Mock<ICommunicationContext> ();
+			var sentPacket = default(IPacket);
+
+			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
+				.Callback<IPacket> (packet => sentPacket = packet)
+				.Returns(Task.Delay(0));
+
+			await flow.ExecuteAsync (clientId, connect, context.Object);
+
+			var connectAck = sentPacket as ConnectAck;
+
+			Assert.False (connectAck.SessionPresent);
 		}
 
 		[Fact]
@@ -121,10 +150,6 @@ namespace Tests.Flows
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
-
-			var sessionDeleted = false;
-
-			sessionRepository.Setup (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Callback (() => sessionDeleted = true);
 
 			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
 
@@ -135,25 +160,25 @@ namespace Tests.Flows
 
 			connect.Will = will;
 
-			var channel = new Mock<IChannel<IPacket>> ();
+			var context = new Mock<ICommunicationContext> ();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, context.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 
+			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
 			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
 			willRepository.Verify (r => r.Create (It.Is<ConnectionWill> (w => w.ClientId == clientId && w.Will == will)));
 
 			Assert.NotNull (connectAck);
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
-			Assert.False (connectAck.ExistingSession);
-			Assert.False (sessionDeleted);
+			Assert.False (connectAck.SessionPresent);
 		}
 
 		[Fact]
@@ -166,14 +191,14 @@ namespace Tests.Flows
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var invalid = new PingRequest ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var context = new Mock<ICommunicationContext> ();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+			context.Setup (c => c.PushDeliveryAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, invalid, channel.Object).Wait());
+			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, invalid, context.Object).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}

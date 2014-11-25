@@ -7,14 +7,14 @@ namespace Hermes.Packets
         public ConnectAck(ConnectionStatus status, bool existingSession)
         {
             this.Status = status;
-			this.ExistingSession = existingSession;
+			this.SessionPresent = existingSession;
         }
 
 		public PacketType Type { get { return PacketType.ConnectAck; }}
 
         public ConnectionStatus Status { get; private set; }
 
-		public bool ExistingSession { get; private set; }
+		public bool SessionPresent { get; private set; }
 
 		public bool Equals (ConnectAck other)
 		{
@@ -22,7 +22,7 @@ namespace Hermes.Packets
 				return false;
 
 			return this.Status == other.Status &&
-				this.ExistingSession == other.ExistingSession;
+				this.SessionPresent == other.SessionPresent;
 		}
 
 		public override bool Equals (object obj)
@@ -56,7 +56,7 @@ namespace Hermes.Packets
 
 		public override int GetHashCode ()
 		{
-			return this.Status.GetHashCode () + this.ExistingSession.GetHashCode ();
+			return this.Status.GetHashCode () + this.SessionPresent.GetHashCode ();
 		}
 	}
 }

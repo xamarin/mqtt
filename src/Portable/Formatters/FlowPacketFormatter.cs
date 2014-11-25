@@ -34,7 +34,7 @@ namespace Hermes.Formatters
 
 		protected override byte[] Write(T packet)
 		{
-			var variableHeader = Protocol.Encoding.EncodeBigEndian(packet.PacketId);
+			var variableHeader = Protocol.Encoding.EncodeInteger(packet.PacketId);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
 			var fixedHeader = this.GetFixedHeader (packet.Type, remainingLength);
 			var bytes = new byte[fixedHeader.Length + variableHeader.Length];

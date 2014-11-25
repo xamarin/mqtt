@@ -10,13 +10,13 @@ namespace Hermes.Flows
 {
 	public class SubscribeFlow : IProtocolFlow
 	{
-		readonly IProtocolConfiguration configuration;
+		readonly ProtocolConfiguration configuration;
 		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
 
-		public SubscribeFlow (IProtocolConfiguration configuration, ITopicEvaluator topicEvaluator, IRepository<ClientSession> sessionRepository, 
+		public SubscribeFlow (ProtocolConfiguration configuration, ITopicEvaluator topicEvaluator, IRepository<ClientSession> sessionRepository, 
 			IRepository<PacketIdentifier> packetIdentifierRepository, IRepository<RetainedMessage> retainedRepository)
 		{
 			this.configuration = configuration;
@@ -26,7 +26,7 @@ namespace Hermes.Flows
 			this.retainedRepository = retainedRepository;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, ICommunicationContext context)
 		{
 			if (input.Type == PacketType.SubscribeAck) {
 				var subscribeAck = input as SubscribeAck;
@@ -49,6 +49,11 @@ namespace Hermes.Flows
 
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
+					if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
+						returnCodes.Add (SubscribeReturnCode.Failure);
+						continue;
+					}
+
 					var clientSubscription = session.Subscriptions.FirstOrDefault(s => s.TopicFilter == subscription.TopicFilter);
 
 					if (clientSubscription != null) {
@@ -72,7 +77,7 @@ namespace Hermes.Flows
 								Payload = retainedMessage.Payload
 							};
 
-							await channel.SendAsync (publish);
+							await context.PushDeliveryAsync (publish);
 						}
 					}
 
@@ -82,14 +87,13 @@ namespace Hermes.Flows
 
 					returnCodes.Add (returnCode);
 				} catch (RepositoryException) {
-					//TODO: Add some logging here and in other sections (to be defined)
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}
 			}
 
 			this.sessionRepository.Update (session);
 
-			await channel.SendAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()));
+			await context.PushDeliveryAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()));
 		}
 	}
 }
