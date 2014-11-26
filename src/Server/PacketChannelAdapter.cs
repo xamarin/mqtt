@@ -82,8 +82,9 @@ namespace Hermes
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
-
-			await flow.ExecuteAsync (clientId, packet, channel);
+			
+                        if (flow != null)
+				await flow.ExecuteAsync (clientId, packet, channel);
 		}
 
 		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
