@@ -222,7 +222,7 @@
   <data name="UnsubscribeFormatter_MissingTopics" xml:space="preserve">
     <value>An unsubscribe packet must contain at least one topic to unsubscribe</value>
   </data>
-  <data name="PublishFlow_PacketIdRequired" xml:space="preserve">
+  <data name="PublishReceiverFlow_PacketIdRequired" xml:space="preserve">
     <value>Packet Id value is required for QoS major than 0</value>
   </data>
   <data name="CommunicationHandler_FirstPacketMustBeConnect" xml:space="preserve">
@@ -248,5 +248,11 @@
   </data>
   <data name="TopicEvaluator_InvalidTopicName" xml:space="preserve">
     <value>The topic name {0} is invalid according to the protocol rules</value>
+  </data>
+  <data name="PublishReceiverFlow_PacketIdNotAllowed" xml:space="preserve">
+    <value>Packet Id value is not allowed for QoS 0</value>
+  </data>
+  <data name="ProtocolFlowProvider_InvalidPacketType" xml:space="preserve">
+    <value>The packet type {0} cannot be handled by this flow provider</value>
   </data>
 </root>

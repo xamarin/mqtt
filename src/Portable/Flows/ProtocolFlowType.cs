@@ -3,7 +3,8 @@
 	public enum ProtocolFlowType
 	{
 		Connect,
-		Publish,
+		PublishSender,
+		PublishReceiver,
 		Subscribe,
 		Unsubscribe,
 		Ping,

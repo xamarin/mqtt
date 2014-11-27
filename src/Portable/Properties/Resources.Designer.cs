@@ -341,20 +341,20 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The packet type {0} cannot be handled by this flow provider.
+        /// </summary>
+        internal static string ProtocolFlowProvider_InvalidPacketType {
+            get {
+                return ResourceManager.GetString("ProtocolFlowProvider_InvalidPacketType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occured while trying to get a Flow Type based on Packet Type {0}.
         /// </summary>
         internal static string ProtocolFlowProvider_UnknownPacketType {
             get {
                 return ResourceManager.GetString("ProtocolFlowProvider_UnknownPacketType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Packet Id value is required for QoS major than 0.
-        /// </summary>
-        internal static string PublishFlow_PacketIdRequired {
-            get {
-                return ResourceManager.GetString("PublishFlow_PacketIdRequired", resourceCulture);
             }
         }
         
@@ -391,6 +391,24 @@ namespace Hermes.Properties {
         internal static string PublishFormatter_PacketIdRequired {
             get {
                 return ResourceManager.GetString("PublishFormatter_PacketIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packet Id value is not allowed for QoS 0.
+        /// </summary>
+        internal static string PublishReceiverFlow_PacketIdNotAllowed {
+            get {
+                return ResourceManager.GetString("PublishReceiverFlow_PacketIdNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packet Id value is required for QoS major than 0.
+        /// </summary>
+        internal static string PublishReceiverFlow_PacketIdRequired {
+            get {
+                return ResourceManager.GetString("PublishReceiverFlow_PacketIdRequired", resourceCulture);
             }
         }
         

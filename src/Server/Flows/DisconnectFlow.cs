@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Hermes.Packets;
-using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
@@ -18,13 +17,10 @@ namespace Hermes.Flows
 
 		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
+			if (input.Type != PacketType.Disconnect)
+				return Task.Delay(0);
+
 			var disconnect = input as Disconnect;
-
-			if (disconnect == null) {
-				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Disconnect");
-
-				throw new ProtocolException(error);
-			}
 
 			return Task.Run (() => {
 				this.willRepository.Delete (w => w.ClientId == clientId);

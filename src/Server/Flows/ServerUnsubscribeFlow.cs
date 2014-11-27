@@ -1,17 +1,16 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Hermes.Packets;
-using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
 {
-	public class UnsubscribeFlow : IProtocolFlow
+	public class ServerUnsubscribeFlow : IProtocolFlow
 	{
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
-		public UnsubscribeFlow (IRepository<ClientSession> sessionRepository, IRepository<PacketIdentifier> packetIdentifierRepository)
+		public ServerUnsubscribeFlow (IRepository<ClientSession> sessionRepository, IRepository<PacketIdentifier> packetIdentifierRepository)
 		{
 			this.sessionRepository = sessionRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
@@ -19,22 +18,10 @@ namespace Hermes.Flows
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type == PacketType.UnsubscribeAck) {
-				var unsubscribeAck = input as UnsubscribeAck;
-
-				this.packetIdentifierRepository.Delete (i => i.Value == unsubscribeAck.PacketId);
-
+			if (input.Type != PacketType.Unsubscribe)
 				return;
-			}
 
 			var unsubscribe = input as Unsubscribe;
-
-			if (unsubscribe == null) {
-				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Unsubscribe");
-
-				throw new ProtocolException(error);
-			}
-
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			foreach (var topic in unsubscribe.Topics) {

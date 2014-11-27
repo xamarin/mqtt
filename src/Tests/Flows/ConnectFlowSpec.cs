@@ -17,8 +17,11 @@ namespace Tests.Flows
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+			var publishFlow = new Mock<IPublishFlow> ();
 
-			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
+				packetIdentifierRepository.Object, publishFlow.Object);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var connect = new Connect (clientId, cleanSession: true);
@@ -57,7 +60,11 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
 				.Returns (existingSession);
 
-			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+			var publishFlow = new Mock<IPublishFlow> ();
+
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
+				packetIdentifierRepository.Object, publishFlow.Object);
 
 			var connect = new Connect (clientId, cleanSession: false);
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -93,7 +100,11 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
 				.Returns (existingSession);
 
-			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+			var publishFlow = new Mock<IPublishFlow> ();
+
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
+				packetIdentifierRepository.Object, publishFlow.Object);
 
 			var connect = new Connect (clientId, cleanSession: true);
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -128,7 +139,11 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
 				.Returns (default(ClientSession));
 
-			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+			var publishFlow = new Mock<IPublishFlow> ();
+
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
+				packetIdentifierRepository.Object, publishFlow.Object);
 
 			var connect = new Connect (clientId, cleanSession: false);
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -151,7 +166,11 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
-			var flow = new ConnectFlow (sessionRepository.Object, willRepository.Object);
+			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+			var publishFlow = new Mock<IPublishFlow> ();
+
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
+				packetIdentifierRepository.Object, publishFlow.Object);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var connect = new Connect (clientId, cleanSession: true);
@@ -179,28 +198,6 @@ namespace Tests.Flows
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
 			Assert.False (connectAck.SessionPresent);
-		}
-
-		[Fact]
-		public void when_sending_invalid_packet_to_connect_then_fails()
-		{
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var willRepository = Mock.Of<IRepository<ConnectionWill>> ();
-
-			var flow = new ConnectFlow (sessionRepository.Object, willRepository);
-
-			var clientId = Guid.NewGuid ().ToString ();
-			var invalid = new PingRequest ();
-			var channel = new Mock<IChannel<IPacket>> ();
-			var sentPacket = default(IPacket);
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
-				.Returns(Task.Delay(0));
-
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, invalid, channel.Object).Wait());
-
-			Assert.True (ex.InnerException is ProtocolException);
 		}
 	}
 }

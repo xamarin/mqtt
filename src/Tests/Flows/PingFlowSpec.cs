@@ -30,23 +30,5 @@ namespace Tests.Flows
 			Assert.NotNull (pingResponse);
 			Assert.Equal (PacketType.PingResponse, pingResponse.Type);
 		}
-
-		[Fact]
-		public void when_sending_invalid_packet_to_ping_then_fails()
-		{
-			var flow = new PingFlow ();
-
-			var clientId = Guid.NewGuid ().ToString ();
-			var channel = new Mock<IChannel<IPacket>> ();
-			var sentPacket = default(IPacket);
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
-				.Returns(Task.Delay(0));
-
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Disconnect(), channel.Object).Wait());
-
-			Assert.True (ex.InnerException is ProtocolException);
-		}
 	}
 }

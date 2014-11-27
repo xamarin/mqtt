@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using Hermes.Diagnostics;
+using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Storage;
 
@@ -22,7 +23,7 @@ namespace Hermes
 		public Server (IObservable<ReactiveSocketChannel> socketProvider, IRepositoryFactory repositoryFactory, 
 			ProtocolConfiguration configuration)
 			: this(socketProvider, new PacketChannelFactory(new TopicEvaluator(configuration)), 
-				new PacketChannelAdapter(repositoryFactory, configuration), configuration)
+				new PacketChannelAdapter(new ServerProtocolFlowProvider(repositoryFactory, configuration), configuration), configuration)
 		{
 		}
 

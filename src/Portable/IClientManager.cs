@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using Hermes.Packets;
 
 namespace Hermes
@@ -11,8 +10,9 @@ namespace Hermes
 		void AddClient (string clientId, IChannel<IPacket> connection);
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		Task SendMessageAsync (string clientId, IPacket packet);
+		IChannel<IPacket> GetConnection (string clientId);
 
-        void RemoveClient(string clientId);
+		/// <exception cref="ProtocolException">ProtocolException</exception>
+		void RemoveClient(string clientId);
     }
 }

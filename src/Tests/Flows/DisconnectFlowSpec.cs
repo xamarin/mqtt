@@ -30,25 +30,5 @@ namespace Tests.Flows
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
 			channel.Verify (c => c.Close ());
 		}
-
-		[Fact]
-		public void when_sending_invalid_packet_to_disconnect_then_fails()
-		{
-				var clientManager = new Mock<IClientManager> ();
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
-
-			var flow = new DisconnectFlow (clientManager.Object, willRepository.Object);
-
-			var clientId = Guid.NewGuid ().ToString ();
-			var invalid = new Connect (clientId, cleanSession: true);
-			var channel = new Mock<IChannel<IPacket>> ();
-			var sentPacket = default(IPacket);
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
-				.Returns(Task.Delay(0));
-
-			Assert.Throws<ProtocolException> (() => flow.ExecuteAsync (clientId, invalid, channel.Object).Wait());
-		}
 	}
 }

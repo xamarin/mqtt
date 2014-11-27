@@ -1,166 +1,115 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Hermes.Packets;
-using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
 {
-	public class PublishFlow : IProtocolFlow
+	public abstract class PublishFlow : IPublishFlow
 	{
-		readonly ProtocolConfiguration configuration;
-		readonly IClientManager clientManager;
-		readonly ITopicEvaluator topicEvaluator;
-		readonly IRepository<RetainedMessage> retainedRepository;
-		readonly IRepository<ClientSession> sessionRepository;
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
-		readonly IDictionary<QualityOfService, Func<Publish, IPacket>> publishRules;
+		protected readonly IClientManager clientManager;
+		protected readonly IRepository<ClientSession> sessionRepository;
+		protected readonly ProtocolConfiguration configuration;
 
-		public PublishFlow (ProtocolConfiguration configuration, IClientManager clientManager, ITopicEvaluator topicEvaluator,
-			IRepository<RetainedMessage> retainedRepository, IRepository<ClientSession> sessionRepository, 
-			IRepository<PacketIdentifier> packetIdentifierRepository)
+		protected PublishFlow (IClientManager clientManager, 
+			IRepository<ClientSession> sessionRepository, 
+			ProtocolConfiguration configuration)
 		{
-			this.configuration = configuration;
 			this.clientManager = clientManager;
-			this.topicEvaluator = topicEvaluator;
-			this.retainedRepository = retainedRepository;
 			this.sessionRepository = sessionRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
-
-			this.publishRules = new Dictionary<QualityOfService, Func<Publish, IPacket>> ();
-
-			this.publishRules.Add (QualityOfService.AtMostOnce, RunQoS0Flow);
-			this.publishRules.Add (QualityOfService.AtLeastOnce, RunQoS1Flow);
-			this.publishRules.Add (QualityOfService.ExactlyOnce, RunQoS2Flow);
+			this.configuration = configuration;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public abstract Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
+
+		public async Task SendPublishAsync(string clientId, Publish message, IChannel<IPacket> channel)
 		{
-			if (input.Type == PacketType.PublishAck) {
-				var publishAck = input as PublishAck;
+			if (message.QualityOfService != QualityOfService.AtMostOnce) {
+				this.StoreMessage (message, clientId);
+			}
 
-				this.packetIdentifierRepository.Delete (i => i.Value == publishAck.PacketId);
+			if(message.QualityOfService == QualityOfService.AtLeastOnce)
+				this.MonitorAck<PublishAck> (message, channel);
+			else if (message.QualityOfService == QualityOfService.ExactlyOnce)
+				this.MonitorAck<PublishReceived> (message, channel);
 
+			await channel.SendAsync (message);
+		}
+
+		public async Task SendAckAsync (string clientId, IFlowPacket ack, IChannel<IPacket> channel)
+		{
+			if(ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease)
+				this.StoreUnacknowledgeMessage (ack, clientId);
+
+			if(ack.Type == PacketType.PublishReceived)
+				this.MonitorAck<PublishRelease> (ack, channel);
+			else if (ack.Type == PacketType.PublishRelease)
+				this.MonitorAck<PublishComplete> (ack, channel);
+
+			await channel.SendAsync (ack);
+		}
+
+		protected void MonitorAck<T>(IFlowPacket sentPacket, IChannel<IPacket> channel)
+			where T : IFlowPacket
+		{
+			channel.Receiver
+				.OfType<T> ()
+				.FirstAsync (ack => ack.PacketId == sentPacket.PacketId)
+				.Timeout (new TimeSpan (0, 0, this.configuration.WaitingTimeoutSecs))
+				.Subscribe (_ => { }, async ex => {
+					await channel.SendAsync (sentPacket);
+				});
+		}
+
+		protected void MonitorAck<T>(Publish sentPublish, IChannel<IPacket> channel)
+			where T : IFlowPacket
+		{
+			channel.Receiver
+				.OfType<T> ()
+				.FirstAsync (ack => ack.PacketId == sentPublish.PacketId.Value)
+				.Timeout (new TimeSpan (0, 0, this.configuration.WaitingTimeoutSecs))
+				.Subscribe (_ => { }, async ex => {
+					var duplicatedPublish = new Publish (sentPublish.Topic, sentPublish.QualityOfService,
+						sentPublish.Retain, duplicated: true, packetId: sentPublish.PacketId);
+					
+					await channel.SendAsync (duplicatedPublish);
+				});
+		}
+
+		private void StoreMessage(Publish message, string clientId)
+		{
+			if (message.QualityOfService == QualityOfService.AtMostOnce)
 				return;
-			}
 
-			if (input.Type == PacketType.PublishComplete) {
-				var publishComplete = input as PublishComplete;
+			var pendingMessage = new PendingMessage {
+				QualityOfService = message.QualityOfService,
+				Topic = message.Topic,
+				PacketId = message.PacketId,
+				Payload = message.Payload
+			};
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
-				this.packetIdentifierRepository.Delete (i => i.Value == publishComplete.PacketId);
+			session.PendingMessages.Add (pendingMessage);
 
+			this.sessionRepository.Update (session);
+		}
+
+		private void StoreUnacknowledgeMessage(IFlowPacket ack, string clientId)
+		{
+			if (ack.Type != PacketType.PublishReceived && ack.Type != PacketType.PublishRelease)
 				return;
-			}
 
-			if (input.Type == PacketType.PublishReceived) {
-				var publishReceived = input as PublishReceived;
-				var ack = this.RunQoS2Flow (publishReceived);
+			var unacknowledgeMessage = new PendingAcknowledgement {
+				PacketId = ack.PacketId,
+				Type = ack.Type
+			};
 
-				await this.SendAckAsync (ack, channel);
-				return;
-			}
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
-			if (input.Type == PacketType.PublishRelease) {
-				var publishRelease = input as PublishRelease;
-				var ack = this.RunQoS2Flow (publishRelease);
+			session.PendingAcknowledgements.Add (unacknowledgeMessage);
 
-				await this.SendAckAsync (ack, channel);
-				return;
-			}
-
-			var publish = input as Publish;
-
-			if (publish == null) {
-				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Publish");
-
-				throw new ProtocolException(error);
-			}
-
-			if (publish.Retain) {
-				var existingRetainedMessage = this.retainedRepository.Get(r => r.Topic == publish.Topic);
-
-				if(existingRetainedMessage != null) {
-					this.retainedRepository.Delete(existingRetainedMessage);
-				}
-
-				if (publish.Payload.Length > 0) {
-					var retainedMessage = new RetainedMessage {
-						Topic = publish.Topic,
-						QualityOfService = publish.QualityOfService,
-						Payload = publish.Payload
-					};
-
-					this.retainedRepository.Create(retainedMessage);
-				}
-			}
-
-			var qos = publish.QualityOfService > this.configuration.MaximumQualityOfService ? 
-				this.configuration.MaximumQualityOfService : 
-				publish.QualityOfService;
-			var sessions = this.sessionRepository.GetAll (); //TODO: Needs some refactoring over Repository and Storage strategy to try not doing this on memory (right now It's an IQueryable but doesn't work like that)
-			var subscriptions = sessions.SelectMany(s => s.Subscriptions).Where(x => this.topicEvaluator.Matches(publish.Topic, x.TopicFilter));
-
-			foreach (var subscription in subscriptions) {
-				var requestedQos = subscription.MaximumQualityOfService > this.configuration.MaximumQualityOfService ? 
-					this.configuration.MaximumQualityOfService : 
-					subscription.MaximumQualityOfService;
-				var packetId = this.packetIdentifierRepository.GetPacketIdentifier (requestedQos);
-
-				//TODO: Figure out how to control the reception of a message and the duplicate delivery in case the ack is not received
-				var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicatedDelivery: false, packetId: packetId) {
-					Payload = publish.Payload
-				};
-
-				await this.clientManager.SendMessageAsync (subscription.ClientId, subscriptionPublish);
-			}
-
-			var rule = default (Func<Publish, IPacket>);
-
-			this.publishRules.TryGetValue (qos, out rule);
-
-			var result = rule (publish);
-
-			if (result != default (IPacket)) {
-				await this.SendAckAsync (result, channel);
-			}
-		}
-
-		private IPacket RunQoS0Flow (Publish publish)
-		{
-			return default (IPacket);
-		}
-
-		private IPacket RunQoS1Flow (Publish publish)
-		{
-			if(!publish.PacketId.HasValue)
-				throw new ProtocolException(Resources.PublishFlow_PacketIdRequired);
-
-			return new PublishAck (publish.PacketId.Value);
-		}
-
-		private IPacket RunQoS2Flow (Publish publish)
-		{
-			if(!publish.PacketId.HasValue)
-				throw new ProtocolException(Resources.PublishFlow_PacketIdRequired);
-
-			return new PublishReceived (publish.PacketId.Value);
-		}
-
-		private IPacket RunQoS2Flow (PublishReceived publishReceived)
-		{
-			return new PublishRelease(publishReceived.PacketId);
-		}
-
-		private IPacket RunQoS2Flow (PublishRelease publishRelease)
-		{
-			return new PublishComplete(publishRelease.PacketId);
-		}
-
-		private async Task SendAckAsync(IPacket ack, IChannel<IPacket> channel) 
-		{
-			await channel.SendAsync(ack);
+			this.sessionRepository.Update (session);
 		}
 	}
 }

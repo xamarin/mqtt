@@ -12,23 +12,39 @@ namespace Tests
 	public class ProtocolFlowProviderSpec
 	{
 		[Theory]
-		[InlineData(PacketType.Connect, typeof(ConnectFlow))]
-		[InlineData(PacketType.ConnectAck, typeof(ConnectFlow))]
+		[InlineData(PacketType.ConnectAck, typeof(ClientConnectFlow))]
+		[InlineData(PacketType.PingResponse, typeof(PingFlow))]
+		[InlineData(PacketType.Publish, typeof(PublishSenderFlow))]
+		[InlineData(PacketType.PublishAck, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.PublishReceived, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.PublishRelease, typeof(PublishSenderFlow))]
+		[InlineData(PacketType.PublishComplete, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.SubscribeAck, typeof(ClientSubscribeFlow))]
+		[InlineData(PacketType.UnsubscribeAck, typeof(ClientUnsubscribeFlow))]
+		public void when_getting_client_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
+		{
+			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<IClientManager> (),
+				Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryFactory>(), new ProtocolConfiguration ());
+
+			var flow = flowProvider.GetFlow (packetType);
+
+			Assert.Equal (flowType, flow.GetType ());
+		}
+
+		[Theory]
+		[InlineData(PacketType.Connect, typeof(ServerConnectFlow))]
 		[InlineData(PacketType.Disconnect, typeof(DisconnectFlow))]
 		[InlineData(PacketType.PingRequest, typeof(PingFlow))]
-		[InlineData(PacketType.PingResponse, typeof(PingFlow))]
-		[InlineData(PacketType.Publish, typeof(PublishFlow))]
-		[InlineData(PacketType.PublishAck, typeof(PublishFlow))]
-		[InlineData(PacketType.PublishReceived, typeof(PublishFlow))]
-		[InlineData(PacketType.PublishRelease, typeof(PublishFlow))]
-		[InlineData(PacketType.PublishComplete, typeof(PublishFlow))]
-		[InlineData(PacketType.Subscribe, typeof(SubscribeFlow))]
-		[InlineData(PacketType.SubscribeAck, typeof(SubscribeFlow))]
-		[InlineData(PacketType.Unsubscribe, typeof(UnsubscribeFlow))]
-		[InlineData(PacketType.UnsubscribeAck, typeof(UnsubscribeFlow))]
-		public void when_getting_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
+		[InlineData(PacketType.Publish, typeof(PublishSenderFlow))]
+		[InlineData(PacketType.PublishAck, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.PublishReceived, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.PublishRelease, typeof(PublishSenderFlow))]
+		[InlineData(PacketType.PublishComplete, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.Subscribe, typeof(ServerSubscribeFlow))]
+		[InlineData(PacketType.Unsubscribe, typeof(ServerUnsubscribeFlow))]
+		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
-			var flowProvider = new ProtocolFlowProvider (Mock.Of<IClientManager> (),
+			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IClientManager> (),
 				Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryFactory>(), new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);

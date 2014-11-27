@@ -5,10 +5,10 @@ namespace Hermes.Packets
 {
 	public class Publish : IPacket, IEquatable<Publish>
     {
-        public Publish(string topic, QualityOfService qualityOfService, bool retain, bool duplicatedDelivery, ushort? packetId = null)
+        public Publish(string topic, QualityOfService qualityOfService, bool retain, bool duplicated, ushort? packetId = null)
         {
             this.QualityOfService = qualityOfService;
-			this.DuplicatedDelivery = duplicatedDelivery;
+			this.Duplicated = duplicated;
 			this.Retain = retain;
 			this.Topic = topic;
             this.PacketId = packetId;
@@ -18,7 +18,7 @@ namespace Hermes.Packets
 
 		public QualityOfService QualityOfService { get; private set; }
 
-		public bool DuplicatedDelivery { get; private set; }
+		public bool Duplicated { get; private set; }
 
 		public bool Retain { get; private set; }
 
@@ -34,7 +34,7 @@ namespace Hermes.Packets
 				return false;
 
 			var equals = this.QualityOfService == other.QualityOfService &&
-				this.DuplicatedDelivery == other.DuplicatedDelivery &&
+				this.Duplicated == other.Duplicated &&
 				this.Retain == other.Retain &&
 				this.Topic == other.Topic &&
 				this.PacketId == other.PacketId;
@@ -78,7 +78,7 @@ namespace Hermes.Packets
 		public override int GetHashCode ()
 		{
 			var hashCode = this.QualityOfService.GetHashCode () +
-				this.DuplicatedDelivery.GetHashCode () +
+				this.Duplicated.GetHashCode () +
 				this.Retain.GetHashCode () +
 				this.Topic.GetHashCode ();
 

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
-using Hermes.Storage;
 
 namespace Hermes
 {
@@ -14,8 +13,8 @@ namespace Hermes
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 
-		public PacketChannelAdapter (IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
-			: this(new ClientManager(), new ProtocolFlowProvider(repositoryFactory, configuration), configuration)
+		public PacketChannelAdapter (IProtocolFlowProvider flowProvider, ProtocolConfiguration configuration)
+			: this (new ClientManager(), flowProvider, configuration)
 		{
 		}
 
@@ -83,7 +82,7 @@ namespace Hermes
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
 			
-                        if (flow != null)
+            if (flow != null)
 				await flow.ExecuteAsync (clientId, packet, channel);
 		}
 

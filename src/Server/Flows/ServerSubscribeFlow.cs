@@ -3,47 +3,39 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hermes.Exceptions;
 using Hermes.Packets;
-using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
 {
-	public class SubscribeFlow : IProtocolFlow
+	public class ServerSubscribeFlow : IProtocolFlow
 	{
-		readonly ProtocolConfiguration configuration;
 		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
+		readonly IPublishFlow publishFlow;
+		readonly ProtocolConfiguration configuration;
 
-		public SubscribeFlow (ProtocolConfiguration configuration, ITopicEvaluator topicEvaluator, IRepository<ClientSession> sessionRepository, 
-			IRepository<PacketIdentifier> packetIdentifierRepository, IRepository<RetainedMessage> retainedRepository)
+		public ServerSubscribeFlow (ITopicEvaluator topicEvaluator, IRepository<ClientSession> sessionRepository, 
+			IRepository<PacketIdentifier> packetIdentifierRepository, 
+			IRepository<RetainedMessage> retainedRepository,
+			IPublishFlow publishFlow,
+			ProtocolConfiguration configuration)
 		{
-			this.configuration = configuration;
 			this.topicEvaluator = topicEvaluator;
 			this.sessionRepository = sessionRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.retainedRepository = retainedRepository;
+			this.publishFlow = publishFlow;
+			this.configuration = configuration;
 		}
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type == PacketType.SubscribeAck) {
-				var subscribeAck = input as SubscribeAck;
-
-				this.packetIdentifierRepository.Delete (i => i.Value == subscribeAck.PacketId);
-
+			if (input.Type != PacketType.Subscribe)
 				return;
-			}
 
 			var subscribe = input as Subscribe;
-
-			if (subscribe == null) {
-				var error = string.Format (Resources.ProtocolFlow_InvalidPacketType, input.Type, "Subscribe");
-
-				throw new ProtocolException(error);
-			}
-
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var returnCodes = new List<SubscribeReturnCode> ();
 
@@ -68,19 +60,8 @@ namespace Hermes.Flows
 						session.Subscriptions.Add (clientSubscription);
 					}
 
-					var retainedMessages = this.retainedRepository.GetAll ().Where(r => this.topicEvaluator.Matches(r.Topic, clientSubscription.TopicFilter));
-
-					if (retainedMessages != null) {
-						foreach (var retainedMessage in retainedMessages) {
-							var packetId = this.packetIdentifierRepository.GetPacketIdentifier (retainedMessage.QualityOfService);
-							var publish = new Publish (retainedMessage.Topic, retainedMessage.QualityOfService, retain: true, duplicatedDelivery: false, packetId: packetId) {
-								Payload = retainedMessage.Payload
-							};
-
-							await channel.SendAsync (publish);
-						}
-					}
-
+					await this.SendRetainedMessagesAsync (clientSubscription, channel);
+		
 					var supportedQos = subscription.MaximumQualityOfService > this.configuration.MaximumQualityOfService ?
 						this.configuration.MaximumQualityOfService : subscription.MaximumQualityOfService;
 					var returnCode = supportedQos.ToReturnCode ();
@@ -94,6 +75,24 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 
 			await channel.SendAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()));
+		}
+
+		private async Task SendRetainedMessagesAsync(ClientSubscription subscription, IChannel<IPacket> channel)
+		{
+			var retainedMessages = this.retainedRepository.GetAll ()
+				.Where(r => this.topicEvaluator.Matches(r.Topic, subscription.TopicFilter));
+
+			if (retainedMessages != null) {
+				foreach (var retainedMessage in retainedMessages) {
+					var packetId = this.packetIdentifierRepository.GetPacketIdentifier (subscription.MaximumQualityOfService);
+					var publish = new Publish (retainedMessage.Topic, subscription.MaximumQualityOfService, 
+						retain: true, duplicated: false, packetId: packetId) {
+						Payload = retainedMessage.Payload
+					};
+
+					await this.publishFlow.SendPublishAsync(subscription.ClientId, publish, channel);
+				}
+			}
 		}
 	}
 }

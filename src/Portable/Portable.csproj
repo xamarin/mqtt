@@ -13,6 +13,8 @@
     <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -23,15 +25,14 @@
     <Compile Include="ClientManager.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Flows\IFlowProvider.cs" />
-    <Compile Include="Flows\PingFlow.cs" />
     <Compile Include="Flows\ProtocolFlowProvider.cs" />
+    <Compile Include="Flows\IProtocolFlowProvider.cs" />
+    <Compile Include="Flows\IPublishFlow.cs" />
+    <Compile Include="Flows\PingFlow.cs" />
     <Compile Include="Flows\PublishFlow.cs" />
-    <Compile Include="Flows\SubscribeFlow.cs" />
-    <Compile Include="Flows\UnsubscribeFlow.cs" />
+    <Compile Include="Flows\PublishReceiverFlow.cs" />
+    <Compile Include="Flows\PublishSenderFlow.cs" />
     <Compile Include="Exceptions\ConnectProtocolException.cs" />
-    <Compile Include="Flows\ConnectFlow.cs" />
-    <Compile Include="Flows\DisconnectFlow.cs" />
     <Compile Include="Flows\IProtocolFlow.cs" />
     <Compile Include="Flows\ProtocolFlowType.cs" />
     <Compile Include="Formatters\ConnectAckFormatter.cs" />
@@ -57,7 +58,7 @@
     <Compile Include="Packets\ConnectAck.cs" />
     <Compile Include="Packets\ConnectionStatus.cs" />
     <Compile Include="Packets\Disconnect.cs" />
-    <Compile Include="Packets\IFlowMessage.cs" />
+    <Compile Include="Packets\IFlowPacket.cs" />
     <Compile Include="Packets\IPacket.cs" />
     <Compile Include="Packets\PacketType.cs" />
     <Compile Include="Packets\PingRequest.cs" />
@@ -96,6 +97,8 @@
     <Compile Include="Storage\InMemoryRepository.cs" />
     <Compile Include="Storage\IRepository.cs" />
     <Compile Include="Storage\ClientSession.cs" />
+    <Compile Include="Storage\SavedMessage.cs" />
+    <Compile Include="Storage\PendingAcknowledgement.cs" />
     <Compile Include="TopicEvaluator.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -127,4 +130,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
 </Project>

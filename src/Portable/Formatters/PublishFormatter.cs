@@ -84,14 +84,14 @@ namespace Hermes.Formatters
 
 		private byte[] GetFixedHeader(Publish packet, byte[] remainingLength)
 		{
-			if (packet.QualityOfService == QualityOfService.AtMostOnce && packet.DuplicatedDelivery)
+			if (packet.QualityOfService == QualityOfService.AtMostOnce && packet.Duplicated)
 				throw new ProtocolException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
 
 			var fixedHeader = new List<byte> ();
 
 			var retain = Convert.ToInt32 (packet.Retain);
 			var qos = Convert.ToInt32(packet.QualityOfService);
-			var duplicated = Convert.ToInt32 (packet.DuplicatedDelivery);
+			var duplicated = Convert.ToInt32 (packet.Duplicated);
 
 			qos <<= 1;
 			duplicated <<= 3;

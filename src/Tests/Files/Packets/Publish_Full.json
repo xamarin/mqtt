@@ -1,6 +1,6 @@
 ﻿{
     "qualityOfService": "1",
-    "duplicatedDelivery": "true",
+    "duplicated": "true",
     "retain": "true",
     "topic": "foo/bar",
     "packetId": "10",

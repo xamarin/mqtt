@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
 using Hermes;
 using Hermes.Packets;
 using Moq;
@@ -70,41 +69,34 @@ namespace Tests
 		}
 
 		[Fact]
-		public async Task when_sending_packet_to_existing_client_then_packet_is_forwarded()
+		public void when_removing_not_existing_client_then_fail()
 		{
 			var manager = new ClientManager ();
+			var clientId = Guid.NewGuid ().ToString ();
 
-			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
-
-			channel.Setup (c => c.Receiver).Returns (receiver);
-
-			var clientId = Guid.NewGuid().ToString();
-			var ping = new PingRequest ();
-
-			manager.AddClient (clientId, channel.Object);
-
-			await manager.SendMessageAsync (clientId, ping);
-
-			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PingRequest)));
+			Assert.Throws<ProtocolException>(() => manager.RemoveClient (clientId));
 		}
 
 		[Fact]
-		public void when_sending_packet_to_not_existing_client_then_fails()
+		public void when_getting_connection_from_client_then_succeeds()
 		{
 			var manager = new ClientManager ();
+			var clientId = Guid.NewGuid ().ToString ();
 
-			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			manager.AddClient (clientId, Mock.Of<IChannel<IPacket>> ());
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			var connection = manager.GetConnection (clientId);
 
-			var clientId = Guid.NewGuid().ToString();
-			var ping = new PingRequest ();
+			Assert.NotNull (connection);
+		}
 
-			var ex = Assert.Throws<AggregateException> (() => manager.SendMessageAsync (clientId, ping).Wait());
-
-			Assert.True (ex.InnerException is ProtocolException);
+		[Fact]
+		public void when_getting_connection_from_not_existing_client_then_fail()
+		{
+			var manager = new ClientManager ();
+			var clientId = Guid.NewGuid ().ToString ();
+			
+			Assert.Throws<ProtocolException>(() => manager.GetConnection (clientId));
 		}
 	}
 }

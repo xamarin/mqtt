@@ -16,11 +16,13 @@ namespace Hermes
 					flowType = ProtocolFlowType.Connect;
 					break;
 				case PacketType.Publish:
+				case PacketType.PublishRelease:
+					flowType = ProtocolFlowType.PublishSender;
+					break;
 				case PacketType.PublishAck:
 				case PacketType.PublishReceived:
-				case PacketType.PublishRelease:
 				case PacketType.PublishComplete:
-					flowType = ProtocolFlowType.Publish;
+					flowType = ProtocolFlowType.PublishReceiver;
 					break;
 				case PacketType.Subscribe:
 				case PacketType.SubscribeAck:

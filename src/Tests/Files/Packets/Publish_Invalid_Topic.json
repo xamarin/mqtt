@@ -1,6 +1,6 @@
 ﻿{
     "qualityOfService": "0",
-    "duplicatedDelivery": "false",
+    "duplicated": "false",
     "retain": "true",
     "topic": "",
     "payload": "this is the payload of this test packet"

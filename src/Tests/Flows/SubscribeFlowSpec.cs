@@ -23,6 +23,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
+			var publishFlow = Mock.Of<IPublishFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
@@ -30,7 +31,9 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var flow = new SubscribeFlow (configuration, topicEvaluator.Object, sessionRepository.Object, packetIdentifierRepository, retainedMessageRepository);
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
+				packetIdentifierRepository, retainedMessageRepository,
+				publishFlow, configuration);
 
 			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -73,6 +76,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
+			var publishFlow = Mock.Of<IPublishFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var fooQoS = QualityOfService.AtLeastOnce;
@@ -90,7 +94,9 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var flow = new SubscribeFlow (configuration, topicEvaluator.Object, sessionRepository.Object, packetIdentifierRepository, retainedMessageRepository);
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
+				packetIdentifierRepository, retainedMessageRepository,
+				publishFlow, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
@@ -121,11 +127,11 @@ namespace Tests.Flows
 		public async Task when_subscribing_invalid_topic_then_failure_is_sent_in_ack()
 		{
 			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
-
 			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
+			var publishFlow = Mock.Of<IPublishFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
@@ -133,7 +139,9 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (false);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var flow = new SubscribeFlow (configuration, topicEvaluator.Object, sessionRepository.Object, packetIdentifierRepository, retainedMessageRepository);
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
+				packetIdentifierRepository, retainedMessageRepository,
+				publishFlow, configuration);
 
 			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -165,17 +173,13 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_subscribe_ack_then_packet_identifier_is_deleted()
 		{
-			var configuration = Mock.Of<ProtocolConfiguration> ();
-			var topicEvaluator = new Mock<ITopicEvaluator> ();
-			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribeAck = new SubscribeAck (packetId, SubscribeReturnCode.MaximumQoS0, SubscribeReturnCode.MaximumQoS1);
 
-			var flow = new SubscribeFlow (configuration, topicEvaluator.Object, sessionRepository, packetIdentifierRepository.Object, retainedMessageRepository);
+			var flow = new ClientSubscribeFlow (packetIdentifierRepository.Object);
 
 			var channel = new Mock<IChannel<IPacket>> ();
 
@@ -199,6 +203,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = new Mock<IRepository<RetainedMessage>> ();
+			var publishFlow = new Mock<IPublishFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
@@ -224,7 +229,9 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			retainedMessageRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<RetainedMessage, bool>>> ())).Returns (retainedMessages.AsQueryable());
 
-			var flow = new SubscribeFlow (configuration, topicEvaluator.Object, sessionRepository.Object, packetIdentifierRepository.Object, retainedMessageRepository.Object);
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
+				packetIdentifierRepository.Object, retainedMessageRepository.Object,
+				publishFlow.Object, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
@@ -233,33 +240,13 @@ namespace Tests.Flows
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 
-			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish && ((Publish)p).Topic == retainedTopic 
-				&& ((Publish)p).QualityOfService == retainedQoS && ((Publish)p).Payload.ToList().SequenceEqual(retainedPayload)  
-				&& ((Publish)p).PacketId.HasValue && ((Publish)p).Retain)));
-		}
-
-		[Fact]
-		public void when_sending_invalid_packet_to_subscribe_then_fails()
-		{
-			var configuration = Mock.Of<ProtocolConfiguration> ();
-			var topicEvaluator = new Mock<ITopicEvaluator> ();
-			var sessionRepository = Mock.Of<IRepository<ClientSession>> ();
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
-
-			var flow = new SubscribeFlow (configuration, topicEvaluator.Object, sessionRepository, packetIdentifierRepository, retainedMessageRepository);
-
-			var clientId = Guid.NewGuid ().ToString ();
-			var channel = new Mock<IChannel<IPacket>> ();
-			var sentPacket = default(IPacket);
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
-				.Returns(Task.Delay(0));
-
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, new Publish("test", QualityOfService.AtMostOnce, false, false), channel.Object).Wait());
-
-			Assert.True (ex.InnerException is ProtocolException);
+			publishFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == clientId),
+				It.Is<Publish> (p => p.Topic == retainedTopic && 
+					p.QualityOfService == fooQoS && 
+					p.Payload.ToList().SequenceEqual(retainedPayload) && 
+					p.PacketId.HasValue && 
+					p.Retain), 
+				It.Is<IChannel<IPacket>>(c => c == channel.Object)));
 		}
 	}
 }

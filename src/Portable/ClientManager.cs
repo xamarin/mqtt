@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Properties;
 
@@ -26,19 +25,21 @@ namespace Hermes
         }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-        public async Task SendMessageAsync(string clientId, IPacket packet)
-        {
-			var connection = default (IChannel<IPacket>);
+		public IChannel<IPacket> GetConnection (string clientId)
+		{
+			var clientConnection = clientConnections.FirstOrDefault (c => c.Key == clientId);
 
-			if (!clientConnections.TryGetValue (clientId, out connection)) {
+			if (clientConnection.Equals(default(KeyValuePair<string, IChannel<IPacket>>))){
 				var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
 				
 				throw new ProtocolException (error);
 			}
 
-			await connection.SendAsync (packet);
-        }
+			return clientConnection.Value;
 
+		}
+
+		/// <exception cref="ProtocolException">ProtocolException</exception>
         public void RemoveClient(string clientId)
         {
             if (!clientConnections.Any (c => c.Key == clientId)){
