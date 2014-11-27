@@ -104,7 +104,7 @@ namespace Hermes
 			
             if (flow != null)
 				try {
-					await flow.ExecuteAsync (clientId, packet, channel);
+					await flow.ExecuteAsync (clientId, packet);
 				} catch (Exception ex) {
 					this.NotifyError (ex, clientId, channel);
 				}

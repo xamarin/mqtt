@@ -25,8 +25,10 @@ namespace Hermes.Flows
 			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
-		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public override async Task ExecuteAsync (string clientId, IPacket input)
 		{
+			var channel = this.connectionProvider.GetConnection (clientId);
+
 			if (input.Type == PacketType.Publish) {
 				var publish = input as Publish;
 

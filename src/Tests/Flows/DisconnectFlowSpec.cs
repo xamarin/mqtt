@@ -31,9 +31,13 @@ namespace Tests.Flows
 				Clean = true
 			};
 
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
 			sessionRepository.Setup(r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns(session);
 
-			await flow.ExecuteAsync (clientId, disconnect, channel.Object);
+			await flow.ExecuteAsync (clientId, disconnect);
 
 			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
@@ -60,9 +64,13 @@ namespace Tests.Flows
 				Clean = false
 			};
 
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
 			sessionRepository.Setup(r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns(session);
 
-			await flow.ExecuteAsync (clientId, disconnect, channel.Object);
+			await flow.ExecuteAsync (clientId, disconnect);
 
 			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));

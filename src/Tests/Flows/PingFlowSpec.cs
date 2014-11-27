@@ -13,8 +13,6 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_ping_request_then_ping_response_is_sent()
 		{
-			var flow = new PingFlow ();
-
 			var clientId = Guid.NewGuid ().ToString ();
 			var channel = new Mock<IChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
@@ -23,7 +21,15 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, new PingRequest(), channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new PingFlow (connectionProvider.Object);
+
+			await flow.ExecuteAsync (clientId, new PingRequest());
 
 			var pingResponse = sentPacket as PingResponse;
 

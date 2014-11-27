@@ -18,7 +18,6 @@ namespace Tests.Flows
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-			var flow = new ServerUnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
@@ -46,7 +45,15 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new ServerUnsubscribeFlow (connectionProvider.Object, sessionRepository.Object, packetIdentifierRepository);
+
+			await flow.ExecuteAsync(clientId, unsubscribe);
 
 			Assert.NotNull (response);
 			Assert.Equal (0, updatedSession.Subscriptions.Count);
@@ -62,8 +69,6 @@ namespace Tests.Flows
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-
-			var flow = new ServerUnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
@@ -84,7 +89,15 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new ServerUnsubscribeFlow (connectionProvider.Object, sessionRepository.Object, packetIdentifierRepository);
+
+			await flow.ExecuteAsync(clientId, unsubscribe);
 
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
 			Assert.NotNull (response);
@@ -104,8 +117,6 @@ namespace Tests.Flows
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var unsubscribeAck = new UnsubscribeAck (packetId);
 
-			var flow = new ClientUnsubscribeFlow (packetIdentifierRepository.Object);
-
 			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
@@ -114,7 +125,9 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, unsubscribeAck, channel.Object);
+			var flow = new ClientUnsubscribeFlow (packetIdentifierRepository.Object);
+
+			await flow.ExecuteAsync (clientId, unsubscribeAck);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			Assert.Null (response);

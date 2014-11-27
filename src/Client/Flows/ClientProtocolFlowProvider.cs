@@ -27,13 +27,13 @@ namespace Hermes.Flows
 
 			var senderFlow = new PublishSenderFlow (connectionProvider, sessionRepository, packetIdentifierRepository,configuration);
 
-			flows.Add (ProtocolFlowType.Connect, new ClientConnectFlow (sessionRepository, senderFlow));
+			flows.Add (ProtocolFlowType.Connect, new ClientConnectFlow (connectionProvider, sessionRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
 			flows.Add (ProtocolFlowType.PublishReceiver, new PublishReceiverFlow (connectionProvider, topicEvaluator, 
 				retainedRepository, sessionRepository, packetIdentifierRepository, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ClientSubscribeFlow (packetIdentifierRepository));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ClientUnsubscribeFlow (packetIdentifierRepository));
-			flows.Add (ProtocolFlowType.Ping, new PingFlow ());
+			flows.Add (ProtocolFlowType.Ping, new PingFlow (connectionProvider));
 
 			return flows;
 		}

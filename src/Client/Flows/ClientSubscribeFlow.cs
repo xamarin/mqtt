@@ -13,7 +13,7 @@ namespace Hermes.Flows
 			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
-		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public Task ExecuteAsync (string clientId, IPacket input)
 		{
 			if (input.Type != PacketType.SubscribeAck)
 				return Task.Delay(0);

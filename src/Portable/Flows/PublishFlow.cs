@@ -22,12 +22,13 @@ namespace Hermes.Flows
 			this.configuration = configuration;
 		}
 
-		public abstract Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
+		public abstract Task ExecuteAsync (string clientId, IPacket input);
 
-		public async Task SendAckAsync (string clientId, IFlowPacket ack, bool isPending = false)
+		public async Task SendAckAsync (string clientId, IFlowPacket ack, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
-			if((ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease) && !isPending)
-				this.StorePendingAcknowledgement (ack, clientId);
+			if((ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease) && 
+				status == PendingMessageStatus.PendingToSend)
+				this.SavePendingAcknowledgement (ack, clientId);
 
 			if (!this.connectionProvider.IsConnected (clientId))
 				return;
@@ -56,7 +57,7 @@ namespace Hermes.Flows
 				});
 		}
 
-		private void StorePendingAcknowledgement(IFlowPacket ack, string clientId)
+		private void SavePendingAcknowledgement(IFlowPacket ack, string clientId)
 		{
 			if (ack.Type != PacketType.PublishReceived && ack.Type != PacketType.PublishRelease)
 				return;

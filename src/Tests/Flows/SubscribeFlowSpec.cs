@@ -31,10 +31,6 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
-				packetIdentifierRepository, retainedMessageRepository,
-				senderFlow, configuration);
-
 			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
 			var fooSubscription = new Subscription (fooTopic, fooQoS);
@@ -53,7 +49,17 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, 
+				sessionRepository.Object, packetIdentifierRepository, retainedMessageRepository,
+				senderFlow, configuration);
+
+			await flow.ExecuteAsync (clientId, subscribe);
 
 			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.ClientId == clientId && s.Subscriptions.Count == 2 
 				&& s.Subscriptions.All(x => x.TopicFilter == fooTopic || x.TopicFilter == barTopic))));
@@ -94,10 +100,6 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
-				packetIdentifierRepository, retainedMessageRepository,
-				senderFlow, configuration);
-
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
 			
@@ -109,7 +111,17 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, sessionRepository.Object, 
+				packetIdentifierRepository, retainedMessageRepository,
+				senderFlow, configuration);
+
+			await flow.ExecuteAsync (clientId, subscribe);
 
 			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.ClientId == clientId && s.Subscriptions.Count == 1 
 				&& s.Subscriptions.Any(x => x.TopicFilter == fooTopic && x.MaximumQualityOfService == fooQoS))));
@@ -139,10 +151,6 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (false);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
-				packetIdentifierRepository, retainedMessageRepository,
-				senderFlow, configuration);
-
 			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
 			var fooSubscription = new Subscription (fooTopic, fooQoS);
@@ -158,7 +166,17 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, sessionRepository.Object, 
+				packetIdentifierRepository, retainedMessageRepository,
+				senderFlow, configuration);
+
+			await flow.ExecuteAsync (clientId, subscribe);
 
 			Assert.NotNull (response);
 
@@ -189,7 +207,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, subscribeAck, channel.Object);
+			await flow.ExecuteAsync (clientId, subscribeAck);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			Assert.Null (response);
@@ -229,16 +247,22 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			retainedMessageRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<RetainedMessage, bool>>> ())).Returns (retainedMessages.AsQueryable());
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
-				packetIdentifierRepository.Object, retainedMessageRepository.Object,
-				senderFlow.Object, configuration);
-
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
 			
 			var channel = new Mock<IChannel<IPacket>> ();
 
-			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, 
+				sessionRepository.Object, packetIdentifierRepository.Object, retainedMessageRepository.Object,
+				senderFlow.Object, configuration);
+
+			await flow.ExecuteAsync (clientId, subscribe);
 
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == clientId),
 				It.Is<Publish> (p => p.Topic == retainedTopic && 
@@ -246,7 +270,7 @@ namespace Tests.Flows
 					p.Payload.ToList().SequenceEqual(retainedPayload) && 
 					p.PacketId.HasValue && 
 					p.Retain), 
-				It.Is<bool>(x => x == false)));
+				It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 		}
 	}
 }

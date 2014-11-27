@@ -25,7 +25,7 @@ namespace Hermes.Flows
 			this.DefineSenderRules ();
 		}
 
-		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public override async Task ExecuteAsync (string clientId, IPacket input)
 		{
 			var senderRule = default (Func<string, ushort, IChannel<IPacket>, IFlowPacket>);
 
@@ -37,6 +37,7 @@ namespace Hermes.Flows
 			if (flowPacket == null)
 				return;
 
+			var channel = this.connectionProvider.GetConnection (clientId);
 			var ackPacket = senderRule (clientId, flowPacket.PacketId, channel);
 
 			if (ackPacket != default(IFlowPacket)) {
@@ -44,17 +45,17 @@ namespace Hermes.Flows
 			}
 		}
 
-		public async Task SendPublishAsync (string clientId, Publish message, bool isPending = false)
+		public async Task SendPublishAsync (string clientId, Publish message, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
 			if (!this.connectionProvider.IsConnected (clientId)) {
-				this.SaveMessage (message, clientId);
+				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToSend);
 				return;
 			}
 
 			var channel = this.connectionProvider.GetConnection(clientId);
 
-			if (message.QualityOfService != QualityOfService.AtMostOnce && !isPending) {
-				this.SavePendingMessage (message, clientId);
+			if (message.QualityOfService != QualityOfService.AtMostOnce && status == PendingMessageStatus.PendingToSend) {
+				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToAcknowledge);
 			}
 
 			if(message.QualityOfService == QualityOfService.AtLeastOnce)
@@ -92,12 +93,13 @@ namespace Hermes.Flows
 			});
 		}
 
-		protected void SavePendingMessage(Publish message, string clientId)
+		private void SaveMessage(Publish message, string clientId, PendingMessageStatus status)
 		{
 			if (message.QualityOfService == QualityOfService.AtMostOnce)
 				return;
 
-			var pendingMessage = new PendingMessage {
+			var savedMessage = new PendingMessage {
+				Status = status,
 				QualityOfService = message.QualityOfService,
 				Duplicated = message.Duplicated,
 				Retain = message.Retain,
@@ -107,25 +109,7 @@ namespace Hermes.Flows
 			};
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
-			session.PendingMessages.Add (pendingMessage);
-
-			this.sessionRepository.Update (session);
-		}
-
-		private void SaveMessage(Publish message, string clientId)
-		{
-			if (message.QualityOfService == QualityOfService.AtMostOnce)
-				return;
-
-			var savedMessage = new SavedMessage {
-				QualityOfService = message.QualityOfService,
-				Topic = message.Topic,
-				PacketId = message.PacketId,
-				Payload = message.Payload
-			};
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-
-			session.SavedMessages.Add (savedMessage);
+			session.PendingMessages.Add (savedMessage);
 
 			this.sessionRepository.Update (session);
 		}

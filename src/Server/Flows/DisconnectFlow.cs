@@ -10,7 +10,8 @@ namespace Hermes.Flows
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 
-		public DisconnectFlow (IConnectionProvider connectionProvider, IRepository<ClientSession> sessionRepository, 
+		public DisconnectFlow (IConnectionProvider connectionProvider, 
+			IRepository<ClientSession> sessionRepository, 
 			IRepository<ConnectionWill> willRepository)
 		{
 			this.connectionProvider = connectionProvider;
@@ -18,7 +19,7 @@ namespace Hermes.Flows
 			this.willRepository = willRepository;
 		}
 
-		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public Task ExecuteAsync (string clientId, IPacket input)
 		{
 			if (input.Type != PacketType.Disconnect)
 				return Task.Delay(0);
@@ -34,9 +35,10 @@ namespace Hermes.Flows
 					this.sessionRepository.Delete (session);
 				}
 
-				this.connectionProvider.RemoveConnection (clientId);
+				var channel = this.connectionProvider.GetConnection (clientId);
 
 				channel.Close ();
+				this.connectionProvider.RemoveConnection (clientId);
 			});
 		}
 	}

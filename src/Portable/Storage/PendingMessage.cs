@@ -2,8 +2,16 @@
 
 namespace Hermes.Storage
 {
+	public enum PendingMessageStatus
+	{
+		PendingToAcknowledge = 1,
+		PendingToSend = 2
+	}
+
 	public class PendingMessage
 	{
+		public PendingMessageStatus Status { get; set; }
+
 		public QualityOfService QualityOfService { get; set; }
 
 		public bool Duplicated { get; set; }

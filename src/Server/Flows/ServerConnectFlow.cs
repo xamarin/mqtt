@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Storage;
 
@@ -6,26 +7,31 @@ namespace Hermes.Flows
 {
 	public class ServerConnectFlow : IProtocolFlow
 	{
+		readonly IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IPublishSenderFlow senderFlow;
 
-		public ServerConnectFlow (IRepository<ClientSession> sessionRepository, 
+		public ServerConnectFlow (IConnectionProvider connectionProvider,
+			IRepository<ClientSession> sessionRepository, 
 			IRepository<ConnectionWill> willRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
 			IPublishSenderFlow senderFlow)
 		{
+			this.connectionProvider = connectionProvider;
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.senderFlow = senderFlow;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input)
 		{
 			if (input.Type != PacketType.Connect)
 				return;
+
+			var channel = this.connectionProvider.GetConnection (clientId);
 
 			var connect = input as Connect;
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
@@ -41,7 +47,6 @@ namespace Hermes.Flows
 
 				this.sessionRepository.Create (session);
 			} else {
-				await this.SendSavedMessagesAsync (session, channel);
 				await this.SendPendingMessagesAsync (session, channel);
 				await this.SendPendingAcknowledgementsAsync (session, channel);
 			}
@@ -55,33 +60,30 @@ namespace Hermes.Flows
 			await channel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent));
 		}
 
-		private async Task SendSavedMessagesAsync(ClientSession session, IChannel<IPacket> channel)
-		{
-			foreach (var savedMessage in session.SavedMessages) {
-				var publish = new Publish(savedMessage.Topic, savedMessage.QualityOfService, 
-					retain: false, duplicated: false, packetId: savedMessage.PacketId);
-
-				await this.senderFlow.SendPublishAsync (session.ClientId, publish);
-			}
-
-			session.SavedMessages.Clear ();
-
-			this.sessionRepository.Update (session);
-		}
-
 		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingMessage in session.PendingMessages) {
+			var pendingMessages = new List<PendingMessage> (session.PendingMessages);
+
+			foreach (var pendingMessage in pendingMessages) {
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
-				await this.senderFlow.SendPublishAsync (session.ClientId, publish, isPending: true);
+				if (pendingMessage.Status == PendingMessageStatus.PendingToSend) {
+					session.PendingMessages.Remove (pendingMessage);
+					this.sessionRepository.Update (session);
+
+					await this.senderFlow.SendPublishAsync (session.ClientId, publish);
+				} else {
+					await this.senderFlow.SendPublishAsync (session.ClientId, publish, PendingMessageStatus.PendingToAcknowledge);
+				}
 			}
 		}
 
 		private async Task SendPendingAcknowledgementsAsync(ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingAcknowledgement in session.PendingAcknowledgements) {
+			var pendingAcknowledgements = new List<PendingAcknowledgement> (session.PendingAcknowledgements);
+
+			foreach (var pendingAcknowledgement in pendingAcknowledgements) {
 				var ack = default(IFlowPacket);
 
 				if (pendingAcknowledgement.Type == PacketType.PublishReceived)
@@ -89,7 +91,7 @@ namespace Hermes.Flows
 				else if(pendingAcknowledgement.Type == PacketType.PublishRelease)
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack, isPending: true);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, PendingMessageStatus.PendingToAcknowledge);
 			}
 		}
 	}

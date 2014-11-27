@@ -138,7 +138,7 @@ namespace Tests.Flows
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
+			await flow.ExecuteAsync (clientId, publishReceived);
 
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishRelease 
 				&& (p as PublishRelease).PacketId == packetId)), Times.Once);
@@ -174,7 +174,7 @@ namespace Tests.Flows
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
+			await flow.ExecuteAsync (clientId, publishReceived);
 
 			Thread.Sleep (2000);
 
@@ -222,7 +222,7 @@ namespace Tests.Flows
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
+			await flow.ExecuteAsync (clientId, publishReceived);
 
 			Thread.Sleep (2000);
 
@@ -236,7 +236,6 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid().ToString();
 
 			var configuration = Mock.Of<ProtocolConfiguration> ();
-			var connectionProvider = Mock.Of<IConnectionProvider> ();
 			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
@@ -251,14 +250,22 @@ namespace Tests.Flows
 			
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishAck = new PublishAck (packetId);
-			var flow = new PublishSenderFlow (connectionProvider, 
-				sessionRepository.Object, packetIdentifierRepository.Object, configuration);
+			
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
-			await flow.ExecuteAsync (clientId, publishAck, channel.Object);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new PublishSenderFlow (connectionProvider.Object, 
+				sessionRepository.Object, packetIdentifierRepository.Object, configuration);
+
+			await flow.ExecuteAsync (clientId, publishAck);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket>()), Times.Never);
@@ -270,7 +277,6 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid().ToString();
 
 			var configuration = Mock.Of<ProtocolConfiguration> ();
-			var connectionProvider = Mock.Of<IConnectionProvider> ();
 			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
@@ -285,14 +291,22 @@ namespace Tests.Flows
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishComplete = new PublishComplete (packetId);
-			var flow = new PublishSenderFlow (connectionProvider, 
-				sessionRepository.Object, packetIdentifierRepository.Object, configuration);
+
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
 			channel.Setup (c => c.Receiver).Returns (receiver);
+			
+			var connectionProvider = new Mock<IConnectionProvider> ();
 
-			await flow.ExecuteAsync (clientId, publishComplete, channel.Object);
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new PublishSenderFlow (connectionProvider.Object, sessionRepository.Object, 
+				packetIdentifierRepository.Object, configuration);
+
+			await flow.ExecuteAsync (clientId, publishComplete);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket>()), Times.Never);

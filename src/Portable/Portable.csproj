@@ -98,7 +98,6 @@
     <Compile Include="Storage\InMemoryRepository.cs" />
     <Compile Include="Storage\IRepository.cs" />
     <Compile Include="Storage\ClientSession.cs" />
-    <Compile Include="Storage\SavedMessage.cs" />
     <Compile Include="Storage\PendingAcknowledgement.cs" />
     <Compile Include="TopicEvaluator.cs" />
   </ItemGroup>

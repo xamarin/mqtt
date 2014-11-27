@@ -57,8 +57,8 @@ namespace Tests
 			receiver.OnNext (publish);
 
 			flowProvider.Verify (p => p.GetFlow (It.Is<PacketType> (t => t == PacketType.Publish)));
-			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Connect), It.IsAny<IChannel<IPacket>> ()));
-			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Publish), It.IsAny<IChannel<IPacket>> ()));
+			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Connect)));
+			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Publish)));
 		}
 
 		[Fact]
