@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Hermes.Packets;
-using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
@@ -10,17 +9,17 @@ namespace Hermes.Flows
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
-		readonly IPublishFlow publishFlow;
+		readonly IPublishSenderFlow senderFlow;
 
 		public ServerConnectFlow (IRepository<ClientSession> sessionRepository, 
 			IRepository<ConnectionWill> willRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
-			IPublishFlow publishFlow)
+			IPublishSenderFlow senderFlow)
 		{
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
-			this.publishFlow = publishFlow;
+			this.senderFlow = senderFlow;
 		}
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
@@ -62,7 +61,7 @@ namespace Hermes.Flows
 				var publish = new Publish(savedMessage.Topic, savedMessage.QualityOfService, 
 					retain: false, duplicated: false, packetId: savedMessage.PacketId);
 
-				await this.publishFlow.SendPublishAsync (session.ClientId, publish, channel);
+				await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel);
 			}
 		}
 
@@ -72,7 +71,7 @@ namespace Hermes.Flows
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
-				await this.publishFlow.SendPublishAsync (session.ClientId, publish, channel);
+				await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel);
 			}
 		}
 
@@ -86,7 +85,7 @@ namespace Hermes.Flows
 				else if(unacknowledgeMessage.Type == PacketType.PublishRelease)
 					ack = new PublishRelease (unacknowledgeMessage.PacketId);
 
-				await this.publishFlow.SendAckAsync (session.ClientId, ack, channel);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel);
 			}
 		}
 	}

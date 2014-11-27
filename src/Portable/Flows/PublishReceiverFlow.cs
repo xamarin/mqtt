@@ -11,16 +11,21 @@ namespace Hermes.Flows
 		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<RetainedMessage> retainedRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
+		readonly IPublishSenderFlow senderFlow;
 
-		public PublishReceiverFlow (ProtocolConfiguration configuration, IClientManager clientManager, ITopicEvaluator topicEvaluator,
+		public PublishReceiverFlow (IClientManager clientManager, 
+			ITopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository)
+			IRepository<PacketIdentifier> packetIdentifierRepository,
+			IPublishSenderFlow senderFlow,
+			ProtocolConfiguration configuration)
 			: base(clientManager, sessionRepository, configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
+			this.senderFlow = senderFlow;
 		}
 
 		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
@@ -110,7 +115,7 @@ namespace Hermes.Flows
 			};
 			var subscribedChannel = this.clientManager.GetConnection (subscription.ClientId);
 
-			await this.SendPublishAsync (subscription.ClientId, subscriptionPublish, subscribedChannel);
+			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, subscribedChannel);
 		}
 
 		private QualityOfService GetMaximumQoS(QualityOfService requestedQos)

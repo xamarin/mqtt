@@ -7,12 +7,12 @@ namespace Hermes.Flows
 	public class ClientConnectFlow : IProtocolFlow
 	{
 		readonly IRepository<ClientSession> sessionRepository;
-		readonly IPublishFlow publishFlow;
+		readonly IPublishSenderFlow senderFlow;
 
-		public ClientConnectFlow (IRepository<ClientSession> sessionRepository, IPublishFlow publishFlow)
+		public ClientConnectFlow (IRepository<ClientSession> sessionRepository, IPublishSenderFlow senderFlow)
 		{
 			this.sessionRepository = sessionRepository;
-			this.publishFlow = publishFlow;
+			this.senderFlow = senderFlow;
 		}
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
@@ -34,7 +34,7 @@ namespace Hermes.Flows
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
-				await this.publishFlow.SendPublishAsync (session.ClientId, publish, channel);
+				await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel);
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace Hermes.Flows
 				else if(unacknowledgeMessage.Type == PacketType.PublishRelease)
 					ack = new PublishRelease (unacknowledgeMessage.PacketId);
 
-				await this.publishFlow.SendAckAsync (session.ClientId, ack, channel);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel);
 			}
 		}
 	}

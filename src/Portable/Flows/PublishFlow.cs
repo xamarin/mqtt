@@ -23,24 +23,10 @@ namespace Hermes.Flows
 
 		public abstract Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
 
-		public async Task SendPublishAsync(string clientId, Publish message, IChannel<IPacket> channel)
-		{
-			if (message.QualityOfService != QualityOfService.AtMostOnce) {
-				this.StoreMessage (message, clientId);
-			}
-
-			if(message.QualityOfService == QualityOfService.AtLeastOnce)
-				this.MonitorAck<PublishAck> (message, channel);
-			else if (message.QualityOfService == QualityOfService.ExactlyOnce)
-				this.MonitorAck<PublishReceived> (message, channel);
-
-			await channel.SendAsync (message);
-		}
-
 		public async Task SendAckAsync (string clientId, IFlowPacket ack, IChannel<IPacket> channel)
 		{
 			if(ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease)
-				this.StoreUnacknowledgeMessage (ack, clientId);
+				this.StorePendingAcknowledgement (ack, clientId);
 
 			if(ack.Type == PacketType.PublishReceived)
 				this.MonitorAck<PublishRelease> (ack, channel);
@@ -62,40 +48,7 @@ namespace Hermes.Flows
 				});
 		}
 
-		protected void MonitorAck<T>(Publish sentPublish, IChannel<IPacket> channel)
-			where T : IFlowPacket
-		{
-			channel.Receiver
-				.OfType<T> ()
-				.FirstAsync (ack => ack.PacketId == sentPublish.PacketId.Value)
-				.Timeout (new TimeSpan (0, 0, this.configuration.WaitingTimeoutSecs))
-				.Subscribe (_ => { }, async ex => {
-					var duplicatedPublish = new Publish (sentPublish.Topic, sentPublish.QualityOfService,
-						sentPublish.Retain, duplicated: true, packetId: sentPublish.PacketId);
-					
-					await channel.SendAsync (duplicatedPublish);
-				});
-		}
-
-		private void StoreMessage(Publish message, string clientId)
-		{
-			if (message.QualityOfService == QualityOfService.AtMostOnce)
-				return;
-
-			var pendingMessage = new PendingMessage {
-				QualityOfService = message.QualityOfService,
-				Topic = message.Topic,
-				PacketId = message.PacketId,
-				Payload = message.Payload
-			};
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-
-			session.PendingMessages.Add (pendingMessage);
-
-			this.sessionRepository.Update (session);
-		}
-
-		private void StoreUnacknowledgeMessage(IFlowPacket ack, string clientId)
+		private void StorePendingAcknowledgement(IFlowPacket ack, string clientId)
 		{
 			if (ack.Type != PacketType.PublishReceived && ack.Type != PacketType.PublishRelease)
 				return;

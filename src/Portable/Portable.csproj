@@ -25,6 +25,7 @@
     <Compile Include="ClientManager.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Flows\IPublishSenderFlow.cs" />
     <Compile Include="Flows\ProtocolFlowProvider.cs" />
     <Compile Include="Flows\IProtocolFlowProvider.cs" />
     <Compile Include="Flows\IPublishFlow.cs" />

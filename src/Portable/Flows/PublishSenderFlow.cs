@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Storage;
 
 namespace Hermes.Flows
 {
-	public class PublishSenderFlow : PublishFlow
+	public class PublishSenderFlow : PublishFlow, IPublishSenderFlow
 	{
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		
 		IDictionary<PacketType, Func<string, ushort, IChannel<IPacket>, IFlowPacket>> senderRules;
 
-		public PublishSenderFlow (ProtocolConfiguration configuration, 
-			IClientManager clientManager,
+		public PublishSenderFlow (IClientManager clientManager,
 			IRepository<ClientSession> sessionRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository)
+			IRepository<PacketIdentifier> packetIdentifierRepository,
+			ProtocolConfiguration configuration)
 			: base(clientManager, sessionRepository, configuration)
 		{
 			this.packetIdentifierRepository = packetIdentifierRepository;
@@ -41,6 +42,20 @@ namespace Hermes.Flows
 			if (ackPacket != default(IFlowPacket)) {
 				await this.SendAckAsync (clientId, ackPacket, channel);;
 			}
+		}
+
+		public async Task SendPublishAsync(string clientId, Publish message, IChannel<IPacket> channel)
+		{
+			if (message.QualityOfService != QualityOfService.AtMostOnce) {
+				this.StorePendingMessage (message, clientId);
+			}
+
+			if(message.QualityOfService == QualityOfService.AtLeastOnce)
+				this.MonitorAck<PublishAck> (message, channel);
+			else if (message.QualityOfService == QualityOfService.ExactlyOnce)
+				this.MonitorAck<PublishReceived> (message, channel);
+
+			await channel.SendAsync (message);
 		}
 
 		private void DefineSenderRules ()
@@ -87,6 +102,39 @@ namespace Hermes.Flows
 
 				return default (IFlowPacket);
 			});
+		}
+
+		private void StorePendingMessage(Publish message, string clientId)
+		{
+			if (message.QualityOfService == QualityOfService.AtMostOnce)
+				return;
+
+			var pendingMessage = new PendingMessage {
+				QualityOfService = message.QualityOfService,
+				Topic = message.Topic,
+				PacketId = message.PacketId,
+				Payload = message.Payload
+			};
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+			session.PendingMessages.Add (pendingMessage);
+
+			this.sessionRepository.Update (session);
+		}
+
+		private void MonitorAck<T>(Publish sentPublish, IChannel<IPacket> channel)
+			where T : IFlowPacket
+		{
+			channel.Receiver
+				.OfType<T> ()
+				.FirstAsync (ack => ack.PacketId == sentPublish.PacketId.Value)
+				.Timeout (new TimeSpan (0, 0, this.configuration.WaitingTimeoutSecs))
+				.Subscribe (_ => { }, async ex => {
+					var duplicatedPublish = new Publish (sentPublish.Topic, sentPublish.QualityOfService,
+						sentPublish.Retain, duplicated: true, packetId: sentPublish.PacketId);
+					
+					await channel.SendAsync (duplicatedPublish);
+				});
 		}
 	}
 }

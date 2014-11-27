@@ -23,7 +23,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var publishFlow = Mock.Of<IPublishFlow> ();
+			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
@@ -33,7 +33,7 @@ namespace Tests.Flows
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				packetIdentifierRepository, retainedMessageRepository,
-				publishFlow, configuration);
+				senderFlow, configuration);
 
 			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -76,7 +76,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var publishFlow = Mock.Of<IPublishFlow> ();
+			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var fooQoS = QualityOfService.AtLeastOnce;
@@ -96,7 +96,7 @@ namespace Tests.Flows
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				packetIdentifierRepository, retainedMessageRepository,
-				publishFlow, configuration);
+				senderFlow, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
@@ -131,7 +131,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var publishFlow = Mock.Of<IPublishFlow> ();
+			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
@@ -141,7 +141,7 @@ namespace Tests.Flows
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				packetIdentifierRepository, retainedMessageRepository,
-				publishFlow, configuration);
+				senderFlow, configuration);
 
 			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -203,7 +203,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
 			var retainedMessageRepository = new Mock<IRepository<RetainedMessage>> ();
-			var publishFlow = new Mock<IPublishFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession {  ClientId = clientId, Clean = false };
@@ -231,7 +231,7 @@ namespace Tests.Flows
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				packetIdentifierRepository.Object, retainedMessageRepository.Object,
-				publishFlow.Object, configuration);
+				senderFlow.Object, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
@@ -240,7 +240,7 @@ namespace Tests.Flows
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 
-			publishFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == clientId),
+			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == clientId),
 				It.Is<Publish> (p => p.Topic == retainedTopic && 
 					p.QualityOfService == fooQoS && 
 					p.Payload.ToList().SequenceEqual(retainedPayload) && 

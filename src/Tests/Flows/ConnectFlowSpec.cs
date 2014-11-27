@@ -18,10 +18,10 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-			var publishFlow = new Mock<IPublishFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow> ();
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
-				packetIdentifierRepository.Object, publishFlow.Object);
+				packetIdentifierRepository.Object, senderFlow.Object);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var connect = new Connect (clientId, cleanSession: true);
@@ -61,10 +61,10 @@ namespace Tests.Flows
 				.Returns (existingSession);
 
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-			var publishFlow = new Mock<IPublishFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow> ();
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
-				packetIdentifierRepository.Object, publishFlow.Object);
+				packetIdentifierRepository.Object, senderFlow.Object);
 
 			var connect = new Connect (clientId, cleanSession: false);
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -101,10 +101,10 @@ namespace Tests.Flows
 				.Returns (existingSession);
 
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-			var publishFlow = new Mock<IPublishFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow> ();
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
-				packetIdentifierRepository.Object, publishFlow.Object);
+				packetIdentifierRepository.Object, senderFlow.Object);
 
 			var connect = new Connect (clientId, cleanSession: true);
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -140,10 +140,10 @@ namespace Tests.Flows
 				.Returns (default(ClientSession));
 
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-			var publishFlow = new Mock<IPublishFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow> ();
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
-				packetIdentifierRepository.Object, publishFlow.Object);
+				packetIdentifierRepository.Object, senderFlow.Object);
 
 			var connect = new Connect (clientId, cleanSession: false);
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -167,10 +167,10 @@ namespace Tests.Flows
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
 			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-			var publishFlow = new Mock<IPublishFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow> ();
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
-				packetIdentifierRepository.Object, publishFlow.Object);
+				packetIdentifierRepository.Object, senderFlow.Object);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var connect = new Connect (clientId, cleanSession: true);

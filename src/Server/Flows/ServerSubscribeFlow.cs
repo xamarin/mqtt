@@ -13,20 +13,20 @@ namespace Hermes.Flows
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
-		readonly IPublishFlow publishFlow;
+		readonly IPublishSenderFlow senderFlow;
 		readonly ProtocolConfiguration configuration;
 
 		public ServerSubscribeFlow (ITopicEvaluator topicEvaluator, IRepository<ClientSession> sessionRepository, 
 			IRepository<PacketIdentifier> packetIdentifierRepository, 
 			IRepository<RetainedMessage> retainedRepository,
-			IPublishFlow publishFlow,
+			IPublishSenderFlow senderFlow,
 			ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.sessionRepository = sessionRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.retainedRepository = retainedRepository;
-			this.publishFlow = publishFlow;
+			this.senderFlow = senderFlow;
 			this.configuration = configuration;
 		}
 
@@ -90,7 +90,7 @@ namespace Hermes.Flows
 						Payload = retainedMessage.Payload
 					};
 
-					await this.publishFlow.SendPublishAsync(subscription.ClientId, publish, channel);
+					await this.senderFlow.SendPublishAsync(subscription.ClientId, publish, channel);
 				}
 			}
 		}
