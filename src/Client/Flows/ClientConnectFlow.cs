@@ -22,10 +22,8 @@ namespace Hermes.Flows
 
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
-			if (session != null) {
-				await this.SendPendingMessagesAsync (session, channel);
-				await this.SendPendingAcknowledgementsAsync (session, channel);
-			}
+			await this.SendPendingMessagesAsync (session, channel);
+			await this.SendPendingAcknowledgementsAsync (session, channel);
 		}
 
 		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
@@ -34,21 +32,21 @@ namespace Hermes.Flows
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
-				await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel);
+				await this.senderFlow.SendPublishAsync (session.ClientId, publish, isPending: true);
 			}
 		}
 
 		private async Task SendPendingAcknowledgementsAsync(ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var unacknowledgeMessage in session.PendingAcknowledgements) {
+			foreach (var pendingAcknowledgement in session.PendingAcknowledgements) {
 				var ack = default(IFlowPacket);
 
-				if (unacknowledgeMessage.Type == PacketType.PublishReceived)
-					ack = new PublishReceived (unacknowledgeMessage.PacketId);
-				else if(unacknowledgeMessage.Type == PacketType.PublishRelease)
-					ack = new PublishRelease (unacknowledgeMessage.PacketId);
+				if (pendingAcknowledgement.Type == PacketType.PublishReceived)
+					ack = new PublishReceived (pendingAcknowledgement.PacketId);
+				else if(pendingAcknowledgement.Type == PacketType.PublishRelease)
+					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, isPending: true);
 			}
 		}
 	}

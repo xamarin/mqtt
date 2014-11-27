@@ -49,6 +49,7 @@
     <Compile Include="External\Diagnostics\Tracer\Tracer.cs" />
     <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="Flows\ServerProtocolFlowProvider.cs" />
+    <Compile Include="Flows\ServerPublishReceiverFlow.cs" />
     <Compile Include="Flows\ServerSubscribeFlow.cs" />
     <Compile Include="Flows\DisconnectFlow.cs" />
     <Compile Include="Flows\ServerConnectFlow.cs" />

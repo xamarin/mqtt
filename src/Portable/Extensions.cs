@@ -44,6 +44,13 @@ namespace Hermes
 			return flowType;
 		}
 
+		public static QualityOfService GetSupportedQos(this ProtocolConfiguration configuration, QualityOfService requestedQos)
+		{
+			return requestedQos > configuration.MaximumQualityOfService ?
+				configuration.MaximumQualityOfService : 
+				requestedQos;
+		}
+
 		public static SubscribeReturnCode ToReturnCode(this QualityOfService qos)
 		{
 			var returnCode = default (SubscribeReturnCode);

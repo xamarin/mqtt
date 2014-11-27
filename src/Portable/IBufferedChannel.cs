@@ -5,6 +5,8 @@ namespace Hermes
 {
 	public interface IBufferedChannel<T>
 	{
+		bool IsConnected { get; }
+
 		IObservable<T> Receiver { get; }
 
         Task SendAsync(T[] message);

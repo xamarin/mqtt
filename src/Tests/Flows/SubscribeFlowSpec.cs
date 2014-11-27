@@ -246,7 +246,7 @@ namespace Tests.Flows
 					p.Payload.ToList().SequenceEqual(retainedPayload) && 
 					p.PacketId.HasValue && 
 					p.Retain), 
-				It.Is<IChannel<IPacket>>(c => c == channel.Object)));
+				It.Is<bool>(x => x == false)));
 		}
 	}
 }

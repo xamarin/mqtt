@@ -5,6 +5,8 @@ namespace Hermes
 {
 	public interface IChannel<T>
     {
+		bool IsConnected { get; }
+
         IObservable<T> Receiver { get; }
 
 		IObservable<T> Sender { get; }

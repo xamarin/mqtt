@@ -23,7 +23,7 @@ namespace Tests
 		[InlineData(PacketType.UnsubscribeAck, typeof(ClientUnsubscribeFlow))]
 		public void when_getting_client_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
-			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<IClientManager> (),
+			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<IConnectionProvider> (),
 				Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryFactory>(), new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
@@ -36,15 +36,15 @@ namespace Tests
 		[InlineData(PacketType.Disconnect, typeof(DisconnectFlow))]
 		[InlineData(PacketType.PingRequest, typeof(PingFlow))]
 		[InlineData(PacketType.Publish, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.PublishAck, typeof(PublishReceiverFlow))]
-		[InlineData(PacketType.PublishReceived, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.PublishAck, typeof(ServerPublishReceiverFlow))]
+		[InlineData(PacketType.PublishReceived, typeof(ServerPublishReceiverFlow))]
 		[InlineData(PacketType.PublishRelease, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.PublishComplete, typeof(PublishReceiverFlow))]
+		[InlineData(PacketType.PublishComplete, typeof(ServerPublishReceiverFlow))]
 		[InlineData(PacketType.Subscribe, typeof(ServerSubscribeFlow))]
 		[InlineData(PacketType.Unsubscribe, typeof(ServerUnsubscribeFlow))]
 		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
-			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IClientManager> (),
+			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IConnectionProvider> (),
 				Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryFactory>(), new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);

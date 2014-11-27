@@ -6,12 +6,15 @@ namespace Hermes.Flows
 {
 	public class DisconnectFlow : IProtocolFlow
 	{
-		readonly IClientManager clientManager;
+		readonly IConnectionProvider connectionProvider;
+		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 
-		public DisconnectFlow (IClientManager clientManager, IRepository<ConnectionWill> willRepository)
+		public DisconnectFlow (IConnectionProvider connectionProvider, IRepository<ClientSession> sessionRepository, 
+			IRepository<ConnectionWill> willRepository)
 		{
-			this.clientManager = clientManager;
+			this.connectionProvider = connectionProvider;
+			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
 		}
 
@@ -24,7 +27,14 @@ namespace Hermes.Flows
 
 			return Task.Run (() => {
 				this.willRepository.Delete (w => w.ClientId == clientId);
-				this.clientManager.RemoveClient (clientId);
+
+				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+				if (session.Clean) {
+					this.sessionRepository.Delete (session);
+				}
+
+				this.connectionProvider.RemoveConnection (clientId);
 
 				channel.Close ();
 			});

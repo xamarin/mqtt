@@ -20,9 +20,10 @@ namespace Hermes
 			var channel = packetChannelFactory.CreateChannel (socket);
 
 			var timeListener = new Subject<Unit> ();
+			var sessionRepository = new InMemoryRepository<ClientSession> ();
 			var packetIdentifierRepository = new InMemoryRepository<PacketIdentifier>(); //TODO: We need to inject this, but it currently affects Client experience creating factories
 
-			return new Client (channel, timeListener, configuration, packetIdentifierRepository);
+			return new Client (channel, timeListener, configuration, sessionRepository, packetIdentifierRepository);
 		}
 	}
 }

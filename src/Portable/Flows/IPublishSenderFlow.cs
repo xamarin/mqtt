@@ -5,6 +5,6 @@ namespace Hermes.Flows
 {
 	public interface IPublishSenderFlow : IPublishFlow
 	{
-		Task SendPublishAsync (string clientId, Publish message, IChannel<IPacket> channel);
+		Task SendPublishAsync (string clientId, Publish message, bool isPending = false);
 	}
 }

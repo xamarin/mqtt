@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reactive.Subjects;
 using Hermes;
 using Hermes.Packets;
@@ -8,38 +7,37 @@ using Xunit;
 
 namespace Tests
 {
-	public class ClientManagerSpec
+	public class ConnectionProviderSpec
 	{
 		[Fact]
 		public void when_adding_new_client_then_client_list_increases()
 		{
-			var manager = new ClientManager ();
+			var provider = new ConnectionProvider ();
 
-			var existingClients = manager.Clients.Count ();
+			var existingClients = provider.Connections;
 			var clientId = Guid.NewGuid ().ToString ();
 
-			manager.AddClient (clientId, Mock.Of<IChannel<IPacket>> ());
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == true));
 
-			Assert.Equal (existingClients + 1, manager.Clients.Count ());
-			Assert.True (manager.Clients.Any (c => c == clientId));
+			Assert.Equal (existingClients + 1, provider.Connections);
 		}
 
 		[Fact]
 		public void when_removing_clients_then_client_list_decreases()
 		{
-			var manager = new ClientManager ();
+			var provider = new ConnectionProvider ();
 
-			var initialClients = manager.Clients.Count ();
+			var initialClients = provider.Connections;
 
 			var clientId = Guid.NewGuid ().ToString ();
 
-			manager.AddClient (clientId, Mock.Of<IChannel<IPacket>> ());
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == true));
 
-			var newClients = manager.Clients.Count ();
+			var newClients = provider.Connections;
 
-			manager.RemoveClient (clientId);
+			provider.RemoveConnection (clientId);
 
-			var finalClients = manager.Clients.Count ();
+			var finalClients = provider.Connections;
 
 			Assert.Equal (initialClients, finalClients);
 		}
@@ -47,22 +45,24 @@ namespace Tests
 		[Fact]
 		public void when_adding_existing_client_id_then_existing_client_is_disconnected()
 		{
-			var manager = new ClientManager ();
+			var provider = new ConnectionProvider ();
 
 			var receiver1 = new Subject<IPacket> ();
 			var channel1 = new Mock<IChannel<IPacket>> ();
 
 			channel1.Setup (c => c.Receiver).Returns (receiver1);
+			channel1.Setup (c => c.IsConnected).Returns (true);
 
 			var receiver2 = new Subject<IPacket> ();
 			var channel2 = new Mock<IChannel<IPacket>> ();
 
 			channel2.Setup (c => c.Receiver).Returns (receiver2);
+			channel2.Setup (c => c.IsConnected).Returns (true);
 
 			var clientId = Guid.NewGuid().ToString();
 
-			manager.AddClient (clientId, channel1.Object);
-			manager.AddClient (clientId, channel2.Object);
+			provider.AddConnection (clientId, channel1.Object);
+			provider.AddConnection (clientId, channel2.Object);
 
 			channel1.Verify (c => c.Close ());
 			channel2.Verify(c => c.Close(), Times.Never);
@@ -71,21 +71,21 @@ namespace Tests
 		[Fact]
 		public void when_removing_not_existing_client_then_fail()
 		{
-			var manager = new ClientManager ();
+			var provider = new ConnectionProvider ();
 			var clientId = Guid.NewGuid ().ToString ();
 
-			Assert.Throws<ProtocolException>(() => manager.RemoveClient (clientId));
+			Assert.Throws<ProtocolException>(() => provider.RemoveConnection (clientId));
 		}
 
 		[Fact]
 		public void when_getting_connection_from_client_then_succeeds()
 		{
-			var manager = new ClientManager ();
+			var provider = new ConnectionProvider ();
 			var clientId = Guid.NewGuid ().ToString ();
 
-			manager.AddClient (clientId, Mock.Of<IChannel<IPacket>> ());
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == true));
 
-			var connection = manager.GetConnection (clientId);
+			var connection = provider.GetConnection (clientId);
 
 			Assert.NotNull (connection);
 		}
@@ -93,10 +93,10 @@ namespace Tests
 		[Fact]
 		public void when_getting_connection_from_not_existing_client_then_fail()
 		{
-			var manager = new ClientManager ();
+			var provider = new ConnectionProvider ();
 			var clientId = Guid.NewGuid ().ToString ();
 			
-			Assert.Throws<ProtocolException>(() => manager.GetConnection (clientId));
+			Assert.Throws<ProtocolException>(() => provider.GetConnection (clientId));
 		}
 	}
 }

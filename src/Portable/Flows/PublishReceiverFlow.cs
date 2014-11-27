@@ -8,24 +8,21 @@ namespace Hermes.Flows
 {
 	public class PublishReceiverFlow : PublishFlow
 	{
-		readonly ITopicEvaluator topicEvaluator;
-		readonly IRepository<RetainedMessage> retainedRepository;
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
-		readonly IPublishSenderFlow senderFlow;
+		protected readonly ITopicEvaluator topicEvaluator;
+		protected readonly IRepository<RetainedMessage> retainedRepository;
+		protected readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
-		public PublishReceiverFlow (IClientManager clientManager, 
+		public PublishReceiverFlow (IConnectionProvider connectionProvider, 
 			ITopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
-			IPublishSenderFlow senderFlow,
 			ProtocolConfiguration configuration)
-			: base(clientManager, sessionRepository, configuration)
+			: base(connectionProvider, sessionRepository, configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
-			this.senderFlow = senderFlow;
 		}
 
 		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
@@ -43,16 +40,9 @@ namespace Hermes.Flows
 
 		private async Task HandlePublishReleaseAsync(string clientId, PublishRelease publishRelease, IChannel<IPacket> channel)
 		{
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-			var pendingAcknowledgement = session.PendingAcknowledgements
-				.FirstOrDefault(u => u.Type == PacketType.PublishReceived &&
-					u.PacketId == publishRelease.PacketId);
+			this.RemovePendingAcknowledgement (clientId, publishRelease.PacketId, PacketType.PublishReceived);
 
-			session.PendingAcknowledgements.Remove (pendingAcknowledgement);
-
-			this.sessionRepository.Update (session);
-
-			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId), channel);
+			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId));
 		}
 
 		private async Task HandlePublishAsync(string clientId, Publish publish, IChannel<IPacket> channel)
@@ -62,67 +52,35 @@ namespace Hermes.Flows
 
 			if (publish.QualityOfService == QualityOfService.AtMostOnce && publish.PacketId.HasValue)
 				throw new ProtocolException (Resources.PublishReceiverFlow_PacketIdNotAllowed);
+			
+			var qos = configuration.GetSupportedQos(publish.QualityOfService);
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
-			if (publish.Retain) {
-				var existingRetainedMessage = this.retainedRepository.Get(r => r.Topic == publish.Topic);
+			if(qos == QualityOfService.ExactlyOnce && 
+				session.PendingAcknowledgements.Any(ack => ack.Type == PacketType.PublishReceived &&
+					ack.PacketId == publish.PacketId.Value)) {
+				await this.SendQosAck (clientId, qos, publish, channel);
 
-				if(existingRetainedMessage != null) {
-					this.retainedRepository.Delete(existingRetainedMessage);
-				}
-
-				if (publish.Payload.Length > 0) {
-					var retainedMessage = new RetainedMessage {
-						Topic = publish.Topic,
-						QualityOfService = publish.QualityOfService,
-						Payload = publish.Payload
-					};
-
-					this.retainedRepository.Create(retainedMessage);
-				}
+				return;
 			}
 
-			await this.DispatchToSubscribedClientsAsync (publish);
+			await this.ProcessPublishAsync(publish);
+			await this.SendQosAck (clientId, qos, publish, channel);
+		}
 
-			var qos = this.GetMaximumQoS(publish.QualityOfService);
+		protected virtual async Task ProcessPublishAsync(Publish publish)
+		{
+		}
 
+		private async Task SendQosAck(string clientId, QualityOfService qos, Publish publish, IChannel<IPacket> channel)
+		{
 			if (qos == QualityOfService.AtMostOnce) {
 				return;
 			} else if (qos == QualityOfService.AtLeastOnce) {
-				await this.SendAckAsync (clientId, new PublishAck (publish.PacketId.Value), channel);
+				await this.SendAckAsync (clientId, new PublishAck (publish.PacketId.Value));
 			} else {
-
-				await this.SendAckAsync (clientId, new PublishReceived (publish.PacketId.Value), channel);
+				await this.SendAckAsync (clientId, new PublishReceived (publish.PacketId.Value));
 			}
-		}
-
-		private async Task DispatchToSubscribedClientsAsync (Publish receivedPublish)
-		{
-			var sessions = this.sessionRepository.GetAll ();
-			var subscriptions = sessions.SelectMany(s => s.Subscriptions)
-				.Where(x => this.topicEvaluator.Matches(receivedPublish.Topic, x.TopicFilter));
-
-			foreach (var subscription in subscriptions) {
-				await this.DispatchToSubscribedClientAsync (subscription, receivedPublish);
-			}
-		}
-
-		private async Task DispatchToSubscribedClientAsync (ClientSubscription subscription, Publish receivedPublish)
-		{
-			var requestedQos = this.GetMaximumQoS (subscription.MaximumQualityOfService);
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier (requestedQos);
-			var subscriptionPublish = new Publish (receivedPublish.Topic, requestedQos, retain: false, duplicated: false, packetId: packetId) {
-				Payload = receivedPublish.Payload
-			};
-			var subscribedChannel = this.clientManager.GetConnection (subscription.ClientId);
-
-			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, subscribedChannel);
-		}
-
-		private QualityOfService GetMaximumQoS(QualityOfService requestedQos)
-		{
-			return requestedQos > this.configuration.MaximumQualityOfService ? 
-				this.configuration.MaximumQualityOfService : 
-				requestedQos;
 		}
 	}
 }

@@ -62,8 +62,7 @@ namespace Hermes.Flows
 
 					await this.SendRetainedMessagesAsync (clientSubscription, channel);
 		
-					var supportedQos = subscription.MaximumQualityOfService > this.configuration.MaximumQualityOfService ?
-						this.configuration.MaximumQualityOfService : subscription.MaximumQualityOfService;
+					var supportedQos = configuration.GetSupportedQos(subscription.MaximumQualityOfService);
 					var returnCode = supportedQos.ToReturnCode ();
 
 					returnCodes.Add (returnCode);
@@ -90,7 +89,7 @@ namespace Hermes.Flows
 						Payload = retainedMessage.Payload
 					};
 
-					await this.senderFlow.SendPublishAsync(subscription.ClientId, publish, channel);
+					await this.senderFlow.SendPublishAsync(subscription.ClientId, publish);
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using Hermes.Diagnostics;
 using Hermes.Flows;
@@ -89,9 +90,9 @@ namespace Hermes
 					this.activeClients.Add (clientId);
 			}, ex => {
 				tracer.Error (ex.Message);
-				this.CloseSocket (socket);
+				this.CloseSocket (socket, clientId);
 			}, () => {
-				this.CloseSocket (socket);	
+				this.CloseSocket (socket, clientId);	
 			});
 
 			protocolChannel.Receiver.OfType<Connect> ().Subscribe (connect => {
@@ -100,16 +101,26 @@ namespace Hermes
 
 			protocolChannel.Receiver.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex.Message);
-				this.CloseSocket (socket);
+				this.CloseSocket (socket, clientId);
 			}, () => { 
-				this.CloseSocket (socket);
+				this.CloseSocket (socket, clientId);
 			});
 		}
 
-		private void CloseSocket(IBufferedChannel<byte> socket)
+		private void CloseSocket(IBufferedChannel<byte> socket, string clientId)
 		{
+			this.RemoveClientId (clientId);
+
 			this.sockets.Remove (socket);
 			socket.Close ();
+		}
+
+		private void RemoveClientId (string clientId)
+		{
+			if (!this.activeClients.Any (c => c == clientId))
+				return;
+
+			this.activeClients.Remove (clientId);
 		}
 	}
 }

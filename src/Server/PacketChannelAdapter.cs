@@ -9,20 +9,20 @@ namespace Hermes
 {
 	public class PacketChannelAdapter : IPacketChannelAdapter
 	{
-		readonly IClientManager clientManager;
+		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 
 		public PacketChannelAdapter (IProtocolFlowProvider flowProvider, ProtocolConfiguration configuration)
-			: this (new ClientManager(), flowProvider, configuration)
+			: this (new ConnectionProvider(), flowProvider, configuration)
 		{
 		}
 
-		public PacketChannelAdapter (IClientManager clientManager, 
+		public PacketChannelAdapter (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
 			ProtocolConfiguration configuration)
 		{
-			this.clientManager = clientManager;
+			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 		}
@@ -48,7 +48,7 @@ namespace Hermes
 
 					clientId = connect.ClientId;
 					keepAlive = connect.KeepAlive;
-					this.clientManager.AddClient (clientId, channel);
+					this.connectionProvider.AddConnection (clientId, channel);
 
 					await this.DispatchPacketAsync (connect, clientId, protocolChannel);
 
@@ -58,32 +58,56 @@ namespace Hermes
 						.Subscribe(_ => {}, ex => {
 							var message = string.Format (Resources.PacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
 
-							protocolChannel.NotifyError (message, ex);	
+							this.NotifyError(message, ex, clientId, protocolChannel);
 						});
-				}, ex => {
-					protocolChannel.NotifyError (Resources.PacketChannelAdapter_NoConnectReceived, ex);	
+				}, async ex => {
+					await this.HandleConnectionExceptionAsync (ex, protocolChannel);
 				});
 
 			channel.Receiver
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
-						protocolChannel.NotifyError (Resources.PacketChannelAdapter_SecondConnectNotAllowed);
+						this.NotifyError (Resources.PacketChannelAdapter_SecondConnectNotAllowed, clientId, protocolChannel);
 						return;
 					}
 
 					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
+				}, ex => {
+					this.NotifyError (ex, clientId, protocolChannel);
+				}, () => {
+					this.connectionProvider.RemoveConnection (clientId);
 				});
 
 			return protocolChannel;
 		}
 
-		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)
+		private async Task HandleConnectionExceptionAsync(Exception ex, ProtocolChannel channel)
+		{
+			if (ex is TimeoutException) {
+				channel.NotifyError (Resources.PacketChannelAdapter_NoConnectReceived, ex);
+			} else if (ex is ConnectProtocolException) {
+				var connectEx = ex as ConnectProtocolException;
+				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
+
+				await channel.SendAsync (errorAck);
+
+				channel.NotifyError (ex.Message, ex);
+			} else {
+				channel.NotifyError (ex);
+			}
+		}
+
+		private async Task DispatchPacketAsync(IPacket packet, string clientId, ProtocolChannel channel)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
 			
             if (flow != null)
-				await flow.ExecuteAsync (clientId, packet, channel);
+				try {
+					await flow.ExecuteAsync (clientId, packet, channel);
+				} catch (Exception ex) {
+					this.NotifyError (ex, clientId, channel);
+				}
 		}
 
 		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
@@ -94,6 +118,29 @@ namespace Hermes
 				keepAlive = (int)(keepAlive * 1.5);
 
 			return new TimeSpan (0, 0, keepAlive);
+		}
+
+		public void NotifyError(Exception exception, string clientId, ProtocolChannel channel)
+		{
+			this.RemoveClient (clientId);
+			channel.NotifyError (exception);
+		}
+
+		public void NotifyError(string message, string clientId, ProtocolChannel channel)
+		{
+			this.RemoveClient (clientId);
+			channel.NotifyError (message);
+		}
+
+		public void NotifyError(string message, Exception exception, string clientId, ProtocolChannel channel)
+		{
+			this.RemoveClient (clientId);
+			channel.NotifyError (message, exception);
+		}
+
+		private void RemoveClient(string clientId)
+		{
+			this.connectionProvider.RemoveConnection (clientId);
 		}
 	}
 }

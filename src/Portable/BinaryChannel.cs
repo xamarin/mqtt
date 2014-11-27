@@ -37,6 +37,8 @@ namespace Hermes
 			}, onError: ex => this.receiver.OnError(ex), onCompleted: () => this.receiver.OnCompleted());
 		}
 
+		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }
+
 		public IObservable<byte[]> Receiver { get { return this.receiver; } }
 
 		public IObservable<byte[]> Sender { get { return this.sender; } }

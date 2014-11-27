@@ -16,6 +16,8 @@ namespace Hermes
 			this.innerChannel = innerChannel;
 		}
 
+		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }
+
 		public IObservable<IPacket> Receiver { get { return this.innerChannel.Receiver; } }
 
 		public IObservable<IPacket> Sender { get { return this.sender; } }

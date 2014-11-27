@@ -14,10 +14,10 @@ namespace Tests
 		[Fact]
 		public void when_adapting_packet_channel_then_protocol_channel_is_returned()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration  { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -32,7 +32,7 @@ namespace Tests
 		[Fact]
 		public void when_packet_is_received_then_it_is_dispatched_to_proper_flow()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = new Mock<IProtocolFlowProvider> ();
 
 			var flow = new Mock<IProtocolFlow>();
@@ -40,7 +40,7 @@ namespace Tests
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<PacketType> ())).Returns (flow.Object);
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -64,10 +64,10 @@ namespace Tests
 		[Fact]
 		public void when_connect_received_then_client_id_is_added()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -81,17 +81,17 @@ namespace Tests
 
 			receiver.OnNext (connect);
 
-			clientManager.Verify (m => m.AddClient (It.Is<string> (s => s == clientId), It.Is<IChannel<IPacket>> (c => c == packetChannel.Object)));
+			connectionProvider.Verify (m => m.AddConnection (It.Is<string> (s => s == clientId), It.Is<IChannel<IPacket>> (c => c == packetChannel.Object)));
 		}
 
 		[Fact]
 		public void when_no_connect_is_received_then_times_out()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -113,11 +113,11 @@ namespace Tests
 		[Fact]
 		public void when_connect_is_received_then_does_not_time_out()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -142,10 +142,10 @@ namespace Tests
 		[Fact]
 		public void when_first_packet_is_not_connect_then_fails()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -167,10 +167,10 @@ namespace Tests
 		[Fact]
 		public void when_second_connect_received_then_fails()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -196,14 +196,14 @@ namespace Tests
 		[Fact]
 		public void when_keep_alive_enabled_and_no_packet_received_then_times_out ()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = new Mock<IProtocolFlowProvider> ();
 
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<PacketType> ()))
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -231,14 +231,14 @@ namespace Tests
 		[Fact]
 		public void when_keep_alive_enabled_and_packet_received_then_does_not_time_out ()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = new Mock<IProtocolFlowProvider> ();
 
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<PacketType> ()))
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -265,14 +265,14 @@ namespace Tests
 		[Fact]
 		public void when_keep_alive_disabled_and_no_packet_received_then_does_not_time_out ()
 		{
-			var clientManager = new Mock<IClientManager> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = new Mock<IProtocolFlowProvider> ();
 
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<PacketType> ()))
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new PacketChannelAdapter (clientManager.Object, flowProvider.Object, configuration);
+			var adapter = new PacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();

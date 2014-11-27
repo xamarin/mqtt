@@ -17,6 +17,7 @@ namespace Hermes
 		readonly IChannel<IPacket> channel;
 		readonly IObservable<Unit> timeListener;
 		readonly ProtocolConfiguration configuration;
+		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
 		readonly IDictionary<ushort, IDisposable> packetTimers;
@@ -24,11 +25,14 @@ namespace Hermes
 		IDisposable keepAliveTimer;
 		IDisposable connectTimer;
 
-        public Client(IChannel<IPacket> channel, IObservable<Unit> timeListener, ProtocolConfiguration configuration, IRepository<PacketIdentifier> packetIdentifierRepository)
+        public Client(IChannel<IPacket> channel, IObservable<Unit> timeListener, ProtocolConfiguration configuration, 
+			IRepository<ClientSession> sessionRepository,
+			IRepository<PacketIdentifier> packetIdentifierRepository)
         {
 			this.channel = channel;
 			this.timeListener = timeListener;
 			this.configuration = configuration;
+			this.sessionRepository = sessionRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
 
 			this.packetTimers = new Dictionary<ushort, IDisposable> ();
@@ -77,6 +81,8 @@ namespace Hermes
 
 		public async Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false)
 		{
+			this.OpenClientSession (credentials.ClientId, cleanSession);
+
 			var connect = new Connect (credentials.ClientId, cleanSession) {
 				UserName = credentials.UserName,
 				Password = credentials.Password,
@@ -130,9 +136,37 @@ namespace Hermes
 
 		public async Task DisconnectAsync ()
 		{
+			this.CloseClientSession ();
+
 			var disconnect = new Disconnect ();
 
 			await this.SendPacket (disconnect);
+		}
+
+		private void OpenClientSession(string clientId, bool cleanSession)
+		{
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var sessionPresent = cleanSession ? false : session != null;
+
+			if (cleanSession && session != null) {
+				this.sessionRepository.Delete(session);
+				session = null;
+			}
+
+			if (session == null) {
+				session = new ClientSession { ClientId = clientId, Clean = cleanSession };
+
+				this.sessionRepository.Create (session);
+			}
+		}
+
+		private void CloseClientSession()
+		{
+			var session = this.sessionRepository.Get (s => s.ClientId == this.Id);
+
+			if (session.Clean) {
+				this.sessionRepository.Delete (session);
+			}
 		}
 
 		private async Task SendPacket(IPacket packet)

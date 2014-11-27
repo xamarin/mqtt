@@ -34,12 +34,6 @@ namespace Hermes.Flows
 
 			this.sessionRepository.Update(session);
 
-			//TODO: Check this requirements of the spec:
-			//If a Server deletes a Subscription:
-			//It MUST stop adding any new messages for delivery to the Client [MQTT-3.10.4-2].
-			//It MUST complete the delivery of any QoS 1 or QoS 2 messages which it has started to send to the Client [MQTT-3.10.4-3].
-			//It MAY continue to deliver any existing messages buffered for delivery to the Client.
-
 			await channel.SendAsync(new UnsubscribeAck (unsubscribe.PacketId));
 		}
 	}

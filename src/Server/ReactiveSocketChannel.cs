@@ -22,6 +22,8 @@ namespace Hermes
 			}, ex => this.receiver.OnError(ex), () => this.receiver.OnCompleted());
 		}
 
+		public bool IsConnected { get { return reactiveSocket != null && reactiveSocket.IsConnected; } }
+
 		public IObservable<byte> Receiver { get { return this.receiver; } }
 
 		public async Task SendAsync (byte[] message)

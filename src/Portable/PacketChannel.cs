@@ -25,16 +25,13 @@ namespace Hermes
 					var packet = await this.manager.GetPacketAsync(bytes);
 
 					this.receiver.OnNext (packet); 
-				} catch (ConnectProtocolException connEx) {
-					var errorAck = new ConnectAck (connEx.ReturnCode, existingSession: false);
-
-					this.SendAsync (errorAck).Wait();
-					this.receiver.OnError (connEx);
 				} catch (ProtocolException ex) {
 					this.receiver.OnError (ex);
 				}
 			}, onError: ex => this.receiver.OnError(ex), onCompleted: () => this.receiver.OnCompleted());
 		}
+
+		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }
 
 		public IObservable<IPacket> Receiver { get { return this.receiver; } }
 

@@ -51,7 +51,7 @@
   <ItemGroup>
     <Compile Include="BinaryChannelSpec.cs" />
     <Compile Include="ByteExtensionsSpec.cs" />
-    <Compile Include="ClientManagerSpec.cs" />
+    <Compile Include="ConnectionProviderSpec.cs" />
     <Compile Include="ClientSpec.cs" />
     <Compile Include="Flows\PublishSenderFlowSpec.cs" />
     <Compile Include="PacketChannelAdapterSpec.cs" />

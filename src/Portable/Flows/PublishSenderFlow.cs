@@ -14,11 +14,11 @@ namespace Hermes.Flows
 		
 		IDictionary<PacketType, Func<string, ushort, IChannel<IPacket>, IFlowPacket>> senderRules;
 
-		public PublishSenderFlow (IClientManager clientManager,
+		public PublishSenderFlow (IConnectionProvider connectionProvider,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
 			ProtocolConfiguration configuration)
-			: base(clientManager, sessionRepository, configuration)
+			: base(connectionProvider, sessionRepository, configuration)
 		{
 			this.packetIdentifierRepository = packetIdentifierRepository;
 
@@ -40,14 +40,21 @@ namespace Hermes.Flows
 			var ackPacket = senderRule (clientId, flowPacket.PacketId, channel);
 
 			if (ackPacket != default(IFlowPacket)) {
-				await this.SendAckAsync (clientId, ackPacket, channel);;
+				await this.SendAckAsync (clientId, ackPacket);;
 			}
 		}
 
-		public async Task SendPublishAsync(string clientId, Publish message, IChannel<IPacket> channel)
+		public async Task SendPublishAsync (string clientId, Publish message, bool isPending = false)
 		{
-			if (message.QualityOfService != QualityOfService.AtMostOnce) {
-				this.StorePendingMessage (message, clientId);
+			if (!this.connectionProvider.IsConnected (clientId)) {
+				this.SaveMessage (message, clientId);
+				return;
+			}
+
+			var channel = this.connectionProvider.GetConnection(clientId);
+
+			if (message.QualityOfService != QualityOfService.AtMostOnce && !isPending) {
+				this.SavePendingMessage (message, clientId);
 			}
 
 			if(message.QualityOfService == QualityOfService.AtLeastOnce)
@@ -63,13 +70,7 @@ namespace Hermes.Flows
 			this.senderRules = new Dictionary<PacketType, Func<string, ushort, IChannel<IPacket>, IFlowPacket>> ();
 
 			this.senderRules.Add (PacketType.PublishAck, (clientId, packetId, channel) => {
-				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-				var pendingMessage = session.PendingMessages.FirstOrDefault(p => p.PacketId.HasValue 
-					&& p.PacketId.Value == packetId);
-
-				session.PendingMessages.Remove (pendingMessage);
-
-				this.sessionRepository.Update (session);
+				this.RemovePendingMessage (clientId, packetId);
 
 				this.packetIdentifierRepository.Delete (i => i.Value == packetId);
 
@@ -77,26 +78,13 @@ namespace Hermes.Flows
 			});
 
 			this.senderRules.Add (PacketType.PublishReceived, (clientId, packetId, channel) => {
-				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-				var pendingMessage = session.PendingMessages.FirstOrDefault(p => p.PacketId.HasValue 
-					&& p.PacketId.Value == packetId);
-
-				session.PendingMessages.Remove (pendingMessage);
-
-				this.sessionRepository.Update (session);
+				this.RemovePendingMessage (clientId, packetId);
 
 				return new PublishRelease(packetId);
 			});
 
 			this.senderRules.Add (PacketType.PublishComplete, (clientId, packetId, channel) => {
-				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-				var pendingAcknowledgement = session.PendingAcknowledgements
-					.FirstOrDefault(u => u.Type == PacketType.PublishRelease &&
-						u.PacketId == packetId);
-
-				session.PendingAcknowledgements.Remove (pendingAcknowledgement);
-
-				this.sessionRepository.Update (session);
+				this.RemovePendingAcknowledgement (clientId, packetId, PacketType.PublishRelease);
 
 				this.packetIdentifierRepository.Delete (i => i.Value == packetId);
 
@@ -104,13 +92,15 @@ namespace Hermes.Flows
 			});
 		}
 
-		private void StorePendingMessage(Publish message, string clientId)
+		protected void SavePendingMessage(Publish message, string clientId)
 		{
 			if (message.QualityOfService == QualityOfService.AtMostOnce)
 				return;
 
 			var pendingMessage = new PendingMessage {
 				QualityOfService = message.QualityOfService,
+				Duplicated = message.Duplicated,
+				Retain = message.Retain,
 				Topic = message.Topic,
 				PacketId = message.PacketId,
 				Payload = message.Payload
@@ -122,7 +112,36 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 		}
 
-		private void MonitorAck<T>(Publish sentPublish, IChannel<IPacket> channel)
+		private void SaveMessage(Publish message, string clientId)
+		{
+			if (message.QualityOfService == QualityOfService.AtMostOnce)
+				return;
+
+			var savedMessage = new SavedMessage {
+				QualityOfService = message.QualityOfService,
+				Topic = message.Topic,
+				PacketId = message.PacketId,
+				Payload = message.Payload
+			};
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+			session.SavedMessages.Add (savedMessage);
+
+			this.sessionRepository.Update (session);
+		}
+
+		protected void RemovePendingMessage(string clientId, ushort packetId)
+		{
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var pendingMessage = session.PendingMessages.FirstOrDefault(p => p.PacketId.HasValue 
+				&& p.PacketId.Value == packetId);
+
+			session.PendingMessages.Remove (pendingMessage);
+
+			this.sessionRepository.Update (session);
+		}
+
+		protected void MonitorAck<T>(Publish sentPublish, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
 			channel.Receiver
@@ -133,6 +152,8 @@ namespace Hermes.Flows
 					var duplicatedPublish = new Publish (sentPublish.Topic, sentPublish.QualityOfService,
 						sentPublish.Retain, duplicated: true, packetId: sentPublish.PacketId);
 					
+					this.MonitorAck<T> (duplicatedPublish, channel);
+
 					await channel.SendAsync (duplicatedPublish);
 				});
 		}
