@@ -35,6 +35,28 @@ namespace Hermes
 
 					this.connectionProvider.AddConnection (clientId, protocolChannel);
 
+					var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+
+					protocolChannel.Receiver
+						.FirstAsync ()
+						.Timeout (packetDueTime)
+						.Subscribe(async packet => {
+							var connectAck = packet as ConnectAck;
+
+							if (connectAck == null) {
+								protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck);
+								return;
+							}
+
+							await this.DispatchPacketAsync (connectAck, clientId, protocolChannel);
+						}, ex => {
+							if (ex is TimeoutException) {
+								protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_NoConnectAckReceived, ex);
+							} else {
+								protocolChannel.NotifyError (ex);
+							}
+						});
+
 					if (this.configuration.KeepAliveSecs > 0) {
 						protocolChannel.Sender
 							.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
@@ -43,28 +65,6 @@ namespace Hermes
 
 								await protocolChannel.SendAsync(ping);
 							});
-					}
-				});
-
-			var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
-
-			protocolChannel.Receiver
-				.FirstAsync ()
-				.Timeout (packetDueTime)
-				.Subscribe(async packet => {
-					var connectAck = packet as ConnectAck;
-
-					if (connectAck == null) {
-						protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck);
-						return;
-					}
-
-					await this.DispatchPacketAsync (connectAck, clientId, protocolChannel);
-				}, ex => {
-					if (ex is TimeoutException) {
-						protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_NoConnectAckReceived, ex);
-					} else {
-						protocolChannel.NotifyError (ex);
 					}
 				});
 
