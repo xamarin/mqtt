@@ -48,6 +48,7 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IBufferedChannel.cs" />
     <Compile Include="IChannel.cs" />
+    <Compile Include="IPacketChannelAdapter.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
     <Compile Include="IConnectionProvider.cs" />
     <Compile Include="IPacketManager.cs" />

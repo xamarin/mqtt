@@ -6,11 +6,6 @@ namespace Hermes.Flows
 {
 	public class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
-		public ServerProtocolFlowProvider (IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
-			: this(new ConnectionProvider(), new TopicEvaluator(configuration), repositoryFactory, configuration)
-		{
-		}
-
 		public ServerProtocolFlowProvider (IConnectionProvider connectionProvider, ITopicEvaluator topicEvaluator,
 			IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
 			: base(connectionProvider, topicEvaluator, repositoryFactory, configuration)

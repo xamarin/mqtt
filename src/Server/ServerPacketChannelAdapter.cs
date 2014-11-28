@@ -7,18 +7,13 @@ using Hermes.Properties;
 
 namespace Hermes
 {
-	public class PacketChannelAdapter : IPacketChannelAdapter
+	public class ServerPacketChannelAdapter : IPacketChannelAdapter
 	{
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 
-		public PacketChannelAdapter (IProtocolFlowProvider flowProvider, ProtocolConfiguration configuration)
-			: this (new ConnectionProvider(), flowProvider, configuration)
-		{
-		}
-
-		public PacketChannelAdapter (IConnectionProvider connectionProvider, 
+		public ServerPacketChannelAdapter (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
 			ProtocolConfiguration configuration)
 		{
@@ -35,28 +30,28 @@ namespace Hermes
 
 			var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
 
-			channel.Receiver
+			protocolChannel.Receiver
 				.FirstAsync ()
 				.Timeout (packetDueTime)
 				.Subscribe(async packet => {
 					var connect = packet as Connect;
 
 					if (connect == null) {
-						protocolChannel.NotifyError (Resources.PacketChannelAdapter_FirstPacketMustBeConnect);
+						protocolChannel.NotifyError (Resources.ServerPacketChannelAdapter_FirstPacketMustBeConnect);
 						return;
 					}
 
 					clientId = connect.ClientId;
 					keepAlive = connect.KeepAlive;
-					this.connectionProvider.AddConnection (clientId, channel);
+					this.connectionProvider.AddConnection (clientId, protocolChannel);
 
 					await this.DispatchPacketAsync (connect, clientId, protocolChannel);
 
-					channel.Receiver
+					protocolChannel.Receiver
 						.Skip (1)
 						.Timeout (GetKeepAliveTolerance(keepAlive))
 						.Subscribe(_ => {}, ex => {
-							var message = string.Format (Resources.PacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
+							var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
 
 							this.NotifyError(message, ex, clientId, protocolChannel);
 						});
@@ -64,11 +59,11 @@ namespace Hermes
 					await this.HandleConnectionExceptionAsync (ex, protocolChannel);
 				});
 
-			channel.Receiver
+			protocolChannel.Receiver
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
-						this.NotifyError (Resources.PacketChannelAdapter_SecondConnectNotAllowed, clientId, protocolChannel);
+						this.NotifyError (Resources.ServerPacketChannelAdapter_SecondConnectNotAllowed, clientId, protocolChannel);
 						return;
 					}
 
@@ -85,7 +80,7 @@ namespace Hermes
 		private async Task HandleConnectionExceptionAsync(Exception ex, ProtocolChannel channel)
 		{
 			if (ex is TimeoutException) {
-				channel.NotifyError (Resources.PacketChannelAdapter_NoConnectReceived, ex);
+				channel.NotifyError (Resources.ServerPacketChannelAdapter_NoConnectReceived, ex);
 			} else if (ex is ConnectProtocolException) {
 				var connectEx = ex as ConnectProtocolException;
 				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
@@ -101,13 +96,14 @@ namespace Hermes
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, ProtocolChannel channel)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
-			
-            if (flow != null)
+
+			if (flow != null) {
 				try {
 					await flow.ExecuteAsync (clientId, packet);
 				} catch (Exception ex) {
 					this.NotifyError (ex, clientId, channel);
 				}
+			}
 		}
 
 		private static TimeSpan GetKeepAliveTolerance(int keepAlive)

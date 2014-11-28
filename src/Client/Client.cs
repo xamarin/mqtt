@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
+using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Storage;
 
@@ -11,59 +11,55 @@ namespace Hermes
 {
     public class Client : IClient
     {
+		static readonly ITracer tracer = Tracer.Get<Client> ();
+
 		readonly Subject<ApplicationMessage> receiver = new Subject<ApplicationMessage> ();
 		readonly Subject<IPacket> sender = new Subject<IPacket> ();
 
-		readonly IChannel<IPacket> channel;
-		readonly IObservable<Unit> timeListener;
-		readonly ProtocolConfiguration configuration;
+		readonly IChannel<IPacket> protocolChannel;
+		readonly IProtocolFlowProvider flowProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
+		readonly ProtocolConfiguration configuration;
 
-		readonly IDictionary<ushort, IDisposable> packetTimers;
-
-		IDisposable keepAliveTimer;
-		IDisposable connectTimer;
-
-        public Client(IChannel<IPacket> channel, IObservable<Unit> timeListener, ProtocolConfiguration configuration, 
-			IRepository<ClientSession> sessionRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository)
+        public Client(IBufferedChannel<byte> socket, 
+			IPacketChannelFactory channelFactory, 
+			IPacketChannelAdapter channelAdapter,
+			IProtocolFlowProvider flowProvider,
+			IRepositoryFactory repositoryFactory,
+			ProtocolConfiguration configuration)
         {
-			this.channel = channel;
-			this.timeListener = timeListener;
+			var channel = channelFactory.CreateChannel (socket);
+
+			this.protocolChannel = channelAdapter.Adapt (channel);
+			this.flowProvider = flowProvider;
+			this.sessionRepository = repositoryFactory.CreateRepository<ClientSession>();
+			this.packetIdentifierRepository = repositoryFactory.CreateRepository<PacketIdentifier>();
 			this.configuration = configuration;
-			this.sessionRepository = sessionRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
 
-			this.packetTimers = new Dictionary<ushort, IDisposable> ();
-
-			this.channel.Receiver.OfType<ConnectAck> ().Subscribe (connectAck => {
-				this.connectTimer.Dispose ();
-			});
-
-			this.channel.Receiver.OfType<Publish>().Subscribe (publish => {
+			this.protocolChannel.Receiver.OfType<Publish>().Subscribe (publish => {
 				var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
 				this.receiver.OnNext (message);
 			});
 
-			this.channel.Receiver.OfType<PublishAck>().Subscribe (publishAck => {
-				this.StopPacketTimer (publishAck.PacketId);
-			});
+			this.protocolChannel.Sender
+				.Subscribe (_ => { }, 
+					ex => { 
+						tracer.Error (ex);
+						this.CloseChannel ();
+					}, () => {
+						this.CloseChannel ();
+					});
 
-			this.channel.Receiver.OfType<PublishComplete>().Subscribe (publishComplete => {
-				this.StopPacketTimer (publishComplete.PacketId);
-			});
-
-			this.channel.Receiver.OfType<SubscribeAck>().Subscribe (subscribeAck => {
-				this.StopPacketTimer (subscribeAck.PacketId);
-			});
-
-			this.channel.Receiver.OfType<UnsubscribeAck>().Subscribe (unsubscribeAck => {
-				this.StopPacketTimer (unsubscribeAck.PacketId);
-			});
-
-			this.channel.Receiver.Subscribe (_ => { }, ex => { this.IsConnected = false; this.Id = null; });
+			this.protocolChannel.Receiver
+				.Subscribe (_ => { }, 
+					ex => { 
+						tracer.Error (ex);
+						this.CloseChannel ();
+					}, () => {
+						this.CloseChannel ();
+					});
         }
 
 		public string Id { get; private set; }
@@ -93,10 +89,6 @@ namespace Hermes
 			await this.SendPacket (connect);
 
 			this.Id = credentials.ClientId;
-
-			this.connectTimer = this.timeListener.Skip (this.configuration.WaitingTimeoutSecs).Take (1).Subscribe (_ => {
-				this.channel.Close ();
-			});
 		}
 
 		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)
@@ -105,8 +97,6 @@ namespace Hermes
 			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 			await this.SendPacket (subscribe);
-
-			this.packetTimers.Add (packetId, this.GetTimer());
 		}
 
 		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
@@ -117,11 +107,10 @@ namespace Hermes
 				Payload = message.Payload
 			};
 
-			await this.SendPacket (publish);
+			var flow = this.flowProvider.GetFlow (PacketType.Publish);
+			var senderFlow = flow as PublishSenderFlow;
 
-			if (packetId.HasValue) {
-				this.packetTimers.Add (packetId.Value, this.GetTimer());
-			}
+			await senderFlow.SendPublishAsync (this.Id, publish);
 		}
 
 		public async Task UnsubscribeAsync (params string[] topics)
@@ -130,8 +119,6 @@ namespace Hermes
 			var unsubscribe = new Unsubscribe(packetId, topics);
 
 			await this.SendPacket (unsubscribe);
-
-			this.packetTimers.Add (packetId, this.GetTimer());
 		}
 
 		public async Task DisconnectAsync ()
@@ -171,50 +158,15 @@ namespace Hermes
 
 		private async Task SendPacket(IPacket packet)
 		{
-			this.StopKeepAliveTimer ();
-
-			await this.channel.SendAsync (packet);
+			await this.protocolChannel.SendAsync (packet);
 			this.sender.OnNext (packet);
-
-			this.StartKeepAliveTimer ();
 		}
 
-		private IDisposable GetTimer()
+		private void CloseChannel ()
 		{
-			return this.timeListener.Skip (this.configuration.WaitingTimeoutSecs).Take (1).Subscribe (_ => {
-				this.channel.Close ();
-			});
-		}
-
-		private void StopPacketTimer(ushort packetId)
-		{
-			var timer = default (IDisposable);
-
-			if (!this.packetTimers.TryGetValue (packetId, out timer))
-				return;
-
-			timer.Dispose ();
-			this.packetTimers.Remove (packetId);
-		}
-
-		private void StartKeepAliveTimer()
-		{
-			if (configuration.KeepAliveSecs == 0)
-				return;
-
-			this.keepAliveTimer = this.timeListener.Skip (configuration.KeepAliveSecs).Take (1).Subscribe (async _ => {
-				var ping = new PingRequest ();
-
-				await this.channel.SendAsync(ping);
-			});
-		}
-
-		private void StopKeepAliveTimer()
-		{
-			if (this.keepAliveTimer == default(IDisposable))
-				return;
-
-			this.keepAliveTimer.Dispose ();
+			this.IsConnected = false; 
+			this.Id = null;
+			this.protocolChannel.Close ();
 		}
 	}
 }

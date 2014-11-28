@@ -61,38 +61,20 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The first packet sent by a Client must be a Connect. The connection will be closed..
+        ///   Looks up a localized string similar to The first packet received from the Server must be a ConnectAck packet. The connection will be closed..
         /// </summary>
-        internal static string ServerPacketChannelAdapter_FirstPacketMustBeConnect {
+        internal static string ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck {
             get {
-                return ResourceManager.GetString("ServerPacketChannelAdapter_FirstPacketMustBeConnect", resourceCulture);
+                return ResourceManager.GetString("ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The keep alive time of {0} seconds has been exceeded and no packet has been received. The connection will be closed..
+        ///   Looks up a localized string similar to No ConnectAck has been received since the connection was established. The connection will be closed..
         /// </summary>
-        internal static string ServerPacketChannelAdapter_KeepAliveTimeExceeded {
+        internal static string ClientPacketChannelAdapter_NoConnectAckReceived {
             get {
-                return ResourceManager.GetString("ServerPacketChannelAdapter_KeepAliveTimeExceeded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No connect packet has been received since the network connection was established. The connection will be closed..
-        /// </summary>
-        internal static string ServerPacketChannelAdapter_NoConnectReceived {
-            get {
-                return ResourceManager.GetString("ServerPacketChannelAdapter_NoConnectReceived", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Only one Connect packet is allowed. The connection will be closed..
-        /// </summary>
-        internal static string ServerPacketChannelAdapter_SecondConnectNotAllowed {
-            get {
-                return ResourceManager.GetString("ServerPacketChannelAdapter_SecondConnectNotAllowed", resourceCulture);
+                return ResourceManager.GetString("ClientPacketChannelAdapter_NoConnectAckReceived", resourceCulture);
             }
         }
     }

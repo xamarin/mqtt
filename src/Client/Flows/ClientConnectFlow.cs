@@ -24,7 +24,6 @@ namespace Hermes.Flows
 				return;
 
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-
 			var channel = this.connectionProvider.GetConnection (clientId);
 
 			await this.SendPendingMessagesAsync (session, channel);

@@ -21,13 +21,6 @@ namespace Hermes
 		readonly IList<IBufferedChannel<byte>> sockets = new List<IBufferedChannel<byte>> ();
 		readonly IList<string> activeClients = new List<string> ();
 
-		public Server (IObservable<ReactiveSocketChannel> socketProvider, IRepositoryFactory repositoryFactory, 
-			ProtocolConfiguration configuration)
-			: this(socketProvider, new PacketChannelFactory(new TopicEvaluator(configuration)), 
-				new PacketChannelAdapter(new ServerProtocolFlowProvider(repositoryFactory, configuration), configuration), configuration)
-		{
-		}
-
 		public Server (
 			IObservable<IBufferedChannel<byte>> socketProvider, 
 			IPacketChannelFactory channelFactory, 
@@ -41,7 +34,7 @@ namespace Hermes
 
 			this.socketProvider.Subscribe (
 				socket => this.ProcessSocket(socket), 
-				ex => { tracer.Error (ex.Message); }, 
+				ex => { tracer.Error (ex); }, 
 				() => {}	
 			);
 		}
@@ -89,7 +82,7 @@ namespace Hermes
 				if(packet is ConnectAck)
 					this.activeClients.Add (clientId);
 			}, ex => {
-				tracer.Error (ex.Message);
+				tracer.Error (ex);
 				this.CloseSocket (socket, clientId);
 			}, () => {
 				this.CloseSocket (socket, clientId);	
@@ -100,7 +93,7 @@ namespace Hermes
 			});
 
 			protocolChannel.Receiver.Subscribe (_ => {}, ex => { 
-				tracer.Error (ex.Message);
+				tracer.Error (ex);
 				this.CloseSocket (socket, clientId);
 			}, () => { 
 				this.CloseSocket (socket, clientId);
