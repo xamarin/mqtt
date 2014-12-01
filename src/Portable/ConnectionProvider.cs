@@ -8,13 +8,13 @@ namespace Hermes
 	public class ConnectionProvider : IConnectionProvider
 	{
 		//TODO: We should control concurrency in this list (ConcurrentDictionary is not available on PCL's)
-		static readonly IDictionary<string, IChannel<IPacket>> connections = new Dictionary<string, IChannel<IPacket>> ();
+		readonly IDictionary<string, IChannel<IPacket>> connections = new Dictionary<string, IChannel<IPacket>> ();
 
-		public int Connections { get { return connections.Count; } }
+		public int Connections { get { return this.connections.Count; } }
 
 		public bool IsConnected (string clientId)
 		{
-			var connection = connections.FirstOrDefault (c => c.Key == clientId);
+			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
 
 			return !connection.Equals(default(KeyValuePair<string, IChannel<IPacket>>))
 				&& connection.Value.IsConnected;
@@ -22,14 +22,14 @@ namespace Hermes
 
 		public void AddConnection(string clientId, IChannel<IPacket> connection)
         {
-			var existingConnection = connections.FirstOrDefault (c => c.Key == clientId);
+			var existingConnection = this.connections.FirstOrDefault (c => c.Key == clientId);
 
 			if (!existingConnection.Equals(default(KeyValuePair<string, IChannel<IPacket>>))) {
 				this.RemoveConnection (clientId);
 				existingConnection.Value.Close ();
 			}
 
-			connections.Add (clientId, connection);
+			this.connections.Add (clientId, connection);
         }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
@@ -41,7 +41,7 @@ namespace Hermes
 				throw new ProtocolException (error);
 			}
 
-			var clientConnection = connections.First (c => c.Key == clientId);
+			var clientConnection = this.connections.First (c => c.Key == clientId);
 
 			return clientConnection.Value;
 
@@ -56,7 +56,7 @@ namespace Hermes
 				throw new ProtocolException (error);
 			}
 
-			connections.Remove (clientId);
+			this.connections.Remove (clientId);
         }
 	}
 }
