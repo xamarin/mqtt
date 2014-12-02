@@ -18,8 +18,8 @@ namespace Hermes
 		{
 			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
 
-			return !connection.Equals(default(KeyValuePair<string, IChannel<IPacket>>));
-				//&& connection.Value.IsConnected;
+			return !connection.Equals(default(KeyValuePair<string, IChannel<IPacket>>))
+				&& connection.Value.IsConnected;
 		}
 
 		public void AddConnection(string clientId, IChannel<IPacket> connection)
@@ -37,7 +37,15 @@ namespace Hermes
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public IChannel<IPacket> GetConnection (string clientId)
 		{
-			if (!this.IsConnected(clientId)){
+			//if (!this.IsConnected(clientId)){
+			//	var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
+				
+			//	throw new ProtocolException (error);
+			//}
+
+			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
+
+			if (connection.Equals (default (KeyValuePair<string, IChannel<IPacket>>))) {
 				var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
 				
 				throw new ProtocolException (error);
@@ -52,11 +60,16 @@ namespace Hermes
 		/// <exception cref="ProtocolException">ProtocolException</exception>
         public void RemoveConnection(string clientId)
         {
-            if (!this.IsConnected(clientId)){
-				var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
+			//if (!this.IsConnected(clientId)){
+			//	var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
 				
-				throw new ProtocolException (error);
-			}
+			//	throw new ProtocolException (error);
+			//}
+
+			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
+
+			if (connection.Equals (default (KeyValuePair<string, IChannel<IPacket>>)))
+				return;
 
 			this.connections.Remove (clientId);
         }

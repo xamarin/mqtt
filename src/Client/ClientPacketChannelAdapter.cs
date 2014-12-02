@@ -49,6 +49,21 @@ namespace Hermes
 							}
 
 							await this.DispatchPacketAsync (connectAck, clientId, protocolChannel);
+
+							if (this.configuration.KeepAliveSecs > 0) {
+								protocolChannel.Receiver
+									.Skip (1)
+									.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
+									.Subscribe(_ => {}, async ex => {
+										if (ex is TimeoutException) {
+											var ping = new PingRequest ();
+
+											await protocolChannel.SendAsync(ping);
+										} else {
+											protocolChannel.NotifyError (ex);
+										}
+									});
+							}
 						}, ex => {
 							if (ex is TimeoutException) {
 								protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_NoConnectAckReceived, ex);
@@ -56,16 +71,6 @@ namespace Hermes
 								protocolChannel.NotifyError (ex);
 							}
 						});
-
-					if (this.configuration.KeepAliveSecs > 0) {
-						protocolChannel.Sender
-							.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
-							.Subscribe(_ => {}, async ex => {
-								var ping = new PingRequest ();
-
-								await protocolChannel.SendAsync(ping);
-							});
-					}
 				});
 
 			protocolChannel.Receiver

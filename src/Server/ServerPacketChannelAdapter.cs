@@ -46,15 +46,17 @@ namespace Hermes
 					this.connectionProvider.AddConnection (clientId, protocolChannel);
 
 					await this.DispatchPacketAsync (connect, clientId, protocolChannel);
+					
+					if (keepAlive > 0) {
+						protocolChannel.Receiver
+							.Skip (1)
+							.Timeout (GetKeepAliveTolerance(keepAlive))
+							.Subscribe(_ => {}, ex => {
+								var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
 
-					protocolChannel.Receiver
-						.Skip (1)
-						.Timeout (GetKeepAliveTolerance(keepAlive))
-						.Subscribe(_ => {}, ex => {
-							var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
-
-							this.NotifyError(message, ex, clientId, protocolChannel);
-						});
+								this.NotifyError(message, ex, clientId, protocolChannel);
+							});
+					}
 				}, async ex => {
 					await this.HandleConnectionExceptionAsync (ex, protocolChannel);
 				});
@@ -108,10 +110,7 @@ namespace Hermes
 
 		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
 		{
-			if (keepAlive == 0)
-				keepAlive = 2 ^ 32 - 2; //Max accepted value of TimeSpan
-			else
-				keepAlive = (int)(keepAlive * 1.5);
+			keepAlive = (int)(keepAlive * 1.5);
 
 			return new TimeSpan (0, 0, keepAlive);
 		}
