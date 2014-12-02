@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
+using Hermes.Storage;
 
 namespace Hermes
 {
@@ -11,14 +12,23 @@ namespace Hermes
 	{
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
+		readonly IPublishDispatcher publishDispatcher;
+		readonly IRepository<ConnectionWill> willRepository;
+		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly ProtocolConfiguration configuration;
 
 		public ServerPacketChannelAdapter (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
+			IPublishDispatcher publishDispatcher,
+			IRepository<ConnectionWill> willRepository,
+			IRepository<PacketIdentifier> packetIdentifierRepository,
 			ProtocolConfiguration configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
+			this.publishDispatcher = publishDispatcher;
+			this.willRepository = willRepository;
+			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.configuration = configuration;
 		}
 
@@ -51,7 +61,9 @@ namespace Hermes
 						protocolChannel.Receiver
 							.Skip (1)
 							.Timeout (GetKeepAliveTolerance(keepAlive))
-							.Subscribe(_ => {}, ex => {
+							.Subscribe(_ => {}, async ex => {
+								await this.SendWillMessageAsync (clientId);
+
 								var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
 
 								this.NotifyError(message, ex, clientId, protocolChannel);
@@ -65,12 +77,16 @@ namespace Hermes
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
+						await this.SendWillMessageAsync (clientId);
+
 						this.NotifyError (Resources.ServerPacketChannelAdapter_SecondConnectNotAllowed, clientId, protocolChannel);
 						return;
 					}
 
 					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
-				}, ex => {
+				}, async ex => {
+					await this.SendWillMessageAsync (clientId);
+
 					this.NotifyError (ex, clientId, protocolChannel);
 				}, () => {
 					this.connectionProvider.RemoveConnection (clientId);
@@ -103,6 +119,8 @@ namespace Hermes
 				try {
 					await flow.ExecuteAsync (clientId, packet, channel);
 				} catch (Exception ex) {
+					this.SendWillMessageAsync (clientId).Wait();
+
 					this.NotifyError (ex, clientId, channel);
 				}
 			}
@@ -131,6 +149,22 @@ namespace Hermes
 		{
 			this.RemoveClient (clientId);
 			channel.NotifyError (message, exception);
+		}
+
+		private async Task SendWillMessageAsync(string clientId)
+		{
+			var willMessage = this.willRepository.Get (w => w.ClientId == clientId);
+
+			if (willMessage == null)
+				return;
+
+			var will = new Publish(willMessage.Will.Topic, willMessage.Will.QualityOfService, 
+				willMessage.Will.Retain, duplicated: false) 
+			{
+				Payload = Protocol.Encoding.EncodeString(willMessage.Will.Message)
+			};
+
+			await this.publishDispatcher.DispatchAsync (will);
 		}
 
 		private void RemoveClient(string clientId)

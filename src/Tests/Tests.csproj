@@ -73,6 +73,7 @@
     <Compile Include="Formatters\ConnectFormatterSpec.cs" />
     <Compile Include="PacketChannelSpec.cs" />
     <Compile Include="ProtocolFlowProviderSpec.cs" />
+    <Compile Include="PublishDispatcherSpec.cs" />
     <Compile Include="ServerSpec.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Guard.cs" />
