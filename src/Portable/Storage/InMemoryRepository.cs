@@ -8,17 +8,17 @@ namespace Hermes.Storage
 	//TODO: Add exception handling to prevent any repository error
 	public class InMemoryRepository<T> : IRepository<T>
     {
-        readonly IList<T> elements;
+        static readonly IList<T> elements;
 
-        public InMemoryRepository()
-        {
-            this.elements = new List<T>();
-        }
+		static InMemoryRepository()
+		{
+			elements = new List<T>();
+		}
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public IQueryable<T> GetAll(Expression<Func<T, bool>> predicate = null)
         {
-            IEnumerable<T> result = this.elements;
+            IEnumerable<T> result = elements;
 
             if (predicate != null)
             {
@@ -31,7 +31,7 @@ namespace Hermes.Storage
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public T Get(Expression<Func<T, bool>> predicate)
         {
-			return this.elements.FirstOrDefault (predicate.Compile ());
+			return elements.FirstOrDefault (predicate.Compile ());
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
@@ -45,7 +45,7 @@ namespace Hermes.Storage
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public void Create(T element)
         {
-            this.elements.Add(element);
+            elements.Add(element);
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
@@ -58,7 +58,7 @@ namespace Hermes.Storage
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public void Delete(T element)
         {
-            this.elements.Remove(element);
+            elements.Remove(element);
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
