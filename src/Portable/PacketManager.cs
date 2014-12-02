@@ -27,7 +27,7 @@ namespace Hermes
 		public async Task<IPacket> GetPacketAsync (byte[] bytes)
 		{
 			var packetType = (PacketType)bytes.Byte (0).Bits (4);
-			IFormatter formatter;
+			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue(packetType, out formatter))
 				throw new ProtocolException (Resources.PacketManager_PacketUnknown);
@@ -42,7 +42,7 @@ namespace Hermes
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task<byte[]> GetBytesAsync (IPacket packet)
 		{
-			IFormatter formatter;
+			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue(packet.Type, out formatter))
 				throw new ProtocolException (Resources.PacketManager_PacketUnknown);

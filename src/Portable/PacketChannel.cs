@@ -39,11 +39,15 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket packet)
 		{
-			this.sender.OnNext (packet);
+			try {
+				var bytes = await this.manager.GetBytesAsync (packet);
 
-			var bytes = await this.manager.GetBytesAsync (packet);
+				this.sender.OnNext (packet);
 
-			await this.innerChannel.SendAsync (bytes);
+				await this.innerChannel.SendAsync (bytes);
+			} catch (ProtocolException ex) {
+				this.sender.OnError (ex);
+			}
 		}
 
 		public void Close ()

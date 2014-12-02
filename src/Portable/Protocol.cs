@@ -4,9 +4,9 @@
 	{
 		public const string Name = "MQTT";
 
-		public const int DefaultTlsPort = 8883;
+		public const int DefaultSecurePort = 8883;
 
-		public const int DefaultNonTlsPort = 1883;
+		public const int DefaultNonSecurePort = 1883;
 
 		public const int SupportedLevel = 4;
 

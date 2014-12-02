@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 
 namespace Hermes.Storage
 {
-	//TODO: Add exception handling to prevent any repository error
 	public class InMemoryRepository<T> : IRepository<T>
     {
         static readonly IList<T> elements;
@@ -37,9 +36,7 @@ namespace Hermes.Storage
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public bool Exist(Expression<Func<T, bool>> predicate)
         {
-            var existingElement = this.Get(predicate);
-
-            return existingElement != null;
+            return elements.Any (predicate.Compile ());
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>

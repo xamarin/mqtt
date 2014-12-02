@@ -115,19 +115,19 @@ namespace Hermes
 			return new TimeSpan (0, 0, keepAlive);
 		}
 
-		public void NotifyError(Exception exception, string clientId, ProtocolChannel channel)
+		private void NotifyError(Exception exception, string clientId, ProtocolChannel channel)
 		{
 			this.RemoveClient (clientId);
 			channel.NotifyError (exception);
 		}
 
-		public void NotifyError(string message, string clientId, ProtocolChannel channel)
+		private void NotifyError(string message, string clientId, ProtocolChannel channel)
 		{
 			this.RemoveClient (clientId);
 			channel.NotifyError (message);
 		}
 
-		public void NotifyError(string message, Exception exception, string clientId, ProtocolChannel channel)
+		private void NotifyError(string message, Exception exception, string clientId, ProtocolChannel channel)
 		{
 			this.RemoveClient (clientId);
 			channel.NotifyError (message, exception);

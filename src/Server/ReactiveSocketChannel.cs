@@ -24,6 +24,11 @@ namespace Hermes
 			this.reactiveSocket.Disconnected += (sender, args) => {
 				this.receiver.OnCompleted ();
 			};
+
+			this.reactiveSocket.Disposed += (sender, args) => {
+				this.subscription.Dispose ();
+				this.receiver.OnCompleted ();
+			};
 		}
 
 		public bool IsConnected { get { return reactiveSocket != null && reactiveSocket.IsConnected; } }

@@ -7,12 +7,17 @@ namespace Hermes.Flows
 	public class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
 		readonly IConnectionProvider connectionProvider;
+		readonly IPublishDispatcher publishDispatcher;
 
-		public ServerProtocolFlowProvider (IConnectionProvider connectionProvider, ITopicEvaluator topicEvaluator,
-			IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
+		public ServerProtocolFlowProvider (IConnectionProvider connectionProvider,
+ 			IPublishDispatcher publishDispatcher,
+			ITopicEvaluator topicEvaluator,
+			IRepositoryFactory repositoryFactory, 
+			ProtocolConfiguration configuration)
 			: base(topicEvaluator, repositoryFactory, configuration)
 		{
 			this.connectionProvider = connectionProvider;
+			this.publishDispatcher = publishDispatcher;
 		}
 
 		protected override IDictionary<ProtocolFlowType, IProtocolFlow> GetFlows ()
@@ -29,8 +34,8 @@ namespace Hermes.Flows
 			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (sessionRepository, willRepository, 
 				packetIdentifierRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
-			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (this.connectionProvider, topicEvaluator, 
-				retainedRepository, sessionRepository, packetIdentifierRepository, senderFlow, configuration));
+			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (topicEvaluator, 
+				retainedRepository, sessionRepository, packetIdentifierRepository, this.publishDispatcher, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository, 
 				packetIdentifierRepository, retainedRepository, senderFlow, configuration));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (sessionRepository, packetIdentifierRepository));

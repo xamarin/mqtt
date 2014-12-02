@@ -54,6 +54,7 @@
     <Compile Include="Flows\ServerConnectFlow.cs" />
     <Compile Include="Flows\ServerUnsubscribeFlow.cs" />
     <Compile Include="IConnectionProvider.cs" />
+    <Compile Include="IPublishDispatcher.cs" />
     <Compile Include="netfx\System\Guard.cs" />
     <Compile Include="netfx\System\Reactive\EventPattern.cs" />
     <Compile Include="netfx\System\Reactive\EventStream.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="netfx\System\Reactive\IEventStreamExtensions.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Reactive\Visibility.cs" />
+    <Compile Include="PublishDispatcher.cs" />
     <Compile Include="ServerPacketChannelAdapter.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
