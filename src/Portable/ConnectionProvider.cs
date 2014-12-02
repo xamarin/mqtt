@@ -2,6 +2,8 @@
 using System.Linq;
 using Hermes.Packets;
 using Hermes.Properties;
+using System.Reactive.Linq;
+using System.Reactive;
 
 namespace Hermes
 {
@@ -16,8 +18,8 @@ namespace Hermes
 		{
 			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
 
-			return !connection.Equals(default(KeyValuePair<string, IChannel<IPacket>>))
-				&& connection.Value.IsConnected;
+			return !connection.Equals(default(KeyValuePair<string, IChannel<IPacket>>));
+				//&& connection.Value.IsConnected;
 		}
 
 		public void AddConnection(string clientId, IChannel<IPacket> connection)

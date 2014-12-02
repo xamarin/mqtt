@@ -39,17 +39,17 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket packet)
 		{
+			this.sender.OnNext (packet);
+
 			var bytes = await this.manager.GetBytesAsync (packet);
 
 			await this.innerChannel.SendAsync (bytes);
-
-			this.sender.OnNext (packet);
 		}
 
 		public void Close ()
 		{
-			this.innerChannel.Close ();
 			this.subscription.Dispose ();
+			this.innerChannel.Close ();
 			this.receiver.OnCompleted ();
 			this.sender.OnCompleted ();
 		}

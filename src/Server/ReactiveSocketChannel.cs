@@ -20,6 +20,10 @@ namespace Hermes
 			this.subscription = this.reactiveSocket.Receiver.Subscribe(@byte => {
 				this.receiver.OnNext (@byte);
 			}, ex => this.receiver.OnError(ex), () => this.receiver.OnCompleted());
+
+			this.reactiveSocket.Disconnected += (sender, args) => {
+				this.receiver.OnCompleted ();
+			};
 		}
 
 		public bool IsConnected { get { return reactiveSocket != null && reactiveSocket.IsConnected; } }
@@ -33,8 +37,8 @@ namespace Hermes
 
 		public void Close ()
 		{
-			this.reactiveSocket.Dispose ();
 			this.subscription.Dispose ();
+			this.reactiveSocket.Dispose ();
 			this.receiver.OnCompleted ();
 		}
 	}

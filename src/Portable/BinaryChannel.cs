@@ -45,15 +45,15 @@ namespace Hermes
 
 		public async Task SendAsync (byte[] message)
 		{
-			await this.innerChannel.SendAsync (message);
-
 			this.sender.OnNext (message);
+
+			await this.innerChannel.SendAsync (message);
 		}
 
 		public void Close ()
 		{
-			this.innerChannel.Close ();
 			this.subscription.Dispose ();
+			this.innerChannel.Close ();
 			this.receiver.OnCompleted ();
 			this.sender.OnCompleted ();
 		}

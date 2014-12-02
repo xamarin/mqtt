@@ -24,9 +24,9 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket message)
 		{
-			await this.innerChannel.SendAsync (message);
-
 			this.sender.OnNext (message);
+
+			await this.innerChannel.SendAsync (message);
 		}
 
 		public void NotifyError(Exception exception)
