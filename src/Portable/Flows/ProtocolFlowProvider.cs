@@ -8,15 +8,14 @@ namespace Hermes.Flows
 	public abstract class ProtocolFlowProvider : IProtocolFlowProvider
 	{
 		protected readonly IDictionary<ProtocolFlowType, IProtocolFlow> flows;
-		protected readonly IConnectionProvider connectionProvider;
 		protected readonly ITopicEvaluator topicEvaluator;
 		protected readonly IRepositoryFactory repositoryFactory;
 		protected readonly ProtocolConfiguration configuration;
 
-		protected ProtocolFlowProvider (IConnectionProvider connectionProvider, ITopicEvaluator topicEvaluator,
-			IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
+		protected ProtocolFlowProvider (ITopicEvaluator topicEvaluator, 
+			IRepositoryFactory repositoryFactory, 
+			ProtocolConfiguration configuration)
 		{
-			this.connectionProvider = connectionProvider;
 			this.topicEvaluator = topicEvaluator;
 			this.repositoryFactory = repositoryFactory;
 			this.configuration = configuration;

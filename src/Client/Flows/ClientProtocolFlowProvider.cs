@@ -6,14 +6,8 @@ namespace Hermes.Flows
 {
 	public class ClientProtocolFlowProvider : ProtocolFlowProvider
 	{
-		public ClientProtocolFlowProvider (IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
-			: this(new ConnectionProvider(), new TopicEvaluator(configuration), repositoryFactory, configuration)
-		{
-		}
-
-		public ClientProtocolFlowProvider (IConnectionProvider connectionProvider, ITopicEvaluator topicEvaluator,
-			IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
-			: base(connectionProvider, topicEvaluator, repositoryFactory, configuration)
+		public ClientProtocolFlowProvider (ITopicEvaluator topicEvaluator, IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
+			: base(topicEvaluator, repositoryFactory, configuration)
 		{
 		}
 
@@ -25,15 +19,15 @@ namespace Hermes.Flows
 			var retainedRepository = repositoryFactory.CreateRepository<RetainedMessage> ();
 			var packetIdentifierRepository = repositoryFactory.CreateRepository<PacketIdentifier> ();
 
-			var senderFlow = new PublishSenderFlow (connectionProvider, sessionRepository, packetIdentifierRepository,configuration);
+			var senderFlow = new PublishSenderFlow (sessionRepository, packetIdentifierRepository,configuration);
 
-			flows.Add (ProtocolFlowType.Connect, new ClientConnectFlow (connectionProvider, sessionRepository, senderFlow));
+			flows.Add (ProtocolFlowType.Connect, new ClientConnectFlow (sessionRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
-			flows.Add (ProtocolFlowType.PublishReceiver, new PublishReceiverFlow (connectionProvider, topicEvaluator, 
+			flows.Add (ProtocolFlowType.PublishReceiver, new PublishReceiverFlow (topicEvaluator, 
 				retainedRepository, sessionRepository, packetIdentifierRepository, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ClientSubscribeFlow (packetIdentifierRepository));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ClientUnsubscribeFlow (packetIdentifierRepository));
-			flows.Add (ProtocolFlowType.Ping, new PingFlow (connectionProvider));
+			flows.Add (ProtocolFlowType.Ping, new PingFlow ());
 
 			return flows;
 		}

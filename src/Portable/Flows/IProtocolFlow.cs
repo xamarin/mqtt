@@ -7,6 +7,6 @@ namespace Hermes.Flows
 	{
 		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-		Task ExecuteAsync (string clientId, IPacket input);
+		Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
 	}
 }

@@ -6,6 +6,6 @@ namespace Hermes.Flows
 {
 	public interface IPublishFlow : IProtocolFlow
 	{
-		Task SendAckAsync (string clientId, IFlowPacket ack, PendingMessageStatus status = PendingMessageStatus.PendingToSend);
+		Task SendAckAsync (string clientId, IFlowPacket ack, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend);
 	}
 }

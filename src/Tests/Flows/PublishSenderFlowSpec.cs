@@ -34,8 +34,7 @@ namespace Tests.Flows
 
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishSenderFlow (connectionProvider.Object, 
-				sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -46,16 +45,14 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			connectionProvider.Setup (m => m.GetConnection (It.IsAny<string> ())).Returns (channel.Object);
 
-			await flow.SendPublishAsync (clientId, publish);
+			await flow.SendPublishAsync (clientId, publish, channel.Object);
 
 			Thread.Sleep (2000);
 
-			connectionProvider.Verify (m => m.IsConnected (It.Is<string> (s => s == clientId)));
-			connectionProvider.Verify (m => m.GetConnection (It.IsAny<string> ()));
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish  && 
 				((Publish)p).Topic == topic && 
 				((Publish)p).QualityOfService == QualityOfService.AtLeastOnce &&
@@ -79,8 +76,7 @@ namespace Tests.Flows
 
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishSenderFlow (connectionProvider.Object, 
-				sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -91,16 +87,14 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			connectionProvider.Setup (m => m.GetConnection (It.IsAny<string> ())).Returns (channel.Object);
 
-			await flow.SendPublishAsync (clientId, publish);
+			await flow.SendPublishAsync (clientId, publish, channel.Object);
 
 			Thread.Sleep (2000);
 
-			connectionProvider.Verify (m => m.IsConnected (It.Is<string> (s => s == clientId)));
-			connectionProvider.Verify (m => m.GetConnection (It.IsAny<string> ()));
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish  && 
 				((Publish)p).Topic == topic && 
 				((Publish)p).QualityOfService == QualityOfService.ExactlyOnce &&
@@ -116,8 +110,6 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
-
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
 				.Returns (new ClientSession {
 					ClientId = clientId,
@@ -126,19 +118,19 @@ namespace Tests.Flows
 
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishSenderFlow (connectionProvider.Object, 
-				sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publishReceived);
+			await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
 
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishRelease 
 				&& (p as PublishRelease).PacketId == packetId)), Times.Once);
@@ -153,7 +145,6 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
 				.Returns (new ClientSession {
 					ClientId = clientId,
@@ -162,19 +153,19 @@ namespace Tests.Flows
 
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishSenderFlow (connectionProvider.Object, 
-				sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publishReceived);
+			await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
 
 			Thread.Sleep (2000);
 
@@ -191,7 +182,6 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
 				.Returns (new ClientSession {
 					ClientId = clientId,
@@ -200,8 +190,7 @@ namespace Tests.Flows
 
 			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-			var flow = new PublishSenderFlow (connectionProvider.Object, 
-				sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);
@@ -214,6 +203,7 @@ namespace Tests.Flows
 				receiver.OnNext (new PublishComplete (release.PacketId));
 			});
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 			channel.Setup (c => c.Sender).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
@@ -222,7 +212,7 @@ namespace Tests.Flows
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publishReceived);
+			await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
 
 			Thread.Sleep (2000);
 
@@ -262,10 +252,9 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new PublishSenderFlow (connectionProvider.Object, 
-				sessionRepository.Object, packetIdentifierRepository.Object, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository.Object, configuration);
 
-			await flow.ExecuteAsync (clientId, publishAck);
+			await flow.ExecuteAsync (clientId, publishAck, channel.Object);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket>()), Times.Never);
@@ -303,10 +292,9 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new PublishSenderFlow (connectionProvider.Object, sessionRepository.Object, 
-				packetIdentifierRepository.Object, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository.Object, configuration);
 
-			await flow.ExecuteAsync (clientId, publishComplete);
+			await flow.ExecuteAsync (clientId, publishComplete, channel.Object);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket>()), Times.Never);

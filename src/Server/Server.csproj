@@ -41,6 +41,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ConnectionProvider.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="Flows\DisconnectFlow.cs" />
     <Compile Include="Flows\ServerConnectFlow.cs" />
     <Compile Include="Flows\ServerUnsubscribeFlow.cs" />
+    <Compile Include="IConnectionProvider.cs" />
     <Compile Include="netfx\System\Guard.cs" />
     <Compile Include="netfx\System\Reactive\EventPattern.cs" />
     <Compile Include="netfx\System\Reactive\EventStream.cs" />

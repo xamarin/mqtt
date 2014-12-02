@@ -93,15 +93,15 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == subscribedClientId1), It.Is<Publish> (p => p.Topic == topic && 
 				p.QualityOfService == requestedQoS1 && 
-				p.PacketId.HasValue), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
+				p.PacketId.HasValue), It.Is<IChannel<IPacket>>(c => c == client1Channel.Object), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == subscribedClientId2), It.Is<Publish> (p => p.Topic == topic && 
 				p.QualityOfService == requestedQoS2 && 
-				p.PacketId.HasValue), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
+				p.PacketId.HasValue), It.Is<IChannel<IPacket>>(c => c == client2Channel.Object), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
@@ -145,7 +145,6 @@ namespace Tests.Flows
 
 			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == subscribedClientId))).Returns (clientChannel.Object);
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -158,16 +157,17 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == subscribedClientId), It.Is<Publish> (p => p.Topic == topic && 
 				p.QualityOfService == requestedQoS && 
-				p.PacketId.HasValue), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
+				p.PacketId.HasValue), It.Is<IChannel<IPacket>>(c => c == clientChannel.Object), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishAck && 
 				(p as PublishAck).PacketId == packetId.Value)));
 		}
@@ -212,7 +212,6 @@ namespace Tests.Flows
 
 			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == subscribedClientId))).Returns (clientChannel.Object);
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -225,15 +224,16 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == subscribedClientId), It.Is<Publish> (p => p.Topic == topic && 
 				p.QualityOfService == requestedQoS && 
-				p.PacketId.HasValue), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
+				p.PacketId.HasValue), It.Is<IChannel<IPacket>>(c => c == clientChannel.Object), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 			retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishReceived && (p as PublishReceived).PacketId == packetId.Value)));
 		}
@@ -281,7 +281,6 @@ namespace Tests.Flows
 
 			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == subscribedClientId))).Returns (clientChannel.Object);
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -294,11 +293,12 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			Thread.Sleep (2000);
 
@@ -349,7 +349,6 @@ namespace Tests.Flows
 
 			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == subscribedClientId))).Returns (clientChannel.Object);
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -367,6 +366,7 @@ namespace Tests.Flows
 				receiver.OnNext (new PublishRelease (received.PacketId));
 			});
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 			channel.Setup (c => c.Sender).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
@@ -375,7 +375,7 @@ namespace Tests.Flows
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			Thread.Sleep (2000);
 
@@ -429,7 +429,7 @@ namespace Tests.Flows
 			var flow = new ServerPublishReceiverFlow (connectionProvider.Object, topicEvaluator.Object, retainedRepository.Object, 
 				sessionRepository.Object, packetIdentifierRepository, senderFlow, configuration);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
@@ -483,7 +483,7 @@ namespace Tests.Flows
 			var flow = new ServerPublishReceiverFlow (connectionProvider.Object, topicEvaluator.Object, retainedRepository.Object, 
 				sessionRepository.Object, packetIdentifierRepository, senderFlow, configuration);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			retainedRepository.Verify (r => r.Delete (It.Is<RetainedMessage> (m => m == existingRetainedMessage)));
 			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
@@ -530,7 +530,6 @@ namespace Tests.Flows
 
 			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == subscribedClientId))).Returns (clientChannel.Object);
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
@@ -543,15 +542,16 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == subscribedClientId), It.Is<Publish> (p => p.Topic == topic && 
 				p.QualityOfService == configuration.MaximumQualityOfService && 
-				p.PacketId.HasValue), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
+				p.PacketId.HasValue), It.Is<IChannel<IPacket>>(c => c == clientChannel.Object), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 			retainedRepository.Verify(r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishAck && (p as PublishAck).PacketId == packetId.Value)));
 		}
@@ -600,7 +600,7 @@ namespace Tests.Flows
 			var flow = new ServerPublishReceiverFlow (connectionProvider.Object, topicEvaluator.Object, retainedRepository,
 				sessionRepository.Object, packetIdentifierRepository, senderFlow, configuration);
 
-			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish).Wait());
+			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
 			Assert.True (ex.InnerException is ProtocolException);
 		}
@@ -672,12 +672,13 @@ namespace Tests.Flows
 
 			connectionProvider.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			Thread.Sleep (2000);
 
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == subscribedClientId), 
-				It.IsAny<Publish>(), It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)), Times.Once);
+				It.IsAny<Publish>(), It.Is<IChannel<IPacket>>(c => c == clientChannel.Object), 
+				It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)), Times.Once);
 			clientChannel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish)), Times.Never);
 		}
 
@@ -750,11 +751,12 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publish);
+			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			Thread.Sleep (2000);
 
 			senderFlow.Verify (f => f.SendPublishAsync (It.IsAny<string>(), It.IsAny<Publish>(), 
+				It.Is<IChannel<IPacket>>(c => c == clientChannel.Object),
 				It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)), Times.Once);
 			clientChannel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish)), Times.Never);
 		}
@@ -770,7 +772,6 @@ namespace Tests.Flows
 			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			connectionProvider.Setup (m => m.IsConnected (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
 				.Returns (new ClientSession {
 					ClientId = clientId,
@@ -788,9 +789,11 @@ namespace Tests.Flows
 
 			var channel = new Mock<IChannel<IPacket>> ();
 
+			channel.Setup (c => c.IsConnected).Returns (true);
+
 			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
-			await flow.ExecuteAsync (clientId, publishRelease);
+			await flow.ExecuteAsync (clientId, publishRelease, channel.Object);
 
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishComplete && (p as PublishComplete).PacketId == packetId)));
 		}

@@ -12,23 +12,20 @@ namespace Hermes.Flows
 		protected readonly IRepository<RetainedMessage> retainedRepository;
 		protected readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
-		public PublishReceiverFlow (IConnectionProvider connectionProvider, 
-			ITopicEvaluator topicEvaluator,
+		public PublishReceiverFlow (ITopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
 			ProtocolConfiguration configuration)
-			: base(connectionProvider, sessionRepository, configuration)
+			: base(sessionRepository, configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
-		public override async Task ExecuteAsync (string clientId, IPacket input)
+		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			var channel = this.connectionProvider.GetConnection (clientId);
-
 			if (input.Type == PacketType.Publish) {
 				var publish = input as Publish;
 
@@ -44,7 +41,7 @@ namespace Hermes.Flows
 		{
 			this.RemovePendingAcknowledgement (clientId, publishRelease.PacketId, PacketType.PublishReceived);
 
-			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId));
+			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId), channel);
 		}
 
 		private async Task HandlePublishAsync(string clientId, Publish publish, IChannel<IPacket> channel)
@@ -79,9 +76,9 @@ namespace Hermes.Flows
 			if (qos == QualityOfService.AtMostOnce) {
 				return;
 			} else if (qos == QualityOfService.AtLeastOnce) {
-				await this.SendAckAsync (clientId, new PublishAck (publish.PacketId.Value));
+				await this.SendAckAsync (clientId, new PublishAck (publish.PacketId.Value), channel);
 			} else {
-				await this.SendAckAsync (clientId, new PublishReceived (publish.PacketId.Value));
+				await this.SendAckAsync (clientId, new PublishReceived (publish.PacketId.Value), channel);
 			}
 		}
 	}

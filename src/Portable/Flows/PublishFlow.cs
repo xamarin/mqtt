@@ -9,31 +9,26 @@ namespace Hermes.Flows
 {
 	public abstract class PublishFlow : IPublishFlow
 	{
-		protected readonly IConnectionProvider connectionProvider;
 		protected readonly IRepository<ClientSession> sessionRepository;
 		protected readonly ProtocolConfiguration configuration;
 
-		protected PublishFlow (IConnectionProvider connectionProvider, 
-			IRepository<ClientSession> sessionRepository, 
+		protected PublishFlow (IRepository<ClientSession> sessionRepository, 
 			ProtocolConfiguration configuration)
 		{
-			this.connectionProvider = connectionProvider;
 			this.sessionRepository = sessionRepository;
 			this.configuration = configuration;
 		}
 
-		public abstract Task ExecuteAsync (string clientId, IPacket input);
+		public abstract Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
 
-		public async Task SendAckAsync (string clientId, IFlowPacket ack, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
+		public async Task SendAckAsync (string clientId, IFlowPacket ack, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
 			if((ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease) && 
 				status == PendingMessageStatus.PendingToSend)
 				this.SavePendingAcknowledgement (ack, clientId);
 
-			if (!this.connectionProvider.IsConnected (clientId))
+			if (!channel.IsConnected)
 				return;
-
-			var channel = this.connectionProvider.GetConnection (clientId);
 
 			if(ack.Type == PacketType.PublishReceived)
 				this.MonitorAck<PublishRelease> (ack, channel);

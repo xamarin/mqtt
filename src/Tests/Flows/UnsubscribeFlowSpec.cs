@@ -51,9 +51,9 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerUnsubscribeFlow (connectionProvider.Object, sessionRepository.Object, packetIdentifierRepository);
+			var flow = new ServerUnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
 
-			await flow.ExecuteAsync(clientId, unsubscribe);
+			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
 			Assert.NotNull (response);
 			Assert.Equal (0, updatedSession.Subscriptions.Count);
@@ -95,9 +95,9 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerUnsubscribeFlow (connectionProvider.Object, sessionRepository.Object, packetIdentifierRepository);
+			var flow = new ServerUnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
 
-			await flow.ExecuteAsync(clientId, unsubscribe);
+			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
 			Assert.NotNull (response);
@@ -127,7 +127,7 @@ namespace Tests.Flows
 
 			var flow = new ClientUnsubscribeFlow (packetIdentifierRepository.Object);
 
-			await flow.ExecuteAsync (clientId, unsubscribeAck);
+			await flow.ExecuteAsync (clientId, unsubscribeAck, channel.Object);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			Assert.Null (response);

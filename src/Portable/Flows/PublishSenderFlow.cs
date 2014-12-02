@@ -12,22 +12,21 @@ namespace Hermes.Flows
 	{
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		
-		IDictionary<PacketType, Func<string, ushort, IChannel<IPacket>, IFlowPacket>> senderRules;
+		IDictionary<PacketType, Func<string, ushort, IFlowPacket>> senderRules;
 
-		public PublishSenderFlow (IConnectionProvider connectionProvider,
-			IRepository<ClientSession> sessionRepository,
+		public PublishSenderFlow (IRepository<ClientSession> sessionRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
 			ProtocolConfiguration configuration)
-			: base(connectionProvider, sessionRepository, configuration)
+			: base(sessionRepository, configuration)
 		{
 			this.packetIdentifierRepository = packetIdentifierRepository;
 
 			this.DefineSenderRules ();
 		}
 
-		public override async Task ExecuteAsync (string clientId, IPacket input)
+		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			var senderRule = default (Func<string, ushort, IChannel<IPacket>, IFlowPacket>);
+			var senderRule = default (Func<string, ushort, IFlowPacket>);
 
 			if (!this.senderRules.TryGetValue (input.Type, out senderRule))
 				return;
@@ -37,22 +36,19 @@ namespace Hermes.Flows
 			if (flowPacket == null)
 				return;
 
-			var channel = this.connectionProvider.GetConnection (clientId);
-			var ackPacket = senderRule (clientId, flowPacket.PacketId, channel);
+			var ackPacket = senderRule (clientId, flowPacket.PacketId);
 
 			if (ackPacket != default(IFlowPacket)) {
-				await this.SendAckAsync (clientId, ackPacket);;
+				await this.SendAckAsync (clientId, ackPacket, channel);
 			}
 		}
 
-		public async Task SendPublishAsync (string clientId, Publish message, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
+		public async Task SendPublishAsync (string clientId, Publish message, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
-			if (!this.connectionProvider.IsConnected (clientId)) {
+			if (!channel.IsConnected) {
 				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToSend);
 				return;
 			}
-
-			var channel = this.connectionProvider.GetConnection(clientId);
 
 			if (message.QualityOfService != QualityOfService.AtMostOnce && status == PendingMessageStatus.PendingToSend) {
 				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToAcknowledge);
@@ -68,9 +64,9 @@ namespace Hermes.Flows
 
 		private void DefineSenderRules ()
 		{
-			this.senderRules = new Dictionary<PacketType, Func<string, ushort, IChannel<IPacket>, IFlowPacket>> ();
+			this.senderRules = new Dictionary<PacketType, Func<string, ushort, IFlowPacket>> ();
 
-			this.senderRules.Add (PacketType.PublishAck, (clientId, packetId, channel) => {
+			this.senderRules.Add (PacketType.PublishAck, (clientId, packetId) => {
 				this.RemovePendingMessage (clientId, packetId);
 
 				this.packetIdentifierRepository.Delete (i => i.Value == packetId);
@@ -78,13 +74,13 @@ namespace Hermes.Flows
 				return default (IFlowPacket);
 			});
 
-			this.senderRules.Add (PacketType.PublishReceived, (clientId, packetId, channel) => {
+			this.senderRules.Add (PacketType.PublishReceived, (clientId, packetId) => {
 				this.RemovePendingMessage (clientId, packetId);
 
 				return new PublishRelease(packetId);
 			});
 
-			this.senderRules.Add (PacketType.PublishComplete, (clientId, packetId, channel) => {
+			this.senderRules.Add (PacketType.PublishComplete, (clientId, packetId) => {
 				this.RemovePendingAcknowledgement (clientId, packetId, PacketType.PublishRelease);
 
 				this.packetIdentifierRepository.Delete (i => i.Value == packetId);

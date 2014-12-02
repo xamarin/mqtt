@@ -20,7 +20,6 @@
     </Compile>
     <Compile Include="BinaryChannel.cs" />
     <Compile Include="ByteExtensions.cs" />
-    <Compile Include="ConnectionProvider.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Flows\IPublishSenderFlow.cs" />
@@ -48,7 +47,6 @@
     <Compile Include="IChannel.cs" />
     <Compile Include="IPacketChannelAdapter.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
-    <Compile Include="IConnectionProvider.cs" />
     <Compile Include="IPacketManager.cs" />
     <Compile Include="ITopicEvaluator.cs" />
     <Compile Include="PacketChannel.cs" />

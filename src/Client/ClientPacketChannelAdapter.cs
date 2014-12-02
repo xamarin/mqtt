@@ -9,15 +9,11 @@ namespace Hermes
 {
 	public class ClientPacketChannelAdapter : IPacketChannelAdapter
 	{
-		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 
-		public ClientPacketChannelAdapter (IConnectionProvider connectionProvider, 
-			IProtocolFlowProvider flowProvider,
-			ProtocolConfiguration configuration)
+		public ClientPacketChannelAdapter (IProtocolFlowProvider flowProvider, ProtocolConfiguration configuration)
 		{
-			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 		}
@@ -32,8 +28,6 @@ namespace Hermes
 				.FirstAsync ()
 				.Subscribe (connect => {
 					clientId = connect.ClientId;
-
-					this.connectionProvider.AddConnection (clientId, protocolChannel);
 
 					var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
 
@@ -90,7 +84,7 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					await flow.ExecuteAsync (clientId, packet);
+					await flow.ExecuteAsync (clientId, packet, channel);
 				} catch (Exception ex) {
 					channel.NotifyError (ex);
 				}

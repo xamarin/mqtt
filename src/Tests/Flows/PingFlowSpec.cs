@@ -21,15 +21,9 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var connectionProvider = new Mock<IConnectionProvider> ();
+			var flow = new PingFlow ();
 
-			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
-
-			var flow = new PingFlow (connectionProvider.Object);
-
-			await flow.ExecuteAsync (clientId, new PingRequest());
+			await flow.ExecuteAsync (clientId, new PingRequest(), channel.Object);
 
 			var pingResponse = sentPacket as PingResponse;
 

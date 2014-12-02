@@ -37,6 +37,10 @@ namespace Hermes
 			this.packetIdentifierRepository = repositoryFactory.CreateRepository<PacketIdentifier>();
 			this.configuration = configuration;
 
+			this.protocolChannel.Receiver.OfType<ConnectAck> ().Subscribe (connectAck => {
+				this.IsConnected = true;
+			});
+
 			this.protocolChannel.Receiver.OfType<Publish>().Subscribe (publish => {
 				var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
@@ -110,7 +114,7 @@ namespace Hermes
 			var flow = this.flowProvider.GetFlow (PacketType.Publish);
 			var senderFlow = flow as PublishSenderFlow;
 
-			await senderFlow.SendPublishAsync (this.Id, publish);
+			await senderFlow.SendPublishAsync (this.Id, publish, this.protocolChannel);
 		}
 
 		public async Task UnsubscribeAsync (params string[] topics)
@@ -128,6 +132,8 @@ namespace Hermes
 			var disconnect = new Disconnect ();
 
 			await this.SendPacket (disconnect);
+
+			this.IsConnected = false;
 		}
 
 		private void OpenClientSession(string clientId, bool cleanSession)

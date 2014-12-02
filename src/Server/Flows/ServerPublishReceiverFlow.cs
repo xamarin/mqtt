@@ -7,6 +7,7 @@ namespace Hermes.Flows
 {
 	public class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
+		readonly IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
 
 		public ServerPublishReceiverFlow (IConnectionProvider connectionProvider, 
@@ -16,8 +17,9 @@ namespace Hermes.Flows
 			IRepository<PacketIdentifier> packetIdentifierRepository,
 			IPublishSenderFlow senderFlow,
 			ProtocolConfiguration configuration)
-			: base(connectionProvider, topicEvaluator, retainedRepository, sessionRepository, packetIdentifierRepository, configuration)
+			: base(topicEvaluator, retainedRepository, sessionRepository, packetIdentifierRepository, configuration)
 		{
+			this.connectionProvider = connectionProvider;
 			this.senderFlow = senderFlow;
 		}
 
@@ -62,8 +64,9 @@ namespace Hermes.Flows
 			var subscriptionPublish = new Publish (receivedPublish.Topic, requestedQos, retain: false, duplicated: false, packetId: packetId) {
 				Payload = receivedPublish.Payload
 			};
+			var clientChannel = this.connectionProvider.GetConnection (subscription.ClientId);
 
-			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish);
+			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, clientChannel);
 		}
 	}
 }

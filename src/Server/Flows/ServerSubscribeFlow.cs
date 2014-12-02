@@ -10,7 +10,6 @@ namespace Hermes.Flows
 	public class ServerSubscribeFlow : IProtocolFlow
 	{
 		readonly ITopicEvaluator topicEvaluator;
-		readonly IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
@@ -18,7 +17,6 @@ namespace Hermes.Flows
 		readonly ProtocolConfiguration configuration;
 
 		public ServerSubscribeFlow (ITopicEvaluator topicEvaluator, 
-			IConnectionProvider connectionProvider,
 			IRepository<ClientSession> sessionRepository, 
 			IRepository<PacketIdentifier> packetIdentifierRepository, 
 			IRepository<RetainedMessage> retainedRepository,
@@ -26,7 +24,6 @@ namespace Hermes.Flows
 			ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
-			this.connectionProvider = connectionProvider;
 			this.sessionRepository = sessionRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.retainedRepository = retainedRepository;
@@ -34,7 +31,7 @@ namespace Hermes.Flows
 			this.configuration = configuration;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type != PacketType.Subscribe)
 				return;
@@ -42,8 +39,6 @@ namespace Hermes.Flows
 			var subscribe = input as Subscribe;
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var returnCodes = new List<SubscribeReturnCode> ();
-
-			var channel = this.connectionProvider.GetConnection (clientId);
 
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
@@ -95,7 +90,7 @@ namespace Hermes.Flows
 						Payload = retainedMessage.Payload
 					};
 
-					await this.senderFlow.SendPublishAsync(subscription.ClientId, publish);
+					await this.senderFlow.SendPublishAsync(subscription.ClientId, publish, channel);
 				}
 			}
 		}

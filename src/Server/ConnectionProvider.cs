@@ -2,8 +2,6 @@
 using System.Linq;
 using Hermes.Packets;
 using Hermes.Properties;
-using System.Reactive.Linq;
-using System.Reactive;
 
 namespace Hermes
 {
@@ -13,14 +11,6 @@ namespace Hermes
 		readonly IDictionary<string, IChannel<IPacket>> connections = new Dictionary<string, IChannel<IPacket>> ();
 
 		public int Connections { get { return this.connections.Count; } }
-
-		public bool IsConnected (string clientId)
-		{
-			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
-
-			return !connection.Equals(default(KeyValuePair<string, IChannel<IPacket>>))
-				&& connection.Value.IsConnected;
-		}
 
 		public void AddConnection(string clientId, IChannel<IPacket> connection)
         {
@@ -37,16 +27,10 @@ namespace Hermes
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public IChannel<IPacket> GetConnection (string clientId)
 		{
-			//if (!this.IsConnected(clientId)){
-			//	var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
-				
-			//	throw new ProtocolException (error);
-			//}
-
 			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
 
 			if (connection.Equals (default (KeyValuePair<string, IChannel<IPacket>>))) {
-				var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
+				var error = string.Format (Resources.ConnectionProvider_ClientIdNotFound, clientId);
 				
 				throw new ProtocolException (error);
 			}
@@ -60,16 +44,13 @@ namespace Hermes
 		/// <exception cref="ProtocolException">ProtocolException</exception>
         public void RemoveConnection(string clientId)
         {
-			//if (!this.IsConnected(clientId)){
-			//	var error = string.Format (Resources.ClientManager_ClientIdNotFound, clientId);
-				
-			//	throw new ProtocolException (error);
-			//}
-
 			var connection = this.connections.FirstOrDefault (c => c.Key == clientId);
 
-			if (connection.Equals (default (KeyValuePair<string, IChannel<IPacket>>)))
-				return;
+			if (connection.Equals (default (KeyValuePair<string, IChannel<IPacket>>))){
+				var error = string.Format (Resources.ConnectionProvider_ClientIdNotFound, clientId);
+				
+				throw new ProtocolException (error);
+			}
 
 			this.connections.Remove (clientId);
         }

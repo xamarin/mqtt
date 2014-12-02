@@ -19,7 +19,7 @@ namespace Hermes.Flows
 			this.willRepository = willRepository;
 		}
 
-		public Task ExecuteAsync (string clientId, IPacket input)
+		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type != PacketType.Disconnect)
 				return Task.Delay(0);
@@ -34,8 +34,6 @@ namespace Hermes.Flows
 				if (session.Clean) {
 					this.sessionRepository.Delete (session);
 				}
-
-				var channel = this.connectionProvider.GetConnection (clientId);
 
 				channel.Close ();
 				this.connectionProvider.RemoveConnection (clientId);

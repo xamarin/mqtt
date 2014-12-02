@@ -237,9 +237,6 @@
   <data name="ProtocolEncoding_IntegerMaxValueExceeded" xml:space="preserve">
     <value>Integer values are expected to be of two bytes length. The max value supported is 65536</value>
   </data>
-  <data name="ClientManager_ClientIdNotFound" xml:space="preserve">
-    <value>The client {0} is not connected and cannot receive messages</value>
-  </data>
   <data name="CommunicationHandler_KeepAliveTimeExceeded" xml:space="preserve">
     <value>The time without receiving a control packet has exceeded the expected Keep Alive of {0} secs.</value>
   </data>

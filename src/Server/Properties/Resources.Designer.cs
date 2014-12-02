@@ -61,6 +61,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The client {0} is not connected and cannot receive messages.
+        /// </summary>
+        internal static string ConnectionProvider_ClientIdNotFound {
+            get {
+                return ResourceManager.GetString("ConnectionProvider_ClientIdNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The first packet sent by a Client must be a Connect. The connection will be closed..
         /// </summary>
         internal static string ServerPacketChannelAdapter_FirstPacketMustBeConnect {

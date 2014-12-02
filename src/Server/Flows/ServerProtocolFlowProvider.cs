@@ -6,10 +6,13 @@ namespace Hermes.Flows
 {
 	public class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
+		readonly IConnectionProvider connectionProvider;
+
 		public ServerProtocolFlowProvider (IConnectionProvider connectionProvider, ITopicEvaluator topicEvaluator,
 			IRepositoryFactory repositoryFactory, ProtocolConfiguration configuration)
-			: base(connectionProvider, topicEvaluator, repositoryFactory, configuration)
+			: base(topicEvaluator, repositoryFactory, configuration)
 		{
+			this.connectionProvider = connectionProvider;
 		}
 
 		protected override IDictionary<ProtocolFlowType, IProtocolFlow> GetFlows ()
@@ -21,19 +24,18 @@ namespace Hermes.Flows
 			var retainedRepository = repositoryFactory.CreateRepository<RetainedMessage> ();
 			var packetIdentifierRepository = repositoryFactory.CreateRepository<PacketIdentifier> ();
 
-			var senderFlow = new PublishSenderFlow (connectionProvider,
-				sessionRepository, packetIdentifierRepository, configuration);
+			var senderFlow = new PublishSenderFlow (sessionRepository, packetIdentifierRepository, configuration);
 
-			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (connectionProvider, sessionRepository, willRepository, 
+			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (sessionRepository, willRepository, 
 				packetIdentifierRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
-			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (connectionProvider, topicEvaluator, 
+			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (this.connectionProvider, topicEvaluator, 
 				retainedRepository, sessionRepository, packetIdentifierRepository, senderFlow, configuration));
-			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, connectionProvider, sessionRepository, 
+			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository, 
 				packetIdentifierRepository, retainedRepository, senderFlow, configuration));
-			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (connectionProvider, sessionRepository, packetIdentifierRepository));
-			flows.Add (ProtocolFlowType.Ping, new PingFlow (connectionProvider));
-			flows.Add (ProtocolFlowType.Disconnect, new DisconnectFlow (connectionProvider, sessionRepository, willRepository));
+			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (sessionRepository, packetIdentifierRepository));
+			flows.Add (ProtocolFlowType.Ping, new PingFlow ());
+			flows.Add (ProtocolFlowType.Disconnect, new DisconnectFlow (this.connectionProvider, sessionRepository, willRepository));
 
 			return flows;
 		}

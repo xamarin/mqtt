@@ -35,10 +35,10 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (connectionProvider.Object, sessionRepository.Object,
-				willRepository.Object, packetIdentifierRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, 
+				packetIdentifierRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -83,10 +83,10 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (connectionProvider.Object, sessionRepository.Object, willRepository.Object,
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object,
 				packetIdentifierRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			sessionRepository.Verify (r => r.Create (It.IsAny<ClientSession> ()), Times.Never);
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -129,10 +129,10 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (connectionProvider.Object, sessionRepository.Object, 
-				willRepository.Object, packetIdentifierRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, 
+				packetIdentifierRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 
@@ -174,10 +174,10 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (connectionProvider.Object, sessionRepository.Object, 
-				willRepository.Object, packetIdentifierRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, 
+				packetIdentifierRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 
@@ -213,10 +213,10 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (connectionProvider.Object, sessionRepository.Object, 
-				willRepository.Object, packetIdentifierRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, 
+				packetIdentifierRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect);
+			await flow.ExecuteAsync (clientId, connect, channel.Object);
 
 			var connectAck = sentPacket as ConnectAck;
 

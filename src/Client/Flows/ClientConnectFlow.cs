@@ -6,25 +6,22 @@ namespace Hermes.Flows
 {
 	public class ClientConnectFlow : IProtocolFlow
 	{
-		readonly IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPublishSenderFlow senderFlow;
 
-		public ClientConnectFlow (IConnectionProvider connectionProvider, IRepository<ClientSession> sessionRepository, 
+		public ClientConnectFlow (IRepository<ClientSession> sessionRepository, 
 			IPublishSenderFlow senderFlow)
 		{
-			this.connectionProvider = connectionProvider;
 			this.sessionRepository = sessionRepository;
 			this.senderFlow = senderFlow;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type != PacketType.ConnectAck)
 				return;
 
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-			var channel = this.connectionProvider.GetConnection (clientId);
 
 			await this.SendPendingMessagesAsync (session, channel);
 			await this.SendPendingAcknowledgementsAsync (session, channel);
@@ -36,7 +33,7 @@ namespace Hermes.Flows
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
-				await this.senderFlow.SendPublishAsync (session.ClientId, publish, PendingMessageStatus.PendingToAcknowledge);
+				await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge);
 			}
 		}
 
@@ -50,7 +47,7 @@ namespace Hermes.Flows
 				else if(pendingAcknowledgement.Type == PacketType.PublishRelease)
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel);
 			}
 		}
 	}

@@ -55,11 +55,11 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, 
-				sessionRepository.Object, packetIdentifierRepository, retainedMessageRepository,
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
+				packetIdentifierRepository, retainedMessageRepository,
 				senderFlow, configuration);
 
-			await flow.ExecuteAsync (clientId, subscribe);
+			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 
 			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.ClientId == clientId && s.Subscriptions.Count == 2 
 				&& s.Subscriptions.All(x => x.TopicFilter == fooTopic || x.TopicFilter == barTopic))));
@@ -117,11 +117,11 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, sessionRepository.Object, 
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object,  sessionRepository.Object, 
 				packetIdentifierRepository, retainedMessageRepository,
 				senderFlow, configuration);
 
-			await flow.ExecuteAsync (clientId, subscribe);
+			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 
 			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.ClientId == clientId && s.Subscriptions.Count == 1 
 				&& s.Subscriptions.Any(x => x.TopicFilter == fooTopic && x.MaximumQualityOfService == fooQoS))));
@@ -172,11 +172,11 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, sessionRepository.Object, 
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				packetIdentifierRepository, retainedMessageRepository,
 				senderFlow, configuration);
 
-			await flow.ExecuteAsync (clientId, subscribe);
+			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 
 			Assert.NotNull (response);
 
@@ -207,7 +207,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (p => response = p)
 				.Returns(Task.Delay(0));
 
-			await flow.ExecuteAsync (clientId, subscribeAck);
+			await flow.ExecuteAsync (clientId, subscribeAck, channel.Object);
 
 			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
 			Assert.Null (response);
@@ -258,11 +258,11 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerSubscribeFlow (topicEvaluator.Object, connectionProvider.Object, 
+			var flow = new ServerSubscribeFlow (topicEvaluator.Object, 
 				sessionRepository.Object, packetIdentifierRepository.Object, retainedMessageRepository.Object,
 				senderFlow.Object, configuration);
 
-			await flow.ExecuteAsync (clientId, subscribe);
+			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 
 			senderFlow.Verify (f => f.SendPublishAsync (It.Is<string>(s => s == clientId),
 				It.Is<Publish> (p => p.Topic == retainedTopic && 
@@ -270,6 +270,7 @@ namespace Tests.Flows
 					p.Payload.ToList().SequenceEqual(retainedPayload) && 
 					p.PacketId.HasValue && 
 					p.Retain), 
+				It.Is<IChannel<IPacket>>(c => c == channel.Object),
 				It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 		}
 	}

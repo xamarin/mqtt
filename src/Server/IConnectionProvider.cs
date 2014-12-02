@@ -6,8 +6,6 @@ namespace Hermes
     {
 		int Connections { get; }
 
-		bool IsConnected (string clientId);
-
 		void AddConnection (string clientId, IChannel<IPacket> connection);
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>

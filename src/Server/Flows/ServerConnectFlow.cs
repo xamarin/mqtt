@@ -7,31 +7,26 @@ namespace Hermes.Flows
 {
 	public class ServerConnectFlow : IProtocolFlow
 	{
-		readonly IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IPublishSenderFlow senderFlow;
 
-		public ServerConnectFlow (IConnectionProvider connectionProvider,
-			IRepository<ClientSession> sessionRepository, 
+		public ServerConnectFlow (IRepository<ClientSession> sessionRepository, 
 			IRepository<ConnectionWill> willRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
 			IPublishSenderFlow senderFlow)
 		{
-			this.connectionProvider = connectionProvider;
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
 			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.senderFlow = senderFlow;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type != PacketType.Connect)
 				return;
-
-			var channel = this.connectionProvider.GetConnection (clientId);
 
 			var connect = input as Connect;
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
@@ -72,9 +67,9 @@ namespace Hermes.Flows
 					session.PendingMessages.Remove (pendingMessage);
 					this.sessionRepository.Update (session);
 
-					await this.senderFlow.SendPublishAsync (session.ClientId, publish);
+					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel);
 				} else {
-					await this.senderFlow.SendPublishAsync (session.ClientId, publish, PendingMessageStatus.PendingToAcknowledge);
+					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge);
 				}
 			}
 		}
@@ -91,7 +86,7 @@ namespace Hermes.Flows
 				else if(pendingAcknowledgement.Type == PacketType.PublishRelease)
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack, PendingMessageStatus.PendingToAcknowledge);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel, PendingMessageStatus.PendingToAcknowledge);
 			}
 		}
 	}
