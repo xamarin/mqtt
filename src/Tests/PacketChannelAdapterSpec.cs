@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -186,9 +185,15 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = new Mock<IRepositoryProvider> ();
 
+			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+
+			willRepository
+				.Setup(r => r.Get(It.IsAny<Expression<Func<ConnectionWill, bool>>>()))
+				.Returns(default(ConnectionWill));
+
 			repositoryProvider
 				.Setup (f => f.GetRepository<ConnectionWill> ())
-				.Returns (Mock.Of<IRepository<ConnectionWill>> ());
+				.Returns (willRepository.Object);
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
 			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider,
@@ -227,9 +232,15 @@ namespace Tests
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
 			var repositoryProvider = new Mock<IRepositoryProvider> ();
 
+			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+
+			willRepository
+				.Setup(r => r.Get(It.IsAny<Expression<Func<ConnectionWill, bool>>>()))
+				.Returns(default(ConnectionWill));
+
 			repositoryProvider
 				.Setup (f => f.GetRepository<ConnectionWill> ())
-				.Returns (Mock.Of<IRepository<ConnectionWill>> ());
+				.Returns (willRepository.Object);
 
 			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object, 
 				repositoryProvider.Object, configuration);
