@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
-using Hermes.Storage;
 
 namespace Hermes
 {
@@ -12,19 +11,14 @@ namespace Hermes
 	{
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
-		readonly IRepository<ConnectionWill> willRepository;
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly ProtocolConfiguration configuration;
 
 		public ServerPacketChannelAdapter (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
-			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
-			this.willRepository = repositoryProvider.GetRepository<ConnectionWill>();
-			this.packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier>();
 			this.configuration = configuration;
 		}
 
@@ -64,16 +58,12 @@ namespace Hermes
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
-						await this.SendWillMessageAsync (clientId);
-
 						this.NotifyError (Resources.ServerPacketChannelAdapter_SecondConnectNotAllowed, clientId, protocolChannel);
 						return;
 					}
 
 					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
-				}, async ex => {
-					await this.SendWillMessageAsync (clientId);
-
+				}, ex => {
 					this.NotifyError (ex, clientId, protocolChannel);
 				}, () => {
 					this.connectionProvider.RemoveConnection (clientId);
@@ -101,19 +91,12 @@ namespace Hermes
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, ProtocolChannel channel)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
-			var flowException = default (Exception);
 
 			if (flow != null) {
 				try {
 					await flow.ExecuteAsync (clientId, packet, channel);
 				} catch (Exception ex) {
-					flowException = ex;
-				}
-
-				if (flowException != default (Exception)) {
-					await this.SendWillMessageAsync (clientId);
-
-					this.NotifyError (flowException, clientId, channel);
+					this.NotifyError (ex, clientId, channel);
 				}
 			}
 		}
@@ -130,9 +113,7 @@ namespace Hermes
 			channel.Receiver
 				.Skip (1)
 				.Timeout (GetKeepAliveTolerance(keepAlive))
-				.Subscribe(_ => {}, async ex => {
-					await this.SendWillMessageAsync (clientId);
-
+				.Subscribe(_ => {}, ex => {
 					var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
 
 					this.NotifyError(message, ex, clientId, channel);
@@ -155,34 +136,6 @@ namespace Hermes
 		{
 			this.RemoveClient (clientId);
 			channel.NotifyError (message, exception);
-		}
-
-		// TODO: Figure out how to make the Will Message sending logic cleaner.
-		// Should we encapsulate Will Message in other place?
-		private async Task SendWillMessageAsync(string clientId)
-		{
-			var willMessage = this.willRepository.Get (w => w.ClientId == clientId);
-
-			if (willMessage == null || willMessage.Will == null)
-				return;
-
-			var will = new Publish(willMessage.Will.Topic, willMessage.Will.QualityOfService, 
-				willMessage.Will.Retain, duplicated: false) 
-			{
-				Payload = Protocol.Encoding.EncodeString(willMessage.Will.Message)
-			};
-
-			
-			// TODO: We should not cast to ServerPublishReceiverFlow to get the dispatcher. Ideally we would
-			// get the Dispatcher as a dependency, but there is a circular dependency between Dispatcher and Flow Provider 
-			// that makes impossible to receive both Dispatcher and Flow provider injected (by now)
-			var publishReceiverFlow = this.flowProvider.GetFlow (PacketType.PublishReceived) as ServerPublishReceiverFlow;
-
-			if (publishReceiverFlow != null) {
-				var publishDispatcher = publishReceiverFlow.PublishDispatcher;
-
-				await publishDispatcher.DispatchAsync (will);
-			}
 		}
 
 		private void RemoveClient(string clientId)

@@ -20,8 +20,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration  { WaitingTimeoutSecs = 10 };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -45,8 +44,7 @@ namespace Tests
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<PacketType> ())).Returns (flow.Object);
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -74,8 +72,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -100,8 +97,7 @@ namespace Tests
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -128,8 +124,7 @@ namespace Tests
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -158,8 +153,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -183,21 +177,8 @@ namespace Tests
 		{
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
-			var repositoryProvider = new Mock<IRepositoryProvider> ();
-
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
-
-			willRepository
-				.Setup(r => r.Get(It.IsAny<Expression<Func<ConnectionWill, bool>>>()))
-				.Returns(default(ConnectionWill));
-
-			repositoryProvider
-				.Setup (f => f.GetRepository<ConnectionWill> ())
-				.Returns (willRepository.Object);
-
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider,
-				repositoryProvider.Object, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -230,20 +211,7 @@ namespace Tests
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var repositoryProvider = new Mock<IRepositoryProvider> ();
-
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
-
-			willRepository
-				.Setup(r => r.Get(It.IsAny<Expression<Func<ConnectionWill, bool>>>()))
-				.Returns(default(ConnectionWill));
-
-			repositoryProvider
-				.Setup (f => f.GetRepository<ConnectionWill> ())
-				.Returns (willRepository.Object);
-
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object, 
-				repositoryProvider.Object, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -279,8 +247,7 @@ namespace Tests
 
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
@@ -315,8 +282,7 @@ namespace Tests
 
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object,
-				repositoryProvider, configuration);
+			var adapter = new ServerPacketChannelAdapter (connectionProvider.Object, flowProvider.Object, configuration);
 
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Hermes.Packets;
 using Hermes.Storage;
 
@@ -6,18 +7,21 @@ namespace Hermes.Flows
 {
 	public class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
+		readonly IConnectionProvider connectionProvider;
+		readonly IPublishSenderFlow senderFlow;
+
 		public ServerPublishReceiverFlow (ITopicEvaluator topicEvaluator,
+			IConnectionProvider connectionProvider,
+			IPublishSenderFlow senderFlow,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
-			IPublishDispatcher publishDispatcher,
 			ProtocolConfiguration configuration)
 			: base(topicEvaluator, retainedRepository, sessionRepository, packetIdentifierRepository, configuration)
 		{
-			this.PublishDispatcher = publishDispatcher;
+			this.connectionProvider = connectionProvider;
+			this.senderFlow = senderFlow;
 		}
-
-		public IPublishDispatcher PublishDispatcher { get; private set; }
 
 		protected override async Task ProcessPublishAsync (Publish publish)
 		{
@@ -39,7 +43,30 @@ namespace Hermes.Flows
 				}
 			}
 
-			await this.PublishDispatcher.DispatchAsync (publish);
+			await this.DispatchAsync (publish);
+		}
+
+		private async Task DispatchAsync (Publish publish)
+		{
+			var sessions = this.sessionRepository.GetAll ();
+			var subscriptions = sessions.SelectMany(s => s.Subscriptions)
+				.Where(x => this.topicEvaluator.Matches(publish.Topic, x.TopicFilter));
+
+			foreach (var subscription in subscriptions) {
+				await this.DispatchAsync (subscription, publish);
+			}
+		}
+
+		private async Task DispatchAsync (ClientSubscription subscription, Publish publish)
+		{
+			var requestedQos = configuration.GetSupportedQos(subscription.MaximumQualityOfService);
+			var packetId = this.packetIdentifierRepository.GetPacketIdentifier (requestedQos);
+			var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicated: false, packetId: packetId) {
+				Payload = publish.Payload
+			};
+			var clientChannel = this.connectionProvider.GetConnection (subscription.ClientId);
+
+			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, clientChannel);
 		}
 	}
 }
