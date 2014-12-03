@@ -6,6 +6,8 @@ namespace Hermes
 {
 	public interface IClient
 	{
+		event EventHandler Disconnected;
+
 		string Id { get; }
 
 		bool IsConnected { get; }

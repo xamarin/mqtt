@@ -66,6 +66,8 @@ namespace Hermes
 					});
         }
 
+		public event EventHandler Disconnected = (sender, args) => { };
+
 		public string Id { get; private set; }
 
 		public bool IsConnected { get; private set; }
@@ -173,6 +175,7 @@ namespace Hermes
 			this.IsConnected = false; 
 			this.Id = null;
 			this.protocolChannel.Close ();
+			this.Disconnected (this, EventArgs.Empty);
 		}
 	}
 }
