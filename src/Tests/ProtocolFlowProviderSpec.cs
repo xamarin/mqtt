@@ -43,8 +43,8 @@ namespace Tests
 		[InlineData(PacketType.Unsubscribe, typeof(ServerUnsubscribeFlow))]
 		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
-			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IConnectionProvider> (), Mock.Of<IPublishDispatcher>(),
-				Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryProvider>(), new ProtocolConfiguration ());
+			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
+				Mock.Of<IRepositoryProvider>(), new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 

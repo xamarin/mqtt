@@ -12,20 +12,17 @@ namespace Hermes
 	{
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
-		readonly IPublishDispatcher publishDispatcher;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly ProtocolConfiguration configuration;
 
 		public ServerPacketChannelAdapter (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
-			IPublishDispatcher publishDispatcher,
 			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
-			this.publishDispatcher = publishDispatcher;
 			this.willRepository = repositoryProvider.GetRepository<ConnectionWill>();
 			this.packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier>();
 			this.configuration = configuration;
@@ -150,6 +147,8 @@ namespace Hermes
 			channel.NotifyError (message, exception);
 		}
 
+		// TODO: Figure out how to make the Will Message sending logic cleaner.
+		// Should we encapsulate Will Message in other place?
 		private async Task SendWillMessageAsync(string clientId)
 		{
 			var willMessage = this.willRepository.Get (w => w.ClientId == clientId);
@@ -163,7 +162,17 @@ namespace Hermes
 				Payload = Protocol.Encoding.EncodeString(willMessage.Will.Message)
 			};
 
-			await this.publishDispatcher.DispatchAsync (will);
+			
+			// TODO: We should not cast to ServerPublishReceiverFlow to get the dispatcher. Ideally we would
+			// get the Dispatcher as a dependency, but there is a circular dependency between Dispatcher and Flow Provider 
+			// that makes impossible to receive both Dispatcher and Flow provider injected (by now)
+			var publishReceiverFlow = this.flowProvider.GetFlow (PacketType.PublishReceived) as ServerPublishReceiverFlow;
+
+			if (publishReceiverFlow != null) {
+				var publishDispatcher = publishReceiverFlow.PublishDispatcher;
+
+				await publishDispatcher.DispatchAsync (will);
+			}
 		}
 
 		private void RemoveClient(string clientId)

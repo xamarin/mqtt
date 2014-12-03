@@ -6,8 +6,6 @@ namespace Hermes.Flows
 {
 	public class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
-		readonly IPublishDispatcher publishDispatcher;
-
 		public ServerPublishReceiverFlow (ITopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
@@ -16,8 +14,10 @@ namespace Hermes.Flows
 			ProtocolConfiguration configuration)
 			: base(topicEvaluator, retainedRepository, sessionRepository, packetIdentifierRepository, configuration)
 		{
-			this.publishDispatcher = publishDispatcher;
+			this.PublishDispatcher = publishDispatcher;
 		}
+
+		public IPublishDispatcher PublishDispatcher { get; private set; }
 
 		protected override async Task ProcessPublishAsync (Publish publish)
 		{
@@ -39,7 +39,7 @@ namespace Hermes.Flows
 				}
 			}
 
-			await this.publishDispatcher.DispatchAsync (publish);
+			await this.PublishDispatcher.DispatchAsync (publish);
 		}
 	}
 }
