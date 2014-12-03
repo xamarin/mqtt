@@ -45,18 +45,7 @@ namespace Hermes
 							await this.DispatchPacketAsync (connectAck, clientId, protocolChannel);
 
 							if (this.configuration.KeepAliveSecs > 0) {
-								protocolChannel.Receiver
-									.Skip (1)
-									.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
-									.Subscribe(_ => {}, async ex => {
-										if (ex is TimeoutException) {
-											var ping = new PingRequest ();
-
-											await protocolChannel.SendAsync(ping);
-										} else {
-											protocolChannel.NotifyError (ex);
-										}
-									});
+								this.MonitorKeepAlive (protocolChannel);
 							}
 						}, ex => {
 							if (ex is TimeoutException) {
@@ -76,6 +65,22 @@ namespace Hermes
 				});
 
 			return protocolChannel;
+		}
+
+		private void MonitorKeepAlive(ProtocolChannel channel)
+		{
+			channel.Receiver
+				.Skip (1)
+				.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
+				.Subscribe(_ => {}, async ex => {
+					if (ex is TimeoutException) {
+						var ping = new PingRequest ();
+
+						await channel.SendAsync(ping);
+					} else {
+						channel.NotifyError (ex);
+					}
+				});
 		}
 
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, ProtocolChannel channel)

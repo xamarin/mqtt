@@ -54,16 +54,7 @@ namespace Hermes
 					await this.DispatchPacketAsync (connect, clientId, protocolChannel);
 					
 					if (keepAlive > 0) {
-						protocolChannel.Receiver
-							.Skip (1)
-							.Timeout (GetKeepAliveTolerance(keepAlive))
-							.Subscribe(_ => {}, async ex => {
-								await this.SendWillMessageAsync (clientId);
-
-								var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
-
-								this.NotifyError(message, ex, clientId, protocolChannel);
-							});
+						this.MonitorKeepAlive (protocolChannel, clientId, keepAlive);
 					}
 				}, async ex => {
 					await this.HandleConnectionExceptionAsync (ex, protocolChannel);
@@ -110,14 +101,19 @@ namespace Hermes
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, ProtocolChannel channel)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
+			var flowException = default (Exception);
 
 			if (flow != null) {
 				try {
 					await flow.ExecuteAsync (clientId, packet, channel);
 				} catch (Exception ex) {
-					this.SendWillMessageAsync (clientId).Wait();
+					flowException = ex;
+				}
 
-					this.NotifyError (ex, clientId, channel);
+				if (flowException != default (Exception)) {
+					await this.SendWillMessageAsync (clientId);
+
+					this.NotifyError (flowException, clientId, channel);
 				}
 			}
 		}
@@ -127,6 +123,20 @@ namespace Hermes
 			keepAlive = (int)(keepAlive * 1.5);
 
 			return new TimeSpan (0, 0, keepAlive);
+		}
+
+		private void MonitorKeepAlive(ProtocolChannel channel, string clientId, int keepAlive)
+		{
+			channel.Receiver
+				.Skip (1)
+				.Timeout (GetKeepAliveTolerance(keepAlive))
+				.Subscribe(_ => {}, async ex => {
+					await this.SendWillMessageAsync (clientId);
+
+					var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);
+
+					this.NotifyError(message, ex, clientId, channel);
+				});
 		}
 
 		private void NotifyError(Exception exception, string clientId, ProtocolChannel channel)
@@ -153,7 +163,7 @@ namespace Hermes
 		{
 			var willMessage = this.willRepository.Get (w => w.ClientId == clientId);
 
-			if (willMessage == null)
+			if (willMessage == null || willMessage.Will == null)
 				return;
 
 			var will = new Publish(willMessage.Will.Topic, willMessage.Will.QualityOfService, 
