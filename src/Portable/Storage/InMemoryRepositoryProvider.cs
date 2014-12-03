@@ -4,16 +4,16 @@ using System.Linq;
 
 namespace Hermes.Storage
 {
-	public class InMemoryRepositoryFactory : IRepositoryFactory
+	public class InMemoryRepositoryProvider : IRepositoryProvider
 	{
 		readonly IDictionary<Type, object> repositories;
 
-		public InMemoryRepositoryFactory ()
+		public InMemoryRepositoryProvider ()
 		{
 			this.repositories = new Dictionary<Type, object> ();
 		}
 
-		public IRepository<T> CreateRepository<T> ()
+		public IRepository<T> GetRepository<T> ()
 		{
 			if (this.repositories.Any (r => r.Key == typeof (T))) {
 				return this.repositories.FirstOrDefault (r => r.Key == typeof (T)).Value as IRepository<T>;

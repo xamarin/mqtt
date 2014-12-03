@@ -12,9 +12,9 @@ namespace Hermes.Flows
 		public ServerProtocolFlowProvider (IConnectionProvider connectionProvider,
  			IPublishDispatcher publishDispatcher,
 			ITopicEvaluator topicEvaluator,
-			IRepositoryFactory repositoryFactory, 
+			IRepositoryProvider repositoryProvider, 
 			ProtocolConfiguration configuration)
-			: base(topicEvaluator, repositoryFactory, configuration)
+			: base(topicEvaluator, repositoryProvider, configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.publishDispatcher = publishDispatcher;
@@ -24,10 +24,10 @@ namespace Hermes.Flows
 		{
 			var flows = new Dictionary<ProtocolFlowType, IProtocolFlow>();
 
-			var sessionRepository = repositoryFactory.CreateRepository<ClientSession>();
-			var willRepository = repositoryFactory.CreateRepository<ConnectionWill> ();
-			var retainedRepository = repositoryFactory.CreateRepository<RetainedMessage> ();
-			var packetIdentifierRepository = repositoryFactory.CreateRepository<PacketIdentifier> ();
+			var sessionRepository = repositoryProvider.GetRepository<ClientSession>();
+			var willRepository = repositoryProvider.GetRepository<ConnectionWill> ();
+			var retainedRepository = repositoryProvider.GetRepository<RetainedMessage> ();
+			var packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier> ();
 
 			var senderFlow = new PublishSenderFlow (sessionRepository, packetIdentifierRepository, configuration);
 

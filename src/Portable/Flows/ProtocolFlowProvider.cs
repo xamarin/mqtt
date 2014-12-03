@@ -9,15 +9,15 @@ namespace Hermes.Flows
 	{
 		protected readonly IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 		protected readonly ITopicEvaluator topicEvaluator;
-		protected readonly IRepositoryFactory repositoryFactory;
+		protected readonly IRepositoryProvider repositoryProvider;
 		protected readonly ProtocolConfiguration configuration;
 
 		protected ProtocolFlowProvider (ITopicEvaluator topicEvaluator, 
-			IRepositoryFactory repositoryFactory, 
+			IRepositoryProvider repositoryProvider, 
 			ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
-			this.repositoryFactory = repositoryFactory;
+			this.repositoryProvider = repositoryProvider;
 			this.configuration = configuration;
 
 			this.flows = this.GetFlows ();

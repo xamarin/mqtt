@@ -26,15 +26,15 @@ namespace Hermes
 			IPacketChannelFactory channelFactory, 
 			IPacketChannelAdapter channelAdapter,
 			IProtocolFlowProvider flowProvider,
-			IRepositoryFactory repositoryFactory,
+			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
         {
 			var channel = channelFactory.CreateChannel (socket);
 
 			this.protocolChannel = channelAdapter.Adapt (channel);
 			this.flowProvider = flowProvider;
-			this.sessionRepository = repositoryFactory.CreateRepository<ClientSession>();
-			this.packetIdentifierRepository = repositoryFactory.CreateRepository<PacketIdentifier>();
+			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
+			this.packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier>();
 			this.configuration = configuration;
 
 			this.protocolChannel.Receiver.OfType<ConnectAck> ().Subscribe (connectAck => {

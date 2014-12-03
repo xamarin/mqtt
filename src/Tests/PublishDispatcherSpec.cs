@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using Hermes;
@@ -20,12 +21,9 @@ namespace Tests
 		{
 			var connectionProvider = new Mock<IConnectionProvider>();
 			var topicEvaluator = new Mock<ITopicEvaluator>();
-			var sessionRepository = new Mock<IRepository<ClientSession>>();
-			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>>();
+			var repositoryProvider = new Mock<IRepositoryProvider> ();
 			var senderFlow = new Mock<IPublishSenderFlow>();
 			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
-			var dispatcher = new PublishDispatcher (connectionProvider.Object, topicEvaluator.Object,
-				sessionRepository.Object, packetIdentifierRepository.Object, senderFlow.Object, configuration);
 
 			var client1Id = Guid.NewGuid ().ToString ();
 			var subscription1 = new ClientSubscription {
@@ -58,15 +56,25 @@ namespace Tests
 
 			var sessions = new List<ClientSession> { session1, session2 };
 
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+
 			sessionRepository
 				.Setup(r => r.GetAll(It.IsAny<Expression<Func<ClientSession, bool>>>()))
 				.Returns(sessions.AsQueryable());
+
+			repositoryProvider
+				.Setup(f => f.GetRepository<ClientSession>())
+				.Returns(sessionRepository.Object);
+			repositoryProvider
+				.Setup(f => f.GetRepository<PacketIdentifier>())
+				.Returns(Mock.Of<IRepository<PacketIdentifier>>());
+
 			topicEvaluator
 				.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ()))
 				.Returns(true);
 			connectionProvider
 				.Setup(p => p.GetConnection(It.IsAny<string>()))
-				.Returns(Mock.Of<IChannel<IPacket>>());
+				.Returns(Mock.Of<IChannel<IPacket>>(c => c.Receiver == new Subject<IPacket>()));
 
 			var topic = "foo/bar/test";
 			var payload = Encoding.UTF8.GetBytes("Publish Disaptcher Test");
@@ -74,6 +82,9 @@ namespace Tests
 			{
 				Payload = payload
 			};
+
+			var dispatcher = new PublishDispatcher (connectionProvider.Object, topicEvaluator.Object,
+				repositoryProvider.Object, senderFlow.Object, configuration);
 
 			await dispatcher.DispatchAsync(publish);
 

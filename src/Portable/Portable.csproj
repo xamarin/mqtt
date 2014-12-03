@@ -85,8 +85,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Storage\InMemoryRepositoryFactory.cs" />
-    <Compile Include="Storage\IRepositoryFactory.cs" />
+    <Compile Include="Storage\InMemoryRepositoryProvider.cs" />
+    <Compile Include="Storage\IRepositoryProvider.cs" />
     <Compile Include="Storage\PacketIdentifier.cs" />
     <Compile Include="Storage\PendingMessage.cs" />
     <Compile Include="Storage\RetainedMessage.cs" />

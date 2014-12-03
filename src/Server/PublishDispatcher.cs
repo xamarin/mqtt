@@ -17,15 +17,14 @@ namespace Hermes
 
 		public PublishDispatcher (IConnectionProvider connectionProvider, 
 			ITopicEvaluator topicEvaluator,
-			IRepository<ClientSession> sessionRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository,
+			IRepositoryProvider repositoryProvider,
 			IPublishSenderFlow senderFlow,
 			ProtocolConfiguration configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.topicEvaluator = topicEvaluator;
-			this.sessionRepository = sessionRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
+			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
+			this.packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier>();
 			this.senderFlow = senderFlow;
 			this.configuration = configuration;
 		}

@@ -20,15 +20,14 @@ namespace Hermes
 		public ServerPacketChannelAdapter (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
 			IPublishDispatcher publishDispatcher,
-			IRepository<ConnectionWill> willRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository,
+			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
 			this.publishDispatcher = publishDispatcher;
-			this.willRepository = willRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
+			this.willRepository = repositoryProvider.GetRepository<ConnectionWill>();
+			this.packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier>();
 			this.configuration = configuration;
 		}
 
