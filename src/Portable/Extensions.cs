@@ -17,12 +17,12 @@ namespace Hermes
 					break;
 				case PacketType.Publish:
 				case PacketType.PublishRelease:
-					flowType = ProtocolFlowType.PublishSender;
+					flowType = ProtocolFlowType.PublishReceiver;
 					break;
 				case PacketType.PublishAck:
 				case PacketType.PublishReceived:
 				case PacketType.PublishComplete:
-					flowType = ProtocolFlowType.PublishReceiver;
+					flowType = ProtocolFlowType.PublishSender;
 					break;
 				case PacketType.Subscribe:
 				case PacketType.SubscribeAck:
