@@ -136,8 +136,7 @@ namespace Hermes
 				Payload = message.Payload
 			};
 
-			var flow = this.flowProvider.GetFlow (PacketType.Publish);
-			var senderFlow = flow as PublishSenderFlow;
+			var senderFlow = this.flowProvider.GetFlow<PublishSenderFlow> ();
 
 			await senderFlow.SendPublishAsync (this.Id, publish, this.protocolChannel);
 		}
