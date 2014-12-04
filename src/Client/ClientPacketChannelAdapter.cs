@@ -28,36 +28,29 @@ namespace Hermes
 				.FirstAsync ()
 				.Subscribe (connect => {
 					clientId = connect.ClientId;
-
-					var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
-
-					protocolChannel.Receiver
-						.FirstAsync ()
-						.Timeout (packetDueTime)
-						.Subscribe(async packet => {
-							var connectAck = packet as ConnectAck;
-
-							if (connectAck == null) {
-								protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck);
-								return;
-							}
-
-							await this.DispatchPacketAsync (connectAck, clientId, protocolChannel);
-
-							if (this.configuration.KeepAliveSecs > 0) {
-								this.MonitorKeepAlive (protocolChannel);
-							}
-						}, ex => {
-							if (ex is TimeoutException) {
-								protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_NoConnectAckReceived, ex);
-							} else {
-								protocolChannel.NotifyError (ex);
-							}
-						});
 				});
 
 			protocolChannel.Receiver
-				.Skip (1)
+				.FirstAsync()
+				.Subscribe(async packet => {
+					var connectAck = packet as ConnectAck;
+
+					if (connectAck == null) {
+						protocolChannel.NotifyError (Resources.ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck);
+						return;
+					}
+
+					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
+
+					if (this.configuration.KeepAliveSecs > 0) {
+						this.MonitorKeepAlive (protocolChannel);
+					}
+				}, ex => {
+					protocolChannel.NotifyError (ex);
+			});
+
+			protocolChannel.Receiver
+				.Skip(1)
 				.Subscribe (async packet => {
 					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
 				}, ex => {
