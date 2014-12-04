@@ -11,7 +11,7 @@ namespace Hermes.Flows
 		{
 		}
 
-		protected override IDictionary<ProtocolFlowType, IProtocolFlow> GetFlows ()
+		protected override IDictionary<ProtocolFlowType, IProtocolFlow> InitializeFlows ()
 		{
 			var flows = new Dictionary<ProtocolFlowType, IProtocolFlow>();
 
