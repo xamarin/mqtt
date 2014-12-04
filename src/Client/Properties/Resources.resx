@@ -123,4 +123,13 @@
   <data name="ClientPacketChannelAdapter_NoConnectAckReceived" xml:space="preserve">
     <value>No ConnectAck has been received since the connection was established. The connection will be closed.</value>
   </data>
+  <data name="Client_ConnectionDisconnected" xml:space="preserve">
+    <value>The client has been disconnected while trying to perform the connection</value>
+  </data>
+  <data name="Client_ConnectionError" xml:space="preserve">
+    <value>An error occurred while trying to connect the client</value>
+  </data>
+  <data name="Client_ConnectionTimeout" xml:space="preserve">
+    <value>A timeout occured while waiting for the client connection confirmation</value>
+  </data>
 </root>

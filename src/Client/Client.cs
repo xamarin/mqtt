@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes
@@ -36,10 +37,6 @@ namespace Hermes
 			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
 			this.packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier>();
 			this.configuration = configuration;
-
-			this.protocolChannel.Receiver.OfType<ConnectAck> ().Subscribe (connectAck => {
-				this.IsConnected = true;
-			});
 
 			this.protocolChannel.Receiver.OfType<Publish>().Subscribe (publish => {
 				var message = new ApplicationMessage (publish.Topic, publish.Payload);
@@ -82,11 +79,13 @@ namespace Hermes
 
 		public IObservable<IPacket> Sender { get { return this.sender; } }
 
+		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, bool cleanSession = false)
 		{
 			await this.ConnectAsync (credentials, null, cleanSession);
 		}
 
+		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false)
 		{
 			this.OpenClientSession (credentials.ClientId, cleanSession);
@@ -100,7 +99,25 @@ namespace Hermes
 
 			await this.SendPacket (connect);
 
+			var connectTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var ack = default (ConnectAck);
+
+			try {
+				ack = await this.protocolChannel.Receiver
+					.OfType<ConnectAck> ()
+					.FirstOrDefaultAsync ()
+					.Timeout(connectTimeout);
+			} catch(TimeoutException timeEx) {
+				throw new ClientException (Resources.Client_ConnectionTimeout, timeEx);
+			} catch (Exception ex) {
+				throw new ClientException (Resources.Client_ConnectionError, ex);
+			}
+
+			if (ack == null)
+				throw new ClientException (Resources.Client_ConnectionDisconnected);
+
 			this.Id = credentials.ClientId;
+			this.IsConnected = true;
 		}
 
 		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)

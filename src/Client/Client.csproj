@@ -25,6 +25,7 @@
     <Compile Include="ApplicationMessage.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientCredentials.cs" />
+    <Compile Include="ClientException.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />

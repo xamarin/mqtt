@@ -61,6 +61,33 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The client has been disconnected while trying to perform the connection.
+        /// </summary>
+        internal static string Client_ConnectionDisconnected {
+            get {
+                return ResourceManager.GetString("Client_ConnectionDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while trying to connect the client.
+        /// </summary>
+        internal static string Client_ConnectionError {
+            get {
+                return ResourceManager.GetString("Client_ConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A timeout occured while waiting for the client connection confirmation.
+        /// </summary>
+        internal static string Client_ConnectionTimeout {
+            get {
+                return ResourceManager.GetString("Client_ConnectionTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The first packet received from the Server must be a ConnectAck packet. The connection will be closed..
         /// </summary>
         internal static string ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck {
