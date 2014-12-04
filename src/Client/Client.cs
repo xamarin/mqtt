@@ -51,8 +51,12 @@ namespace Hermes
 				.Subscribe (_ => { }, 
 					ex => { 
 						tracer.Error (ex);
+						this.receiver.OnError (ex);
+						this.sender.OnError (ex);
 						this.CloseChannel ();
 					}, () => {
+						this.receiver.OnCompleted ();
+						this.sender.OnCompleted ();
 						this.CloseChannel ();
 					});
 
@@ -60,13 +64,15 @@ namespace Hermes
 				.Subscribe (_ => { }, 
 					ex => { 
 						tracer.Error (ex);
+						this.receiver.OnError (ex);
+						this.sender.OnError (ex);
 						this.CloseChannel ();
 					}, () => {
+						this.receiver.OnCompleted ();
+						this.sender.OnCompleted();
 						this.CloseChannel ();
 					});
         }
-
-		public event EventHandler Disconnected = (sender, args) => { };
 
 		public string Id { get; private set; }
 
@@ -135,7 +141,7 @@ namespace Hermes
 
 			await this.SendPacket (disconnect);
 
-			this.IsConnected = false;
+			this.CloseChannel ();
 		}
 
 		private void OpenClientSession(string clientId, bool cleanSession)
@@ -175,7 +181,6 @@ namespace Hermes
 			this.IsConnected = false; 
 			this.Id = null;
 			this.protocolChannel.Close ();
-			this.Disconnected (this, EventArgs.Empty);
 		}
 	}
 }
