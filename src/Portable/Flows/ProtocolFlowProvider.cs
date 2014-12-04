@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
@@ -46,6 +47,17 @@ namespace Hermes.Flows
 			}
 
 			return flow;
+		}
+
+		public T GetFlow<T> () where T : class
+		{
+			var pair = this.flows.FirstOrDefault (f => f.Value is T);
+
+			if (pair.Equals (default (KeyValuePair<ProtocolFlowType, IProtocolFlow>))) {
+				return default (T);
+			}
+
+			return pair.Value as T;
 		}
 	}
 }
