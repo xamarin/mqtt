@@ -54,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ReactiveSockets">
-      <HintPath>$(SolutionDir)packages\ReactiveSockets.0.2.4\lib\net40\ReactiveSockets.dll</HintPath>
+      <HintPath>..\..\packages\ReactiveSockets.0.2.6\lib\net40\ReactiveSockets.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net" />
