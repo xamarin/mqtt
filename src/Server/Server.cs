@@ -78,9 +78,7 @@ namespace Hermes
 			var packetChannel = this.channelFactory.CreateChannel (socket);
 			var protocolChannel = this.channelAdapter.Adapt (packetChannel);
 
-			protocolChannel.Sender.Subscribe (packet => {
-				if(packet is ConnectAck)
-					this.activeClients.Add (clientId);
+			protocolChannel.Sender.Subscribe (_ => {
 			}, ex => {
 				tracer.Error (ex);
 				this.CloseSocket (socket, clientId);
@@ -88,11 +86,11 @@ namespace Hermes
 				this.CloseSocket (socket, clientId);	
 			});
 
-			protocolChannel.Receiver.OfType<Connect> ().Subscribe (connect => {
-				clientId = connect.ClientId;
-			});
-
-			protocolChannel.Receiver.Subscribe (_ => {}, ex => { 
+			protocolChannel.Receiver.Subscribe (packet => {
+				var connect = packet as Connect;
+				if (connect != null)
+					this.activeClients.Add (connect.ClientId);
+			}, ex => { 
 				tracer.Error (ex);
 				this.CloseSocket (socket, clientId);
 			}, () => { 
