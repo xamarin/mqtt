@@ -32,7 +32,7 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_connect_is_received_then_client_list_does_not_increase()
+		public void when_connect_is_received_then_client_list_is_increased()
 		{
 			var sockets = new Subject<IBufferedChannel<byte>> ();
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
@@ -50,29 +50,6 @@ namespace Tests
 
 			sockets.OnNext (Mock.Of<IBufferedChannel<byte>> (x => x.Receiver == new Subject<byte> ()));
 			packets.OnNext (new Connect (Guid.NewGuid ().ToString (), cleanSession: true));
-
-			Assert.Equal (0, server.ActiveClients.Count());
-		}
-
-		[Fact]
-		public void when_connect_ack_is_returned_then_client_list_increases()
-		{
-			var sockets = new Subject<IBufferedChannel<byte>> ();
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
-
-			var packets = new Subject<IPacket> ();
-			var packetChannel = Mock.Of<IChannel<IPacket>>(c => c.Receiver == packets);
-			var factory = Mock.Of<IPacketChannelFactory> (x => x.CreateChannel (It.IsAny<IBufferedChannel<byte>> ()) == packetChannel);
-			var sender = new Subject<IPacket> ();
-			var protocolChannel = Mock.Of<IChannel<IPacket>> (c => c.Sender == sender && c.Receiver == packets);
-			var adapter = new Mock<IPacketChannelAdapter> ();
-
-			adapter.Setup (a => a.Adapt (It.IsAny<IChannel<IPacket>> ())).Returns (protocolChannel);
-
-			var server = new Server (sockets, factory, adapter.Object, configuration);
-
-			sockets.OnNext (Mock.Of<IBufferedChannel<byte>> (x => x.Receiver == new Subject<byte> ()));
-			sender.OnNext (new ConnectAck (ConnectionStatus.Accepted, existingSession: false));
 
 			Assert.Equal (1, server.ActiveClients.Count());
 		}
