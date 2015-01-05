@@ -196,5 +196,33 @@ namespace Tests
 
 			Assert.Throws<ProtocolException> (() => topicEvaluator.Matches ("foo", topicFilter));
 		}
+
+		[Theory]
+		[InlineData("test/foo", "test/foo/testClient")]
+		[InlineData("test", "test/")]
+		[InlineData("foo/bar/test/", "foo/bar/test")]
+		[InlineData("test/foo/testClient", "test/foo")]
+		[InlineData("test/", "test")]
+		[InlineData("foo/bar/test", "foo/bar/test/")]
+		public void when_matching_not_compatible_topics_then_does_not_match(string topicFilter, string topicName)
+		{
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
+
+			Assert.False (topicEvaluator.Matches (topicName, topicFilter));
+		}
+
+		[Theory]
+		[InlineData("test/foo", "test/foo")]
+		[InlineData("test/", "test/")]
+		[InlineData("foo/bar/test/", "foo/bar/test/")]
+		[InlineData("test/foo/testClient", "test/foo/testClient")]
+		[InlineData("test", "test")]
+		[InlineData("foo/bar/test", "foo/bar/test")]
+		public void when_matching_compatible_topics_then_matches(string topicFilter, string topicName)
+		{
+			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
+
+			Assert.True (topicEvaluator.Matches (topicName, topicFilter));
+		}
 	}
 }
