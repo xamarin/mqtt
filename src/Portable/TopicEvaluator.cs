@@ -70,6 +70,9 @@ namespace Hermes
 			var topicFilterParts = topicFilter.Split ('/');
 			var topicNameParts = topicName.Split ('/');
 
+			if (topicNameParts.Length > topicFilterParts.Length && topicFilterParts[topicFilterParts.Length - 1] != "#")
+				return false;
+
 			if (topicFilterParts.Length - topicNameParts.Length > 1)
 				return false;
 
