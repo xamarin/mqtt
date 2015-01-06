@@ -67,8 +67,9 @@ namespace Hermes.Flows
 			await this.SendQosAck (clientId, qos, publish, channel);
 		}
 
-		protected virtual async Task ProcessPublishAsync(Publish publish)
+		protected virtual Task ProcessPublishAsync(Publish publish)
 		{
+			return Task.Delay (0);
 		}
 
 		private async Task SendQosAck(string clientId, QualityOfService qos, Publish publish, IChannel<IPacket> channel)

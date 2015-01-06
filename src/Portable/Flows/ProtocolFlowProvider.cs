@@ -48,7 +48,8 @@ namespace Hermes.Flows
 			return flow;
 		}
 
-		public T GetFlow<T> () where T : class
+		public T GetFlow<T> () 
+			where T : class, IProtocolFlow
 		{
 			var pair = this.GetFlows().FirstOrDefault (f => f.Value is T);
 

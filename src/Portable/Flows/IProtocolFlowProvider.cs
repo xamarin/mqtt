@@ -7,6 +7,6 @@ namespace Hermes.Flows
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		IProtocolFlow GetFlow (PacketType packetType);
 
-		T GetFlow<T> () where T : class;
+		T GetFlow<T> () where T : class, IProtocolFlow;
 	}
 }
