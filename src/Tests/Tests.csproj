@@ -20,9 +20,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="ReactiveSockets">
-      <HintPath>..\..\packages\ReactiveSockets.0.2.6\lib\net40\ReactiveSockets.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
