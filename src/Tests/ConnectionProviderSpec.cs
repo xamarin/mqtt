@@ -64,8 +64,8 @@ namespace Tests
 			provider.AddConnection (clientId, channel1.Object);
 			provider.AddConnection (clientId, channel2.Object);
 
-			channel1.Verify (c => c.Close ());
-			channel2.Verify(c => c.Close(), Times.Never);
+			channel1.Verify (c => c.Dispose ());
+			channel2.Verify(c => c.Dispose(), Times.Never);
 		}
 
 		[Fact]

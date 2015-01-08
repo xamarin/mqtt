@@ -104,5 +104,14 @@ namespace Hermes.Properties {
                 return ResourceManager.GetString("ClientPacketChannelAdapter_NoConnectAckReceived", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client must be connected.
+        /// </summary>
+        internal static string TcpChannel_ClientMustBeConnected {
+            get {
+                return ResourceManager.GetString("TcpChannel_ClientMustBeConnected", resourceCulture);
+            }
+        }
     }
 }

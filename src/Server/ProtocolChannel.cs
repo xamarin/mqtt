@@ -7,6 +7,8 @@ namespace Hermes
 {
 	public class ProtocolChannel : IChannel<IPacket>
 	{
+		bool disposed;
+
 		readonly Subject<IPacket> sender;
 		readonly IChannel<IPacket> innerChannel;
 
@@ -24,6 +26,9 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket message)
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			this.sender.OnNext (message);
 
 			await this.innerChannel.SendAsync (message);
@@ -44,10 +49,21 @@ namespace Hermes
 			this.NotifyError (new ProtocolException (message, exception));
 		}
 
-		public void Close ()
+		public void Dispose ()
 		{
-			this.innerChannel.Close ();
-			this.sender.OnCompleted ();
+			this.Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (this.disposed) return;
+
+			if (disposing) {
+				this.innerChannel.Dispose ();
+				this.sender.OnCompleted ();
+				this.disposed = true;
+			}
 		}
 	}
 }

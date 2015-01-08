@@ -23,14 +23,14 @@ namespace Hermes
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly ProtocolConfiguration configuration;
 
-        public Client(IBufferedChannel<byte> socket, 
+        public Client(IChannel<byte[]> binaryChannel, 
 			IPacketChannelFactory channelFactory, 
 			IPacketChannelAdapter channelAdapter,
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
         {
-			var channel = channelFactory.CreateChannel (socket);
+			var channel = channelFactory.Create (binaryChannel);
 
 			this.protocolChannel = channelAdapter.Adapt (channel);
 			this.flowProvider = flowProvider;
@@ -196,7 +196,7 @@ namespace Hermes
 		{
 			this.IsConnected = false; 
 			this.Id = null;
-			this.protocolChannel.Close ();
+			this.protocolChannel.Dispose ();
 		}
 	}
 }

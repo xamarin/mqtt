@@ -7,6 +7,8 @@ namespace Hermes
 {
 	public class PacketChannel : IChannel<IPacket>
 	{
+		bool disposed;
+
 		readonly IChannel<byte[]> innerChannel;
 		readonly IPacketManager manager;
         readonly Subject<IPacket> receiver;
@@ -39,6 +41,9 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket packet)
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			try {
 				var bytes = await this.manager.GetBytesAsync (packet);
 
@@ -50,12 +55,23 @@ namespace Hermes
 			}
 		}
 
-		public void Close ()
+		public void Dispose ()
 		{
-			this.subscription.Dispose ();
-			this.innerChannel.Close ();
-			this.receiver.OnCompleted ();
-			this.sender.OnCompleted ();
+			this.Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		protected virtual void Dispose (bool disposing)
+		{
+			if (this.disposed) return;
+
+			if (disposing) {
+				this.subscription.Dispose ();
+				this.innerChannel.Dispose ();
+				this.receiver.OnCompleted ();
+				this.sender.OnCompleted ();
+				this.disposed = true;
+			}
 		}
 	}
 }
