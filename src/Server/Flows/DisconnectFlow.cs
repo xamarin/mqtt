@@ -35,7 +35,7 @@ namespace Hermes.Flows
 					this.sessionRepository.Delete (session);
 				}
 
-				channel.Close ();
+				channel.Dispose ();
 				this.connectionProvider.RemoveConnection (clientId);
 			});
 		}

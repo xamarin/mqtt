@@ -21,7 +21,7 @@ namespace Hermes
 
 			if (this.connections.TryGetValue (clientId, out existingConnection)) {
 				this.RemoveConnection (clientId);
-				existingConnection.Close ();
+				existingConnection.Dispose ();
 			}
 
 			this.connections.TryAdd(clientId, connection);

@@ -132,4 +132,7 @@
   <data name="ServerPacketChannelAdapter_SecondConnectNotAllowed" xml:space="preserve">
     <value>Only one Connect packet is allowed. The connection will be closed.</value>
   </data>
+  <data name="TcpChannel_ClientMustBeConnected" xml:space="preserve">
+    <value>Client must be connected</value>
+  </data>
 </root>

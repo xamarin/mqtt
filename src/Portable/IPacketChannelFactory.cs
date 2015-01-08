@@ -4,6 +4,6 @@ namespace Hermes
 {
 	public interface IPacketChannelFactory
 	{
-		IChannel<IPacket> CreateChannel (IBufferedChannel<byte> socket);
+		IChannel<IPacket> Create (IChannel<byte[]> binaryChannel);
 	}
 }

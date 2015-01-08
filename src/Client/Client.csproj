@@ -19,8 +19,8 @@
     <Compile Include="..\Server\ProtocolChannel.cs">
       <Link>ProtocolChannel.cs</Link>
     </Compile>
-    <Compile Include="..\Server\ReactiveSocketChannel.cs">
-      <Link>ReactiveSocketChannel.cs</Link>
+    <Compile Include="..\Server\TcpChannel.cs">
+      <Link>TcpChannel.cs</Link>
     </Compile>
     <Compile Include="ApplicationMessage.cs" />
     <Compile Include="Client.cs" />

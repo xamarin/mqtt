@@ -42,7 +42,7 @@ namespace Tests.Flows
 			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
 			sessionRepository.Verify(r => r.Delete(It.Is<ClientSession>(s => s == session)));
-			channel.Verify (c => c.Close ());
+			channel.Verify (c => c.Dispose ());
 		}
 
 		[Fact]
@@ -75,7 +75,7 @@ namespace Tests.Flows
 			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
 			sessionRepository.Verify(r => r.Delete(It.Is<ClientSession>(s => s == session)), Times.Never);
-			channel.Verify (c => c.Close ());
+			channel.Verify (c => c.Dispose ());
 		}
 	}
 }

@@ -16,14 +16,14 @@ namespace Tests
 		[Fact]
 		public void when_creating_packet_channel_then_succeeds()
 		{
-			var receiver = new Subject<byte>();
-			var bufferedChannel = new Mock<IBufferedChannel<byte>> ();
+			var receiver = new Subject<byte[]>();
+			var bufferedChannel = new Mock<IChannel<byte[]>> ();
 
 			bufferedChannel.Setup (x => x.Receiver).Returns (receiver);
 
 			var topicEvaluator = Mock.Of<ITopicEvaluator> ();
 			var factory = new PacketChannelFactory (topicEvaluator);
-			var channel = factory.CreateChannel (bufferedChannel.Object);
+			var channel = factory.Create (bufferedChannel.Object);
 
 			Assert.NotNull (channel);
 		}

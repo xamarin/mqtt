@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using Hermes.Diagnostics;
-using Hermes.Flows;
 using Hermes.Packets;
-using Hermes.Storage;
 
 namespace Hermes
 {
@@ -13,77 +10,71 @@ namespace Hermes
 	{
 		static readonly ITracer tracer = Tracer.Get<Server> ();
 
-		readonly IObservable<IBufferedChannel<byte>> socketProvider;
+		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IPacketChannelAdapter channelAdapter;
 
-		readonly IList<IBufferedChannel<byte>> sockets = new List<IBufferedChannel<byte>> ();
+		readonly IList<IChannel<byte[]>> channels = new List<IChannel<byte[]>> ();
 		readonly IList<string> activeClients = new List<string> ();
 
 		public Server (
-			IObservable<IBufferedChannel<byte>> socketProvider, 
+			IObservable<IChannel<byte[]>> binaryChannelProvider, 
 			IPacketChannelFactory channelFactory, 
 			IPacketChannelAdapter channelAdapter,
 			ProtocolConfiguration configuration)
 		{
-			this.socketProvider = socketProvider;
+			this.binaryChannelProvider = binaryChannelProvider;
 			this.channelFactory = channelFactory;
 			this.channelAdapter = channelAdapter;
 			this.configuration = configuration;
 
-			this.socketProvider.Subscribe (
-				socket => this.ProcessSocket(socket), 
+			this.binaryChannelProvider.Subscribe (
+				binaryChannel => this.ProcessChannel(binaryChannel), 
 				ex => { tracer.Error (ex); }, 
 				() => {}	
 			);
 		}
 
-		public int ActiveSockets { get { return this.sockets.Count; } }
+		public int ActiveChannels { get { return this.channels.Count; } }
 
 		public IEnumerable<string> ActiveClients { get { return this.activeClients; } }
 
 		public void Close ()
 		{
 			this.Dispose (true);
-		}
-
-		public void Dispose ()
-		{
-			this.Dispose (true);
+			GC.SuppressFinalize (this);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Dispose (true);
+			this.Close ();
 		}
 
 		protected virtual void Dispose (bool disposing)
 		{
 			if (disposing) {
-				foreach (var channel in sockets) {
-					channel.Close ();
+				foreach (var channel in channels) {
+					channel.Dispose ();
 				}
-
-				GC.SuppressFinalize (this);
 			}
 		}
 
-		private void ProcessSocket(IBufferedChannel<byte> socket)
+		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			this.sockets.Add (socket);
+			this.channels.Add (binaryChannel);
 			
 			var clientId = string.Empty;
 
-			var packetChannel = this.channelFactory.CreateChannel (socket);
+			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var protocolChannel = this.channelAdapter.Adapt (packetChannel);
 
 			protocolChannel.Sender.Subscribe (_ => {
 			}, ex => {
 				tracer.Error (ex);
-				this.CloseSocket (socket, clientId);
+				this.CloseChannel (binaryChannel, clientId);
 			}, () => {
-				this.CloseSocket (socket, clientId);	
+				this.CloseChannel (binaryChannel, clientId);	
 			});
 
 			protocolChannel.Receiver.Subscribe (packet => {
@@ -92,18 +83,18 @@ namespace Hermes
 					this.activeClients.Add (connect.ClientId);
 			}, ex => { 
 				tracer.Error (ex);
-				this.CloseSocket (socket, clientId);
+				this.CloseChannel (binaryChannel, clientId);
 			}, () => { 
-				this.CloseSocket (socket, clientId);
+				this.CloseChannel (binaryChannel, clientId);
 			});
 		}
 
-		private void CloseSocket(IBufferedChannel<byte> socket, string clientId)
+		private void CloseChannel(IChannel<byte[]> channel, string clientId)
 		{
 			this.RemoveClientId (clientId);
 
-			this.sockets.Remove (socket);
-			socket.Close ();
+			this.channels.Remove (channel);
+			channel.Dispose ();
 		}
 
 		private void RemoveClientId (string clientId)

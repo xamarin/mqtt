@@ -13,10 +13,8 @@ namespace Hermes
 			this.topicEvaluator = topicEvaluator;
 		}
 
-		public IChannel<IPacket> CreateChannel (IBufferedChannel<byte> socket)
+		public IChannel<IPacket> Create (IChannel<byte[]> binaryChannel)
 		{
-			var binaryChannel = new BinaryChannel (socket);
-
 			var formatters = this.GetFormatters();
 			var manager = new PacketManager (formatters);
 			
