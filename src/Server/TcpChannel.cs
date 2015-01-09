@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using Hermes.Properties;
@@ -54,17 +55,19 @@ namespace Hermes
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType().FullName);
 
-			try {
-				Monitor.Enter(lockObject);
+			await Observable.Start(() => 
+            {
+                Monitor.Enter(lockObject);
 
-				await this.client
-					.GetStream ()
-					.WriteAsync (message, 0, message.Length);
-
-				this.sender.OnNext (message);
-			} catch (Exception ex) {
-				this.sender.OnError (ex);
-			} finally { Monitor.Exit(lockObject); }
+                try  { 
+					this.client.GetStream ().Write(message, 0, message.Length); }
+                finally { 
+					Monitor.Exit(lockObject); 
+				}
+            })
+            .Select(_ => message)
+            .Do(x => sender.OnNext(x), ex => this.sender.OnError (ex))
+            .ToTask();
 		}
 
 		public void Dispose ()
