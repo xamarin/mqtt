@@ -132,7 +132,7 @@
   <data name="Client_ConnectionTimeout" xml:space="preserve">
     <value>A timeout occured while waiting for the client connection confirmation</value>
   </data>
-  <data name="TcpChannel_ClientMustBeConnected" xml:space="preserve">
-    <value>Client must be connected</value>
+  <data name="TcpChannel_ClientIsNotConnected" xml:space="preserve">
+    <value>The underlying TCP client is not connected</value>
   </data>
 </root>

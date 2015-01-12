@@ -29,9 +29,13 @@ namespace Hermes
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
-			this.sender.OnNext (message);
+			try {
+				this.sender.OnNext (message);
 
-			await this.innerChannel.SendAsync (message);
+				await this.innerChannel.SendAsync (message);
+			} catch (ProtocolException ex) {
+				this.NotifyError (ex);
+			}
 		}
 
 		public void NotifyError(Exception exception)

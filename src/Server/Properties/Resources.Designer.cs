@@ -106,11 +106,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client must be connected.
+        ///   Looks up a localized string similar to The underlying TCP client is not connected.
         /// </summary>
-        internal static string TcpChannel_ClientMustBeConnected {
+        internal static string TcpChannel_ClientIsNotConnected {
             get {
-                return ResourceManager.GetString("TcpChannel_ClientMustBeConnected", resourceCulture);
+                return ResourceManager.GetString("TcpChannel_ClientIsNotConnected", resourceCulture);
             }
         }
     }

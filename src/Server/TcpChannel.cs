@@ -31,11 +31,6 @@ namespace Hermes
 
 		public TcpChannel (TcpClient client, IPacketBuffer buffer, int receiveBufferSize)
 		{
-			if (!client.Connected)
-            {
-                throw new InvalidOperationException(Resources.TcpChannel_ClientMustBeConnected);
-            }
-
 			this.client = client;
 			this.client.ReceiveBufferSize = receiveBufferSize;
 			this.buffer = buffer;
@@ -44,7 +39,21 @@ namespace Hermes
 			this.subscription = this.GetStreamSubscription (this.client);
 		}
 
-		public bool IsConnected { get { return this.client != null && this.client.Connected; } }
+		public bool IsConnected 
+		{ 
+			get 
+			{
+				var connected = this.client != null;
+				
+				try {
+					connected = connected && this.client.Connected;
+				} catch (Exception) {
+					connected = false;
+				}
+
+				return connected;
+			} 
+		}
 
 		public IObservable<byte[]> Receiver { get { return this.receiver; } }
 
@@ -54,6 +63,9 @@ namespace Hermes
 		{
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType().FullName);
+
+			if (!this.IsConnected)
+				throw new ProtocolException (Resources.TcpChannel_ClientIsNotConnected);
 
 			await Observable.Start(() => 
             {
@@ -82,7 +94,10 @@ namespace Hermes
 
 			if (disposing) {
 				this.subscription.Dispose ();
-				this.client.Close ();
+
+				if(this.IsConnected)
+					this.client.Close ();
+
 				this.receiver.OnCompleted ();
 				this.sender.OnCompleted ();
 				this.disposed = true;
@@ -95,7 +110,12 @@ namespace Hermes
 				var buffer = new byte[client.ReceiveBufferSize];
 
 				return Observable
-					.FromAsync<int>(() => this.client.GetStream().ReadAsync(buffer, 0, buffer.Length))
+					.FromAsync<int>(() => {
+						if (!this.IsConnected)
+							return Task.FromResult (0);
+
+						return this.client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
+					})
 					.Select(x => buffer.Take(x).ToArray());
 			})
 			.Repeat()

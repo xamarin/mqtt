@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using Hermes.Packets;
-using Hermes.Properties;
 
 namespace Hermes
 {
@@ -15,27 +16,36 @@ namespace Hermes
 
 		public int Connections { get { return this.connections.Count; } }
 
+		public IEnumerable<string> ActiveClients 
+		{ 
+			get 
+			{ 
+				return this.connections
+					.Where (c => c.Value.IsConnected)
+					.Select (c => c.Key); 
+			} 
+		}
+
 		public void AddConnection(string clientId, IChannel<IPacket> connection)
         {
 			var existingConnection = default (IChannel<IPacket>);
 
 			if (this.connections.TryGetValue (clientId, out existingConnection)) {
 				this.RemoveConnection (clientId);
-				existingConnection.Dispose ();
 			}
 
 			this.connections.TryAdd(clientId, connection);
         }
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public IChannel<IPacket> GetConnection (string clientId)
 		{
-			var existingConnection = default (IChannel<IPacket>);
+			var existingConnection = default(IChannel<IPacket>);
 
-			if (!this.connections.TryGetValue (clientId, out existingConnection)) {
-				var error = string.Format (Resources.ConnectionProvider_ClientIdNotFound, clientId);
-				
-				throw new ProtocolException (error);
+			if (this.connections.TryGetValue (clientId, out existingConnection)) {
+				if (!existingConnection.IsConnected) {
+					this.RemoveConnection (clientId);
+					existingConnection = default (IChannel<IPacket>);
+				}
 			}
 
 			return existingConnection;
@@ -46,13 +56,9 @@ namespace Hermes
         {
 			var existingConnection = default (IChannel<IPacket>);
 
-			if (!this.connections.TryGetValue (clientId, out existingConnection)) {
-				var error = string.Format (Resources.ConnectionProvider_ClientIdNotFound, clientId);
-				
-				throw new ProtocolException (error);
+			if (this.connections.TryRemove (clientId, out existingConnection)) {
+				existingConnection.Dispose ();
 			}
-
-			this.connections.TryRemove (clientId, out existingConnection);
         }
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Hermes.Packets;
+﻿using System.Collections.Generic;
+using Hermes.Packets;
 
 namespace Hermes
 {
@@ -6,12 +7,12 @@ namespace Hermes
     {
 		int Connections { get; }
 
+		IEnumerable<string> ActiveClients { get; }
+
 		void AddConnection (string clientId, IChannel<IPacket> connection);
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
 		IChannel<IPacket> GetConnection (string clientId);
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
 		void RemoveConnection(string clientId);
     }
 }

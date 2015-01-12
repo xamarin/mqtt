@@ -11,24 +11,33 @@ namespace Hermes
 		static readonly ITracer tracer = Tracer.Get<Server> ();
 
 		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
-		readonly ProtocolConfiguration configuration;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IPacketChannelAdapter channelAdapter;
+		readonly IConnectionProvider connectionProvider;
+		readonly ProtocolConfiguration configuration;
 
-		readonly IList<IChannel<byte[]>> channels = new List<IChannel<byte[]>> ();
-		readonly IList<string> activeClients = new List<string> ();
+		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
 		public Server (
 			IObservable<IChannel<byte[]>> binaryChannelProvider, 
 			IPacketChannelFactory channelFactory, 
 			IPacketChannelAdapter channelAdapter,
+			IConnectionProvider connectionProvider,
 			ProtocolConfiguration configuration)
 		{
 			this.binaryChannelProvider = binaryChannelProvider;
 			this.channelFactory = channelFactory;
 			this.channelAdapter = channelAdapter;
+			this.connectionProvider = connectionProvider;
 			this.configuration = configuration;
+		}
 
+		public int ActiveChannels { get { return this.channels.Where(c => c.IsConnected).Count(); } }
+
+		public IEnumerable<string> ActiveClients { get { return this.connectionProvider.ActiveClients; } }
+
+		public void Start()
+		{
 			this.binaryChannelProvider.Subscribe (
 				binaryChannel => this.ProcessChannel(binaryChannel), 
 				ex => { tracer.Error (ex); }, 
@@ -36,11 +45,7 @@ namespace Hermes
 			);
 		}
 
-		public int ActiveChannels { get { return this.channels.Count; } }
-
-		public IEnumerable<string> ActiveClients { get { return this.activeClients; } }
-
-		public void Close ()
+		public void Stop ()
 		{
 			this.Dispose (true);
 			GC.SuppressFinalize (this);
@@ -48,7 +53,7 @@ namespace Hermes
 
 		void IDisposable.Dispose ()
 		{
-			this.Close ();
+			this.Stop ();
 		}
 
 		protected virtual void Dispose (bool disposing)
@@ -62,8 +67,6 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			this.channels.Add (binaryChannel);
-			
 			var clientId = string.Empty;
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
@@ -72,37 +75,26 @@ namespace Hermes
 			protocolChannel.Sender.Subscribe (_ => {
 			}, ex => {
 				tracer.Error (ex);
-				this.CloseChannel (binaryChannel, clientId);
+				this.CloseChannel (protocolChannel);
 			}, () => {
-				this.CloseChannel (binaryChannel, clientId);	
+				this.CloseChannel (protocolChannel);	
 			});
 
-			protocolChannel.Receiver.Subscribe (packet => {
-				var connect = packet as Connect;
-				if (connect != null)
-					this.activeClients.Add (connect.ClientId);
+			protocolChannel.Receiver.Subscribe (_ => {
 			}, ex => { 
 				tracer.Error (ex);
-				this.CloseChannel (binaryChannel, clientId);
+				this.CloseChannel (protocolChannel);
 			}, () => { 
-				this.CloseChannel (binaryChannel, clientId);
+				this.CloseChannel (protocolChannel);
 			});
+
+			this.channels.Add (protocolChannel);
 		}
 
-		private void CloseChannel(IChannel<byte[]> channel, string clientId)
+		private void CloseChannel(IChannel<IPacket> channel)
 		{
-			this.RemoveClientId (clientId);
-
 			this.channels.Remove (channel);
 			channel.Dispose ();
-		}
-
-		private void RemoveClientId (string clientId)
-		{
-			if (!this.activeClients.Any (c => c == clientId))
-				return;
-
-			this.activeClients.Remove (clientId);
 		}
 	}
 }

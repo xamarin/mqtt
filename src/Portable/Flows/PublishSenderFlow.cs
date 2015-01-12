@@ -45,7 +45,7 @@ namespace Hermes.Flows
 
 		public async Task SendPublishAsync (string clientId, Publish message, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
-			if (!channel.IsConnected) {
+			if (channel == null || !channel.IsConnected) {
 				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToSend);
 				return;
 			}

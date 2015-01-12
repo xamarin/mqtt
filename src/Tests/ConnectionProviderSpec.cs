@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive.Subjects;
 using Hermes;
 using Hermes.Packets;
@@ -10,7 +11,7 @@ namespace Tests
 	public class ConnectionProviderSpec
 	{
 		[Fact]
-		public void when_adding_new_client_then_client_list_increases()
+		public void when_adding_new_client_then_connection_list_increases()
 		{
 			var provider = new ConnectionProvider ();
 
@@ -23,7 +24,44 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_removing_clients_then_client_list_decreases()
+		public void when_adding_disconnected_client_then_active_clients_list_does_not_increase()
+		{
+			var provider = new ConnectionProvider ();
+
+			var existingClients = provider.ActiveClients.Count();
+			var clientId = Guid.NewGuid ().ToString ();
+
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == false));
+
+			Assert.Equal (existingClients, provider.ActiveClients.Count());
+		}
+
+		[Fact]
+		public void when_adding_new_client_and_disconnect_it_then_active_clients_list_decreases()
+		{
+			var provider = new ConnectionProvider ();
+
+			var existingClients = provider.ActiveClients.Count();
+			var clientId = Guid.NewGuid ().ToString ();
+
+			var connection = new Mock<IChannel<IPacket>> ();
+
+			connection.Setup(c => c.IsConnected).Returns(true);
+
+			provider.AddConnection (clientId, connection.Object);
+
+			var currentClients = provider.ActiveClients.Count();
+
+			connection.Setup (c => c.IsConnected).Returns (false);
+
+			var finalClients = provider.ActiveClients.Count();
+
+			Assert.Equal (existingClients + 1, currentClients);
+			Assert.Equal (existingClients, finalClients);
+		}
+
+		[Fact]
+		public void when_removing_clients_then_connection_list_decreases()
 		{
 			var provider = new ConnectionProvider ();
 
@@ -69,15 +107,6 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_removing_not_existing_client_then_fail()
-		{
-			var provider = new ConnectionProvider ();
-			var clientId = Guid.NewGuid ().ToString ();
-
-			Assert.Throws<ProtocolException>(() => provider.RemoveConnection (clientId));
-		}
-
-		[Fact]
 		public void when_getting_connection_from_client_then_succeeds()
 		{
 			var provider = new ConnectionProvider ();
@@ -91,12 +120,16 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_getting_connection_from_not_existing_client_then_fail()
+		public void when_getting_connection_from_disconnected_client_then_no_connection_is_returned()
 		{
 			var provider = new ConnectionProvider ();
 			var clientId = Guid.NewGuid ().ToString ();
-			
-			Assert.Throws<ProtocolException>(() => provider.GetConnection (clientId));
+
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == false));
+
+			var connection = provider.GetConnection (clientId);
+
+			Assert.Null (connection);
 		}
 	}
 }

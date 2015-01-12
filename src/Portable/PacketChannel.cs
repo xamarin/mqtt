@@ -44,15 +44,11 @@ namespace Hermes
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
-			try {
-				var bytes = await this.manager.GetBytesAsync (packet);
+			var bytes = await this.manager.GetBytesAsync (packet);
 
-				this.sender.OnNext (packet);
+			this.sender.OnNext (packet);
 
-				await this.innerChannel.SendAsync (bytes);
-			} catch (ProtocolException ex) {
-				this.sender.OnError (ex);
-			}
+			await this.innerChannel.SendAsync (bytes);
 		}
 
 		public void Dispose ()
