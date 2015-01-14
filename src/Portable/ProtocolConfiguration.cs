@@ -6,10 +6,16 @@ namespace Hermes
 	{
 		public ProtocolConfiguration ()
 		{
+			// The default receive buffer size of TcpClient according to
+			// http://msdn.microsoft.com/en-us/library/system.net.sockets.tcpclient.receivebuffersize.aspx
+			// is 8192 bytes
+			this.BufferSize = 8192;
 			this.AllowWildcardsInTopicFilters = true;
 		}
 
 		public int Port { get; set; }
+
+		public int BufferSize { get; set; }
 
 		public QualityOfService MaximumQualityOfService { get; set; }
 

@@ -10,6 +10,8 @@ namespace Hermes
 	{
 		static readonly ITracer tracer = Tracer.Get<Server> ();
 
+		bool disposed;
+
 		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IPacketChannelAdapter channelAdapter;
@@ -38,6 +40,9 @@ namespace Hermes
 
 		public void Start()
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			this.binaryChannelProvider.Subscribe (
 				binaryChannel => this.ProcessChannel(binaryChannel), 
 				ex => { tracer.Error (ex); }, 
@@ -58,6 +63,8 @@ namespace Hermes
 
 		protected virtual void Dispose (bool disposing)
 		{
+			if (this.disposed) return;
+
 			if (disposing) {
 				foreach (var channel in channels) {
 					channel.Dispose ();

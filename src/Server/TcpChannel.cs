@@ -21,18 +21,10 @@ namespace Hermes
 		readonly Subject<byte[]> sender;
 		readonly IDisposable subscription;
 
-		public TcpChannel (TcpClient client, IPacketBuffer buffer)
-			: this(client, buffer, receiveBufferSize: 8192)
-		{
-			// The default receive buffer size of TcpClient according to
-			// http://msdn.microsoft.com/en-us/library/system.net.sockets.tcpclient.receivebuffersize.aspx
-			// is 8192 bytes
-		}
-
-		public TcpChannel (TcpClient client, IPacketBuffer buffer, int receiveBufferSize)
+		public TcpChannel (TcpClient client, IPacketBuffer buffer, ProtocolConfiguration configuration)
 		{
 			this.client = client;
-			this.client.ReceiveBufferSize = receiveBufferSize;
+			this.client.ReceiveBufferSize = configuration.BufferSize;
 			this.buffer = buffer;
 			this.receiver = new Subject<byte[]> ();
 			this.sender = new Subject<byte[]> ();

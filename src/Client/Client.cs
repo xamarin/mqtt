@@ -10,9 +10,12 @@ using Hermes.Storage;
 
 namespace Hermes
 {
-    public class Client : IClient
+    public class Client : IClient, IDisposable
     {
 		static readonly ITracer tracer = Tracer.Get<Client> ();
+
+		bool disposed;
+		bool isConnected;
 
 		readonly Subject<ApplicationMessage> receiver = new Subject<ApplicationMessage> ();
 		readonly Subject<IPacket> sender = new Subject<IPacket> ();
@@ -50,11 +53,11 @@ namespace Hermes
 						tracer.Error (ex);
 						this.receiver.OnError (ex);
 						this.sender.OnError (ex);
-						this.CloseChannel ();
+						this.Close ();
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted ();
-						this.CloseChannel ();
+						this.Close ();
 					});
 
 			this.protocolChannel.Receiver
@@ -63,17 +66,29 @@ namespace Hermes
 						tracer.Error (ex);
 						this.receiver.OnError (ex);
 						this.sender.OnError (ex);
-						this.CloseChannel ();
+						this.Close ();
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted();
-						this.CloseChannel ();
+						this.Close ();
 					});
         }
 
 		public string Id { get; private set; }
 
-		public bool IsConnected { get; private set; }
+		public bool IsConnected
+		{
+			get
+			{
+				this.CheckUnderlyingConnection ();
+
+				return this.isConnected && this.protocolChannel.IsConnected;
+			}
+			private set
+			{
+				this.isConnected = value;
+			}
+		}
 
 		public IObservable<ApplicationMessage> Receiver { get { return this.receiver; } }
 
@@ -88,6 +103,9 @@ namespace Hermes
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false)
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			this.OpenClientSession (credentials.ClientId, cleanSession);
 
 			var connect = new Connect (credentials.ClientId, cleanSession) {
@@ -122,6 +140,9 @@ namespace Hermes
 
 		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			var packetId = this.packetIdentifierRepository.GetUnusedPacketIdentifier(new Random());
 			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
@@ -130,6 +151,9 @@ namespace Hermes
 
 		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(qos);
 			var publish = new Publish (message.Topic, qos, retain, duplicated: false, packetId: packetId)
 			{
@@ -143,6 +167,9 @@ namespace Hermes
 
 		public async Task UnsubscribeAsync (params string[] topics)
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			var packetId = this.packetIdentifierRepository.GetUnusedPacketIdentifier(new Random());
 			var unsubscribe = new Unsubscribe(packetId, topics);
 
@@ -151,13 +178,39 @@ namespace Hermes
 
 		public async Task DisconnectAsync ()
 		{
+			if (this.disposed)
+				throw new ObjectDisposedException (this.GetType ().FullName);
+
 			this.CloseClientSession ();
 
 			var disconnect = new Disconnect ();
 
 			await this.SendPacket (disconnect);
 
-			this.CloseChannel ();
+			this.Close ();
+		}
+
+		public void Close ()
+		{
+			this.Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		void IDisposable.Dispose ()
+		{
+			this.Close ();
+		}
+
+		protected virtual void Dispose (bool disposing)
+		{
+			if (this.disposed) return;
+
+			if (disposing) {
+				this.IsConnected = false; 
+				this.Id = null;
+				this.protocolChannel.Dispose ();
+				this.disposed = true;
+			}
 		}
 
 		private void OpenClientSession(string clientId, bool cleanSession)
@@ -192,11 +245,11 @@ namespace Hermes
 			this.sender.OnNext (packet);
 		}
 
-		private void CloseChannel ()
+		private void CheckUnderlyingConnection ()
 		{
-			this.IsConnected = false; 
-			this.Id = null;
-			this.protocolChannel.Dispose ();
+			if (this.isConnected && !this.protocolChannel.IsConnected) {
+				this.Close ();
+			}
 		}
 	}
 }
