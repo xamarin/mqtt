@@ -1,8 +1,4 @@
-﻿using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Registration;
-using System.Net.Sockets;
-using System.Reflection;
+﻿using System.Net.Sockets;
 using Hermes.Flows;
 using Hermes.Storage;
 
@@ -11,7 +7,6 @@ namespace Hermes
 	public class ClientInitializer : IInitalizer<Client>
 	{
 		readonly string hostAddress;
-		CompositionContainer container;
 
 		public ClientInitializer (string hostAddress)
 		{
@@ -20,37 +15,16 @@ namespace Hermes
 
 		public Client Initialize (ProtocolConfiguration configuration)
 		{
-			var builder = this.RegisterDependencies ();
-			var catalog = new AggregateCatalog ();
+			var tcpClient = new TcpClient(this.hostAddress, configuration.Port);
+			var buffer = new PacketBuffer();
+			var channel = new TcpChannel(tcpClient, buffer, configuration);
+			var topicEvaluator = new TopicEvaluator(configuration);
+			var channelFactory = new PacketChannelFactory(topicEvaluator);
+			var repositoryProvider = new InMemoryRepositoryProvider();
+			var flowProvider = new ClientProtocolFlowProvider(topicEvaluator, repositoryProvider, configuration);
+			var channelAdapter = new ClientPacketChannelAdapter(flowProvider, configuration);
 
-			catalog.Catalogs.Add (new AssemblyCatalog (typeof (IPacketManager).Assembly, builder));
-			catalog.Catalogs.Add (new AssemblyCatalog (Assembly.GetExecutingAssembly(), builder));
-
-			this.container = new CompositionContainer (catalog, CompositionOptions.DisableSilentRejection);
-
-			var client = new TcpClient(this.hostAddress, configuration.Port);
-
-			container.ComposeExportedValue<ProtocolConfiguration> (configuration);
-			container.ComposeExportedValue<TcpClient> (client);
-			container.ComposeParts (this);
-
-			return this.container.GetExportedValue<Client> ();
-		}
-
-		private RegistrationBuilder RegisterDependencies()
-		{
-			var builder = new RegistrationBuilder ();
-
-			builder.ForType<PacketBuffer> ().Export<IPacketBuffer> ();
-			builder.ForType<TcpChannel>().Export<IChannel<byte[]>>();
-			builder.ForType<TopicEvaluator> ().Export<ITopicEvaluator> ();
-			builder.ForType<PacketChannelFactory> ().Export<IPacketChannelFactory> ();
-			builder.ForType<InMemoryRepositoryProvider> ().Export<IRepositoryProvider> ();
-			builder.ForType<ClientProtocolFlowProvider> ().Export<IProtocolFlowProvider> ();
-			builder.ForType<ClientPacketChannelAdapter> ().Export<IPacketChannelAdapter> ();
-			builder.ForType<Client> ().Export<Client> ();
-
-			return builder;
+			return new Client (channel, channelFactory, channelAdapter, flowProvider, repositoryProvider, configuration);
 		}
 	}
 }
