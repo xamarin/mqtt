@@ -27,5 +27,7 @@ namespace Hermes
 		Task UnsubscribeAsync (params string[] topics);
 
 		Task DisconnectAsync ();
+
+		void Close ();
 	}
 }

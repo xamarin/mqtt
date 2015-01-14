@@ -26,6 +26,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="ClientCredentials.cs" />
     <Compile Include="ClientException.cs" />
+    <Compile Include="ClientInitializer.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
@@ -54,6 +55,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.Composition.Registration" />
     <Reference Include="System.Net" />
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -70,6 +73,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+    <Reference Include="System.Reflection.Context" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Portable\Portable.csproj">
