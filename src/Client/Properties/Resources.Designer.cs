@@ -88,6 +88,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The underlying connection has been disconnected unexpectedly.
+        /// </summary>
+        internal static string Client_UnexpectedChannelDisconnection {
+            get {
+                return ResourceManager.GetString("Client_UnexpectedChannelDisconnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The first packet received from the Server must be a ConnectAck packet. The connection will be closed..
         /// </summary>
         internal static string ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck {

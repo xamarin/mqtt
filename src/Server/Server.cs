@@ -34,6 +34,8 @@ namespace Hermes
 			this.configuration = configuration;
 		}
 
+		public event EventHandler<StoppedEventArgs> Stopped = (sender, args) => { };
+
 		public int ActiveChannels { get { return this.channels.Where(c => c.IsConnected).Count(); } }
 
 		public IEnumerable<string> ActiveClients { get { return this.connectionProvider.ActiveClients; } }
@@ -52,13 +54,12 @@ namespace Hermes
 
 		public void Stop ()
 		{
-			this.Dispose (true);
-			GC.SuppressFinalize (this);
+			this.Stop (StoppedReason.Disconnect);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Stop ();
+			this.Stop (StoppedReason.Dispose);
 		}
 
 		protected virtual void Dispose (bool disposing)
@@ -69,13 +70,20 @@ namespace Hermes
 				foreach (var channel in channels) {
 					channel.Dispose ();
 				}
+				
+				this.disposed = true;
 			}
+		}
+
+		private void Stop (StoppedReason reason, string message = null)
+		{
+			this.Dispose (true);
+			this.Stopped (this, new StoppedEventArgs(reason, message));
+			GC.SuppressFinalize (this);
 		}
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			var clientId = string.Empty;
-
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var protocolChannel = this.channelAdapter.Adapt (packetChannel);
 
