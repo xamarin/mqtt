@@ -6,6 +6,8 @@ namespace Hermes
 {
 	public interface IClient
 	{
+		event EventHandler<StoppedEventArgs> Stopped;
+
 		string Id { get; }
 
 		bool IsConnected { get; }
@@ -28,6 +30,6 @@ namespace Hermes
 
 		Task DisconnectAsync ();
 
-		void Close ();
+		void Stop ();
 	}
 }

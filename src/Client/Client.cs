@@ -53,11 +53,11 @@ namespace Hermes
 						tracer.Error (ex);
 						this.receiver.OnError (ex);
 						this.sender.OnError (ex);
-						this.Close ();
+						this.Stop (StoppedReason.Error, ex.Message);
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted ();
-						this.Close ();
+						this.Stop (StoppedReason.Disconnect);
 					});
 
 			this.protocolChannel.Receiver
@@ -66,13 +66,15 @@ namespace Hermes
 						tracer.Error (ex);
 						this.receiver.OnError (ex);
 						this.sender.OnError (ex);
-						this.Close ();
+						this.Stop (StoppedReason.Error, ex.Message);
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted();
-						this.Close ();
+						this.Stop (StoppedReason.Disconnect);
 					});
         }
+
+		public event EventHandler<StoppedEventArgs> Stopped = (sender, args) => { };
 
 		public string Id { get; private set; }
 
@@ -187,18 +189,17 @@ namespace Hermes
 
 			await this.SendPacket (disconnect);
 
-			this.Close ();
+			this.Stop (StoppedReason.Disconnect);
 		}
 
-		public void Close ()
+		public void Stop ()
 		{
-			this.Dispose (true);
-			GC.SuppressFinalize (this);
+			this.Stop (StoppedReason.Disconnect);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Close ();
+			this.Stop (StoppedReason.Dispose);
 		}
 
 		protected virtual void Dispose (bool disposing)
@@ -211,6 +212,13 @@ namespace Hermes
 				this.protocolChannel.Dispose ();
 				this.disposed = true;
 			}
+		}
+
+		private void Stop (StoppedReason reason, string message = null)
+		{
+			this.Dispose (true);
+			this.Stopped (this, new StoppedEventArgs(reason, message));
+			GC.SuppressFinalize (this);
 		}
 
 		private void OpenClientSession(string clientId, bool cleanSession)
@@ -248,7 +256,7 @@ namespace Hermes
 		private void CheckUnderlyingConnection ()
 		{
 			if (this.isConnected && !this.protocolChannel.IsConnected) {
-				this.Close ();
+				this.Stop (StoppedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 	}
