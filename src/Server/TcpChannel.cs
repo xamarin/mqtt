@@ -111,7 +111,7 @@ namespace Hermes
 					.Select(x => buffer.Take(x).ToArray());
 			})
 			.Repeat()
-			.TakeWhile(bytes => bytes.Any())
+			.TakeWhile(_ => this.IsConnected)
 			.Subscribe(bytes => {
 				var packet = default (byte[]);
 
