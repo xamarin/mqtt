@@ -2,22 +2,22 @@
 
 namespace Hermes
 {
-	public enum StoppedReason
+	public enum ClosedReason
 	{
 		Disconnect,
 		Dispose,
 		Error
 	}
 
-	public class StoppedEventArgs : EventArgs
+	public class ClosedEventArgs : EventArgs
 	{
-		public StoppedEventArgs (StoppedReason reason, string message = null)
+		public ClosedEventArgs (ClosedReason reason, string message = null)
 		{
 			this.Reason = reason;
 			this.Message = message;
 		}
 
-		public StoppedReason Reason { get; private set; }
+		public ClosedReason Reason { get; private set; }
 
 		public string Message { get; private set; }
 	}

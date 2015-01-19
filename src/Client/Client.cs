@@ -49,15 +49,15 @@ namespace Hermes
 
 			this.protocolChannel.Sender
 				.Subscribe (_ => { }, 
-					ex => { 
+					ex => {
 						tracer.Error (ex);
 						this.receiver.OnError (ex);
 						this.sender.OnError (ex);
-						this.Stop (StoppedReason.Error, ex.Message);
+						this.Close (ClosedReason.Error, ex.Message);
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted ();
-						this.Stop (StoppedReason.Disconnect);
+						this.Close (ClosedReason.Disconnect);
 					});
 
 			this.protocolChannel.Receiver
@@ -66,15 +66,15 @@ namespace Hermes
 						tracer.Error (ex);
 						this.receiver.OnError (ex);
 						this.sender.OnError (ex);
-						this.Stop (StoppedReason.Error, ex.Message);
+						this.Close (ClosedReason.Error, ex.Message);
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted();
-						this.Stop (StoppedReason.Disconnect);
+						this.Close (ClosedReason.Disconnect);
 					});
         }
 
-		public event EventHandler<StoppedEventArgs> Stopped = (sender, args) => { };
+		public event EventHandler<ClosedEventArgs> Closed = (sender, args) => { };
 
 		public string Id { get; private set; }
 
@@ -117,24 +117,24 @@ namespace Hermes
 				KeepAlive = this.configuration.KeepAliveSecs
 			};
 
-			await this.SendPacket (connect);
-
-			var connectTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var ackSubscription = this.protocolChannel.Receiver
+					.OfType<ConnectAck> ();
 			var ack = default (ConnectAck);
+			var connectTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
 
 			try {
-				ack = await this.protocolChannel.Receiver
-					.OfType<ConnectAck> ()
-					.FirstOrDefaultAsync ()
-					.Timeout(connectTimeout);
+				await this.SendPacket (connect);
+
+				ack = await ackSubscription.FirstOrDefaultAsync ().Timeout(connectTimeout);
 			} catch(TimeoutException timeEx) {
 				throw new ClientException (Resources.Client_ConnectionTimeout, timeEx);
 			} catch (Exception ex) {
 				throw new ClientException (Resources.Client_ConnectionError, ex);
 			}
 
-			if (ack == null)
+			if (ack == null) {
 				throw new ClientException (Resources.Client_ConnectionDisconnected);
+			}
 
 			this.Id = credentials.ClientId;
 			this.IsConnected = true;
@@ -189,17 +189,17 @@ namespace Hermes
 
 			await this.SendPacket (disconnect);
 
-			this.Stop (StoppedReason.Disconnect);
+			this.Close (ClosedReason.Disconnect);
 		}
 
-		public void Stop ()
+		public void Close ()
 		{
-			this.Stop (StoppedReason.Disconnect);
+			this.Close (ClosedReason.Disconnect);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Stop (StoppedReason.Dispose);
+			this.Close (ClosedReason.Dispose);
 		}
 
 		protected virtual void Dispose (bool disposing)
@@ -214,10 +214,10 @@ namespace Hermes
 			}
 		}
 
-		private void Stop (StoppedReason reason, string message = null)
+		private void Close (ClosedReason reason, string message = null)
 		{
 			this.Dispose (true);
-			this.Stopped (this, new StoppedEventArgs(reason, message));
+			this.Closed (this, new ClosedEventArgs(reason, message));
 			GC.SuppressFinalize (this);
 		}
 
@@ -256,7 +256,7 @@ namespace Hermes
 		private void CheckUnderlyingConnection ()
 		{
 			if (this.isConnected && !this.protocolChannel.IsConnected) {
-				this.Stop (StoppedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
+				this.Close (ClosedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 	}

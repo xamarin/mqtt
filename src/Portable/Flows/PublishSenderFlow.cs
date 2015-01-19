@@ -11,7 +11,7 @@ namespace Hermes.Flows
 	public class PublishSenderFlow : PublishFlow, IPublishSenderFlow
 	{
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
-		
+
 		IDictionary<PacketType, Func<string, ushort, IFlowPacket>> senderRules;
 
 		public PublishSenderFlow (IRepository<ClientSession> sessionRepository,
@@ -20,7 +20,7 @@ namespace Hermes.Flows
 			: base(sessionRepository, configuration)
 		{
 			this.packetIdentifierRepository = packetIdentifierRepository;
-
+				
 			this.DefineSenderRules ();
 		}
 

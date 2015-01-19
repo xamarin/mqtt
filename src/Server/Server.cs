@@ -11,6 +11,7 @@ namespace Hermes
 		static readonly ITracer tracer = Tracer.Get<Server> ();
 
 		bool disposed;
+		IDisposable channelSubscription;
 
 		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
@@ -34,7 +35,7 @@ namespace Hermes
 			this.configuration = configuration;
 		}
 
-		public event EventHandler<StoppedEventArgs> Stopped = (sender, args) => { };
+		public event EventHandler<ClosedEventArgs> Stopped = (sender, args) => { };
 
 		public int ActiveChannels { get { return this.channels.Where(c => c.IsConnected).Count(); } }
 
@@ -45,7 +46,7 @@ namespace Hermes
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
-			this.binaryChannelProvider.Subscribe (
+			this.channelSubscription = this.binaryChannelProvider.Subscribe (
 				binaryChannel => this.ProcessChannel(binaryChannel), 
 				ex => { tracer.Error (ex); }, 
 				() => {}	
@@ -54,12 +55,12 @@ namespace Hermes
 
 		public void Stop ()
 		{
-			this.Stop (StoppedReason.Disconnect);
+			this.Stop (ClosedReason.Disconnect);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Stop (StoppedReason.Dispose);
+			this.Stop (ClosedReason.Dispose);
 		}
 
 		protected virtual void Dispose (bool disposing)
@@ -70,15 +71,19 @@ namespace Hermes
 				foreach (var channel in channels) {
 					channel.Dispose ();
 				}
+
+				if (this.channelSubscription != null) {
+					this.channelSubscription.Dispose ();
+				}
 				
 				this.disposed = true;
 			}
 		}
 
-		private void Stop (StoppedReason reason, string message = null)
+		private void Stop (ClosedReason reason, string message = null)
 		{
 			this.Dispose (true);
-			this.Stopped (this, new StoppedEventArgs(reason, message));
+			this.Stopped (this, new ClosedEventArgs(reason, message));
 			GC.SuppressFinalize (this);
 		}
 

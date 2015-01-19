@@ -15,7 +15,10 @@ namespace Hermes
 
 		public Client Initialize (ProtocolConfiguration configuration)
 		{
-			var tcpClient = new TcpClient(this.hostAddress, configuration.Port);
+			var tcpClient = new TcpClient();
+
+			tcpClient.Connect (this.hostAddress, configuration.Port);
+
 			var buffer = new PacketBuffer();
 			var channel = new TcpChannel(tcpClient, buffer, configuration);
 			var topicEvaluator = new TopicEvaluator(configuration);
