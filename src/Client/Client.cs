@@ -49,7 +49,7 @@ namespace Hermes
 
 			this.protocolChannel.Sender
 				.Subscribe (_ => { }, 
-					ex => { 
+					ex => {
 						tracer.Error (ex);
 						this.receiver.OnError (ex);
 						this.sender.OnError (ex);
@@ -117,24 +117,24 @@ namespace Hermes
 				KeepAlive = this.configuration.KeepAliveSecs
 			};
 
-			await this.SendPacket (connect);
-
-			var connectTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var ackSubscription = this.protocolChannel.Receiver
+					.OfType<ConnectAck> ();
 			var ack = default (ConnectAck);
+			var connectTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
 
 			try {
-				ack = await this.protocolChannel.Receiver
-					.OfType<ConnectAck> ()
-					.FirstOrDefaultAsync ()
-					.Timeout(connectTimeout);
+				await this.SendPacket (connect);
+
+				ack = await ackSubscription.FirstOrDefaultAsync ().Timeout(connectTimeout);
 			} catch(TimeoutException timeEx) {
 				throw new ClientException (Resources.Client_ConnectionTimeout, timeEx);
 			} catch (Exception ex) {
 				throw new ClientException (Resources.Client_ConnectionError, ex);
 			}
 
-			if (ack == null)
+			if (ack == null) {
 				throw new ClientException (Resources.Client_ConnectionDisconnected);
+			}
 
 			this.Id = credentials.ClientId;
 			this.IsConnected = true;

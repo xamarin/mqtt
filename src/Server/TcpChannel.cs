@@ -3,8 +3,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
-using System.Threading;
 using System.Threading.Tasks;
 using Hermes.Properties;
 
@@ -59,19 +57,9 @@ namespace Hermes
 			if (!this.IsConnected)
 				throw new ProtocolException (Resources.TcpChannel_ClientIsNotConnected);
 
-			await Observable.Start(() => 
-            {
-                Monitor.Enter(lockObject);
+			this.sender.OnNext (message);
 
-                try  { 
-					this.client.GetStream ().Write(message, 0, message.Length); }
-                finally { 
-					Monitor.Exit(lockObject); 
-				}
-            })
-            .Select(_ => message)
-            .Do(x => sender.OnNext(x), ex => this.sender.OnError (ex))
-            .ToTask();
+			await this.client.GetStream ().WriteAsync(message, 0, message.Length);
 		}
 
 		public void Dispose ()
@@ -111,7 +99,7 @@ namespace Hermes
 					.Select(x => buffer.Take(x).ToArray());
 			})
 			.Repeat()
-			.TakeWhile(_ => this.IsConnected)
+			.TakeWhile(bytes => bytes.Any())
 			.Subscribe(bytes => {
 				var packet = default (byte[]);
 
