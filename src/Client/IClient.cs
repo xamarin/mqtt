@@ -22,6 +22,7 @@ namespace Hermes
 		/// <exception cref="ClientException">ClientException</exception>
 		Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false);
 
+		/// <exception cref="ClientException">ClientException</exception>
 		Task SubscribeAsync (string topicFilter, QualityOfService qos);
 
 		Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false);

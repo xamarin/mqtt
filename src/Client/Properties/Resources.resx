@@ -124,13 +124,22 @@
     <value>No ConnectAck has been received since the connection was established. The connection will be closed.</value>
   </data>
   <data name="Client_ConnectionDisconnected" xml:space="preserve">
-    <value>The client has been disconnected while trying to perform the connection</value>
+    <value>The client {0} has been disconnected while trying to perform the connection</value>
   </data>
   <data name="Client_ConnectionError" xml:space="preserve">
-    <value>An error occurred while trying to connect the client</value>
+    <value>An error occurred while trying to connect the client {0}</value>
   </data>
   <data name="Client_ConnectionTimeout" xml:space="preserve">
-    <value>A timeout occured while waiting for the client connection confirmation</value>
+    <value>A timeout occured while waiting for the client {0} connection confirmation</value>
+  </data>
+  <data name="Client_SubscribeError" xml:space="preserve">
+    <value>An error occurred while trying to subscribe the client {0} to topic {1}</value>
+  </data>
+  <data name="Client_SubscribeTimeout" xml:space="preserve">
+    <value>A timeout occured while waiting for the subscribe confirmation of client {0} for topic {1}</value>
+  </data>
+  <data name="Client_SubscriptionDisconnected" xml:space="preserve">
+    <value>The client {0} has been disconnected while trying to perform the subscription to topic {1}</value>
   </data>
   <data name="Client_UnexpectedChannelDisconnection" xml:space="preserve">
     <value>The underlying connection has been disconnected unexpectedly</value>
