@@ -46,13 +46,18 @@ namespace Hermes
 					this.connectionProvider.AddConnection (clientId, protocolChannel);
 
 					await this.DispatchPacketAsync (connect, clientId, protocolChannel);
-					
-					if (keepAlive > 0) {
-						this.MonitorKeepAlive (protocolChannel, clientId, keepAlive);
-					}
 				}, async ex => {
 					await this.HandleConnectionExceptionAsync (ex, protocolChannel);
 				});
+
+			protocolChannel.Sender
+				.OfType<ConnectAck> ()
+				.FirstAsync ()
+				.Subscribe (connectAck => {
+					if (keepAlive > 0) {
+						this.MonitorKeepAlive (protocolChannel, clientId, keepAlive);
+					}
+				}, ex => {});
 
 			protocolChannel.Receiver
 				.Skip (1)
@@ -111,7 +116,6 @@ namespace Hermes
 		private void MonitorKeepAlive(ProtocolChannel channel, string clientId, int keepAlive)
 		{
 			channel.Receiver
-				.Skip (1)
 				.Timeout (GetKeepAliveTolerance(keepAlive))
 				.Subscribe(_ => {}, ex => {
 					var message = string.Format (Resources.ServerPacketChannelAdapter_KeepAliveTimeExceeded, keepAlive);

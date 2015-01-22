@@ -30,7 +30,7 @@ namespace Hermes
 				} catch (ProtocolException ex) {
 					this.receiver.OnError (ex);
 				}
-			}, onError: ex => this.receiver.OnError(ex), onCompleted: () => this.receiver.OnCompleted());
+			}, onError: ex => this.receiver.OnError(ex));
 		}
 
 		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }

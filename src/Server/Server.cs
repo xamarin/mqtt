@@ -92,19 +92,13 @@ namespace Hermes
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var protocolChannel = this.channelAdapter.Adapt (packetChannel);
 
-			protocolChannel.Sender.Subscribe (_ => {
-			}, ex => {
+			protocolChannel.Sender.Subscribe (_ => {}, ex => {
 				tracer.Error (ex);
 				this.CloseChannel (protocolChannel);
-			}, () => {
-				this.CloseChannel (protocolChannel);	
 			});
 
-			protocolChannel.Receiver.Subscribe (_ => {
-			}, ex => { 
+			protocolChannel.Receiver.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex);
-				this.CloseChannel (protocolChannel);
-			}, () => { 
 				this.CloseChannel (protocolChannel);
 			});
 

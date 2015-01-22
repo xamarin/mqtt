@@ -20,7 +20,7 @@ namespace Hermes.Flows
 			: base(sessionRepository, configuration)
 		{
 			this.packetIdentifierRepository = packetIdentifierRepository;
-				
+
 			this.DefineSenderRules ();
 		}
 

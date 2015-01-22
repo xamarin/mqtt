@@ -57,7 +57,6 @@ namespace Hermes
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted ();
-						this.Close (ClosedReason.Disconnect);
 					});
 
 			this.protocolChannel.Receiver
@@ -70,7 +69,6 @@ namespace Hermes
 					}, () => {
 						this.receiver.OnCompleted ();
 						this.sender.OnCompleted();
-						this.Close (ClosedReason.Disconnect);
 					});
         }
 
@@ -117,15 +115,16 @@ namespace Hermes
 				KeepAlive = this.configuration.KeepAliveSecs
 			};
 
-			var ackSubscription = this.protocolChannel.Receiver
-					.OfType<ConnectAck> ();
 			var ack = default (ConnectAck);
 			var connectTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
 
 			try {
-				await this.SendPacket (connect);
+				var connectTask = this.SendPacket (connect);
 
-				ack = await ackSubscription.FirstOrDefaultAsync ().Timeout(connectTimeout);
+				ack = await this.protocolChannel.Receiver
+					.OfType<ConnectAck> ()
+					.FirstOrDefaultAsync ()
+					.Timeout(connectTimeout);
 			} catch(TimeoutException timeEx) {
 				throw new ClientException (Resources.Client_ConnectionTimeout, timeEx);
 			} catch (Exception ex) {
@@ -133,13 +132,16 @@ namespace Hermes
 			}
 
 			if (ack == null) {
-				throw new ClientException (Resources.Client_ConnectionDisconnected);
+				var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
+
+				throw new ClientException (message);
 			}
 
 			this.Id = credentials.ClientId;
 			this.IsConnected = true;
 		}
 
+		/// <exception cref="ClientException">ClientException</exception>
 		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)
 		{
 			if (this.disposed)
@@ -148,7 +150,31 @@ namespace Hermes
 			var packetId = this.packetIdentifierRepository.GetUnusedPacketIdentifier(new Random());
 			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
-			await this.SendPacket (subscribe);
+			var ack = default (SubscribeAck);
+			var subscribeTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+
+			try {
+				var subscribeTask = this.SendPacket (subscribe);
+
+				ack = await this.protocolChannel.Receiver
+					.OfType<SubscribeAck> ()
+					.FirstOrDefaultAsync (x => x.PacketId == packetId)
+					.Timeout(subscribeTimeout);;
+			} catch(TimeoutException timeEx) {
+				var message = string.Format (Resources.Client_SubscribeTimeout, this.Id, topicFilter);
+
+				throw new ClientException (message, timeEx);
+			} catch (Exception ex) {
+				var message = string.Format (Resources.Client_SubscribeError, this.Id, topicFilter);
+
+				throw new ClientException (message, ex);
+			}
+
+			if (ack == null) {
+				var message = string.Format(Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
+
+				throw new ClientException (message);
+			}
 		}
 
 		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
@@ -207,9 +233,9 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
+				this.protocolChannel.Dispose ();
 				this.IsConnected = false; 
 				this.Id = null;
-				this.protocolChannel.Dispose ();
 				this.disposed = true;
 			}
 		}

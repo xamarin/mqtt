@@ -19,7 +19,7 @@ namespace Hermes.Flows
 			var retainedRepository = repositoryProvider.GetRepository<RetainedMessage> ();
 			var packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier> ();
 
-			var senderFlow = new PublishSenderFlow (sessionRepository, packetIdentifierRepository,configuration);
+			var senderFlow = new PublishSenderFlow (sessionRepository, packetIdentifierRepository, configuration);
 
 			flows.Add (ProtocolFlowType.Connect, new ClientConnectFlow (sessionRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);

@@ -230,6 +230,7 @@ namespace Tests
 			var connect = new Connect (clientId, cleanSession: true) { KeepAlive = keepAlive };
 
 			receiver.OnNext (connect);
+			protocolChannel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, existingSession: false)).Wait();
 
 			Thread.Sleep ((int)((keepAlive + 1) * 1.5) * 1000);
 
@@ -266,6 +267,7 @@ namespace Tests
 			var connect = new Connect (clientId, cleanSession: true) { KeepAlive = keepAlive };
 
 			receiver.OnNext (connect);
+			protocolChannel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, existingSession: false)).Wait();
 			receiver.OnNext (new PingRequest ());
 
 			Assert.False (timeoutOccured);
@@ -300,6 +302,7 @@ namespace Tests
 			var connect = new Connect (clientId, cleanSession: true) { KeepAlive = 0 };
 
 			receiver.OnNext (connect);
+			protocolChannel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, existingSession: false)).Wait();
 
 			Thread.Sleep (2000);
 

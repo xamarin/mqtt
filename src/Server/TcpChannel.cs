@@ -17,16 +17,17 @@ namespace Hermes
 		readonly IPacketBuffer buffer;
 		readonly Subject<byte[]> receiver;
 		readonly Subject<byte[]> sender;
-		readonly IDisposable subscription;
+		readonly IDisposable streamSubscription;
 
 		public TcpChannel (TcpClient client, IPacketBuffer buffer, ProtocolConfiguration configuration)
 		{
 			this.client = client;
 			this.client.ReceiveBufferSize = configuration.BufferSize;
+			this.client.SendBufferSize = configuration.BufferSize;
 			this.buffer = buffer;
 			this.receiver = new Subject<byte[]> ();
 			this.sender = new Subject<byte[]> ();
-			this.subscription = this.GetStreamSubscription (this.client);
+			this.streamSubscription = this.GetStreamSubscription (this.client);
 		}
 
 		public bool IsConnected 
@@ -73,7 +74,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				this.subscription.Dispose ();
+				this.streamSubscription.Dispose ();
 
 				if(this.IsConnected)
 					this.client.Close ();
@@ -99,14 +100,13 @@ namespace Hermes
 					.Select(x => buffer.Take(x).ToArray());
 			})
 			.Repeat()
-			.TakeWhile(bytes => bytes.Any())
 			.Subscribe(bytes => {
 				var packet = default (byte[]);
 
 				if (this.buffer.TryGetPacket (bytes, out packet)) {
 					this.receiver.OnNext (packet);
 				}
-			}, ex => this.receiver.OnError(ex), () => this.receiver.OnCompleted());
+			}, ex => this.receiver.OnError(ex));
 		}
 	}
 }

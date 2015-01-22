@@ -40,11 +40,11 @@ namespace Hermes
 						return;
 					}
 
-					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
-
 					if (this.configuration.KeepAliveSecs > 0) {
-						this.MonitorKeepAlive (protocolChannel);
+						this.MaintainKeepAlive (protocolChannel);
 					}
+
+					await this.DispatchPacketAsync (packet, clientId, protocolChannel);
 				}, ex => {
 					protocolChannel.NotifyError (ex);
 			});
@@ -60,10 +60,9 @@ namespace Hermes
 			return protocolChannel;
 		}
 
-		private void MonitorKeepAlive(ProtocolChannel channel)
+		private void MaintainKeepAlive(ProtocolChannel channel)
 		{
-			channel.Receiver
-				.Skip (1)
+			channel.Sender
 				.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
 				.Subscribe(_ => {}, async ex => {
 					if (ex is TimeoutException) {

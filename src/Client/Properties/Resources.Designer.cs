@@ -61,7 +61,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The client has been disconnected while trying to perform the connection.
+        ///   Looks up a localized string similar to The client {0} has been disconnected while trying to perform the connection.
         /// </summary>
         internal static string Client_ConnectionDisconnected {
             get {
@@ -70,7 +70,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred while trying to connect the client.
+        ///   Looks up a localized string similar to An error occurred while trying to connect the client {0}.
         /// </summary>
         internal static string Client_ConnectionError {
             get {
@@ -79,11 +79,38 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A timeout occured while waiting for the client connection confirmation.
+        ///   Looks up a localized string similar to A timeout occured while waiting for the client {0} connection confirmation.
         /// </summary>
         internal static string Client_ConnectionTimeout {
             get {
                 return ResourceManager.GetString("Client_ConnectionTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while trying to subscribe the client {0} to topic {1}.
+        /// </summary>
+        internal static string Client_SubscribeError {
+            get {
+                return ResourceManager.GetString("Client_SubscribeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A timeout occured while waiting for the subscribe confirmation of client {0} for topic {1}.
+        /// </summary>
+        internal static string Client_SubscribeTimeout {
+            get {
+                return ResourceManager.GetString("Client_SubscribeTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The client {0} has been disconnected while trying to perform the subscription to topic {1}.
+        /// </summary>
+        internal static string Client_SubscriptionDisconnected {
+            get {
+                return ResourceManager.GetString("Client_SubscriptionDisconnected", resourceCulture);
             }
         }
         
