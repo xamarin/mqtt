@@ -112,18 +112,10 @@ namespace Tests
 			var sockets = new Subject<IChannel<byte[]>> ();
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
-			IObserver<IPacket> observer = null;
-			var packets = new Mock<IObservable<IPacket>> ();
-
-			packets.Setup (x => x.Subscribe (It.IsAny<IObserver<IPacket>> ()))
-				.Callback<IObserver<IPacket>> (o => observer = o)
-				.Returns (Mock.Of<IDisposable> ());
+			var packets = new Subject<IPacket> ();
 
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 			var factory = new Mock<IPacketChannelFactory> ();
-
-			factory.Setup (x => x.Create (It.IsAny<IChannel<byte[]>> ()))
-				.Returns (packetChannel.Object);
 
 			packetChannel
 				.Setup (c => c.IsConnected)
@@ -133,7 +125,10 @@ namespace Tests
 				.Returns(new Subject<IPacket> ());
 			packetChannel
 				.Setup (c => c.Receiver)
-				.Returns(packets.Object);
+				.Returns(packets);
+
+			factory.Setup (x => x.Create (It.IsAny<IChannel<byte[]>> ()))
+				.Returns (packetChannel.Object);
 
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
@@ -147,7 +142,11 @@ namespace Tests
 			server.Start ();
 
 			sockets.OnNext (socket.Object);
-			observer.OnError (new Exception ("Protocol exception"));
+
+			try {
+				packets.OnError (new Exception ("Protocol exception"));
+			} catch (Exception) {
+			}
 
 			packetChannel.Verify (x => x.Dispose ());
 			Assert.Equal (0, server.ActiveChannels);
