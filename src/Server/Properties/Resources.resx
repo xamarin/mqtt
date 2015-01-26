@@ -120,16 +120,16 @@
   <data name="ConnectionProvider_ClientIdNotFound" xml:space="preserve">
     <value>The client {0} is not connected and cannot receive messages</value>
   </data>
-  <data name="ServerPacketChannelAdapter_FirstPacketMustBeConnect" xml:space="preserve">
+  <data name="ServerPacketListener_FirstPacketMustBeConnect" xml:space="preserve">
     <value>The first packet sent by a Client must be a Connect. The connection will be closed.</value>
   </data>
-  <data name="ServerPacketChannelAdapter_KeepAliveTimeExceeded" xml:space="preserve">
+  <data name="ServerPacketListener_KeepAliveTimeExceeded" xml:space="preserve">
     <value>The keep alive time of {0} seconds has been exceeded and no packet has been received. The connection will be closed.</value>
   </data>
-  <data name="ServerPacketChannelAdapter_NoConnectReceived" xml:space="preserve">
+  <data name="ServerPacketListener_NoConnectReceived" xml:space="preserve">
     <value>No connect packet has been received since the network connection was established. The connection will be closed.</value>
   </data>
-  <data name="ServerPacketChannelAdapter_SecondConnectNotAllowed" xml:space="preserve">
+  <data name="ServerPacketListener_SecondConnectNotAllowed" xml:space="preserve">
     <value>Only one Connect packet is allowed. The connection will be closed.</value>
   </data>
   <data name="TcpChannel_ClientIsNotConnected" xml:space="preserve">

@@ -10,6 +10,7 @@ namespace Hermes
 			// http://msdn.microsoft.com/en-us/library/system.net.sockets.tcpclient.receivebuffersize.aspx
 			// is 8192 bytes
 			this.BufferSize = 8192;
+			this.QualityOfServiceAckRetries = 3;
 			this.AllowWildcardsInTopicFilters = true;
 		}
 
@@ -18,6 +19,8 @@ namespace Hermes
 		public int BufferSize { get; set; }
 
 		public QualityOfService MaximumQualityOfService { get; set; }
+
+		public int QualityOfServiceAckRetries { get; set; }
 
 		public ushort KeepAliveSecs { get; set; }
 
