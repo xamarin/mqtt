@@ -57,7 +57,6 @@ namespace Hermes
 			this.packetListener.Packets
 				.Subscribe (_ => { }, () => {
 					this.receiver.OnCompleted ();
-					this.sender.OnCompleted();
 				});
 		}
 

@@ -28,7 +28,6 @@ namespace Hermes
 			var repositoryProvider = new InMemoryRepositoryProvider ();
 			var connectionProvider = new ConnectionProvider ();
 			var flowProvider = new ServerProtocolFlowProvider (connectionProvider, topicEvaluator, repositoryProvider, configuration);
-			var packetListener = new ServerPacketListener (connectionProvider, flowProvider, configuration);
 
 			return new Server (socketProvider, channelFactory, flowProvider, connectionProvider, configuration);
 		}

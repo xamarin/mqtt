@@ -74,9 +74,13 @@ namespace Hermes
 					await this.DispatchPacketAsync (packet, clientId, channel);
 				}, ex => {
 					this.NotifyError (ex, clientId);
-				}, () => {
-					this.connectionProvider.RemoveConnection (clientId);
 				});
+
+			channel.Receiver.Subscribe (_ => { }, () => {
+				if (!string.IsNullOrEmpty (clientId)) {
+					this.RemoveClient (clientId);
+				}
+			});
 		}
 
 		private async Task HandleConnectionExceptionAsync(Exception exception, IChannel<IPacket> channel)

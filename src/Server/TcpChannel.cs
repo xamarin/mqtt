@@ -74,13 +74,12 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
+				this.receiver.OnCompleted ();
 				this.streamSubscription.Dispose ();
 
 				if(this.IsConnected)
 					this.client.Close ();
 
-				this.receiver.OnCompleted ();
-				this.sender.OnCompleted ();
 				this.disposed = true;
 			}
 		}

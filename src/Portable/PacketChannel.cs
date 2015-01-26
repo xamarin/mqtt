@@ -62,10 +62,9 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
+				this.receiver.OnCompleted ();
 				this.subscription.Dispose ();
 				this.innerChannel.Dispose ();
-				this.receiver.OnCompleted ();
-				this.sender.OnCompleted ();
 				this.disposed = true;
 			}
 		}
