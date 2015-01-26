@@ -30,26 +30,37 @@ namespace Hermes.Flows
 			if (!channel.IsConnected)
 				return;
 
-			if(ack.Type == PacketType.PublishReceived)
-				this.MonitorAck<PublishRelease> (ack, channel);
-			else if (ack.Type == PacketType.PublishRelease)
-				this.MonitorAck<PublishComplete> (ack, channel);
-
 			await channel.SendAsync (ack);
+
+			if(ack.Type == PacketType.PublishReceived)
+				await this.MonitorAckAsync<PublishRelease> (ack, channel);
+			else if (ack.Type == PacketType.PublishRelease)
+				await this.MonitorAckAsync<PublishComplete> (ack, channel);
 		}
 
-		protected void MonitorAck<T>(IFlowPacket sentPacket, IChannel<IPacket> channel)
+		protected void RemovePendingAcknowledgement(string clientId, ushort packetId, PacketType type)
+		{
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var pendingAcknowledgement = session.PendingAcknowledgements
+				.FirstOrDefault(u => u.Type == type && u.PacketId == packetId);
+
+			session.PendingAcknowledgements.Remove (pendingAcknowledgement);
+
+			this.sessionRepository.Update (session);
+		}
+
+		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			channel.Receiver
-				.OfType<T> ()
-				.FirstAsync (ack => ack.PacketId == sentPacket.PacketId)
-				.Timeout (new TimeSpan (0, 0, this.configuration.WaitingTimeoutSecs))
-				.Subscribe (_ => { }, async ex => {
-					this.MonitorAck<T> (sentPacket, channel);
-
-					await channel.SendAsync (sentPacket);
-				});
+			await channel.Receiver.OfType<T> ()
+				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId)
+				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
+				.Do(_ => {}, async ex => {
+					if (ex is TimeoutException) {
+						await channel.SendAsync (sentMessage);
+					}
+				})
+				.Retry(this.configuration.QualityOfServiceAckRetries);
 		}
 
 		private void SavePendingAcknowledgement(IFlowPacket ack, string clientId)
@@ -61,21 +72,10 @@ namespace Hermes.Flows
 				PacketId = ack.PacketId,
 				Type = ack.Type
 			};
-
+			
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			session.PendingAcknowledgements.Add (unacknowledgeMessage);
-
-			this.sessionRepository.Update (session);
-		}
-
-		protected void RemovePendingAcknowledgement(string clientId, ushort packetId, PacketType type)
-		{
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-			var pendingAcknowledgement = session.PendingAcknowledgements
-				.FirstOrDefault(u => u.Type == type && u.PacketId == packetId);
-
-			session.PendingAcknowledgements.Remove (pendingAcknowledgement);
 
 			this.sessionRepository.Update (session);
 		}

@@ -44,7 +44,7 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IChannel.cs" />
     <Compile Include="IInitalizer.cs" />
-    <Compile Include="IPacketChannelAdapter.cs" />
+    <Compile Include="IPacketListener.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
     <Compile Include="IPacketManager.cs" />
     <Compile Include="IPacketBuffer.cs" />

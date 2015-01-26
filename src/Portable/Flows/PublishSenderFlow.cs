@@ -54,12 +54,40 @@ namespace Hermes.Flows
 				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToAcknowledge);
 			}
 
-			if(message.QualityOfService == QualityOfService.AtLeastOnce)
-				this.MonitorAck<PublishAck> (message, channel);
-			else if (message.QualityOfService == QualityOfService.ExactlyOnce)
-				this.MonitorAck<PublishReceived> (message, channel);
-
 			await channel.SendAsync (message);
+
+			if(message.QualityOfService == QualityOfService.AtLeastOnce)
+				await this.MonitorAckAsync<PublishAck> (message, channel);
+			else if (message.QualityOfService == QualityOfService.ExactlyOnce)
+				await this.MonitorAckAsync<PublishReceived> (message, channel);
+		}
+
+		protected void RemovePendingMessage(string clientId, ushort packetId)
+		{
+			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var pendingMessage = session.PendingMessages.FirstOrDefault(p => p.PacketId.HasValue 
+				&& p.PacketId.Value == packetId);
+
+			session.PendingMessages.Remove (pendingMessage);
+
+			this.sessionRepository.Update (session);
+		}
+
+		protected async Task MonitorAckAsync<T>(Publish sentMessage, IChannel<IPacket> channel)
+			where T : IFlowPacket
+		{
+			await channel.Receiver.OfType<T> ()
+				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value)
+				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
+				.Do(_ => {}, async ex => {
+					if (ex is TimeoutException) {
+						var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
+							sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId);
+
+						await channel.SendAsync (duplicated);
+					}
+				})
+				.Retry(this.configuration.QualityOfServiceAckRetries);
 		}
 
 		private void DefineSenderRules ()
@@ -108,34 +136,6 @@ namespace Hermes.Flows
 			session.PendingMessages.Add (savedMessage);
 
 			this.sessionRepository.Update (session);
-		}
-
-		protected void RemovePendingMessage(string clientId, ushort packetId)
-		{
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
-			var pendingMessage = session.PendingMessages.FirstOrDefault(p => p.PacketId.HasValue 
-				&& p.PacketId.Value == packetId);
-
-			session.PendingMessages.Remove (pendingMessage);
-
-			this.sessionRepository.Update (session);
-		}
-
-		protected void MonitorAck<T>(Publish sentPublish, IChannel<IPacket> channel)
-			where T : IFlowPacket
-		{
-			channel.Receiver
-				.OfType<T> ()
-				.FirstAsync (ack => ack.PacketId == sentPublish.PacketId.Value)
-				.Timeout (new TimeSpan (0, 0, this.configuration.WaitingTimeoutSecs))
-				.Subscribe (_ => { }, async ex => {
-					var duplicatedPublish = new Publish (sentPublish.Topic, sentPublish.QualityOfService,
-						sentPublish.Retain, duplicated: true, packetId: sentPublish.PacketId);
-					
-					this.MonitorAck<T> (duplicatedPublish, channel);
-
-					await channel.SendAsync (duplicatedPublish);
-				});
 		}
 	}
 }

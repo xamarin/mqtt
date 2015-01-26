@@ -49,7 +49,7 @@
     <Compile Include="ConnectionProviderSpec.cs" />
     <Compile Include="ClientSpec.cs" />
     <Compile Include="Flows\PublishSenderFlowSpec.cs" />
-    <Compile Include="PacketChannelAdapterSpec.cs" />
+    <Compile Include="PacketListenerSpec.cs" />
     <Compile Include="Flows\ConnectFlowSpec.cs" />
     <Compile Include="Flows\DisconnectFlowSpec.cs" />
     <Compile Include="Flows\PingFlowSpec.cs" />

@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck" xml:space="preserve">
+  <data name="ClientPacketListener_FirstReceivedPacketMustBeConnectAck" xml:space="preserve">
     <value>The first packet received from the Server must be a ConnectAck packet. The connection will be closed.</value>
   </data>
-  <data name="ClientPacketChannelAdapter_NoConnectAckReceived" xml:space="preserve">
+  <data name="ClientPacketListener_NoConnectAckReceived" xml:space="preserve">
     <value>No ConnectAck has been received since the connection was established. The connection will be closed.</value>
   </data>
   <data name="Client_ConnectionDisconnected" xml:space="preserve">
@@ -143,6 +143,15 @@
   </data>
   <data name="Client_UnexpectedChannelDisconnection" xml:space="preserve">
     <value>The underlying connection has been disconnected unexpectedly</value>
+  </data>
+  <data name="Client_UnsubscribeDisconnected" xml:space="preserve">
+    <value>The client {0} has been disconnected while trying to perform the unsubscribe to topics: {1}</value>
+  </data>
+  <data name="Client_UnsubscribeError" xml:space="preserve">
+    <value>An error occurred while trying to unsubscribe the client {0} of topics: {1}</value>
+  </data>
+  <data name="Client_UnsubscribeTimeout" xml:space="preserve">
+    <value>A timeout occured while waiting for the unsubscribe confirmation of client {0} for topics: {1}</value>
   </data>
   <data name="TcpChannel_ClientIsNotConnected" xml:space="preserve">
     <value>The underlying TCP client is not connected</value>

@@ -124,20 +124,47 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The client {0} has been disconnected while trying to perform the unsubscribe to topics: {1}.
+        /// </summary>
+        internal static string Client_UnsubscribeDisconnected {
+            get {
+                return ResourceManager.GetString("Client_UnsubscribeDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while trying to unsubscribe the client {0} of topics: {1}.
+        /// </summary>
+        internal static string Client_UnsubscribeError {
+            get {
+                return ResourceManager.GetString("Client_UnsubscribeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A timeout occured while waiting for the unsubscribe confirmation of client {0} for topics: {1}.
+        /// </summary>
+        internal static string Client_UnsubscribeTimeout {
+            get {
+                return ResourceManager.GetString("Client_UnsubscribeTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The first packet received from the Server must be a ConnectAck packet. The connection will be closed..
         /// </summary>
-        internal static string ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck {
+        internal static string ClientPacketListener_FirstReceivedPacketMustBeConnectAck {
             get {
-                return ResourceManager.GetString("ClientPacketChannelAdapter_FirstReceivedPacketMustBeConnectAck", resourceCulture);
+                return ResourceManager.GetString("ClientPacketListener_FirstReceivedPacketMustBeConnectAck", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to No ConnectAck has been received since the connection was established. The connection will be closed..
         /// </summary>
-        internal static string ClientPacketChannelAdapter_NoConnectAckReceived {
+        internal static string ClientPacketListener_NoConnectAckReceived {
             get {
-                return ResourceManager.GetString("ClientPacketChannelAdapter_NoConnectAckReceived", resourceCulture);
+                return ResourceManager.GetString("ClientPacketListener_NoConnectAckReceived", resourceCulture);
             }
         }
         

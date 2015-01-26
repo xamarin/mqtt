@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hermes.Diagnostics;
+using Hermes.Flows;
 using Hermes.Packets;
 
 namespace Hermes
@@ -15,22 +16,21 @@ namespace Hermes
 
 		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
-		readonly IPacketChannelAdapter channelAdapter;
+		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
 		readonly ProtocolConfiguration configuration;
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		public Server (
-			IObservable<IChannel<byte[]>> binaryChannelProvider, 
-			IPacketChannelFactory channelFactory, 
-			IPacketChannelAdapter channelAdapter,
+		public Server (IObservable<IChannel<byte[]>> binaryChannelProvider, 
+			IPacketChannelFactory channelFactory,
+			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
 			ProtocolConfiguration configuration)
 		{
 			this.binaryChannelProvider = binaryChannelProvider;
 			this.channelFactory = channelFactory;
-			this.channelAdapter = channelAdapter;
+			this.flowProvider = flowProvider;
 			this.connectionProvider = connectionProvider;
 			this.configuration = configuration;
 		}
@@ -90,19 +90,15 @@ namespace Hermes
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
 			var packetChannel = this.channelFactory.Create (binaryChannel);
-			var protocolChannel = this.channelAdapter.Adapt (packetChannel);
+			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
 
-			protocolChannel.Sender.Subscribe (_ => {}, ex => {
+			packetListener.Listen (packetChannel);
+			packetListener.Packets.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex);
-				this.CloseChannel (protocolChannel);
+				this.CloseChannel (packetChannel);
 			});
 
-			protocolChannel.Receiver.Subscribe (_ => {}, ex => { 
-				tracer.Error (ex);
-				this.CloseChannel (protocolChannel);
-			});
-
-			this.channels.Add (protocolChannel);
+			this.channels.Add (packetChannel);
 		}
 
 		private void CloseChannel(IChannel<IPacket> channel)

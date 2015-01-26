@@ -61,14 +61,13 @@
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Reactive\Visibility.cs" />
     <Compile Include="ServerInitializer.cs" />
-    <Compile Include="ServerPacketChannelAdapter.cs" />
+    <Compile Include="ServerPacketListener.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProtocolChannel.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="TcpChannel.cs" />
   </ItemGroup>
