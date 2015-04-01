@@ -12,6 +12,12 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Hermes.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -76,6 +82,7 @@
       <Link>Hermes.licenseheader</Link>
     </None>
     <None Include="app.config" />
+    <None Include="Hermes.snk" />
     <None Include="packages.config" />
     <None Include="Server.nuspec" />
   </ItemGroup>
