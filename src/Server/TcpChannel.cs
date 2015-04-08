@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Linq;
@@ -100,10 +101,12 @@ namespace Hermes
 			})
 			.Repeat()
 			.Subscribe(bytes => {
-				var packet = default (byte[]);
+				var packets = default(IEnumerable<byte[]>);
 
-				if (this.buffer.TryGetPacket (bytes, out packet)) {
-					this.receiver.OnNext (packet);
+				if (this.buffer.TryGetPackets (bytes, out packets)) {
+					foreach (var packet in packets) {
+						this.receiver.OnNext (packet);
+					}
 				}
 			}, ex => this.receiver.OnError(ex));
 		}

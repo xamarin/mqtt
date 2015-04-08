@@ -59,33 +59,135 @@ namespace Tests
 		[Fact]
 		public void when_encoding_remaining_length_then_succeeds()
 		{
-			var length1 = 64; //01000000
-			var length2 = 321; //00000001 01000001
-			var length3 = 268435455; //00001111 11111111 11111111 11111111;
-
 			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349213
 
-			var encoded1 = Protocol.Encoding.EncodeRemainingLength (length1); //0x40
-			var encoded2 = Protocol.Encoding.EncodeRemainingLength (length2); //193 2
-			var encoded3 = Protocol.Encoding.EncodeRemainingLength (length3); //0xFF 0xFF 0xFF 0x7F
+			var length1From = 0; //00000000
+			var length1To = 127; //01111111
 
-			Assert.Equal (1, encoded1.Length);
-			Assert.Equal (0x40, encoded1[0]);
+			var length2From = 128; //00000000 10000000
+			var length2To = 16383; //00111111 11111111
 
-			Assert.Equal (2, encoded2.Length);
-			Assert.Equal (193, encoded2[0]);
-			Assert.Equal (2, encoded2[1]);
+			var length3From = 16384; //00000000 01000000 00000000
+			var length3To = 2097151; //00011111 11111111 11111111
 
-			Assert.Equal (4, encoded3.Length);
-			Assert.Equal (0xFF, encoded3[0]);
-			Assert.Equal (0xFF, encoded3[1]);
-			Assert.Equal (0xFF, encoded3[2]);
-			Assert.Equal (0x7F, encoded3[3]);
+			var length4From = 2097152; //00000000 00100000 00000000 00000000
+			var length4To = 268435455; //00001111 11111111 11111111 11111111
+
+			var length5 = 64; //01000000
+			var length6 = 321; //00000001 01000001
+			
+			var encoded1From = Protocol.Encoding.EncodeRemainingLength (length1From);
+			var encoded1To = Protocol.Encoding.EncodeRemainingLength (length1To);
+
+			var encoded2From = Protocol.Encoding.EncodeRemainingLength (length2From);
+			var encoded2To = Protocol.Encoding.EncodeRemainingLength (length2To);
+
+			var encoded3From = Protocol.Encoding.EncodeRemainingLength (length3From);
+			var encoded3To = Protocol.Encoding.EncodeRemainingLength (length3To);
+
+			var encoded4From = Protocol.Encoding.EncodeRemainingLength (length4From);
+			var encoded4To = Protocol.Encoding.EncodeRemainingLength (length4To);
+
+			var encoded5 = Protocol.Encoding.EncodeRemainingLength (length5); //0x40
+			var encoded6 = Protocol.Encoding.EncodeRemainingLength (length6); //193 2
+
+			Assert.Equal (1, encoded1From.Length);
+			Assert.Equal (0x00, encoded1From[0]);
+			Assert.Equal (1, encoded1To.Length);
+			Assert.Equal (0x7F, encoded1To[0]);
+
+			Assert.Equal (2, encoded2From.Length);
+			Assert.Equal (0x80, encoded2From[0]);
+			Assert.Equal (0x01, encoded2From[1]);
+			Assert.Equal (2, encoded2To.Length);
+			Assert.Equal (0xFF, encoded2To[0]);
+			Assert.Equal (0x7F, encoded2To[1]);
+
+			Assert.Equal (3, encoded3From.Length);
+			Assert.Equal (0x80, encoded3From[0]);
+			Assert.Equal (0x80, encoded3From[1]);
+			Assert.Equal (0x01, encoded3From[2]);
+			Assert.Equal (3, encoded3To.Length);
+			Assert.Equal (0xFF, encoded3To[0]);
+			Assert.Equal (0xFF, encoded3To[1]);
+			Assert.Equal (0x7F, encoded3To[2]);
+
+			Assert.Equal (4, encoded4From.Length);
+			Assert.Equal (0x80, encoded4From[0]);
+			Assert.Equal (0x80, encoded4From[1]);
+			Assert.Equal (0x80, encoded4From[2]);
+			Assert.Equal (0x01, encoded4From[3]);
+			Assert.Equal (4, encoded4To.Length);
+			Assert.Equal (0xFF, encoded4To[0]);
+			Assert.Equal (0xFF, encoded4To[1]);
+			Assert.Equal (0xFF, encoded4To[2]);
+			Assert.Equal (0x7F, encoded4To[3]);
+
+			Assert.Equal (1, encoded5.Length);
+			Assert.Equal (0x40, encoded5[0]);
+
+			Assert.Equal (2, encoded6.Length);
+			Assert.Equal (193, encoded6[0]);
+			Assert.Equal (2, encoded6[1]);
 		}
 
 		[Fact]
 		public void when_decoding_remaining_length_then_succeeds()
 		{
+			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349213
+
+			var encoded1From = new List<byte> ();
+
+			encoded1From.Add (0x10);
+			encoded1From.Add (0x00);
+
+			var encoded1To = new List<byte> ();
+
+			encoded1To.Add (0x10);
+			encoded1To.Add (0x7F);
+
+			var encoded2From = new List<byte> ();
+
+			encoded2From.Add (0x10);
+			encoded2From.Add (0x80);
+			encoded2From.Add (0x01);
+
+			var encoded2To = new List<byte> ();
+
+			encoded2To.Add (0x10);
+			encoded2To.Add (0xFF);
+			encoded2To.Add (0x7F);
+
+			var encoded3From = new List<byte> ();
+
+			encoded3From.Add (0x10);
+			encoded3From.Add (0x80);
+			encoded3From.Add (0x80);
+			encoded3From.Add (0x01);
+
+			var encoded3To = new List<byte> ();
+
+			encoded3To.Add (0x10);
+			encoded3To.Add (0xFF);
+			encoded3To.Add (0xFF);
+			encoded3To.Add (0x7F);
+
+			var encoded4From = new List<byte> ();
+
+			encoded4From.Add (0x10);
+			encoded4From.Add (0x80);
+			encoded4From.Add (0x80);
+			encoded4From.Add (0x80);
+			encoded4From.Add (0x01);
+
+			var encoded4To = new List<byte> ();
+
+			encoded4To.Add (0x10);
+			encoded4To.Add (0xFF);
+			encoded4To.Add (0xFF);
+			encoded4To.Add (0xFF);
+			encoded4To.Add (0x7F);
+
 			var bytes1 = new List<byte> ();
 
 			bytes1.Add (0x10);
@@ -97,29 +199,56 @@ namespace Tests
 			bytes2.Add (193);
 			bytes2.Add (2);
 
-			var bytes3 = new List<byte> ();
+			var arrayLength1From = 0;
+			var length1From = Protocol.Encoding.DecodeRemainingLength (encoded1From.ToArray(), out arrayLength1From); //0
+			var arrayLength1To = 0;
+			var length1To = Protocol.Encoding.DecodeRemainingLength (encoded1To.ToArray(), out arrayLength1To); //127
+			
+			var arrayLength2From = 0;
+			var length2From = Protocol.Encoding.DecodeRemainingLength (encoded2From.ToArray(), out arrayLength2From); //128
+			var arrayLength2To = 0;
+			var length2To = Protocol.Encoding.DecodeRemainingLength (encoded2To.ToArray(), out arrayLength2To); //16383
 
-			bytes3.Add (0x20);
-			bytes3.Add (0xFF);
-			bytes3.Add (0xFF);
-			bytes3.Add (0xFF);
-			bytes3.Add (0x7F);
+			var arrayLength3From = 0;
+			var length3From = Protocol.Encoding.DecodeRemainingLength (encoded3From.ToArray(), out arrayLength3From); //16384
+			var arrayLength3To = 0;
+			var length3To = Protocol.Encoding.DecodeRemainingLength (encoded3To.ToArray(), out arrayLength3To); //2097151
 
-			//According to spec samples: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc385349213
+			var arrayLength4From = 0;
+			var length4From = Protocol.Encoding.DecodeRemainingLength (encoded4From.ToArray(), out arrayLength4From); //2097152
+			var arrayLength4To = 0;
+			var length4To = Protocol.Encoding.DecodeRemainingLength (encoded4To.ToArray(), out arrayLength4To); //268435455
 
 			var arrayLength1 = 0;
-			var remainingLength1 = Protocol.Encoding.DecodeRemainingLength (bytes1.ToArray(), out arrayLength1); //64
+			var length1 = Protocol.Encoding.DecodeRemainingLength (bytes1.ToArray(), out arrayLength1); //64
 			var arrayLength2 = 0;
-			var remainingLength2 = Protocol.Encoding.DecodeRemainingLength (bytes2.ToArray(), out arrayLength2); //321
-			var arrayLength3 = 0;
-			var remainingLength3 = Protocol.Encoding.DecodeRemainingLength (bytes3.ToArray(), out arrayLength3); //268435455
+			var length2 = Protocol.Encoding.DecodeRemainingLength (bytes2.ToArray(), out arrayLength2); //321
+
+			Assert.Equal (1, arrayLength1From);
+			Assert.Equal(0, length1From);
+			Assert.Equal (1, arrayLength1To);
+			Assert.Equal(127, length1To);
+
+			Assert.Equal (2, arrayLength2From);
+			Assert.Equal(128, length2From);
+			Assert.Equal (2, arrayLength2To);
+			Assert.Equal(16383, length2To);
+
+			Assert.Equal (3, arrayLength3From);
+			Assert.Equal(16384, length3From);
+			Assert.Equal (3, arrayLength3To);
+			Assert.Equal(2097151 , length3To);
+
+			Assert.Equal (4, arrayLength4From);
+			Assert.Equal(2097152 , length4From);
+			Assert.Equal (4, arrayLength4To);
+			Assert.Equal(268435455 , length4To);
 
 			Assert.Equal (1, arrayLength1);
-			Assert.Equal(64, remainingLength1);
+			Assert.Equal(64, length1);
+
 			Assert.Equal (2, arrayLength2);
-			Assert.Equal(321, remainingLength2);
-			Assert.Equal (4, arrayLength3);
-			Assert.Equal(268435455, remainingLength3);
+			Assert.Equal(321, length2);
 		}
 
 		[Fact]
