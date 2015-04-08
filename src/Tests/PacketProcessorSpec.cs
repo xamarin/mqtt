@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Hermes;
 using Xunit;
 using Xunit.Extensions;
+using System.Linq;
 
 namespace Tests
 {
@@ -36,11 +38,11 @@ namespace Tests
 			
 			var readPacket = Packet.ReadAllBytes (packetPath);
 
-			var bufferedPacket = default (byte[]);
-			var buffered = buffer.TryGetPacket (readPacket, out bufferedPacket);
+			var bufferedPackets = default (IEnumerable<byte[]>);
+			var buffered = buffer.TryGetPackets (readPacket, out bufferedPackets);
 
 			Assert.True (buffered);
-			Assert.Equal (readPacket, bufferedPacket);
+			Assert.Equal (readPacket, bufferedPackets.First());
 		}
 
 		[Theory]
@@ -73,13 +75,13 @@ namespace Tests
 			var sequence1 = readPacket.Bytes (0, readPacket.Length / 2);
 			var sequence2 = readPacket.Bytes (readPacket.Length / 2, readPacket.Length);
 
-			var bufferedPacket = default (byte[]);
-			var bufferedFirst = buffer.TryGetPacket (sequence1, out bufferedPacket);
-			var bufferedSecond = buffer.TryGetPacket (sequence2, out bufferedPacket);
+			var bufferedPackets = default (IEnumerable<byte[]>);
+			var bufferedFirst = buffer.TryGetPackets (sequence1, out bufferedPackets);
+			var bufferedSecond = buffer.TryGetPackets (sequence2, out bufferedPackets);
 
 			Assert.False (bufferedFirst);
 			Assert.True (bufferedSecond);
-			Assert.Equal (readPacket, bufferedPacket);
+			Assert.Equal (readPacket, bufferedPackets.First());
 		}
 
 		[Theory]
@@ -103,15 +105,47 @@ namespace Tests
 
 			var sequence2 = readPacket2.Bytes (readPacket2.Length / 2, readPacket2.Length);
 
-			var firstPacket = default (byte[]);
-			var secondPacket = default (byte[]);
-			var bufferedFirst = buffer.TryGetPacket (sequence1, out firstPacket);
-			var bufferedSecond = buffer.TryGetPacket (sequence2, out secondPacket);
+			var bufferedPackets1 = default (IEnumerable<byte[]>);
+			var bufferedPackets2 = default (IEnumerable<byte[]>);
+			var bufferedFirst = buffer.TryGetPackets (sequence1, out bufferedPackets1);
+			var bufferedSecond = buffer.TryGetPackets (sequence2, out bufferedPackets2);
 
 			Assert.True (bufferedFirst);
 			Assert.True (bufferedSecond);
-			Assert.Equal (readPacket1, firstPacket);
-			Assert.Equal (readPacket2, secondPacket);
+			Assert.Equal (readPacket1, bufferedPackets1.First());
+			Assert.Equal (readPacket2, bufferedPackets2.First());
+		}
+
+		[Theory]
+		[InlineData("Files/Binaries/Connect_Full.packet", "Files/Binaries/PingRequest.packet", "Files/Binaries/Subscribe_MultiTopic.packet")]
+		[InlineData("Files/Binaries/Subscribe_MultiTopic.packet", "Files/Binaries/Publish_Full.packet", "Files/Binaries/Publish_Full.packet")]
+		[InlineData("Files/Binaries/Publish_Full.packet", "Files/Binaries/Unsubscribe_MultiTopic.packet", "Files/Binaries/Disconnect.packet")]
+		public void when_processing_multi_packets_in_one_sequence_then_get_packets(string packet1Path, string packet2Path, string packet3Path)
+		{
+			var buffer = new PacketBuffer ();
+
+			packet1Path = Path.Combine (Environment.CurrentDirectory, packet1Path);
+			packet2Path = Path.Combine (Environment.CurrentDirectory, packet2Path);
+			packet3Path = Path.Combine (Environment.CurrentDirectory, packet3Path);
+
+			var readPacket1 = Packet.ReadAllBytes (packet1Path);
+			var readPacket2 = Packet.ReadAllBytes (packet2Path);
+			var readPacket3 = Packet.ReadAllBytes (packet2Path);
+
+			var sequence = new byte[readPacket1.Length + readPacket2.Length + readPacket3.Length];
+
+			Array.Copy (readPacket1, sequence, readPacket1.Length);
+			Array.Copy (readPacket2, 0, sequence, readPacket1.Length, readPacket2.Length);
+			Array.Copy (readPacket3, 0, sequence, readPacket1.Length + readPacket2.Length, readPacket3.Length);
+
+			var bufferedPackets = default (IEnumerable<byte[]>);
+			var bufferedFirst = buffer.TryGetPackets (sequence, out bufferedPackets);
+
+			Assert.True (bufferedPackets.Any());
+			Assert.Equal (3, bufferedPackets.Count ());
+			Assert.Equal (readPacket1, bufferedPackets.First());
+			Assert.Equal (readPacket2, bufferedPackets.Skip(1).First());
+			Assert.Equal (readPacket3, bufferedPackets.Skip(2).First());
 		}
 
 		[Theory]
@@ -144,12 +178,11 @@ namespace Tests
 
 			readPacket = readPacket.Bytes (0, readPacket.Length - 2);
 
-
-			var bufferedPacket = default (byte[]);
-			var buffered = buffer.TryGetPacket (readPacket, out bufferedPacket);
+			var bufferedPackets = default (IEnumerable<byte[]>);
+			var buffered = buffer.TryGetPackets (readPacket, out bufferedPackets);
 
 			Assert.False (buffered);
-			Assert.Null (bufferedPacket);
+			Assert.False (bufferedPackets.Any());
 		}
 	}
 }

@@ -5,11 +5,12 @@ namespace Hermes
 {
 	public class PacketBuffer : IPacketBuffer
 	{
-		bool readStarted;
-		bool remainingLengthRead;
-		int remainingLength = 0;
-		bool packetReady;
+		bool packetReadStarted;
+		bool packetRemainingLengthReadCompleted;
+		int packetRemainingLength = 0;
+		bool isPacketReady;
 
+		readonly object bufferLock = new object ();
 		readonly IList<byte> mainBuffer;
 		readonly IList<byte> pendingBuffer;
 
@@ -19,18 +20,24 @@ namespace Hermes
 			this.pendingBuffer = new List<byte> ();
 		}
 
-		public bool TryGetPacket (byte[] sequence, out byte[] packet)
+		public bool TryGetPackets (byte[] sequence, out IEnumerable<byte[]> packets)
 		{
-			this.Buffer (sequence);
+			var result =  new List<byte[]>();
 
-			if (this.packetReady) {
-				packet = this.mainBuffer.ToArray ();
-				this.Reset ();
-			} else {
-				packet = default (byte[]);
+			lock (bufferLock) {
+				this.Buffer (sequence);
+
+				while (this.isPacketReady) {
+					var packet = this.mainBuffer.ToArray ();
+
+					result.Add (packet);
+					this.Reset ();
+				}
+
+				packets = result;
 			}
 
-			return packet != default(byte[]);
+			return result.Any();
 		}
 
 		private void Buffer(byte[] sequence)
@@ -42,51 +49,51 @@ namespace Hermes
 
 		private void Buffer (byte @byte)
 		{
-			if (this.packetReady) {
+			if (this.isPacketReady) {
 				this.pendingBuffer.Add (@byte);
 				return;
 			}
 
 			this.mainBuffer.Add(@byte);
 
-			if (!this.readStarted)
+			if (!this.packetReadStarted)
 			{
-				this.readStarted = true;
+				this.packetReadStarted = true;
 				return;
 			}
 
-			if (!this.remainingLengthRead)
+			if (!this.packetRemainingLengthReadCompleted)
 			{
 				if ((@byte & 128) == 0) {
 					var bytesLenght = default (int);
 
-					this.remainingLength = Protocol.Encoding.DecodeRemainingLength(mainBuffer.ToArray(), out bytesLenght);
-					this.remainingLengthRead = true;
+					this.packetRemainingLength = Protocol.Encoding.DecodeRemainingLength(mainBuffer.ToArray(), out bytesLenght);
+					this.packetRemainingLengthReadCompleted = true;
 
-					if (remainingLength == 0)
-						this.packetReady = true;
+					if (packetRemainingLength == 0)
+						this.isPacketReady = true;
 				}
 
 				return;
 			}
 
-			if (remainingLength == 1)
+			if (packetRemainingLength == 1)
 			{
-				this.packetReady = true;
+				this.isPacketReady = true;
 			}
 			else
 			{
-				remainingLength--;
+				packetRemainingLength--;
 			}
 		}
 
 		private void Reset()
 		{
 			this.mainBuffer.Clear();
-			this.readStarted = false;
-			this.remainingLengthRead = false;
-			this.remainingLength = 0;
-			this.packetReady = false;
+			this.packetReadStarted = false;
+			this.packetRemainingLengthReadCompleted = false;
+			this.packetRemainingLength = 0;
+			this.isPacketReady = false;
 
 			if (this.pendingBuffer.Any ()) {
 				var pendingSequence = this.pendingBuffer.ToArray ();

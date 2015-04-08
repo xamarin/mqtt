@@ -1,7 +1,9 @@
-﻿namespace Hermes
+﻿using System.Collections.Generic;
+
+namespace Hermes
 {
 	public interface IPacketBuffer
 	{
-		bool TryGetPacket (byte[] sequence, out byte[] packet);
+		bool TryGetPackets (byte[] sequence, out IEnumerable<byte[]> packets);
 	}
 }
