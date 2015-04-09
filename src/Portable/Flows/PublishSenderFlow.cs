@@ -50,15 +50,17 @@ namespace Hermes.Flows
 				return;
 			}
 
-			if (message.QualityOfService != QualityOfService.AtMostOnce && status == PendingMessageStatus.PendingToSend) {
+			var qos = this.configuration.GetSupportedQos(message.QualityOfService);
+
+			if (qos != QualityOfService.AtMostOnce && status == PendingMessageStatus.PendingToSend) {
 				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToAcknowledge);
 			}
 
 			await channel.SendAsync (message);
 
-			if(message.QualityOfService == QualityOfService.AtLeastOnce)
+			if(qos == QualityOfService.AtLeastOnce)
 				await this.MonitorAckAsync<PublishAck> (message, channel);
-			else if (message.QualityOfService == QualityOfService.ExactlyOnce)
+			else if (qos == QualityOfService.ExactlyOnce)
 				await this.MonitorAckAsync<PublishReceived> (message, channel);
 		}
 

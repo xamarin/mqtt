@@ -37,11 +37,9 @@ namespace Hermes.Flows
 			}
 		}
 
-		private async Task HandlePublishReleaseAsync(string clientId, PublishRelease publishRelease, IChannel<IPacket> channel)
+		protected virtual Task ProcessPublishAsync(Publish publish)
 		{
-			this.RemovePendingAcknowledgement (clientId, publishRelease.PacketId, PacketType.PublishReceived);
-
-			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId), channel);
+			return Task.Delay (0);
 		}
 
 		private async Task HandlePublishAsync(string clientId, Publish publish, IChannel<IPacket> channel)
@@ -67,9 +65,11 @@ namespace Hermes.Flows
 			await this.SendQosAck (clientId, qos, publish, channel);
 		}
 
-		protected virtual Task ProcessPublishAsync(Publish publish)
+		private async Task HandlePublishReleaseAsync(string clientId, PublishRelease publishRelease, IChannel<IPacket> channel)
 		{
-			return Task.Delay (0);
+			this.RemovePendingAcknowledgement (clientId, publishRelease.PacketId, PacketType.PublishReceived);
+
+			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId), channel);
 		}
 
 		private async Task SendQosAck(string clientId, QualityOfService qos, Publish publish, IChannel<IPacket> channel)
