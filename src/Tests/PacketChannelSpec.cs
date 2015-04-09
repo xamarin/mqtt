@@ -16,13 +16,14 @@ namespace Tests
 		[Fact]
 		public void when_creating_packet_channel_then_succeeds()
 		{
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]>();
 			var bufferedChannel = new Mock<IChannel<byte[]>> ();
 
 			bufferedChannel.Setup (x => x.Receiver).Returns (receiver);
 
 			var topicEvaluator = Mock.Of<ITopicEvaluator> ();
-			var factory = new PacketChannelFactory (topicEvaluator);
+			var factory = new PacketChannelFactory (topicEvaluator, configuration);
 			var channel = factory.Create (bufferedChannel.Object);
 
 			Assert.NotNull (channel);
@@ -47,6 +48,7 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck))]
 		public void when_reading_bytes_from_source_then_notifies_packet(string packetPath, string jsonPath, Type packetType)
 		{
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IChannel<byte[]>>();
 
@@ -61,7 +63,7 @@ namespace Tests
 			manager.Setup(x => x.GetPacketAsync(It.IsAny<byte[]>()))
 				.Returns(Task.FromResult<IPacket>(expectedPacket));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
 
 			var receivedPacket = default (IPacket);
 
@@ -85,6 +87,7 @@ namespace Tests
 		[InlineData("Files/Binaries/PingResponse.packet", typeof(PingResponse))]
 		public void when_reading_bytes_then_notifies_packet(string packetPath, Type packetType)
 		{
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IChannel<byte[]>>();
 
@@ -96,7 +99,7 @@ namespace Tests
 			manager.Setup(x => x.GetPacketAsync(It.IsAny<byte[]>()))
 				.Returns(Task.FromResult<IPacket>((IPacket)expectedPacket));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
 
 			var receivedPacket = default (IPacket);
 
@@ -133,6 +136,8 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck))]
 		public async Task when_writing_packet_from_source_then_inner_channel_is_notified(string packetPath, string jsonPath, Type packetType)
 		{
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
+
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			
 			var bytes = Packet.ReadAllBytes (packetPath);
@@ -153,7 +158,7 @@ namespace Tests
 			manager.Setup(x => x.GetBytesAsync(It.IsAny<IPacket>()))
 				.Returns(Task.FromResult(bytes));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
 
 			await channel.SendAsync (packet);
 
@@ -167,6 +172,8 @@ namespace Tests
 		[InlineData("Files/Binaries/PingResponse.packet", typeof(PingResponse))]
 		public async Task when_writing_packet_then_inner_channel_is_notified(string packetPath, Type packetType)
 		{
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
+
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			
 			var bytes = Packet.ReadAllBytes (packetPath);
@@ -185,7 +192,7 @@ namespace Tests
 			manager.Setup(x => x.GetBytesAsync(It.IsAny<IPacket>()))
 				.Returns(Task.FromResult(bytes));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
 
 			await channel.SendAsync (packet);
 
@@ -196,6 +203,7 @@ namespace Tests
 		[Fact]
 		public void when_packet_channel_error_then_notifies()
 		{
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IChannel<byte[]>>();
 
@@ -203,7 +211,7 @@ namespace Tests
 
 			var manager = new Mock<IPacketManager> ();
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
 
 			var errorMessage = "Packet Exception";
 

@@ -17,9 +17,8 @@ namespace Hermes
 		bool disposed;
 		bool isConnected;
 
-		readonly Subject<ApplicationMessage> receiver = new Subject<ApplicationMessage> ();
-		readonly Subject<IPacket> sender = new Subject<IPacket> ();
-
+		readonly ReplaySubject<ApplicationMessage> receiver;
+		readonly ReplaySubject<IPacket> sender;
 		readonly IChannel<IPacket> packetChannel;
 		readonly IPacketListener packetListener;
 		readonly IProtocolFlowProvider flowProvider;
@@ -34,6 +33,9 @@ namespace Hermes
 			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
         {
+			this.receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+			this.sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+
 			this.packetListener = packetListener;
 			this.flowProvider = flowProvider;
 			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();

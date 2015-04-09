@@ -11,26 +11,26 @@ namespace Hermes
 
 		readonly IChannel<byte[]> innerChannel;
 		readonly IPacketManager manager;
-        readonly Subject<IPacket> receiver;
-		readonly Subject<IPacket> sender;
+		readonly ReplaySubject<IPacket> receiver;
+		readonly ReplaySubject<IPacket> sender;
 		readonly IDisposable subscription;
 
-		public PacketChannel (IChannel<byte[]> innerChannel, IPacketManager manager)
+		public PacketChannel (IChannel<byte[]> innerChannel, IPacketManager manager, ProtocolConfiguration configuration)
 		{
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 
-			this.receiver = new Subject<IPacket> ();
-			this.sender = new Subject<IPacket> ();
+			this.receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			this.sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 			this.subscription = innerChannel.Receiver.Subscribe (async bytes => {
 				try {
-					var packet = await this.manager.GetPacketAsync(bytes);
+					var packet = await this.manager.GetPacketAsync (bytes);
 
-					this.receiver.OnNext (packet); 
+					this.receiver.OnNext (packet);
 				} catch (ProtocolException ex) {
 					this.receiver.OnError (ex);
 				}
-			}, onError: ex => this.receiver.OnError(ex));
+			}, onError: ex => this.receiver.OnError (ex));
 		}
 
 		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }
@@ -62,7 +62,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				this.receiver.OnCompleted ();
+				this.receiver.Dispose ();
 				this.subscription.Dispose ();
 				this.innerChannel.Dispose ();
 				this.disposed = true;

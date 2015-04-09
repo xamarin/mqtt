@@ -16,8 +16,8 @@ namespace Hermes
 		readonly object lockObject = new object ();
 		readonly TcpClient client;
 		readonly IPacketBuffer buffer;
-		readonly Subject<byte[]> receiver;
-		readonly Subject<byte[]> sender;
+		readonly ReplaySubject<byte[]> receiver;
+		readonly ReplaySubject<byte[]> sender;
 		readonly IDisposable streamSubscription;
 
 		public TcpChannel (TcpClient client, IPacketBuffer buffer, ProtocolConfiguration configuration)
@@ -26,8 +26,8 @@ namespace Hermes
 			this.client.ReceiveBufferSize = configuration.BufferSize;
 			this.client.SendBufferSize = configuration.BufferSize;
 			this.buffer = buffer;
-			this.receiver = new Subject<byte[]> ();
-			this.sender = new Subject<byte[]> ();
+			this.receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+			this.sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
 			this.streamSubscription = this.GetStreamSubscription (this.client);
 		}
 
@@ -75,7 +75,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				this.receiver.OnCompleted ();
+				this.receiver.Dispose ();
 				this.streamSubscription.Dispose ();
 
 				if(this.IsConnected)

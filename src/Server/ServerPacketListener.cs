@@ -13,7 +13,7 @@ namespace Hermes
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
-		readonly Subject<IPacket> packets;
+		readonly ReplaySubject<IPacket> packets;
 
 		public ServerPacketListener (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
@@ -22,7 +22,7 @@ namespace Hermes
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
-			this.packets = new Subject<IPacket> ();
+			this.packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
 		}
 
 		public IObservable<IPacket> Packets { get { return this.packets; } }
