@@ -22,7 +22,7 @@ namespace Hermes
 			var buffer = new PacketBuffer();
 			var channel = new TcpChannel(tcpClient, buffer, configuration);
 			var topicEvaluator = new TopicEvaluator(configuration);
-			var channelFactory = new PacketChannelFactory(topicEvaluator);
+			var channelFactory = new PacketChannelFactory(topicEvaluator, configuration);
 			var repositoryProvider = new InMemoryRepositoryProvider();
 			var flowProvider = new ClientProtocolFlowProvider(topicEvaluator, repositoryProvider, configuration);
 			var packetListener = new ClientPacketListener(flowProvider, configuration);

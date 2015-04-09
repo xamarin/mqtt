@@ -7,10 +7,12 @@ namespace Hermes
 	public class PacketChannelFactory : IPacketChannelFactory
 	{
 		readonly ITopicEvaluator topicEvaluator;
+		readonly ProtocolConfiguration configuration;
 
-		public PacketChannelFactory (ITopicEvaluator topicEvaluator)
+		public PacketChannelFactory (ITopicEvaluator topicEvaluator, ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
+			this.configuration = configuration;
 		}
 
 		public IChannel<IPacket> Create (IChannel<byte[]> binaryChannel)
@@ -18,7 +20,7 @@ namespace Hermes
 			var formatters = this.GetFormatters();
 			var manager = new PacketManager (formatters);
 			
-			return new PacketChannel (binaryChannel, manager);
+			return new PacketChannel (binaryChannel, manager, this.configuration);
 		}
 
 		private IEnumerable<IFormatter> GetFormatters()

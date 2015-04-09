@@ -120,9 +120,6 @@
   <data name="ClientPacketListener_FirstReceivedPacketMustBeConnectAck" xml:space="preserve">
     <value>The first packet received from the Server must be a ConnectAck packet. The connection will be closed.</value>
   </data>
-  <data name="ClientPacketListener_NoConnectAckReceived" xml:space="preserve">
-    <value>No ConnectAck has been received since the connection was established. The connection will be closed.</value>
-  </data>
   <data name="Client_ConnectionDisconnected" xml:space="preserve">
     <value>The client {0} has been disconnected while trying to perform the connection</value>
   </data>

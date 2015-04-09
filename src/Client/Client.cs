@@ -17,9 +17,8 @@ namespace Hermes
 		bool disposed;
 		bool isConnected;
 
-		readonly Subject<ApplicationMessage> receiver = new Subject<ApplicationMessage> ();
-		readonly Subject<IPacket> sender = new Subject<IPacket> ();
-
+		readonly ReplaySubject<ApplicationMessage> receiver;
+		readonly ReplaySubject<IPacket> sender;
 		readonly IChannel<IPacket> packetChannel;
 		readonly IPacketListener packetListener;
 		readonly IProtocolFlowProvider flowProvider;
@@ -34,6 +33,9 @@ namespace Hermes
 			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
         {
+			this.receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+			this.sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+
 			this.packetListener = packetListener;
 			this.flowProvider = flowProvider;
 			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
@@ -57,6 +59,7 @@ namespace Hermes
 			this.packetListener.Packets
 				.Subscribe (_ => { }, () => {
 					this.receiver.OnCompleted ();
+					this.Close ();
 				});
 		}
 
@@ -115,10 +118,10 @@ namespace Hermes
 					.Timeout(connectTimeout);
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
-				throw new ClientException (Resources.Client_ConnectionTimeout, timeEx);
+				throw new ClientException (string.Format(Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
 			} catch (Exception ex) {
 				this.Close (ex);
-				throw new ClientException (Resources.Client_ConnectionError, ex);
+				throw new ClientException (string.Format(Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
 
 			if (ack == null) {

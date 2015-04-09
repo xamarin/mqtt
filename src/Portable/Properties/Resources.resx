@@ -129,12 +129,6 @@
   <data name="ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode" xml:space="preserve">
     <value>Session Present flag must be set to 0 for non-zero return codes</value>
   </data>
-  <data name="ConnectFlow_NoErrorCodeDetected" xml:space="preserve">
-    <value>Only error codes are allowed to send an error connection acknowledge</value>
-  </data>
-  <data name="CommunicationHandler_SecondConnectNotAllowed" xml:space="preserve">
-    <value>A second connect packet from the same client session is not allowed. The client will be disconnected and the connection closed</value>
-  </data>
   <data name="ConnectFormatter_ClientIdMaxLengthExceeded" xml:space="preserve">
     <value>Client Id cannot exceed 23 bytes</value>
   </data>
@@ -174,9 +168,6 @@
   <data name="Formatter_InvalidQualityOfService" xml:space="preserve">
     <value>Qos value must be from 0x00 to 0x02</value>
   </data>
-  <data name="Formatter_PacketTypeNotAllowed" xml:space="preserve">
-    <value>{0} packet is not valid</value>
-  </data>
   <data name="PacketManager_PacketUnknown" xml:space="preserve">
     <value>The received packet cannot be handled by any of the registered formatters</value>
   </data>
@@ -185,18 +176,6 @@
   </data>
   <data name="ProtocolFlowProvider_UnknownPacketType" xml:space="preserve">
     <value>An error occured while trying to get a Flow Type based on Packet Type {0}</value>
-  </data>
-  <data name="ProtocolFlow_ConnectionRejected" xml:space="preserve">
-    <value>The connection {0} has been rejected and cannot accept any data</value>
-  </data>
-  <data name="ProtocolFlow_ConnectRequired" xml:space="preserve">
-    <value>A connection need to be established before sending any other packet</value>
-  </data>
-  <data name="ProtocolFlow_InvalidPacketType" xml:space="preserve">
-    <value>The packet type {0} is not valid for the flow {1}</value>
-  </data>
-  <data name="ProtocolFlow_NoActionRequired" xml:space="preserve">
-    <value>There is no action to do for the packet type {0}</value>
   </data>
   <data name="PublishFormatter_InvalidDuplicatedWithQoSZero" xml:space="preserve">
     <value>Duplicated flag must be set to 0 if the QoS is 0</value>
@@ -225,20 +204,11 @@
   <data name="PublishReceiverFlow_PacketIdRequired" xml:space="preserve">
     <value>Packet Id value is required for QoS major than 0</value>
   </data>
-  <data name="CommunicationHandler_FirstPacketMustBeConnect" xml:space="preserve">
-    <value>The first Packet sent from the Client to the Server must be a Connect Packet.</value>
-  </data>
-  <data name="CommunicationHandler_NoConnectReceived" xml:space="preserve">
-    <value>A connect packet has not been received for this network connection in the expected time.</value>
-  </data>
   <data name="SubscribeFormatter_InvalidTopicFilter" xml:space="preserve">
     <value>Topic filter {0} is invalid. See protocol specification for more details on Topic Filter rules: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718106</value>
   </data>
   <data name="ProtocolEncoding_IntegerMaxValueExceeded" xml:space="preserve">
     <value>Integer values are expected to be of two bytes length. The max value supported is 65536</value>
-  </data>
-  <data name="CommunicationHandler_KeepAliveTimeExceeded" xml:space="preserve">
-    <value>The time without receiving a control packet has exceeded the expected Keep Alive of {0} secs.</value>
   </data>
   <data name="TopicEvaluator_InvalidTopicFilter" xml:space="preserve">
     <value>The topic filter {0} is invalid according to the protocol rules and configuration</value>

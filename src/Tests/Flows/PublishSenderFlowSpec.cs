@@ -17,59 +17,58 @@ namespace Tests.Flows
 {
 	public class PublishSenderFlowSpec
 	{
-		//[Fact]
-		//public void when_sending_publish_with_qos1_and_publish_ack_is_not_received_then_publish_is_re_transmitted()
-		//{
-		//	var clientId = Guid.NewGuid ().ToString ();
+		[Fact]
+		public void when_sending_publish_with_qos1_and_publish_ack_is_not_received_then_publish_is_re_transmitted()
+		{
+			var clientId = Guid.NewGuid ().ToString ();
 
-		//	var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 1);
-		//	var connectionProvider = new Mock<IConnectionProvider> ();
-		//	var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == QualityOfService.AtLeastOnce);
+			var connectionProvider = new Mock<IConnectionProvider> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-		//	sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-		//		.Returns (new ClientSession {
-		//			ClientId = clientId,
-		//			PendingMessages = new List<PendingMessage> { new PendingMessage() }
-		//		});
+			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
+				.Returns (new ClientSession {
+					ClientId = clientId,
+					PendingMessages = new List<PendingMessage> { new PendingMessage() }
+				});
 
-		//	var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-		//	var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
 
-		//	var topic = "foo/bar";
-		//	var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
-		//	var publish = new Publish (topic, QualityOfService.AtLeastOnce, retain: false, duplicated: false, packetId: packetId);
+			var topic = "foo/bar";
+			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
+			var publish = new Publish (topic, QualityOfService.AtLeastOnce, retain: false, duplicated: false, packetId: packetId);
 
-		//	publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
+			publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
 
-		//	var receiver = new Subject<IPacket> ();
-		//	var channel = new Mock<IChannel<IPacket>> ();
+			var receiver = new Subject<IPacket> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
-		//	channel.Setup (c => c.IsConnected).Returns (true);
-		//	channel.Setup (c => c.Receiver).Returns (receiver);
-		//	connectionProvider.Setup (m => m.GetConnection (It.IsAny<string> ())).Returns (channel.Object);
+			channel.Setup (c => c.IsConnected).Returns (true);
+			channel.Setup (c => c.Receiver).Returns (receiver);
+			connectionProvider.Setup (m => m.GetConnection (It.IsAny<string> ())).Returns (channel.Object);
 
-		//	//TODO: Fix this
-		//	var publishTask = flow.SendPublishAsync (clientId, publish, channel.Object);
+			var publishTask = flow.SendPublishAsync (clientId, publish, channel.Object);
 
-		//	Thread.Sleep (2000);
+			Thread.Sleep (2000);
 
-		//	receiver.OnNext(new PublishAck(packetId.Value));
+			receiver.OnNext(new PublishAck(packetId.Value));
 
-		//	publishTask.Wait ();
+			//publishTask.Wait ();
 
-		//	channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish  && 
-		//		((Publish)p).Topic == topic && 
-		//		((Publish)p).QualityOfService == QualityOfService.AtLeastOnce &&
-		//		((Publish)p).PacketId == packetId)), Times.AtLeast(2));
-		//}
+			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish  && 
+				((Publish)p).Topic == topic && 
+				((Publish)p).QualityOfService == QualityOfService.AtLeastOnce &&
+				((Publish)p).PacketId == packetId)), Times.AtLeast(2));
+		}
 
 		[Fact]
 		public void when_sending_publish_with_qos2_and_publish_received_is_not_received_then_publish_is_re_transmitted()
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 1);
+			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == QualityOfService.ExactlyOnce);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
