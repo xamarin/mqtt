@@ -117,10 +117,10 @@ namespace Hermes
 					.Timeout(connectTimeout);
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
-				throw new ClientException (Resources.Client_ConnectionTimeout, timeEx);
+				throw new ClientException (string.Format(Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
 			} catch (Exception ex) {
 				this.Close (ex);
-				throw new ClientException (Resources.Client_ConnectionError, ex);
+				throw new ClientException (string.Format(Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
 
 			if (ack == null) {
