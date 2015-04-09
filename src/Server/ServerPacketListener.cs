@@ -31,13 +31,16 @@ namespace Hermes
 		{
 			var clientId = string.Empty;
 			var keepAlive = 0;
-
 			var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
 
 			channel.Receiver
-				.FirstAsync ()
+				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
 				.Subscribe(async packet => {
+					if (packet == default (IPacket)) {
+						return;
+					}
+
 					var connect = packet as Connect;
 
 					if (connect == null) {
@@ -52,15 +55,6 @@ namespace Hermes
 					await this.DispatchPacketAsync (connect, clientId, channel);
 				}, async ex => {
 					await this.HandleConnectionExceptionAsync (ex, channel);
-				});
-
-			channel.Sender
-				.OfType<ConnectAck> ()
-				.FirstAsync ()
-				.Subscribe (async connectAck => {
-					if (keepAlive > 0) {
-						await this.MonitorKeepAliveAsync (channel, clientId, keepAlive);
-					}
 				});
 
 			channel.Receiver
@@ -80,7 +74,18 @@ namespace Hermes
 				if (!string.IsNullOrEmpty (clientId)) {
 					this.RemoveClient (clientId);
 				}
+				
+				this.packets.OnCompleted ();	
 			});
+
+			channel.Sender
+				.OfType<ConnectAck> ()
+				.FirstAsync ()
+				.Subscribe (async connectAck => {
+					if (keepAlive > 0) {
+						await this.MonitorKeepAliveAsync (channel, clientId, keepAlive);
+					}
+				});
 		}
 
 		private async Task HandleConnectionExceptionAsync(Exception exception, IChannel<IPacket> channel)

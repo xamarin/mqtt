@@ -27,16 +27,13 @@ namespace Hermes
 		{
 			var clientId = string.Empty;
 
-			channel.Sender
-				.OfType<Connect> ()
-				.FirstAsync ()
-				.Subscribe (connect => {
-					clientId = connect.ClientId;
-				});
-
 			channel.Receiver
-				.FirstAsync()
+				.FirstOrDefaultAsync()
 				.Subscribe(async packet => {
+					if (packet == default (IPacket)) {
+						return;
+					}
+
 					var connectAck = packet as ConnectAck;
 
 					if (connectAck == null) {
@@ -59,6 +56,17 @@ namespace Hermes
 					await this.DispatchPacketAsync (packet, clientId, channel);
 				}, ex => {
 					this.NotifyError (ex);
+				});
+
+			channel.Receiver.Subscribe (_ => { }, () => {
+				this.packets.OnCompleted ();	
+			});
+
+			channel.Sender
+				.OfType<Connect> ()
+				.FirstAsync ()
+				.Subscribe (connect => {
+					clientId = connect.ClientId;
 				});
 		}
 

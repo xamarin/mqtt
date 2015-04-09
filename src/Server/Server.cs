@@ -96,6 +96,8 @@ namespace Hermes
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex);
 				this.CloseChannel (packetChannel);
+			}, () => {
+				this.CloseChannel (packetChannel);
 			});
 
 			this.channels.Add (packetChannel);
