@@ -13,8 +13,14 @@
         <releaseNotes />
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
-		<dependencies>
-			<dependency id="Hermes.Portable" />
-		</dependencies>
+        <dependencies>
+			<dependency id="Rx-Core" version="2.2.5" />
+        </dependencies>
     </metadata>
+    <files>
+		<file src="bin\Release\Hermes.Client.dll" target="lib\net45" />
+		<file src="bin\Release\Hermes.Client.pdb" target="lib\net45" />
+		<file src="bin\Release\Hermes.Core.dll" target="lib\net45" />
+		<file src="bin\Release\Hermes.Core.pdb" target="lib\net45" />
+    </files>
 </package>
