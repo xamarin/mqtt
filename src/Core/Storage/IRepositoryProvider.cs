@@ -2,6 +2,6 @@
 {
 	public interface IRepositoryProvider
 	{
-		IRepository<T> GetRepository<T> ();
+		IRepository<T> GetRepository<T> () where T : StorageObject;
 	}
 }

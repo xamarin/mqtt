@@ -102,6 +102,7 @@
     <Compile Include="Storage\IRepository.cs" />
     <Compile Include="Storage\ClientSession.cs" />
     <Compile Include="Storage\PendingAcknowledgement.cs" />
+    <Compile Include="Storage\StorageObject.cs" />
     <Compile Include="TopicEvaluator.cs" />
   </ItemGroup>
   <ItemGroup>

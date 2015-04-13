@@ -2,7 +2,7 @@
 
 namespace Hermes.Storage
 {
-	public class RetainedMessage
+	public class RetainedMessage : StorageObject
 	{
 		public QualityOfService QualityOfService { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace Hermes.Storage
 {
-	public class ConnectionWill
+	public class ConnectionWill : StorageObject
 	{
 		public string ClientId { get; set; }
 

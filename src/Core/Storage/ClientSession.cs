@@ -2,7 +2,7 @@
 
 namespace Hermes.Storage
 {
-	public class ClientSession
+	public class ClientSession : StorageObject
 	{
 		public ClientSession ()
 		{

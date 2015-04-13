@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hermes.Packets;
 using IntegrationTests.Context;
 using Xunit;
@@ -14,6 +15,24 @@ namespace IntegrationTests
 			var topicFilter = "test/topic1/*";
 
 			await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce);
+
+			Assert.True (client.IsConnected);
+		}
+
+		[Fact]
+		public void when_subscribe_multiple_topics_then_succeeds()
+		{
+			var client = this.GetClient ();
+			var topicsToSubscribe = 100;
+			var subscribeTasks = new List<Task> ();
+
+			for (var i = 1; i < topicsToSubscribe; i++) {
+				var topicFilter = string.Format ("test/topic{0}", i);
+
+				subscribeTasks.Add(client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce));
+			}
+
+			Task.WaitAll (subscribeTasks.ToArray());
 
 			Assert.True (client.IsConnected);
 		}

@@ -13,7 +13,8 @@ namespace Hermes.Storage
 			this.repositories = new Dictionary<Type, object> ();
 		}
 
-		public IRepository<T> GetRepository<T> ()
+		public IRepository<T> GetRepository<T> () 
+			where T : StorageObject
 		{
 			if (this.repositories.Any (r => r.Key == typeof (T))) {
 				return this.repositories.FirstOrDefault (r => r.Key == typeof (T)).Value as IRepository<T>;

@@ -81,18 +81,18 @@ namespace Hermes.Storage
 			var packetId = default (ushort?);
 
 			if(qos != QualityOfService.AtMostOnce) {
-				packetId = repository.GetUnusedPacketIdentifier (new Random ());
+				packetId = repository.GetPacketIdentifier (new Random ());
 			}
 
 			return packetId;
 		}
 
-		public static ushort GetUnusedPacketIdentifier(this IRepository<PacketIdentifier> repository, Random random)
+		public static ushort GetPacketIdentifier(this IRepository<PacketIdentifier> repository, Random random)
 		{
 			var packetId = (ushort)random.Next (1, ushort.MaxValue);
 
 			if (repository.Exist (i => i.Value == packetId)) {
-				packetId = repository.GetUnusedPacketIdentifier (random);
+				packetId = repository.GetPacketIdentifier (random);
 			}
 
 			repository.Create (new PacketIdentifier { Value = packetId });
