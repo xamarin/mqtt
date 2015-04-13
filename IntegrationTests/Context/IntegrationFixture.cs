@@ -6,41 +6,37 @@ namespace IntegrationTests.Context
 {
 	public class IntegrationFixture : IDisposable
 	{
-		private Server server;
-
 		public IntegrationFixture ()
 		{
-			InitializeServer ();
 		}
 
-		public ProtocolConfiguration Configuration
+		public ProtocolConfiguration Configuration { get; private set; }
+
+		public Server Server { get; private set; }
+
+		public void Initialize(ushort keepAliveSecs = 0)
 		{
-			get
-			{
-				return new ProtocolConfiguration {
+			if (this.Configuration == null) {
+				this.Configuration = new ProtocolConfiguration {
 					BufferSize = 128 * 1024,
 					Port = Protocol.DefaultNonSecurePort,
-					KeepAliveSecs = 0,
+					KeepAliveSecs = keepAliveSecs,
 					WaitingTimeoutSecs = 10,
 					MaximumQualityOfService = QualityOfService.ExactlyOnce
 				};
 			}
-		}
 
-		public Server Server { get { return this.server; } }
+			if (Server == null) {
+				var initializer = new ServerInitializer ();
+
+				this.Server = initializer.Initialize (this.Configuration);
+				this.Server.Start ();
+			}
+		}
 
 		public void Dispose ()
 		{
-			this.server.Stop ();
-		}
-
-		private void InitializeServer()
-		{
-			var initializer = new ServerInitializer ();
-			
-			this.server = initializer.Initialize (this.Configuration);
-
-			this.server.Start ();
+			this.Server.Stop ();
 		}
 	}
 }
