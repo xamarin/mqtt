@@ -78,9 +78,9 @@
     <Reference Include="System.Reflection.Context" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Portable\Portable.csproj">
+    <ProjectReference Include="..\Core\Core.csproj">
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
-      <Name>Portable</Name>
+      <Name>Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

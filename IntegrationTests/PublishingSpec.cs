@@ -11,6 +11,10 @@ namespace IntegrationTests
 {
 	public class PublishingSpec : ConnectedContext
 	{
+		public PublishingSpec () : base(keepAliveSecs: 2)
+		{
+		}
+
 		[Fact]
 		public async Task when_publish_messages_with_qos0_then_succeeds()
 		{
