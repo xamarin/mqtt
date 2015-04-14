@@ -140,7 +140,7 @@ namespace Hermes
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
-			var packetId = this.packetIdentifierRepository.GetUnusedPacketIdentifier(new Random());
+			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(new Random());
 			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 			var ack = default (SubscribeAck);
@@ -200,7 +200,7 @@ namespace Hermes
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
-			var packetId = this.packetIdentifierRepository.GetUnusedPacketIdentifier(new Random());
+			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(new Random());
 			var unsubscribe = new Unsubscribe(packetId, topics);
 
 			var ack = default (UnsubscribeAck);

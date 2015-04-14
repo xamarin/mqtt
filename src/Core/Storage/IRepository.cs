@@ -5,12 +5,19 @@ using System.Linq.Expressions;
 namespace Hermes.Storage
 {
 	public interface IRepository<T>
+		 where T : StorageObject
     {
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         IQueryable<T> GetAll(Expression<Func<T, bool>> predicate = null);
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
+		T Get (string id);
+
+		/// <exception cref="RepositoryException">RepositoryException</exception>
         T Get(Expression<Func<T, bool>> predicate);
+
+		/// <exception cref="RepositoryException">RepositoryException</exception>
+        bool Exist(string id);
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         bool Exist(Expression<Func<T, bool>> predicate);

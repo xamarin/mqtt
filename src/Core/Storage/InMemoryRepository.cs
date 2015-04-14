@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -6,18 +7,19 @@ using System.Linq.Expressions;
 namespace Hermes.Storage
 {
 	public class InMemoryRepository<T> : IRepository<T>
+		where T : StorageObject
     {
-        static readonly IList<T> elements;
+        static readonly ConcurrentDictionary<string, T> elements;
 
 		static InMemoryRepository()
 		{
-			elements = new List<T>();
+			elements = new ConcurrentDictionary<string, T>();
 		}
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public IQueryable<T> GetAll(Expression<Func<T, bool>> predicate = null)
         {
-            IEnumerable<T> result = elements;
+            IEnumerable<T> result = elements.Select(x => x.Value);
 
             if (predicate != null)
             {
@@ -28,21 +30,37 @@ namespace Hermes.Storage
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
+        public T Get(string id)
+        {
+			var element = default (T);
+
+			elements.TryGetValue (id, out element);
+
+			return element;
+        }
+
+		/// <exception cref="RepositoryException">RepositoryException</exception>
         public T Get(Expression<Func<T, bool>> predicate)
         {
-			return elements.FirstOrDefault (predicate.Compile ());
+			return elements.Select(x => x.Value).FirstOrDefault (predicate.Compile ());
+        }
+
+		/// <exception cref="RepositoryException">RepositoryException</exception>
+        public bool Exist(string id)
+        {
+            return elements.Select(x => x.Value).Any (x => x.Id == id);
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public bool Exist(Expression<Func<T, bool>> predicate)
         {
-            return elements.Any (predicate.Compile ());
+            return elements.Select(x => x.Value).Any (predicate.Compile ());
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public void Create(T element)
         {
-            elements.Add(element);
+			elements.TryAdd (element.Id, element);
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
@@ -55,7 +73,9 @@ namespace Hermes.Storage
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public void Delete(T element)
         {
-            elements.Remove(element);
+			var removedElement = default(T);
+
+			elements.TryRemove (element.Id, out removedElement);
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
