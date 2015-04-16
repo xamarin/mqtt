@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Hermes.Packets;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
@@ -52,15 +53,24 @@ namespace Hermes.Flows
 		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			await channel.Receiver.OfType<T> ()
+			await this.GetAckMonitor<T> (sentMessage, channel);
+		}
+
+		protected IObservable<T> GetAckMonitor<T>(IFlowPacket sentMessage, IChannel<IPacket> channel, int retries = 0)
+			where T : IFlowPacket
+		{
+			if (retries == this.configuration.QualityOfServiceAckRetries) {
+				throw new ProtocolException (string.Format(Resources.PublishFlow_AckMonitor_ExceededMaximumAckRetries, this.configuration.QualityOfServiceAckRetries));
+			}
+
+			return channel.Receiver.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId)
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
-				.Do(_ => {}, async ex => {
-					if (ex is TimeoutException) {
-						await channel.SendAsync (sentMessage);
-					}
-				})
-				.Retry(this.configuration.QualityOfServiceAckRetries);
+				.Catch<T, TimeoutException> (timeEx => {
+					channel.SendAsync (sentMessage).Wait ();
+
+					return this.GetAckMonitor<T> (sentMessage, channel, retries + 1);
+				});
 		}
 
 		private void SavePendingAcknowledgement(IFlowPacket ack, string clientId)

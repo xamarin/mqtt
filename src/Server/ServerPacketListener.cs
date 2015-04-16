@@ -14,6 +14,7 @@ namespace Hermes
 		IDisposable nextPacketsSubscription;
 		IDisposable allPacketsSubscription;
 		IDisposable senderSubscription;
+		IDisposable keepAliveSubscription;
 
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
@@ -36,7 +37,7 @@ namespace Hermes
 		{
 			var clientId = string.Empty;
 			var keepAlive = 0;
-			var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var packetDueTime = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
 
 			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync ()
@@ -128,28 +129,30 @@ namespace Hermes
 			}
 		}
 
-		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
-		{
-			keepAlive = (int)(keepAlive * 1.5);
-
-			return new TimeSpan (0, 0, keepAlive);
-		}
-
 		private void MonitorKeepAliveAsync(IChannel<IPacket> channel, string clientId, int keepAlive)
 		{
-			channel.Receiver
-				.Timeout (GetKeepAliveTolerance (keepAlive))
+			var tolerance = GetKeepAliveTolerance (keepAlive);
+
+			this.keepAliveSubscription = channel.Receiver
+				.Timeout (tolerance)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;
 
 					if (timeEx == null) {
 						this.NotifyError (ex, clientId);
 					} else {
-						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, keepAlive);
+						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance);
 
 						this.NotifyError(message, ex as TimeoutException, clientId);
 					}
 				});
+		}
+		
+		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
+		{
+			var tolerance = (int)Math.Round (keepAlive * 1.5, MidpointRounding.AwayFromZero);
+
+			return TimeSpan.FromSeconds (tolerance);
 		}
 
 		private void NotifyError(Exception exception, string clientId = null)

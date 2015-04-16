@@ -222,4 +222,7 @@
   <data name="ProtocolFlowProvider_InvalidPacketType" xml:space="preserve">
     <value>The packet type {0} cannot be handled by this flow provider</value>
   </data>
+  <data name="PublishFlow_AckMonitor_ExceededMaximumAckRetries" xml:space="preserve">
+    <value>The QoS publish flow was not completed within the maximum configured message retries of {0}. The connection will be closed</value>
+  </data>
 </root>

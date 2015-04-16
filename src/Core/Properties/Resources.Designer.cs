@@ -10,7 +10,6 @@
 
 namespace Hermes.Properties {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace Hermes.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hermes.Properties.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hermes.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -256,6 +255,15 @@ namespace Hermes.Properties {
         internal static string ProtocolFlowProvider_UnknownPacketType {
             get {
                 return ResourceManager.GetString("ProtocolFlowProvider_UnknownPacketType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The QoS publish flow was not completed within the maximum configured message retries of {0}. The connection will be closed.
+        /// </summary>
+        internal static string PublishFlow_AckMonitor_ExceededMaximumAckRetries {
+            get {
+                return ResourceManager.GetString("PublishFlow_AckMonitor_ExceededMaximumAckRetries", resourceCulture);
             }
         }
         

@@ -14,6 +14,7 @@ namespace Hermes
 		IDisposable nextPacketsSubscription;
 		IDisposable allPacketsSubscription;
 		IDisposable senderSubscription;
+		IDisposable keepAliveSubscription;
 
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
@@ -46,10 +47,6 @@ namespace Hermes
 						return;
 					}
 
-					if (this.configuration.KeepAliveSecs > 0) {
-						this.MaintainKeepAlive (channel);
-					}
-
 					await this.DispatchPacketAsync (packet, clientId, channel);
 				}, ex => {
 					this.NotifyError (ex);
@@ -72,21 +69,31 @@ namespace Hermes
 				.FirstAsync ()
 				.Subscribe (connect => {
 					clientId = connect.ClientId;
+
+					if (this.configuration.KeepAliveSecs > 0) {
+						this.MaintainKeepAlive (channel, clientId);
+					}
 				});
 		}
 
-		private void MaintainKeepAlive(IChannel<IPacket> channel)
+		private void MaintainKeepAlive(IChannel<IPacket> channel, string clientId)
 		{
-			channel.Sender
-				.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
-				.Subscribe(_ => {}, async ex => {
-					if (ex is TimeoutException) {
-						var ping = new PingRequest ();
+			this.keepAliveSubscription = this.GetTimeoutMonitor(channel, clientId)
+				.Subscribe(_ => {}, ex => {
+					this.NotifyError (ex);
+				});
+		}
 
-						await channel.SendAsync(ping);
-					} else {
-						this.NotifyError (ex);
-					}
+		private IObservable<IPacket> GetTimeoutMonitor(IChannel<IPacket> channel, string clientId)
+		{
+			return channel.Sender
+				.Timeout (TimeSpan.FromSeconds (this.configuration.KeepAliveSecs))
+				.Catch<IPacket, TimeoutException> (timeEx => {
+					var ping = new PingRequest ();
+
+					channel.SendAsync (ping).Wait ();
+
+					return this.GetTimeoutMonitor (channel, clientId);
 				});
 		}
 

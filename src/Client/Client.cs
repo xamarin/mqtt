@@ -110,7 +110,7 @@ namespace Hermes
 			};
 
 			var ack = default (ConnectAck);
-			var connectTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var connectTimeout = TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs);
 
 			try {
 				await this.SendPacket (connect);
@@ -147,7 +147,7 @@ namespace Hermes
 			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 			var ack = default (SubscribeAck);
-			var subscribeTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var subscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
 
 			try {
 				await this.SendPacket (subscribe);
@@ -207,7 +207,7 @@ namespace Hermes
 			var unsubscribe = new Unsubscribe(packetId, topics);
 
 			var ack = default (UnsubscribeAck);
-			var unsubscribeTimeout = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var unsubscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
 
 			try {
 				await this.SendPacket (unsubscribe);
