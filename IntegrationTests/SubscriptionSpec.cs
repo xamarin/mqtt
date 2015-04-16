@@ -23,7 +23,7 @@ namespace IntegrationTests
 		public void when_subscribe_multiple_topics_then_succeeds()
 		{
 			var client = this.GetClient ();
-			var topicsToSubscribe = 100;
+			var topicsToSubscribe = this.GetTestLoad();
 			var subscribeTasks = new List<Task> ();
 
 			for (var i = 1; i < topicsToSubscribe; i++) {
@@ -35,6 +35,8 @@ namespace IntegrationTests
 			Task.WaitAll (subscribeTasks.ToArray());
 
 			Assert.True (client.IsConnected);
+
+			client.Close ();
 		}
 
 		[Fact]
@@ -50,6 +52,8 @@ namespace IntegrationTests
 			await client.UnsubscribeAsync (topicFilter1, topicFilter2);
 
 			Assert.True (client.IsConnected);
+
+			client.Close ();
 		}
 	}
 }

@@ -11,7 +11,7 @@ namespace IntegrationTests
 {
 	public class PublishingSpec : ConnectedContext
 	{
-		public PublishingSpec () : base(keepAliveSecs: 2)
+		public PublishingSpec () : base(keepAliveSecs: 5)
 		{
 		}
 
@@ -20,7 +20,7 @@ namespace IntegrationTests
 		{
 			var client = this.GetClient ();
 			var topic = "foo/test/qos0";
-			var count = 50;
+			var count = this.GetTestLoad();
 
 			for (var i = 0; i < count; i++) {
 				var testMessage = this.GetTestMessage();
@@ -34,6 +34,8 @@ namespace IntegrationTests
 			}
 
 			Assert.True (client.IsConnected);
+
+			client.Close ();
 		}
 
 		[Fact]
@@ -41,7 +43,7 @@ namespace IntegrationTests
 		{
 			var client = this.GetClient ();
 			var topic = "foo/test/qos1";
-			var count = 50;
+			var count = this.GetTestLoad();
 
 			for (var i = 0; i < count; i++) {
 				var testMessage = this.GetTestMessage();
@@ -55,33 +57,37 @@ namespace IntegrationTests
 			}
 
 			Assert.True (client.IsConnected);
+
+			client.Close ();
 		}
 
-		//[Fact]
-		//public async Task when_publish_messages_with_qos2_then_succeeds()
-		//{
-		//	var client = this.GetClient ();
-		//	var topic = "foo/test/qos2";
-		//	var count = 50;
+		[Fact]
+		public async Task when_publish_messages_with_qos2_then_succeeds()
+		{
+			var client = this.GetClient ();
+			var topic = "foo/test/qos2";
+			var count = this.GetTestLoad();
 
-		//	for (var i = 0; i < count; i++) {
-		//		var testMessage = this.GetTestMessage();
-		//		var message = new ApplicationMessage
-		//		{
-		//			Topic = topic,
-		//			Payload = Serializer.Serialize(testMessage)
-		//		};
+			for (var i = 0; i < count; i++) {
+				var testMessage = this.GetTestMessage();
+				var message = new ApplicationMessage
+				{
+					Topic = topic,
+					Payload = Serializer.Serialize(testMessage)
+				};
 
-		//		await client.PublishAsync (message, Hermes.Packets.QualityOfService.ExactlyOnce);
-		//	}
+				await client.PublishAsync (message, Hermes.Packets.QualityOfService.ExactlyOnce);
+			}
 
-		//	Assert.True (client.IsConnected);
-		//}
+			Assert.True (client.IsConnected);
+
+			client.Close ();
+		}
 
 		[Fact]
 		public async Task when_publish_message_to_topic_then_message_is_dispatched_to_subscribers()
 		{
-			var count = 50;
+			var count = this.GetTestLoad();
 
 			var topicFilter = "test/#";
 			var topic = "test/foo/bar";
@@ -129,12 +135,16 @@ namespace IntegrationTests
 			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(this.fixture.Configuration.WaitingTimeoutSecs));
 
 			Assert.True (completed);
+
+			subscriber1.Close ();
+			subscriber2.Close ();
+			publisher.Close ();
 		}
 
 		[Fact]
 		public async Task when_publish_message_to_topic_and_expect_reponse_to_other_topic_then_succeeds()
 		{
-			var count = 50;
+			var count = this.GetTestLoad();
 
 			var requestTopic = "test/foo";
 			var responseTopic = "test/foo/response";
@@ -182,6 +192,8 @@ namespace IntegrationTests
 			}
 
 			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (this.fixture.Configuration.WaitingTimeoutSecs));
+
+			Assert.True (completed);
 		}
 
 		private TestMessage GetTestMessage()

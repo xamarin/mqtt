@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using Hermes;
 using Xunit;
 
@@ -6,7 +7,7 @@ namespace IntegrationTests.Context
 {
 	public abstract class IntegrationContext : IUseFixture<IntegrationFixture>
 	{
-		private readonly ushort keepAliveSecs;
+		protected readonly ushort keepAliveSecs;
 		protected IntegrationFixture fixture;
 
 		public IntegrationContext (ushort keepAliveSecs = 0)
@@ -30,6 +31,16 @@ namespace IntegrationTests.Context
 		protected string GetClientId()
 		{
 			return string.Concat ("Client", Guid.NewGuid ().ToString ().Substring (0, 6));
+		}
+
+		protected int GetTestLoad()
+		{
+			var testLoad = 0;
+			var loadValue = ConfigurationManager.AppSettings["testLoad"];
+
+			int.TryParse (loadValue, out testLoad);
+
+			return testLoad;
 		}
 	}
 }
