@@ -10,6 +10,11 @@ namespace Hermes
 {
 	public class ClientPacketListener : IPacketListener
 	{
+		IDisposable firstPacketSubscription;
+		IDisposable nextPacketsSubscription;
+		IDisposable allPacketsSubscription;
+		IDisposable senderSubscription;
+
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
@@ -27,7 +32,7 @@ namespace Hermes
 		{
 			var clientId = string.Empty;
 
-			channel.Receiver
+			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync()
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
@@ -50,7 +55,7 @@ namespace Hermes
 					this.NotifyError (ex);
 				});
 
-			channel.Receiver
+			this.nextPacketsSubscription = channel.Receiver
 				.Skip(1)
 				.Subscribe (async packet => {
 					await this.DispatchPacketAsync (packet, clientId, channel);
@@ -58,11 +63,11 @@ namespace Hermes
 					this.NotifyError (ex);
 				});
 
-			channel.Receiver.Subscribe (_ => { }, () => {
+			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
 				this.packets.OnCompleted ();	
 			});
 
-			channel.Sender
+			this.senderSubscription = channel.Sender
 				.OfType<Connect> ()
 				.FirstAsync ()
 				.Subscribe (connect => {

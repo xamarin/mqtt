@@ -13,7 +13,6 @@ namespace Hermes
 	{
 		bool disposed;
 
-		readonly object lockObject = new object ();
 		readonly TcpClient client;
 		readonly IPacketBuffer buffer;
 		readonly ReplaySubject<byte[]> receiver;
@@ -75,8 +74,8 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				this.receiver.Dispose ();
 				this.streamSubscription.Dispose ();
+				this.receiver.OnCompleted ();
 
 				if(this.IsConnected)
 					this.client.Close ();

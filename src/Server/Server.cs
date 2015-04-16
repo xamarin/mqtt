@@ -68,14 +68,16 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				foreach (var channel in channels) {
-					channel.Dispose ();
-				}
-
 				if (this.channelSubscription != null) {
 					this.channelSubscription.Dispose ();
 				}
 				
+				foreach (var channel in channels) {
+					channel.Dispose ();
+				}
+
+				channels.Clear ();
+
 				this.disposed = true;
 			}
 		}
@@ -105,7 +107,6 @@ namespace Hermes
 
 		private void CloseChannel(IChannel<IPacket> channel)
 		{
-			this.channels.Remove (channel);
 			channel.Dispose ();
 		}
 	}

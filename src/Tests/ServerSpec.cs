@@ -107,7 +107,7 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_receiver_error_then_closes_connection_and_decreases_connection_list ()
+		public void when_receiver_error_then_closes_connection ()
 		{
 			var sockets = new Subject<IChannel<byte[]>> ();
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
@@ -149,7 +149,6 @@ namespace Tests
 			}
 
 			packetChannel.Verify (x => x.Dispose ());
-			Assert.Equal (0, server.ActiveChannels);
 		}
 	}
 }

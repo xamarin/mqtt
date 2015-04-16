@@ -17,6 +17,8 @@ namespace Hermes
 		bool disposed;
 		bool isConnected;
 
+		readonly IDisposable publishSubscription;
+		readonly IDisposable packetsSubscription;
 		readonly ReplaySubject<ApplicationMessage> receiver;
 		readonly ReplaySubject<IPacket> sender;
 		readonly IChannel<IPacket> packetChannel;
@@ -45,19 +47,20 @@ namespace Hermes
 			this.packetChannel = channelFactory.Create (binaryChannel);
 			this.packetListener.Listen (this.packetChannel);
 
-			this.packetListener.Packets
+			this.publishSubscription = this.packetListener.Packets
 				.OfType<Publish>()
 				.Subscribe (publish => {
 					var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
 					this.receiver.OnNext (message);
-				}, ex => {
-					this.receiver.OnError (ex);
-					this.Close (ex);
 				});
 
-			this.packetListener.Packets
-				.Subscribe (_ => { }, () => {
+			this.packetsSubscription = this.packetListener.Packets
+				.Subscribe (_ => { }, ex => {
+					this.receiver.OnError (ex);
+					this.sender.OnError (ex);
+					this.Close (ex);
+				}, () => {
 					this.receiver.OnCompleted ();
 					this.Close ();
 				});
@@ -268,6 +271,8 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
+				this.publishSubscription.Dispose ();
+				this.packetsSubscription.Dispose ();
 				this.packetChannel.Dispose ();
 				this.IsConnected = false; 
 				this.Id = null;
@@ -278,8 +283,6 @@ namespace Hermes
 		private void Close(Exception ex)
 		{
 			tracer.Error (ex);
-			this.receiver.OnError (ex);
-			this.sender.OnError (ex);
 			this.Close (ClosedReason.Error, ex.Message);
 		}
 

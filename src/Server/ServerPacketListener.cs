@@ -10,6 +10,11 @@ namespace Hermes
 {
 	public class ServerPacketListener : IPacketListener
 	{
+		IDisposable firstPacketSubscription;
+		IDisposable nextPacketsSubscription;
+		IDisposable allPacketsSubscription;
+		IDisposable senderSubscription;
+
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
@@ -33,7 +38,7 @@ namespace Hermes
 			var keepAlive = 0;
 			var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
 
-			channel.Receiver
+			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
 				.Subscribe(async packet => {
@@ -57,7 +62,7 @@ namespace Hermes
 					await this.HandleConnectionExceptionAsync (ex, channel);
 				});
 
-			channel.Receiver
+			this.nextPacketsSubscription = channel.Receiver
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
@@ -70,7 +75,7 @@ namespace Hermes
 					this.NotifyError (ex, clientId);
 				});
 
-			channel.Receiver.Subscribe (_ => { }, () => {
+			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
 				if (!string.IsNullOrEmpty (clientId)) {
 					this.RemoveClient (clientId);
 				}
@@ -78,12 +83,12 @@ namespace Hermes
 				this.packets.OnCompleted ();	
 			});
 
-			channel.Sender
+			this.senderSubscription = channel.Sender
 				.OfType<ConnectAck> ()
 				.FirstAsync ()
-				.Subscribe (async connectAck => {
+				.Subscribe (connectAck => {
 					if (keepAlive > 0) {
-						await this.MonitorKeepAliveAsync (channel, clientId, keepAlive);
+						this.MonitorKeepAliveAsync (channel, clientId, keepAlive);
 					}
 				});
 		}
@@ -130,17 +135,21 @@ namespace Hermes
 			return new TimeSpan (0, 0, keepAlive);
 		}
 
-		private async Task MonitorKeepAliveAsync(IChannel<IPacket> channel, string clientId, int keepAlive)
+		private void MonitorKeepAliveAsync(IChannel<IPacket> channel, string clientId, int keepAlive)
 		{
-			try {
-				var packet = await channel.Receiver.Timeout (GetKeepAliveTolerance(keepAlive));
-			} catch(TimeoutException timeEx) {
-				var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, keepAlive);
+			channel.Receiver
+				.Timeout (GetKeepAliveTolerance (keepAlive))
+				.Subscribe (_ => { }, ex => {
+					var timeEx = ex as TimeoutException;
 
-				this.NotifyError(message, timeEx, clientId);
-			} catch(Exception ex) {
-				this.NotifyError (ex, clientId);
-			}
+					if (timeEx == null) {
+						this.NotifyError (ex, clientId);
+					} else {
+						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, keepAlive);
+
+						this.NotifyError(message, ex as TimeoutException, clientId);
+					}
+				});
 		}
 
 		private void NotifyError(Exception exception, string clientId = null)
