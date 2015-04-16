@@ -121,7 +121,7 @@
     <value>The first packet sent by a Client must be a Connect. The connection will be closed.</value>
   </data>
   <data name="ServerPacketListener_KeepAliveTimeExceeded" xml:space="preserve">
-    <value>The keep alive time of {0} seconds has been exceeded and no packet has been received. The connection will be closed.</value>
+    <value>The keep alive tolerance of {0} seconds has been exceeded and no packet has been received. The connection will be closed.</value>
   </data>
   <data name="ServerPacketListener_NoConnectReceived" xml:space="preserve">
     <value>No connect packet has been received since the network connection was established. The connection will be closed.</value>
@@ -131,5 +131,8 @@
   </data>
   <data name="TcpChannel_ClientIsNotConnected" xml:space="preserve">
     <value>The underlying TCP client is not connected</value>
+  </data>
+  <data name="TcpChannel_SocketDisconnected" xml:space="preserve">
+    <value>The underlying network stream is not available. The socket could became disconnected</value>
   </data>
 </root>

@@ -167,5 +167,14 @@ namespace Hermes.Properties {
                 return ResourceManager.GetString("TcpChannel_ClientIsNotConnected", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The underlying network stream is not available. The socket could became disconnected.
+        /// </summary>
+        internal static string TcpChannel_SocketDisconnected {
+            get {
+                return ResourceManager.GetString("TcpChannel_SocketDisconnected", resourceCulture);
+            }
+        }
     }
 }

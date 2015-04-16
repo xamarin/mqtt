@@ -60,7 +60,11 @@ namespace Hermes
 
 			this.sender.OnNext (message);
 
-			await this.client.GetStream ().WriteAsync(message, 0, message.Length);
+			try {
+				await this.client.GetStream ().WriteAsync(message, 0, message.Length);
+			} catch (ObjectDisposedException disposedEx) {
+				throw new ProtocolException (Resources.TcpChannel_SocketDisconnected, disposedEx);
+			}
 		}
 
 		public void Dispose ()
@@ -89,16 +93,13 @@ namespace Hermes
 			return Observable.Defer(() => {
 				var buffer = new byte[client.ReceiveBufferSize];
 
-				return Observable
-					.FromAsync<int>(() => {
-						if (!this.IsConnected)
-							return Task.FromResult (0);
-
-						return this.client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
-					})
-					.Select(x => buffer.Take(x).ToArray());
+				return Observable.FromAsync<int>(() => {
+					return this.client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
+				})
+				.Select(x => buffer.Take(x).ToArray());
 			})
 			.Repeat()
+			.TakeWhile(bytes => bytes.Any())
 			.Subscribe(bytes => {
 				var packets = default(IEnumerable<byte[]>);
 
@@ -107,7 +108,13 @@ namespace Hermes
 						this.receiver.OnNext (packet);
 					}
 				}
-			}, ex => this.receiver.OnError(ex));
+			}, ex => {
+				if (ex is ObjectDisposedException) {
+					this.receiver.OnError (new ProtocolException (Resources.TcpChannel_SocketDisconnected, ex));
+				} else {
+					this.receiver.OnError (ex);
+				}
+			}, () => this.Dispose());
 		}
 	}
 }

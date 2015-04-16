@@ -70,7 +70,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The keep alive time of {0} seconds has been exceeded and no packet has been received. The connection will be closed..
+        ///   Looks up a localized string similar to The keep alive tolerance of {0} seconds has been exceeded and no packet has been received. The connection will be closed..
         /// </summary>
         internal static string ServerPacketListener_KeepAliveTimeExceeded {
             get {
@@ -102,6 +102,15 @@ namespace Hermes.Properties {
         internal static string TcpChannel_ClientIsNotConnected {
             get {
                 return ResourceManager.GetString("TcpChannel_ClientIsNotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The underlying network stream is not available. The socket could became disconnected.
+        /// </summary>
+        internal static string TcpChannel_SocketDisconnected {
+            get {
+                return ResourceManager.GetString("TcpChannel_SocketDisconnected", resourceCulture);
             }
         }
     }
