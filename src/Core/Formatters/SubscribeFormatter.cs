@@ -78,7 +78,7 @@ namespace Hermes.Formatters
 		private byte[] GetPayload(Subscribe packet)
 		{
 			if(packet.Subscriptions == null || !packet.Subscriptions.Any())
-				throw new ViolationProtocolException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new ProtocolViolationException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var payload = new List<byte> ();
 
@@ -102,7 +102,7 @@ namespace Hermes.Formatters
 		private IEnumerable<Subscription> GetSubscriptions(byte[] bytes, int headerLength, int remainingLength)
 		{
 			if (bytes.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
-				throw new ViolationProtocolException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new ProtocolViolationException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var index = headerLength;
 
@@ -118,7 +118,7 @@ namespace Hermes.Formatters
 				var requestedQosByte = bytes.Byte (index);
 
 				if (!Enum.IsDefined (typeof (QualityOfService), requestedQosByte))
-					throw new ViolationProtocolException (Resources.Formatter_InvalidQualityOfService);
+					throw new ProtocolViolationException (Resources.Formatter_InvalidQualityOfService);
 	
 				var requestedQos = (QualityOfService)requestedQosByte;
 

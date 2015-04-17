@@ -225,4 +225,10 @@
   <data name="PublishFlow_AckMonitor_ExceededMaximumAckRetries" xml:space="preserve">
     <value>The QoS publish flow was not completed within the maximum configured message retries of {0}. The connection will be closed</value>
   </data>
+  <data name="SessionRepository_ClientSessionNotFound" xml:space="preserve">
+    <value>No session has been found for client {0}</value>
+  </data>
+  <data name="Tracer_PublishFlow_RetryingQoSFlow" xml:space="preserve">
+    <value>The ack for message {0} has not been received. Re sending message for client {1}</value>
+  </data>
 </root>

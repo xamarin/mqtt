@@ -3,19 +3,19 @@ using Hermes.Packets;
 
 namespace Hermes
 {
-	public class ConnectProtocolException : ProtocolException
+	public class ProtocolConnectionException : ProtocolException
 	{
-		public ConnectProtocolException (ConnectionStatus status)
+		public ProtocolConnectionException (ConnectionStatus status)
 		{
 			this.ReturnCode = status;
 		}
 
-		public ConnectProtocolException (ConnectionStatus status, string message) : base(message)
+		public ProtocolConnectionException (ConnectionStatus status, string message) : base(message)
 		{
 			this.ReturnCode = status;
 		}
 
-		public ConnectProtocolException (ConnectionStatus status, string message, Exception innerException) : base(message, innerException)
+		public ProtocolConnectionException (ConnectionStatus status, string message, Exception innerException) : base(message, innerException)
 		{
 			this.ReturnCode = status;
 		}

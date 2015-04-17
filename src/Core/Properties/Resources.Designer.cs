@@ -322,6 +322,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No session has been found for client {0}.
+        /// </summary>
+        internal static string SessionRepository_ClientSessionNotFound {
+            get {
+                return ResourceManager.GetString("SessionRepository_ClientSessionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Return codes can only be valid QoS values or a failure code (0x80).
         /// </summary>
         internal static string SubscribeAckFormatter_InvalidReturnCodes {
@@ -372,6 +381,15 @@ namespace Hermes.Properties {
         internal static string TopicEvaluator_InvalidTopicName {
             get {
                 return ResourceManager.GetString("TopicEvaluator_InvalidTopicName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The ack for message {0} has not been received. Re sending message for client {1}.
+        /// </summary>
+        internal static string Tracer_PublishFlow_RetryingQoSFlow {
+            get {
+                return ResourceManager.GetString("Tracer_PublishFlow_RetryingQoSFlow", resourceCulture);
             }
         }
         

@@ -23,7 +23,7 @@ namespace Hermes.Formatters
 			var index = 1 + remainingLengthBytesLength + 2;
 
 			if (bytes.Length == index)
-				throw new ViolationProtocolException (Resources.UnsubscribeFormatter_MissingTopics);
+				throw new ProtocolViolationException (Resources.UnsubscribeFormatter_MissingTopics);
 
 			var topics = new List<string> ();
 
@@ -81,7 +81,7 @@ namespace Hermes.Formatters
 		private byte[] GetPayload(Unsubscribe packet)
 		{
 			if(packet.Topics == null || !packet.Topics.Any())
-				throw new ViolationProtocolException (Resources.UnsubscribeFormatter_MissingTopics);
+				throw new ProtocolViolationException (Resources.UnsubscribeFormatter_MissingTopics);
 
 			var payload = new List<byte> ();
 

@@ -41,8 +41,9 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket packet)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
 
 			var bytes = await this.manager.GetBytesAsync (packet);
 

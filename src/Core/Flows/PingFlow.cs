@@ -7,8 +7,9 @@ namespace Hermes.Flows
 	{
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.PingRequest)
+			if (input.Type != PacketType.PingRequest) {
 				return;
+			}
 
 			await channel.SendAsync(new PingResponse());
 		}

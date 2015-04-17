@@ -70,7 +70,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The keep alive tolerance of {0} seconds has been exceeded and no packet has been received. The connection will be closed..
+        ///   Looks up a localized string similar to The keep alive tolerance of {0} seconds has been exceeded and no packet has been received from client {1}. The connection will be closed..
         /// </summary>
         internal static string ServerPacketListener_KeepAliveTimeExceeded {
             get {
@@ -97,6 +97,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No session has been found for client {0}.
+        /// </summary>
+        internal static string SessionRepository_ClientSessionNotFound {
+            get {
+                return ResourceManager.GetString("SessionRepository_ClientSessionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The underlying TCP client is not connected.
         /// </summary>
         internal static string TcpChannel_ClientIsNotConnected {
@@ -111,6 +120,78 @@ namespace Hermes.Properties {
         internal static string TcpChannel_SocketDisconnected {
             get {
                 return ResourceManager.GetString("TcpChannel_SocketDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - Packet Channel observable sequence has been completed for client {0}.
+        /// </summary>
+        internal static string Tracer_PacketChannelCompleted {
+            get {
+                return ResourceManager.GetString("Tracer_PacketChannelCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - A new TCP channel has been accepted.
+        /// </summary>
+        internal static string Tracer_Server_NewSocketAccepted {
+            get {
+                return ResourceManager.GetString("Tracer_Server_NewSocketAccepted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - Packet observable sequence has been completed, hence closing the channel.
+        /// </summary>
+        internal static string Tracer_Server_PacketsObservableCompleted {
+            get {
+                return ResourceManager.GetString("Tracer_Server_PacketsObservableCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - A connect packet has been received from client {0}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_ConnectPacketReceived {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_ConnectPacketReceived", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - Dispatching {0} message to flow {1} for client {2}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_DispatchingMessage {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_DispatchingMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - An error occurred when subscribing client {0} to topic {1}.
+        /// </summary>
+        internal static string Tracer_ServerSubscribeFlow_ErrorOnSubscription {
+            get {
+                return ResourceManager.GetString("Tracer_ServerSubscribeFlow_ErrorOnSubscription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - The topic {0}, sent by client {1} is invalid. Returning failure code.
+        /// </summary>
+        internal static string Tracer_ServerSubscribeFlow_InvalidTopicSubscription {
+            get {
+                return ResourceManager.GetString("Tracer_ServerSubscribeFlow_InvalidTopicSubscription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
+        /// </summary>
+        internal static string Tracer_TcpChannel_NetworkStreamCompleted {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_NetworkStreamCompleted", resourceCulture);
             }
         }
     }

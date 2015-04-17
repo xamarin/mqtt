@@ -14,8 +14,8 @@ namespace Hermes.Formatters
 
 		protected abstract byte[] Write (T packet);
 
-		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
-		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
+		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task<IPacket> FormatAsync (byte[] bytes)
 		{
@@ -32,8 +32,8 @@ namespace Hermes.Formatters
 			return packet;
 		}
 
-		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
-		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
+		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public async Task<byte[]> FormatAsync (IPacket packet)
 		{

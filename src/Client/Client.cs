@@ -50,6 +50,8 @@ namespace Hermes
 			this.publishSubscription = this.packetListener.Packets
 				.OfType<Publish>()
 				.Subscribe (publish => {
+					tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic);
+
 					var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
 					this.receiver.OnNext (message);
@@ -61,6 +63,8 @@ namespace Hermes
 					this.sender.OnError (ex);
 					this.Close (ex);
 				}, () => {
+					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
+
 					this.receiver.OnCompleted ();
 					this.Close ();
 				});
@@ -97,8 +101,9 @@ namespace Hermes
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
 
 			this.OpenClientSession (credentials.ClientId, cleanSession);
 
@@ -130,6 +135,8 @@ namespace Hermes
 			if (ack == null) {
 				var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
 
+				tracer.Error (message);
+
 				throw new ClientException (message);
 			}
 
@@ -140,10 +147,11 @@ namespace Hermes
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
 
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(new Random());
+			var packetId = this.packetIdentifierRepository.GetPacketIdentifier();
 			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 			var ack = default (SubscribeAck);
@@ -173,14 +181,17 @@ namespace Hermes
 			if (ack == null) {
 				var message = string.Format(Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
 
+				tracer.Error (message);
+
 				throw new ClientException (message);
 			}
 		}
 
 		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
 
 			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(qos);
 			var publish = new Publish (message.Topic, qos, retain, duplicated: false, packetId: packetId)
@@ -200,10 +211,11 @@ namespace Hermes
 
 		public async Task UnsubscribeAsync (params string[] topics)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
 
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(new Random());
+			var packetId = this.packetIdentifierRepository.GetPacketIdentifier();
 			var unsubscribe = new Unsubscribe(packetId, topics);
 
 			var ack = default (UnsubscribeAck);
@@ -221,11 +233,15 @@ namespace Hermes
 
 				var message = string.Format (Resources.Client_UnsubscribeTimeout, this.Id, string.Join(", ", topics));
 
+				tracer.Error (message);
+
 				throw new ClientException (message, timeEx);
 			} catch (Exception ex) {
 				this.Close (ex);
 
 				var message = string.Format (Resources.Client_UnsubscribeError, this.Id, string.Join(", ", topics));
+
+				tracer.Error (message);
 
 				throw new ClientException (message, ex);
 			}
@@ -233,14 +249,17 @@ namespace Hermes
 			if (ack == null) {
 				var message = string.Format(Resources.Client_UnsubscribeDisconnected, this.Id, string.Join(", ", topics));
 
+				tracer.Error (message);
+
 				throw new ClientException (message);
 			}
 		}
 
 		public async Task DisconnectAsync ()
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
 
 			this.CloseClientSession ();
 
@@ -313,6 +332,14 @@ namespace Hermes
 		private void CloseClientSession()
 		{
 			var session = this.sessionRepository.Get (s => s.ClientId == this.Id);
+
+			if (session == null) {
+				var message = string.Format (Resources.SessionRepository_ClientSessionNotFound, this.Id);
+
+				tracer.Error (message);
+
+				throw new ClientException (message);
+			}
 
 			if (session.Clean) {
 				this.sessionRepository.Delete (session);

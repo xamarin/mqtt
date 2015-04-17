@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
@@ -10,6 +11,8 @@ namespace Hermes
 {
 	public class ClientPacketListener : IPacketListener
 	{
+		private static readonly ITracer tracer = Tracer.Get<ClientPacketListener> ();
+
 		IDisposable firstPacketSubscription;
 		IDisposable nextPacketsSubscription;
 		IDisposable allPacketsSubscription;
@@ -40,6 +43,8 @@ namespace Hermes
 						return;
 					}
 
+					tracer.Info (Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, packet.Type);
+
 					var connectAck = packet as ConnectAck;
 
 					if (connectAck == null) {
@@ -61,6 +66,8 @@ namespace Hermes
 				});
 
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
+
 				this.packets.OnCompleted ();	
 			});
 
@@ -89,6 +96,8 @@ namespace Hermes
 			return channel.Sender
 				.Timeout (TimeSpan.FromSeconds (this.configuration.KeepAliveSecs))
 				.Catch<IPacket, TimeoutException> (timeEx => {
+					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs);
+
 					var ping = new PingRequest ();
 
 					channel.SendAsync (ping).Wait ();
@@ -103,6 +112,8 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
+					tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
+
 					this.packets.OnNext (packet);
 
 					await flow.ExecuteAsync (clientId, packet, channel);

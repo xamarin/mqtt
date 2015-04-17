@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Hermes.Packets;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
@@ -21,8 +22,9 @@ namespace Hermes.Flows
 
 		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.Disconnect)
+			if (input.Type != PacketType.Disconnect) {
 				return Task.Delay(0);
+			}
 
 			var disconnect = input as Disconnect;
 
@@ -30,6 +32,10 @@ namespace Hermes.Flows
 				this.willRepository.Delete (w => w.ClientId == clientId);
 
 				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+				if (session == null) {
+					throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				}
 
 				if (session.Clean) {
 					this.sessionRepository.Delete (session);

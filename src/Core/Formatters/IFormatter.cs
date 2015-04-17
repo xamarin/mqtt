@@ -10,13 +10,13 @@ namespace Hermes.Formatters
 		/// </summary>
 		PacketType PacketType { get; }
 
-		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
-		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
+		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		Task<IPacket> FormatAsync (byte[] bytes);
 
-		/// <exception cref="ConnectProtocolException">ConnectProtocolException</exception>
-		/// <exception cref="ViolationProtocolException">ViolationProtocolException</exception>
+		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		Task<byte[]> FormatAsync (IPacket packet);
 	}

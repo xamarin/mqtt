@@ -4,6 +4,7 @@ using System.Linq;
 using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
+using Hermes.Properties;
 
 namespace Hermes
 {
@@ -91,6 +92,8 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
+			tracer.Info (Resources.Tracer_Server_NewSocketAccepted);
+
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
 
@@ -99,6 +102,8 @@ namespace Hermes
 				tracer.Error (ex);
 				this.CloseChannel (packetChannel);
 			}, () => {
+				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
+
 				this.CloseChannel (packetChannel);
 			});
 

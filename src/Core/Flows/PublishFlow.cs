@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
@@ -10,6 +11,8 @@ namespace Hermes.Flows
 {
 	public abstract class PublishFlow : IPublishFlow
 	{
+		private static readonly ITracer tracer = Tracer.Get<PublishFlow> ();
+
 		protected readonly IRepository<ClientSession> sessionRepository;
 		protected readonly ProtocolConfiguration configuration;
 
@@ -24,19 +27,22 @@ namespace Hermes.Flows
 
 		public async Task SendAckAsync (string clientId, IFlowPacket ack, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
-			if((ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease) && 
-				status == PendingMessageStatus.PendingToSend)
+			if((ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease) &&
+				status == PendingMessageStatus.PendingToSend) {
 				this.SavePendingAcknowledgement (ack, clientId);
+			}
 
-			if (!channel.IsConnected)
+			if (!channel.IsConnected) {
 				return;
+			}
 
 			await channel.SendAsync (ack);
 
-			if(ack.Type == PacketType.PublishReceived)
-				await this.MonitorAckAsync<PublishRelease> (ack, channel);
-			else if (ack.Type == PacketType.PublishRelease)
-				await this.MonitorAckAsync<PublishComplete> (ack, channel);
+			if(ack.Type == PacketType.PublishReceived) {
+				await this.MonitorAckAsync<PublishRelease> (ack, clientId, channel);
+			} else if (ack.Type == PacketType.PublishRelease) {
+				await this.MonitorAckAsync<PublishComplete> (ack, clientId, channel);
+			}
 		}
 
 		protected void RemovePendingAcknowledgement(string clientId, ushort packetId, PacketType type)
@@ -50,13 +56,13 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 		}
 
-		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, IChannel<IPacket> channel)
+		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			await this.GetAckMonitor<T> (sentMessage, channel);
+			await this.GetAckMonitor<T> (sentMessage, clientId, channel);
 		}
 
-		protected IObservable<T> GetAckMonitor<T>(IFlowPacket sentMessage, IChannel<IPacket> channel, int retries = 0)
+		protected IObservable<T> GetAckMonitor<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel, int retries = 0)
 			where T : IFlowPacket
 		{
 			if (retries == this.configuration.QualityOfServiceAckRetries) {
@@ -67,16 +73,19 @@ namespace Hermes.Flows
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId)
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
 				.Catch<T, TimeoutException> (timeEx => {
+					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+
 					channel.SendAsync (sentMessage).Wait ();
 
-					return this.GetAckMonitor<T> (sentMessage, channel, retries + 1);
+					return this.GetAckMonitor<T> (sentMessage, clientId, channel, retries + 1);
 				});
 		}
 
 		private void SavePendingAcknowledgement(IFlowPacket ack, string clientId)
 		{
-			if (ack.Type != PacketType.PublishReceived && ack.Type != PacketType.PublishRelease)
+			if (ack.Type != PacketType.PublishReceived && ack.Type != PacketType.PublishRelease) {
 				return;
+			}
 
 			var unacknowledgeMessage = new PendingAcknowledgement {
 				PacketId = ack.PacketId,
@@ -84,6 +93,10 @@ namespace Hermes.Flows
 			};
 			
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+			if (session == null) {
+				throw new ProtocolException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+			}
 
 			session.PendingAcknowledgements.Add (unacknowledgeMessage);
 

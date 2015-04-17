@@ -59,7 +59,7 @@ namespace Tests.Formatters
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
-			Assert.True (ex.InnerException is ViolationProtocolException);
+			Assert.True (ex.InnerException is ProtocolViolationException);
 		}
 
 		[Theory]
@@ -92,7 +92,7 @@ namespace Tests.Formatters
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (subscribe).Wait());
 
-			Assert.True (ex.InnerException is ViolationProtocolException);
+			Assert.True (ex.InnerException is ProtocolViolationException);
 		}
 	}
 }

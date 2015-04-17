@@ -5,12 +5,15 @@ using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Properties;
 
 namespace Hermes
 {
 	public class TcpChannel : IChannel<byte[]>
 	{
+		static readonly ITracer tracer = Tracer.Get<TcpChannel> ();
+
 		bool disposed;
 
 		readonly TcpClient client;
@@ -52,11 +55,13 @@ namespace Hermes
 
 		public async Task SendAsync (byte[] message)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType().FullName);
+			}
 
-			if (!this.IsConnected)
+			if (!this.IsConnected) {
 				throw new ProtocolException (Resources.TcpChannel_ClientIsNotConnected);
+			}
 
 			this.sender.OnNext (message);
 
@@ -81,8 +86,9 @@ namespace Hermes
 				this.streamSubscription.Dispose ();
 				this.receiver.OnCompleted ();
 
-				if(this.IsConnected)
+				if (this.IsConnected) {
 					this.client.Close ();
+				}
 
 				this.disposed = true;
 			}
@@ -114,7 +120,11 @@ namespace Hermes
 				} else {
 					this.receiver.OnError (ex);
 				}
-			}, () => this.Dispose());
+			}, () => {
+				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted);
+
+				this.Dispose ();
+			});
 		}
 	}
 }

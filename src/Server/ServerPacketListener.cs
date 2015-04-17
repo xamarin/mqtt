@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
@@ -10,6 +11,8 @@ namespace Hermes
 {
 	public class ServerPacketListener : IPacketListener
 	{
+		static readonly ITracer tracer = Tracer.Get<ServerPacketListener> ();
+
 		IDisposable firstPacketSubscription;
 		IDisposable nextPacketsSubscription;
 		IDisposable allPacketsSubscription;
@@ -58,6 +61,8 @@ namespace Hermes
 					keepAlive = connect.KeepAlive;
 					this.connectionProvider.AddConnection (clientId, channel);
 
+					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, clientId);
+
 					await this.DispatchPacketAsync (connect, clientId, channel);
 				}, async ex => {
 					await this.HandleConnectionExceptionAsync (ex, channel);
@@ -77,6 +82,8 @@ namespace Hermes
 				});
 
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
+
 				if (!string.IsNullOrEmpty (clientId)) {
 					this.RemoveClient (clientId);
 				}
@@ -98,8 +105,8 @@ namespace Hermes
 		{
 			if (exception is TimeoutException) {
 				this.NotifyError (Resources.ServerPacketListener_NoConnectReceived, exception);
-			} else if (exception is ConnectProtocolException) {
-				var connectEx = exception as ConnectProtocolException;
+			} else if (exception is ProtocolConnectionException) {
+				var connectEx = exception as ProtocolConnectionException;
 				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
 
 				try {
@@ -111,21 +118,6 @@ namespace Hermes
 				this.NotifyError (exception.Message, exception);
 			} else {
 				this.NotifyError (exception);
-			}
-		}
-
-		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)
-		{
-			var flow = this.flowProvider.GetFlow (packet.Type);
-
-			if (flow != null) {
-				try {
-					this.packets.OnNext (packet);
-
-					await flow.ExecuteAsync (clientId, packet, channel);
-				} catch (Exception ex) {
-					this.NotifyError (ex, clientId);
-				}
 			}
 		}
 
@@ -141,9 +133,9 @@ namespace Hermes
 					if (timeEx == null) {
 						this.NotifyError (ex, clientId);
 					} else {
-						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance);
+						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, clientId);
 
-						this.NotifyError(message, ex as TimeoutException, clientId);
+						this.NotifyError(message, timeEx, clientId);
 					}
 				});
 		}
@@ -153,6 +145,23 @@ namespace Hermes
 			var tolerance = (int)Math.Round (keepAlive * 1.5, MidpointRounding.AwayFromZero);
 
 			return TimeSpan.FromSeconds (tolerance);
+		}
+
+		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)
+		{
+			var flow = this.flowProvider.GetFlow (packet.Type);
+
+			if (flow != null) {
+				try {
+					tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
+
+					this.packets.OnNext (packet);
+
+					await flow.ExecuteAsync (clientId, packet, channel);
+				} catch (Exception ex) {
+					this.NotifyError (ex, clientId);
+				}
+			}
 		}
 
 		private void NotifyError(Exception exception, string clientId = null)
