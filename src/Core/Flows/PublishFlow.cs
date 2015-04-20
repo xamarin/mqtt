@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Hermes.Diagnostics;
@@ -48,6 +49,11 @@ namespace Hermes.Flows
 		protected void RemovePendingAcknowledgement(string clientId, ushort packetId, PacketType type)
 		{
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+			if (session == null) {
+				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+			}
+
 			var pendingAcknowledgement = session.PendingAcknowledgements
 				.FirstOrDefault(u => u.Type == type && u.PacketId == packetId);
 
@@ -59,7 +65,7 @@ namespace Hermes.Flows
 		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			await this.GetAckMonitor<T> (sentMessage, clientId, channel);
+			await this.GetAckMonitor<T> (sentMessage, clientId, channel).ObserveOn(Scheduler.Default);
 		}
 
 		protected IObservable<T> GetAckMonitor<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel, int retries = 0)
@@ -72,8 +78,9 @@ namespace Hermes.Flows
 			return channel.Receiver.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId)
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
+				.ObserveOn(Scheduler.Default)
 				.Catch<T, TimeoutException> (timeEx => {
-					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), sentMessage.Type, clientId);
 
 					channel.SendAsync (sentMessage).Wait ();
 

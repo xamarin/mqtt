@@ -6,13 +6,19 @@ using Hermes.Packets;
 using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using Xunit;
+using System.Reactive.Linq;
+using System.Reactive.Concurrency;
+using System.Collections.Generic;
 
 namespace IntegrationTests
 {
-	public class PublishingSpec : ConnectedContext
+	public class PublishingSpec : ConnectedContext, IDisposable
 	{
-		public PublishingSpec () : base(keepAliveSecs: 5)
+		private readonly Server server;
+
+		public PublishingSpec () : base(keepAliveSecs: 2)
 		{
+			this.server = this.GetServer ();
 		}
 
 		[Fact]
@@ -22,7 +28,7 @@ namespace IntegrationTests
 			var topic = "foo/test/qos0";
 			var count = this.GetTestLoad();
 
-			for (var i = 0; i < count; i++) {
+			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
 				var message = new ApplicationMessage
 				{
@@ -30,7 +36,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, Hermes.Packets.QualityOfService.AtMostOnce);
+				await client.PublishAsync (message, QualityOfService.AtMostOnce);
 			}
 
 			Assert.True (client.IsConnected);
@@ -44,8 +50,9 @@ namespace IntegrationTests
 			var client = this.GetClient ();
 			var topic = "foo/test/qos1";
 			var count = this.GetTestLoad();
+			var publishTasks = new List<Task> ();
 
-			for (var i = 0; i < count; i++) {
+			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
 				var message = new ApplicationMessage
 				{
@@ -53,7 +60,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, Hermes.Packets.QualityOfService.AtLeastOnce);
+				await client.PublishAsync (message, QualityOfService.AtLeastOnce);
 			}
 
 			Assert.True (client.IsConnected);
@@ -68,7 +75,7 @@ namespace IntegrationTests
 			var topic = "foo/test/qos2";
 			var count = this.GetTestLoad();
 
-			for (var i = 0; i < count; i++) {
+			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
 				var message = new ApplicationMessage
 				{
@@ -104,24 +111,29 @@ namespace IntegrationTests
 			await subscriber1.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce);
 			await subscriber2.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce);
 
-			subscriber1.Receiver.Subscribe (m => {
-				if (m.Topic == topic) {
-					subscriber1Received++;
+			subscriber1.Receiver
+				.ObserveOn(Scheduler.Default)
+				.Subscribe (m => {
+					if (m.Topic == topic) {
+						subscriber1Received++;
 
-					if (subscriber1Received == count)
-						subscriber1Done.Set ();
-				}
-			});
-			subscriber2.Receiver.Subscribe (m => {
-				if (m.Topic == topic) {
-					subscriber2Received++;
+						if (subscriber1Received == count)
+							subscriber1Done.Set ();
+					}
+				});
 
-					if (subscriber2Received == count)
-						subscriber2Done.Set ();
-				}
-			});
+			subscriber2.Receiver
+				.ObserveOn(Scheduler.Default)
+				.Subscribe (m => {
+					if (m.Topic == topic) {
+						subscriber2Received++;
 
-			for (var i = 0; i < count; i++) {
+						if (subscriber2Received == count)
+							subscriber2Done.Set ();
+					}
+				});
+
+			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
 				var message = new ApplicationMessage
 				{ 
@@ -132,8 +144,10 @@ namespace IntegrationTests
 				await publisher.PublishAsync (message, QualityOfService.AtMostOnce);
 			}
 
-			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(this.fixture.Configuration.WaitingTimeoutSecs));
+			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(this.Configuration.WaitingTimeoutSecs));
 
+			Assert.Equal (count, subscriber1Received);
+			Assert.Equal (count, subscriber2Received);
 			Assert.True (completed);
 
 			subscriber1.Close ();
@@ -158,29 +172,33 @@ namespace IntegrationTests
 			await subscriber.SubscribeAsync (requestTopic, QualityOfService.AtMostOnce);
 			await publisher.SubscribeAsync (responseTopic, QualityOfService.AtMostOnce);
 
-			subscriber.Receiver.Subscribe (async m => {
-				if (m.Topic == requestTopic) {
-					var request = Serializer.Deserialize<RequestMessage>(m.Payload);
-					var response = this.GetResponseMessage (request);
-					var message = new ApplicationMessage {
-						Topic = responseTopic,
-						Payload = Serializer.Serialize(response)
-					};
+			subscriber.Receiver
+				.ObserveOn(Scheduler.Default)
+				.Subscribe (async m => {
+					if (m.Topic == requestTopic) {
+						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
+						var response = this.GetResponseMessage (request);
+						var message = new ApplicationMessage {
+							Topic = responseTopic,
+							Payload = Serializer.Serialize(response)
+						};
 
-					await subscriber.PublishAsync (message, QualityOfService.AtMostOnce);
-				}
-			});
+						await subscriber.PublishAsync (message, QualityOfService.AtMostOnce);
+					}
+				});
 
-			publisher.Receiver.Subscribe (m => {
-				if (m.Topic == responseTopic) {
-					subscriberReceived++;
+			publisher.Receiver
+				.ObserveOn(Scheduler.Default)
+				.Subscribe (m => {
+					if (m.Topic == responseTopic) {
+						subscriberReceived++;
 
-					if (subscriberReceived == count)
-						subscriberDone.Set ();
-				}
-			});
+						if (subscriberReceived == count)
+							subscriberDone.Set ();
+					}
+				});
 
-			for (var i = 0; i < count; i++) {
+			for (var i = 1; i <= count; i++) {
 				var request = this.GetRequestMessage ();
 				var message = new ApplicationMessage
 				{ 
@@ -191,8 +209,9 @@ namespace IntegrationTests
 				await publisher.PublishAsync (message, QualityOfService.AtMostOnce);
 			}
 
-			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (this.fixture.Configuration.WaitingTimeoutSecs));
+			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (this.Configuration.WaitingTimeoutSecs));
 
+			Assert.Equal (count, subscriberReceived);
 			Assert.True (completed);
 		}
 
@@ -220,6 +239,11 @@ namespace IntegrationTests
 				Name = request.Name,
 				Ok = true
 			};
+		}
+
+		public void Dispose ()
+		{
+			this.server.Stop ();
 		}
 	}
 }

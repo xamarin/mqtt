@@ -12,9 +12,6 @@ namespace Hermes
 		public Server Initialize(ProtocolConfiguration configuration)
 		{
 			var listener = new TcpListener(IPAddress.Any, configuration.Port);
-
-			listener.Start ();
-
 			var binaryChannelProvider = Observable
 				.FromAsync (() => {
 					return Task.Factory.FromAsync<TcpClient> (listener.BeginAcceptTcpClient, 
@@ -22,7 +19,6 @@ namespace Hermes
 				})
 				.Repeat ()
 				.Select (client => new TcpChannel (client, new PacketBuffer (), configuration));
-
 			var channelObservable = new ChannelObservable (listener, binaryChannelProvider);
 			var topicEvaluator = new TopicEvaluator (configuration);
 			var channelFactory = new PacketChannelFactory (topicEvaluator, configuration);

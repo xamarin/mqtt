@@ -66,6 +66,8 @@ namespace Hermes
 			this.sender.OnNext (message);
 
 			try {
+				tracer.Info (Resources.Tracer_TcpChannel_SendingPacket, DateTime.Now.ToString ("MM/dd/yyyy hh:mm:ss.fff"), message.Length);
+
 				await this.client.GetStream ().WriteAsync(message, 0, message.Length);
 			} catch (ObjectDisposedException disposedEx) {
 				throw new ProtocolException (Resources.TcpChannel_SocketDisconnected, disposedEx);
@@ -111,6 +113,8 @@ namespace Hermes
 
 				if (this.buffer.TryGetPackets (bytes, out packets)) {
 					foreach (var packet in packets) {
+						tracer.Info (Resources.Tracer_TcpChannel_ReceivedPacket, DateTime.Now.ToString ("MM/dd/yyyy hh:mm:ss.fff"), packet.Length);
+
 						this.receiver.OnNext (packet);
 					}
 				}
@@ -121,7 +125,7 @@ namespace Hermes
 					this.receiver.OnError (ex);
 				}
 			}, () => {
-				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted);
+				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
 
 				this.Dispose ();
 			});

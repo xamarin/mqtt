@@ -30,11 +30,6 @@
     <Compile Include="ClientCredentials.cs" />
     <Compile Include="ClientException.cs" />
     <Compile Include="ClientInitializer.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
-    <Compile Include="External\Diagnostics\Tracer\Tracer.cs" />
-    <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="Flows\ClientConnectFlow.cs" />
     <Compile Include="Flows\ClientProtocolFlowProvider.cs" />
     <Compile Include="Flows\ClientSubscribeFlow.cs" />

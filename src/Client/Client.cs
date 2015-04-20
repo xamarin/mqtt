@@ -50,7 +50,7 @@ namespace Hermes
 			this.publishSubscription = this.packetListener.Packets
 				.OfType<Publish>()
 				.Subscribe (publish => {
-					tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic);
+					tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), publish.Topic);
 
 					var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
@@ -63,7 +63,7 @@ namespace Hermes
 					this.sender.OnError (ex);
 					this.Close (ex);
 				}, () => {
-					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
+					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
 
 					this.receiver.OnCompleted ();
 					this.Close ();
@@ -266,13 +266,13 @@ namespace Hermes
 			var disconnect = new Disconnect ();
 
 			try {
-				await this.SendPacket (disconnect);
+				await this.SendPacket (disconnect).ContinueWith(t => {
+					this.Close (ClosedReason.Disconnect);
+				});
 			} catch (Exception ex) {
 				this.Close (ex);
 				throw;
 			}
-
-			this.Close (ClosedReason.Disconnect);
 		}
 
 		public void Close ()

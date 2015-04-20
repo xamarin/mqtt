@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +12,14 @@ using Xunit;
 
 namespace IntegrationTests
 {
-	public class ConnectionSpecWithKeepAlive : IntegrationContext
+	public class ConnectionSpecWithKeepAlive : IntegrationContext, IDisposable
 	{
+		private readonly Server server;
+
 		public ConnectionSpecWithKeepAlive () 
 			: base(keepAliveSecs: 5)
 		{
+			this.server = this.GetServer ();
 		}
 
 		[Fact]
@@ -26,7 +30,7 @@ namespace IntegrationTests
 			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
 
 			var clientId = client.Id;
-			var existClientAfterConnect = this.fixture.Server.ActiveClients.Any (c => c == clientId);
+			var existClientAfterConnect = this.server.ActiveClients.Any (c => c == clientId);
 			var clientClosed = new ManualResetEventSlim ();
 
 			var subscription = Observable.Create<bool> (observer => {
@@ -34,7 +38,7 @@ namespace IntegrationTests
 
 				timer.Interval = 200;
 				timer.Elapsed += (sender, args) => {
-					if (this.fixture.Server.ActiveClients.Any (c => c == clientId)) {
+					if (this.server.ActiveClients.Any (c => c == clientId)) {
 						observer.OnNext (false);
 					} else {
 						observer.OnNext (true);
@@ -48,6 +52,7 @@ namespace IntegrationTests
 					timer.Dispose();
 				};
 			})
+			.SubscribeOn(Scheduler.Default)
 			.Subscribe (
 				_ => { },
 				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
@@ -60,7 +65,7 @@ namespace IntegrationTests
 
 			Assert.True (existClientAfterConnect);
 			Assert.True (serverDetectedClientClosed);
-			Assert.False (this.fixture.Server.ActiveClients.Any (c => c == clientId));
+			Assert.False (this.server.ActiveClients.Any (c => c == clientId));
 		}
 
 		[Fact]
@@ -72,15 +77,14 @@ namespace IntegrationTests
 			for (var i = 1; i <= count; i++) {
 				var client = this.GetClient ();
 
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId()));
-
 				clients.Add (client);
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
 			}
 
-			Thread.Sleep (TimeSpan.FromSeconds(this.keepAliveSecs * 6));
+			Thread.Sleep (TimeSpan.FromSeconds(this.keepAliveSecs * 3));
 
 			var connectedClients = clients.Where (c => c.IsConnected);
-			var serverClients = clients.Select(c => c.Id).Where(x => this.fixture.Server.ActiveClients.Any(y => y == x));
+			var serverClients = clients.Select(c => c.Id).Where(x => this.server.ActiveClients.Any(y => y == x));
 
 			Debug.WriteLine (string.Format ("Connected Clients: {0}", connectedClients.Count ()));
 			Debug.WriteLine (string.Format ("Server Clients: {0}", serverClients.Count ()));
@@ -91,6 +95,11 @@ namespace IntegrationTests
 			foreach (var client in clients) {
 				client.Close ();
 			}
+		}
+
+		public void Dispose ()
+		{
+			this.server.Stop ();
 		}
 	}
 }

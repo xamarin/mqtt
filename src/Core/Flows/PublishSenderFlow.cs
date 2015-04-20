@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Hermes.Diagnostics;
@@ -90,7 +91,7 @@ namespace Hermes.Flows
 		protected async Task MonitorAck<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			await this.GetAckMonitor<T> (sentMessage, clientId, channel);
+			await this.GetAckMonitor<T> (sentMessage, clientId, channel).ObserveOn(Scheduler.Default);
 		}
 
 		protected IObservable<T> GetAckMonitor<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel, int retries = 0)
@@ -103,8 +104,9 @@ namespace Hermes.Flows
 			return channel.Receiver.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value)
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
+				.ObserveOn(Scheduler.Default)
 				.Catch<T, TimeoutException> (timeEx => {
-					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), sentMessage.Type, clientId);
 
 					var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
 						sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId);

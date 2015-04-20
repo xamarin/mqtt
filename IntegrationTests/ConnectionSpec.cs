@@ -7,14 +7,18 @@ using System.Threading;
 using System;
 using System.Reactive.Linq;
 using System.Collections.Generic;
+using System.Reactive.Concurrency;
 
 namespace IntegrationTests
 {
-	public class ConnectionSpec : IntegrationContext
+	public class ConnectionSpec : IntegrationContext, IDisposable
 	{
+		private readonly Server server;
+
 		public ConnectionSpec ()
 			: base()
 		{
+			this.server = this.GetServer ();
 		}
 
 		[Fact]
@@ -26,9 +30,8 @@ namespace IntegrationTests
 			for (var i = 1; i <= count; i++) {
 				var client = this.GetClient ();
 
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId()));
-
 				clients.Add (client);
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
 			}
 
 			Assert.True (clients.All(c => c.IsConnected));
@@ -48,10 +51,12 @@ namespace IntegrationTests
 			for (var i = 1; i <= count; i++) {
 				var client = this.GetClient ();
 
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId()));
-				await client.DisconnectAsync ();
-
 				clients.Add (client);
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			}
+
+			foreach (var client in clients) {
+				await client.DisconnectAsync ();
 			}
 
 			Assert.True (clients.All(c => !c.IsConnected));
@@ -70,7 +75,7 @@ namespace IntegrationTests
 			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
 
 			var clientId = client.Id;
-			var existClientAfterConnect = this.fixture.Server.ActiveClients.Any (c => c == clientId);
+			var existClientAfterConnect = this.server.ActiveClients.Any (c => c == clientId);
 
 			await client.DisconnectAsync ();
 
@@ -81,7 +86,7 @@ namespace IntegrationTests
 
 				timer.Interval = 200;
 				timer.Elapsed += (sender, args) => {
-					if (this.fixture.Server.ActiveClients.Any (c => c == clientId)) {
+					if (this.server.ActiveClients.Any (c => c == clientId)) {
 						observer.OnNext (false);
 					} else {
 						observer.OnNext (true);
@@ -95,17 +100,23 @@ namespace IntegrationTests
 					timer.Dispose();
 				};
 			})
+			.SubscribeOn(Scheduler.Default)
 			.Subscribe (
 				_ => { },
 				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
 
-			var clientDisconnected = clientClosed.Wait (TimeSpan.FromSeconds(4));
+			var clientDisconnected = clientClosed.Wait (TimeSpan.FromSeconds(1));
 
 			Assert.True (existClientAfterConnect);
 			Assert.True (clientDisconnected);
-			Assert.False (this.fixture.Server.ActiveClients.Any (c => c == clientId));
+			Assert.False (this.server.ActiveClients.Any (c => c == clientId));
 
 			client.Close ();
+		}
+
+		public void Dispose ()
+		{
+			this.server.Stop ();
 		}
 	}
 }

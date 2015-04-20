@@ -47,11 +47,6 @@
     </Compile>
     <Compile Include="ChannelObservable.cs" />
     <Compile Include="ConnectionProvider.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
-    <Compile Include="External\Diagnostics\Tracer\Tracer.cs" />
-    <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="Flows\ServerProtocolFlowProvider.cs" />
     <Compile Include="Flows\ServerPublishReceiverFlow.cs" />
     <Compile Include="Flows\ServerSubscribeFlow.cs" />

@@ -55,6 +55,10 @@ namespace Hermes.Flows
 			var qos = configuration.GetSupportedQos(publish.QualityOfService);
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
+			if (session == null) {
+				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+			}
+
 			if(qos == QualityOfService.ExactlyOnce && 
 				session.PendingAcknowledgements.Any(ack => ack.Type == PacketType.PublishReceived &&
 					ack.PacketId == publish.PacketId.Value)) {

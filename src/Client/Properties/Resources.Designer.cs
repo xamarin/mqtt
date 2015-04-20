@@ -115,6 +115,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while connecting to the endpoint address {0} and port {1}, to establish an MQTT connection.
+        /// </summary>
+        internal static string Client_TcpClient_Failed {
+            get {
+                return ResourceManager.GetString("Client_TcpClient_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The underlying connection has been disconnected unexpectedly.
         /// </summary>
         internal static string Client_UnexpectedChannelDisconnection {
@@ -187,7 +196,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client - Packet observable sequence has been completed, hence closing the channel.
+        ///   Looks up a localized string similar to Client - {0} - Packet observable sequence has been completed, hence closing the channel.
         /// </summary>
         internal static string Tracer_Client_PacketsObservableCompleted {
             get {
@@ -196,7 +205,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - Dispatching {1} message to flow {2}.
+        ///   Looks up a localized string similar to Client {0} - {1} - Dispatching {2} message to flow {3}.
         /// </summary>
         internal static string Tracer_ClientPacketListener_DispatchingMessage {
             get {
@@ -205,7 +214,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - First packet from Server has been received. Type: {1}.
+        ///   Looks up a localized string similar to Client {0} - {1} - First packet from Server has been received. Type: {2}.
         /// </summary>
         internal static string Tracer_ClientPacketListener_FirstPacketReceived {
             get {
@@ -214,7 +223,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - No packet has been sent in {1} seconds. Sending Ping to Server to maintain Keep Alive.
+        ///   Looks up a localized string similar to Client {0} - {1} - No packet has been sent in {2} seconds. Sending Ping to Server to maintain Keep Alive.
         /// </summary>
         internal static string Tracer_ClientPacketListener_SendingKeepAlive {
             get {
@@ -223,7 +232,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - An application message for topic {1} was received.
+        ///   Looks up a localized string similar to Client {0} - {1} - An application message for topic {2} was received.
         /// </summary>
         internal static string Tracer_NewApplicationMessageReceived {
             get {
@@ -232,7 +241,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - Packet Channel observable sequence has been completed.
+        ///   Looks up a localized string similar to Client {0} - {1} - Packet Channel observable sequence has been completed.
         /// </summary>
         internal static string Tracer_PacketChannelCompleted {
             get {
@@ -241,11 +250,29 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
+        ///   Looks up a localized string similar to Client - {0} - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
         /// </summary>
         internal static string Tracer_TcpChannel_NetworkStreamCompleted {
             get {
                 return ResourceManager.GetString("Tracer_TcpChannel_NetworkStreamCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client - {0} - Received packet of {1} bytes.
+        /// </summary>
+        internal static string Tracer_TcpChannel_ReceivedPacket {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_ReceivedPacket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client - {0} - Sending packet of {1} bytes.
+        /// </summary>
+        internal static string Tracer_TcpChannel_SendingPacket {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_SendingPacket", resourceCulture);
             }
         }
     }

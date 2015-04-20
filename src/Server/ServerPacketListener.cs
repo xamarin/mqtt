@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -45,6 +46,7 @@ namespace Hermes
 			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
+				.SubscribeOn(Scheduler.Default)
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
 						return;
@@ -61,7 +63,7 @@ namespace Hermes
 					keepAlive = connect.KeepAlive;
 					this.connectionProvider.AddConnection (clientId, channel);
 
-					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, clientId);
+					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId);
 
 					await this.DispatchPacketAsync (connect, clientId, channel);
 				}, async ex => {
@@ -82,7 +84,7 @@ namespace Hermes
 				});
 
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
-				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId);
 
 				if (!string.IsNullOrEmpty (clientId)) {
 					this.RemoveClient (clientId);
@@ -127,13 +129,14 @@ namespace Hermes
 
 			this.keepAliveSubscription = channel.Receiver
 				.Timeout (tolerance)
+				.SubscribeOn(Scheduler.Default)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;
 
 					if (timeEx == null) {
 						this.NotifyError (ex, clientId);
 					} else {
-						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, clientId);
+						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), tolerance, clientId);
 
 						this.NotifyError(message, timeEx, clientId);
 					}
@@ -153,7 +156,7 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
+					tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), packet.Type, flow.GetType().Name, clientId);
 
 					this.packets.OnNext (packet);
 

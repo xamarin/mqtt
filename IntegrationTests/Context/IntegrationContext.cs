@@ -1,36 +1,48 @@
 ﻿using System;
 using System.Configuration;
 using Hermes;
-using Xunit;
+using Hermes.Packets;
 
 namespace IntegrationTests.Context
 {
-	public abstract class IntegrationContext : IUseFixture<IntegrationFixture>
+	public abstract class IntegrationContext
 	{
 		protected readonly ushort keepAliveSecs;
-		protected IntegrationFixture fixture;
 
 		public IntegrationContext (ushort keepAliveSecs = 0)
 		{
 			this.keepAliveSecs = keepAliveSecs;
+			this.Configuration = new ProtocolConfiguration {
+				BufferSize = 128 * 1024,
+				Port = Protocol.DefaultNonSecurePort,
+				KeepAliveSecs = this.keepAliveSecs,
+				WaitingTimeoutSecs = 10,
+				MaximumQualityOfService = QualityOfService.ExactlyOnce
+			};
 		}
 
-		public void SetFixture (IntegrationFixture data)
+		protected ProtocolConfiguration Configuration { get; private set; }
+
+		protected Server GetServer()
 		{
-			this.fixture = data;
-			this.fixture.Initialize (this.keepAliveSecs);
+			var initializer = new ServerInitializer ();
+			var server = initializer.Initialize (this.Configuration);
+
+			server.Start ();
+
+			return server;
 		}
 
 		protected virtual Client GetClient()
 		{
 			var initializer = new ClientInitializer ("127.0.0.1");
 			
-			return initializer.Initialize (this.fixture.Configuration);
+			return initializer.Initialize (this.Configuration);
 		}
 
 		protected string GetClientId()
 		{
-			return string.Concat ("Client", Guid.NewGuid ().ToString ().Substring (0, 6));
+			return string.Concat ("Client", Guid.NewGuid ().ToString ().Replace("-", string.Empty).Substring (0, 15));
 		}
 
 		protected int GetTestLoad()
