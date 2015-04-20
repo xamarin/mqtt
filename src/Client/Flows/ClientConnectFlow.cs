@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Hermes.Packets;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
@@ -18,10 +19,15 @@ namespace Hermes.Flows
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.ConnectAck)
+			if (input.Type != PacketType.ConnectAck) {
 				return;
+			}
 
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+			if (session == null) {
+				throw new ProtocolException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+			}
 
 			await this.SendPendingMessagesAsync (session, channel);
 			await this.SendPendingAcknowledgementsAsync (session, channel);
@@ -42,10 +48,11 @@ namespace Hermes.Flows
 			foreach (var pendingAcknowledgement in session.PendingAcknowledgements) {
 				var ack = default(IFlowPacket);
 
-				if (pendingAcknowledgement.Type == PacketType.PublishReceived)
+				if (pendingAcknowledgement.Type == PacketType.PublishReceived) {
 					ack = new PublishReceived (pendingAcknowledgement.PacketId);
-				else if(pendingAcknowledgement.Type == PacketType.PublishRelease)
+				} else if(pendingAcknowledgement.Type == PacketType.PublishRelease) {
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
+				}
 
 				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel);
 			}

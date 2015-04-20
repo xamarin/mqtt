@@ -11,6 +11,7 @@ namespace Hermes
 
 		IObservable<T> Sender { get; }
 
+		/// <exception cref="ProtocolException">ProtocolException</exception>
         Task SendAsync(T message);
     }
 }

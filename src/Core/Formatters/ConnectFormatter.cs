@@ -32,7 +32,7 @@ namespace Hermes.Formatters
 			if (protocolLevel < Protocol.SupportedLevel) {
 				var error = string.Format(Resources.ConnectFormatter_UnsupportedLevel, protocolLevel);
 
-				throw new ConnectProtocolException (ConnectionStatus.UnacceptableProtocolVersion, error);
+				throw new ProtocolConnectionException (ConnectionStatus.UnacceptableProtocolVersion, error);
 			}
 
 			var protocolLevelLength = 1;
@@ -69,15 +69,15 @@ namespace Hermes.Formatters
 			var clientId = bytes.GetString (payloadStartIndex, out nextIndex);
 
 			if (string.IsNullOrEmpty (clientId))
-				throw new ConnectProtocolException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdRequired);
+				throw new ProtocolConnectionException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdRequired);
 
 			if (clientId.Length > Protocol.ClientIdMaxLength)
-				throw new ConnectProtocolException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
+				throw new ProtocolConnectionException (ConnectionStatus.IdentifierRejected, Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
 			if (!this.IsValidClientId (clientId)) {
 				var error = string.Format (Resources.ConnectFormatter_InvalidClientIdFormat, clientId);
 
-				throw new ConnectProtocolException (ConnectionStatus.IdentifierRejected, error);
+				throw new ProtocolConnectionException (ConnectionStatus.IdentifierRejected, error);
 			}
 
 			var connect = new Connect (clientId, cleanSession);

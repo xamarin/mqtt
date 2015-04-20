@@ -7,20 +7,20 @@ namespace Hermes
 {
 	public class ConnectionProvider : IConnectionProvider
 	{
-		readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;
+		static readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;
 
-		public ConnectionProvider ()
+		static ConnectionProvider ()
 		{
-			this.connections = new ConcurrentDictionary<string, IChannel<IPacket>> ();
+			connections = new ConcurrentDictionary<string, IChannel<IPacket>> ();
 		}
 
-		public int Connections { get { return this.connections.Count; } }
+		public int Connections { get { return connections.Skip(0).Count(); } }
 
 		public IEnumerable<string> ActiveClients 
 		{ 
 			get 
 			{ 
-				return this.connections
+				return connections
 					.Where (c => c.Value.IsConnected)
 					.Select (c => c.Key); 
 			} 
@@ -30,18 +30,18 @@ namespace Hermes
         {
 			var existingConnection = default (IChannel<IPacket>);
 
-			if (this.connections.TryGetValue (clientId, out existingConnection)) {
+			if (connections.TryGetValue (clientId, out existingConnection)) {
 				this.RemoveConnection (clientId);
 			}
 
-			this.connections.TryAdd(clientId, connection);
+			connections.TryAdd(clientId, connection);
         }
 
 		public IChannel<IPacket> GetConnection (string clientId)
 		{
 			var existingConnection = default(IChannel<IPacket>);
 
-			if (this.connections.TryGetValue (clientId, out existingConnection)) {
+			if (connections.TryGetValue (clientId, out existingConnection)) {
 				if (!existingConnection.IsConnected) {
 					this.RemoveConnection (clientId);
 					existingConnection = default (IChannel<IPacket>);
@@ -56,7 +56,7 @@ namespace Hermes
         {
 			var existingConnection = default (IChannel<IPacket>);
 
-			if (this.connections.TryRemove (clientId, out existingConnection)) {
+			if (connections.TryRemove (clientId, out existingConnection)) {
 				existingConnection.Dispose ();
 			}
         }

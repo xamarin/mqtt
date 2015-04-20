@@ -5,15 +5,17 @@ using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Properties;
 
 namespace Hermes
 {
 	public class TcpChannel : IChannel<byte[]>
 	{
+		static readonly ITracer tracer = Tracer.Get<TcpChannel> ();
+
 		bool disposed;
 
-		readonly object lockObject = new object ();
 		readonly TcpClient client;
 		readonly IPacketBuffer buffer;
 		readonly ReplaySubject<byte[]> receiver;
@@ -53,15 +55,23 @@ namespace Hermes
 
 		public async Task SendAsync (byte[] message)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType().FullName);
+			}
 
-			if (!this.IsConnected)
+			if (!this.IsConnected) {
 				throw new ProtocolException (Resources.TcpChannel_ClientIsNotConnected);
+			}
 
 			this.sender.OnNext (message);
 
-			await this.client.GetStream ().WriteAsync(message, 0, message.Length);
+			try {
+				tracer.Info (Resources.Tracer_TcpChannel_SendingPacket, DateTime.Now.ToString ("MM/dd/yyyy hh:mm:ss.fff"), message.Length);
+
+				await this.client.GetStream ().WriteAsync(message, 0, message.Length);
+			} catch (ObjectDisposedException disposedEx) {
+				throw new ProtocolException (Resources.TcpChannel_SocketDisconnected, disposedEx);
+			}
 		}
 
 		public void Dispose ()
@@ -75,11 +85,12 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				this.receiver.Dispose ();
 				this.streamSubscription.Dispose ();
+				this.receiver.OnCompleted ();
 
-				if(this.IsConnected)
+				if (this.IsConnected) {
 					this.client.Close ();
+				}
 
 				this.disposed = true;
 			}
@@ -90,25 +101,34 @@ namespace Hermes
 			return Observable.Defer(() => {
 				var buffer = new byte[client.ReceiveBufferSize];
 
-				return Observable
-					.FromAsync<int>(() => {
-						if (!this.IsConnected)
-							return Task.FromResult (0);
-
-						return this.client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
-					})
-					.Select(x => buffer.Take(x).ToArray());
+				return Observable.FromAsync<int>(() => {
+					return this.client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
+				})
+				.Select(x => buffer.Take(x).ToArray());
 			})
 			.Repeat()
+			.TakeWhile(bytes => bytes.Any())
 			.Subscribe(bytes => {
 				var packets = default(IEnumerable<byte[]>);
 
 				if (this.buffer.TryGetPackets (bytes, out packets)) {
 					foreach (var packet in packets) {
+						tracer.Info (Resources.Tracer_TcpChannel_ReceivedPacket, DateTime.Now.ToString ("MM/dd/yyyy hh:mm:ss.fff"), packet.Length);
+
 						this.receiver.OnNext (packet);
 					}
 				}
-			}, ex => this.receiver.OnError(ex));
+			}, ex => {
+				if (ex is ObjectDisposedException) {
+					this.receiver.OnError (new ProtocolException (Resources.TcpChannel_SocketDisconnected, ex));
+				} else {
+					this.receiver.OnError (ex);
+				}
+			}, () => {
+				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+
+				this.Dispose ();
+			});
 		}
 	}
 }

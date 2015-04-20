@@ -15,8 +15,9 @@ namespace Hermes.Flows
 
 		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.SubscribeAck)
+			if (input.Type != PacketType.SubscribeAck) {
 				return Task.Delay(0);
+			}
 
 			var subscribeAck = input as SubscribeAck;
 

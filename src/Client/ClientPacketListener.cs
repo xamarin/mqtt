@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
@@ -10,6 +12,14 @@ namespace Hermes
 {
 	public class ClientPacketListener : IPacketListener
 	{
+		private static readonly ITracer tracer = Tracer.Get<ClientPacketListener> ();
+
+		IDisposable firstPacketSubscription;
+		IDisposable nextPacketsSubscription;
+		IDisposable allPacketsSubscription;
+		IDisposable senderSubscription;
+		IDisposable keepAliveSubscription;
+
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
@@ -27,12 +37,15 @@ namespace Hermes
 		{
 			var clientId = string.Empty;
 
-			channel.Receiver
+			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync()
+				.SubscribeOn(Scheduler.Default)
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
 						return;
 					}
+
+					tracer.Info (Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), packet.Type);
 
 					var connectAck = packet as ConnectAck;
 
@@ -41,16 +54,12 @@ namespace Hermes
 						return;
 					}
 
-					if (this.configuration.KeepAliveSecs > 0) {
-						this.MaintainKeepAlive (channel);
-					}
-
 					await this.DispatchPacketAsync (packet, clientId, channel);
 				}, ex => {
 					this.NotifyError (ex);
 				});
 
-			channel.Receiver
+			this.nextPacketsSubscription = channel.Receiver
 				.Skip(1)
 				.Subscribe (async packet => {
 					await this.DispatchPacketAsync (packet, clientId, channel);
@@ -58,30 +67,46 @@ namespace Hermes
 					this.NotifyError (ex);
 				});
 
-			channel.Receiver.Subscribe (_ => { }, () => {
+			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+
 				this.packets.OnCompleted ();	
 			});
 
-			channel.Sender
+			this.senderSubscription = channel.Sender
 				.OfType<Connect> ()
 				.FirstAsync ()
 				.Subscribe (connect => {
 					clientId = connect.ClientId;
+
+					if (this.configuration.KeepAliveSecs > 0) {
+						this.MaintainKeepAlive (channel, clientId);
+					}
 				});
 		}
 
-		private void MaintainKeepAlive(IChannel<IPacket> channel)
+		private void MaintainKeepAlive(IChannel<IPacket> channel, string clientId)
 		{
-			channel.Sender
-				.Timeout (new TimeSpan (0, 0, this.configuration.KeepAliveSecs))
-				.Subscribe(_ => {}, async ex => {
-					if (ex is TimeoutException) {
-						var ping = new PingRequest ();
+			this.keepAliveSubscription = this.GetTimeoutMonitor(channel, clientId)
+				.SubscribeOn(Scheduler.Default)
+				.Subscribe(_ => {}, ex => {
+					this.NotifyError (ex);
+				});
+		}
 
-						await channel.SendAsync(ping);
-					} else {
-						this.NotifyError (ex);
-					}
+		private IObservable<IPacket> GetTimeoutMonitor(IChannel<IPacket> channel, string clientId)
+		{
+			return channel.Sender
+				.Timeout (TimeSpan.FromSeconds (this.configuration.KeepAliveSecs))
+				.SubscribeOn(Scheduler.Default)
+				.Catch<IPacket, TimeoutException> (timeEx => {
+					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), this.configuration.KeepAliveSecs);
+
+					var ping = new PingRequest ();
+
+					channel.SendAsync (ping).Wait ();
+
+					return this.GetTimeoutMonitor (channel, clientId);
 				});
 		}
 
@@ -91,6 +116,8 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
+					tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), packet.Type, flow.GetType().Name);
+
 					this.packets.OnNext (packet);
 
 					await flow.ExecuteAsync (clientId, packet, channel);

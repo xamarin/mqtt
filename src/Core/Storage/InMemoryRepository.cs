@@ -83,6 +83,10 @@ namespace Hermes.Storage
         {
 			var element = this.Get (predicate);
 
+			if (element == null) {
+				return;
+			}
+
 			this.Delete (element);
         }
     }

@@ -1,23 +1,36 @@
 ﻿using System.Net.Sockets;
+using Hermes.Diagnostics;
 using Hermes.Flows;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes
 {
 	public class ClientInitializer : IInitalizer<Client>
 	{
-		readonly string hostAddress;
+		private static readonly ITracer tracer = Tracer.Get<ClientInitializer> ();
+
+		private readonly string hostAddress;
 
 		public ClientInitializer (string hostAddress)
 		{
 			this.hostAddress = hostAddress;
 		}
 
+		/// <exception cref="ClientException">ClientException</exception>
 		public Client Initialize (ProtocolConfiguration configuration)
-		{
+		{			
 			var tcpClient = new TcpClient();
 
-			tcpClient.Connect (this.hostAddress, configuration.Port);
+			try {
+				tcpClient.Connect (this.hostAddress, configuration.Port);
+			} catch (SocketException socketEx) {
+				tracer.Error (socketEx);
+
+				var message = string.Format(Resources.Client_TcpClient_Failed, this.hostAddress, configuration.Port);
+
+				throw new ClientException(message, socketEx);
+			}
 
 			var buffer = new PacketBuffer();
 			var channel = new TcpChannel(tcpClient, buffer, configuration);

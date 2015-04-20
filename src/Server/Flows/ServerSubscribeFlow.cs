@@ -1,14 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Exceptions;
 using Hermes.Packets;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
 {
 	public class ServerSubscribeFlow : IProtocolFlow
 	{
+		static readonly ITracer tracer = Tracer.Get<ServerSubscribeFlow> ();
+
 		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
@@ -33,16 +38,24 @@ namespace Hermes.Flows
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.Subscribe)
+			if (input.Type != PacketType.Subscribe) {
 				return;
+			}
 
 			var subscribe = input as Subscribe;
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+			if (session == null) {
+				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+			}
+
 			var returnCodes = new List<SubscribeReturnCode> ();
 
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
 					if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
+						tracer.Error(Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), subscription.TopicFilter, clientId);
+
 						returnCodes.Add (SubscribeReturnCode.Failure);
 						continue;
 					}
@@ -67,7 +80,9 @@ namespace Hermes.Flows
 					var returnCode = supportedQos.ToReturnCode ();
 
 					returnCodes.Add (returnCode);
-				} catch (RepositoryException) {
+				} catch (RepositoryException repoEx) {
+					tracer.Error(repoEx, Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId, subscription.TopicFilter);
+
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}
 			}

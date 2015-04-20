@@ -140,7 +140,7 @@ namespace Tests.Flows
 
 			var exception = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, publishReceived, channel.Object).Wait());
 
-			Assert.True (exception.InnerException is TimeoutException);
+			Assert.True (exception.InnerException is ProtocolException);
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishRelease 
 				&& (p as PublishRelease).PacketId == packetId)), Times.AtLeastOnce);
 		}

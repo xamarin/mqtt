@@ -6,61 +6,65 @@ using System.Linq;
 using System.Threading;
 using System;
 using System.Reactive.Linq;
+using System.Collections.Generic;
+using System.Reactive.Concurrency;
 
 namespace IntegrationTests
 {
-	public class ConnectionSpec : IntegrationContext
+	public class ConnectionSpec : IntegrationContext, IDisposable
 	{
-		protected readonly ushort keepAliveSecs;
+		private readonly Server server;
 
 		public ConnectionSpec ()
-			: this(keepAliveSecs: 0)
+			: base()
 		{
-		}
-
-		public ConnectionSpec (ushort keepAliveSecs)
-			: base(keepAliveSecs: keepAliveSecs)
-		{
-			this.keepAliveSecs = keepAliveSecs;
+			this.server = this.GetServer ();
 		}
 
 		[Fact]
 		public async Task when_connect_clients_then_succeeds()
 		{
-			var client1 = this.GetClient ();
-			var client2 = this.GetClient ();
+			var clients = new List<Client>();
+			var count = this.GetTestLoad();
 
-			await client1.ConnectAsync (new ClientCredentials (this.GetClientId()));
-			await client2.ConnectAsync (new ClientCredentials (this.GetClientId()));
+			for (var i = 1; i <= count; i++) {
+				var client = this.GetClient ();
 
-			Assert.True (client1.IsConnected);
-			Assert.False (string.IsNullOrEmpty (client1.Id));
-			Assert.True (client2.IsConnected);
-			Assert.False (string.IsNullOrEmpty (client2.Id));
+				clients.Add (client);
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			}
 
-			client1.Close ();
-			client2.Close ();
+			Assert.True (clients.All(c => c.IsConnected));
+			Assert.True (clients.All (c => !string.IsNullOrEmpty (c.Id)));
+
+			foreach (var client in clients) {
+				client.Close ();
+			}
 		}
 
 		[Fact]
 		public async Task when_disconnect_client_then_succeeds()
 		{
-			var client1 =  this.GetClient ();
-			var	client2 = this.GetClient ();
+			var clients = new List<Client>();
+			var count = this.GetTestLoad();
 
-			await client1.ConnectAsync (new ClientCredentials (this.GetClientId()));
-			await client2.ConnectAsync (new ClientCredentials (this.GetClientId()));
+			for (var i = 1; i <= count; i++) {
+				var client = this.GetClient ();
 
-			await client1.DisconnectAsync();
-			await client2.DisconnectAsync();
+				clients.Add (client);
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			}
 
-			Assert.False (client1.IsConnected);
-			Assert.True (string.IsNullOrEmpty (client1.Id));
-			Assert.False (client2.IsConnected);
-			Assert.True (string.IsNullOrEmpty (client2.Id));
+			foreach (var client in clients) {
+				await client.DisconnectAsync ();
+			}
 
-			client1.Close ();
-			client2.Close ();
+			Assert.True (clients.All(c => !c.IsConnected));
+			Assert.True (clients.All (c => string.IsNullOrEmpty (c.Id)));
+
+			foreach (var client in clients) {
+				client.Close ();
+			}
 		}
 
 		[Fact]
@@ -71,7 +75,7 @@ namespace IntegrationTests
 			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
 
 			var clientId = client.Id;
-			var existClientAfterConnect = this.fixture.Server.ActiveClients.Any (c => c == clientId);
+			var existClientAfterConnect = this.server.ActiveClients.Any (c => c == clientId);
 
 			await client.DisconnectAsync ();
 
@@ -80,9 +84,9 @@ namespace IntegrationTests
 			var subscription = Observable.Create<bool> (observer => {
 				var timer = new System.Timers.Timer();
 
-				timer.Interval = 1000;
+				timer.Interval = 200;
 				timer.Elapsed += (sender, args) => {
-					if (this.fixture.Server.ActiveClients.Any (c => c == clientId)) {
+					if (this.server.ActiveClients.Any (c => c == clientId)) {
 						observer.OnNext (false);
 					} else {
 						observer.OnNext (true);
@@ -96,120 +100,23 @@ namespace IntegrationTests
 					timer.Dispose();
 				};
 			})
+			.SubscribeOn(Scheduler.Default)
 			.Subscribe (
-				x => { Console.WriteLine (string.Format("Client closed: {0}", x)); },
+				_ => { },
 				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
 
-			client.Close ();
-
-			var clientDisconnected = clientClosed.Wait (TimeSpan.FromSeconds(2));
+			var clientDisconnected = clientClosed.Wait (TimeSpan.FromSeconds(1));
 
 			Assert.True (existClientAfterConnect);
 			Assert.True (clientDisconnected);
-		}
-	}
-
-	public class ConnectionSpecWithKeepAlive : ConnectionSpec
-	{
-		public ConnectionSpecWithKeepAlive () 
-			: base(keepAliveSecs: 1)
-		{
-		}
-
-		[Fact]
-		public async Task when_keep_alive_enabled_and_client_is_disposed_then_server_refresh_active_client_list()
-		{
-			var client = this.GetClient ();
-
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
-
-			var clientId = client.Id;
-			var existClientAfterConnect = this.fixture.Server.ActiveClients.Any (c => c == clientId);
-			var clientClosed = new ManualResetEventSlim ();
-
-			var subscription = Observable.Create<bool> (observer => {
-				var timer = new System.Timers.Timer();
-
-				timer.Interval = 1000;
-				timer.Elapsed += (sender, args) => {
-					if (this.fixture.Server.ActiveClients.Any (c => c == clientId)) {
-						observer.OnNext (false);
-					} else {
-						observer.OnNext (true);
-						clientClosed.Set ();
-						observer.OnCompleted ();
-					}
-				};
-				timer.Start();
-
-				return () => {
-					timer.Dispose();
-				};
-			})
-			.Subscribe (
-				x => { Console.WriteLine (string.Format("Client closed: {0}", x)); },
-				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
+			Assert.False (this.server.ActiveClients.Any (c => c == clientId));
 
 			client.Close ();
-
-			var serverDetectedClientClosed = clientClosed.Wait (TimeSpan.FromSeconds(this.keepAliveSecs * 3));
-
-			subscription.Dispose ();
-
-			Assert.True (existClientAfterConnect);
-			Assert.True (serverDetectedClientClosed);
-		}
-	}
-
-	public class ConnectionSpecWithNoKeepAlive : ConnectionSpec
-	{
-		public ConnectionSpecWithNoKeepAlive ()
-			: base()
-		{
 		}
 
-		[Fact]
-		public async Task when_keep_alive_not_enabled_and_client_is_disposed_then_server_does_not_refresh_active_client_list()
+		public void Dispose ()
 		{
-			var client = this.GetClient ();
-
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
-
-			var clientId = client.Id;
-			var existClientAfterConnect = this.fixture.Server.ActiveClients.Any (c => c == clientId);
-			var clientClosed = new ManualResetEventSlim ();
-
-			var subscription = Observable.Create<bool> (observer => {
-				var timer = new System.Timers.Timer();
-
-				timer.Interval = 500;
-				timer.Elapsed += (sender, args) => {
-					if (this.fixture.Server.ActiveClients.Any (c => c == clientId)) {
-						observer.OnNext (false);
-					} else {
-						observer.OnNext (true);
-						clientClosed.Set ();
-						observer.OnCompleted ();
-					}
-				};
-				timer.Start();
-
-				return () => {
-					timer.Dispose();
-				};
-			})
-			.Subscribe (
-				x => { Console.WriteLine (string.Format("Client closed: {0}", x)); },
-				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
-
-			client.Close ();
-
-			var serverDetectedClientClosed = clientClosed.Wait (TimeSpan.FromSeconds(2));
-
-			subscription.Dispose ();
-
-			Assert.True (existClientAfterConnect);
-			Assert.False (serverDetectedClientClosed);
+			this.server.Stop ();
 		}
 	}
 }

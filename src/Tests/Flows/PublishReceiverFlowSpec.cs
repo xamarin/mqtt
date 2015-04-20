@@ -241,7 +241,7 @@ namespace Tests.Flows
 
 			var exception = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, publish, channel).Wait());
 
-			Assert.True (exception.InnerException is TimeoutException);
+			Assert.True (exception.InnerException is ProtocolException);
 			publishSenderFlow.Verify (s => s.SendPublishAsync (It.Is<string>(x => x == subscribedClientId), 
 				It.Is<Publish> (p => p.Topic == publish.Topic &&
 					p.Payload.ToList().SequenceEqual(publish.Payload)),
@@ -250,71 +250,72 @@ namespace Tests.Flows
 			channelMock.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishReceived && (p as PublishReceived).PacketId == packetId.Value)));
 		}
 
-		//[Fact]
-		//public async Task when_sending_publish_with_qos2_and_no_release_is_sent_after_receiving_publish_received_then_publish_received_is_re_transmitted()
-		//{
-		//	var clientId = Guid.NewGuid ().ToString ();
+		[Fact]
+		public void when_sending_publish_with_qos2_and_no_release_is_sent_after_receiving_publish_received_then_publish_received_is_re_transmitted()
+		{
+			var clientId = Guid.NewGuid ().ToString ();
 
-		//	var configuration = new ProtocolConfiguration { 
-		//		MaximumQualityOfService = QualityOfService.ExactlyOnce,
-		//		WaitingTimeoutSecs = 1
-		//	};
-		//	var topicEvaluator = new Mock<ITopicEvaluator> ();
-		//	var connectionProvider = new Mock<IConnectionProvider> ();
-		//	var publishSenderFlow = new Mock<IPublishSenderFlow> ();
-		//	var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
-		//	var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var configuration = new ProtocolConfiguration { 
+				MaximumQualityOfService = QualityOfService.ExactlyOnce,
+				WaitingTimeoutSecs = 1
+			};
+			var topicEvaluator = new Mock<ITopicEvaluator> ();
+			var connectionProvider = new Mock<IConnectionProvider> ();
+			var publishSenderFlow = new Mock<IPublishSenderFlow> ();
+			var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-		//	sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-		//		.Returns (new ClientSession {
-		//			ClientId = clientId,
-		//			PendingMessages = new List<PendingMessage> { new PendingMessage() }
-		//		});
+			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
+				.Returns (new ClientSession {
+					ClientId = clientId,
+					PendingMessages = new List<PendingMessage> { new PendingMessage() }
+				});
 
-		//	var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
 
-		//	var topic = "foo/bar";
+			var topic = "foo/bar";
 
-		//	var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-		//		retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
+				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, configuration);
 
-		//	var subscribedClientId = Guid.NewGuid().ToString();
-		//	var requestedQoS = QualityOfService.ExactlyOnce;
-		//	var sessions = new List<ClientSession> { new ClientSession {
-		//		ClientId = subscribedClientId,
-		//		Clean = false,
-		//		Subscriptions = new List<ClientSubscription> { 
-		//			new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
-		//		}
-		//	}};
+			var subscribedClientId = Guid.NewGuid().ToString();
+			var requestedQoS = QualityOfService.ExactlyOnce;
+			var sessions = new List<ClientSession> { new ClientSession {
+				ClientId = subscribedClientId,
+				Clean = false,
+				Subscriptions = new List<ClientSubscription> { 
+					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
+				}
+			}};
 
-		//	var clientReceiver = new Subject<IPacket> ();
-		//	var clientChannel = new Mock<IChannel<IPacket>> ();
+			var clientReceiver = new Subject<IPacket> ();
+			var clientChannel = new Mock<IChannel<IPacket>> ();
 
-		//	clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
 
-		//	topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-		//	sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
+			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
+			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
 
-		//	var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
-		//	var publish = new Publish (topic, QualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
+			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
+			var publish = new Publish (topic, QualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
 
-		//	publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
+			publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
 
-		//	var receiver = new Subject<IPacket> ();
-		//	var channel = new Mock<IChannel<IPacket>> ();
+			var receiver = new Subject<IPacket> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
-		//	channel.Setup (c => c.IsConnected).Returns (true);
-		//	channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.IsConnected).Returns (true);
+			channel.Setup (c => c.Receiver).Returns (receiver);
 
-		//	//TODO: Fix this
-		//	await flow.ExecuteAsync (clientId, publish, channel.Object);
+			var aggregateEx = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
-		//	Thread.Sleep (2000);
+			Thread.Sleep (2000);
 
-		//	channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishReceived 
-		//		&& (p as PublishReceived).PacketId == packetId)), Times.AtLeast(2));
-		//}
+			Assert.NotNull (aggregateEx);
+			Assert.True (aggregateEx.InnerException is ProtocolException);
+			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishReceived 
+				&& (p as PublishReceived).PacketId == packetId)), Times.AtLeast(2));
+		}
 
 		//[Fact]
 		//public async Task when_sending_publish_with_qos2_and_release_is_sent_after_receiving_publish_received_then_publish_received_is_not_re_transmitted()

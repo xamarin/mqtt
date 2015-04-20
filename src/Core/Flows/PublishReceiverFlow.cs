@@ -44,14 +44,20 @@ namespace Hermes.Flows
 
 		private async Task HandlePublishAsync(string clientId, Publish publish, IChannel<IPacket> channel)
 		{
-			if (publish.QualityOfService != QualityOfService.AtMostOnce && !publish.PacketId.HasValue)
+			if (publish.QualityOfService != QualityOfService.AtMostOnce && !publish.PacketId.HasValue) {
 				throw new ProtocolException (Resources.PublishReceiverFlow_PacketIdRequired);
+			}
 
-			if (publish.QualityOfService == QualityOfService.AtMostOnce && publish.PacketId.HasValue)
+			if (publish.QualityOfService == QualityOfService.AtMostOnce && publish.PacketId.HasValue) {
 				throw new ProtocolException (Resources.PublishReceiverFlow_PacketIdNotAllowed);
+			}
 			
 			var qos = configuration.GetSupportedQos(publish.QualityOfService);
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+
+			if (session == null) {
+				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+			}
 
 			if(qos == QualityOfService.ExactlyOnce && 
 				session.PendingAcknowledgements.Any(ack => ack.Type == PacketType.PublishReceived &&

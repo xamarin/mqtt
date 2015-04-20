@@ -61,6 +61,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while starting to listen incoming TCP connections.
+        /// </summary>
+        internal static string ChannelObservable_TcpListener_Failed {
+            get {
+                return ResourceManager.GetString("ChannelObservable_TcpListener_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The first packet sent by a Client must be a Connect. The connection will be closed..
         /// </summary>
         internal static string ServerPacketListener_FirstPacketMustBeConnect {
@@ -70,7 +79,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The keep alive time of {0} seconds has been exceeded and no packet has been received. The connection will be closed..
+        ///   Looks up a localized string similar to {0} - The keep alive tolerance of {1} seconds has been exceeded and no packet has been received from client {2}. The connection will be closed..
         /// </summary>
         internal static string ServerPacketListener_KeepAliveTimeExceeded {
             get {
@@ -97,11 +106,119 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No session has been found for client {0}.
+        /// </summary>
+        internal static string SessionRepository_ClientSessionNotFound {
+            get {
+                return ResourceManager.GetString("SessionRepository_ClientSessionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The underlying TCP client is not connected.
         /// </summary>
         internal static string TcpChannel_ClientIsNotConnected {
             get {
                 return ResourceManager.GetString("TcpChannel_ClientIsNotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The underlying network stream is not available. The socket could became disconnected.
+        /// </summary>
+        internal static string TcpChannel_SocketDisconnected {
+            get {
+                return ResourceManager.GetString("TcpChannel_SocketDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - Packet Channel observable sequence has been completed for client {1}.
+        /// </summary>
+        internal static string Tracer_PacketChannelCompleted {
+            get {
+                return ResourceManager.GetString("Tracer_PacketChannelCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - A new TCP channel has been accepted.
+        /// </summary>
+        internal static string Tracer_Server_NewSocketAccepted {
+            get {
+                return ResourceManager.GetString("Tracer_Server_NewSocketAccepted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - Packet observable sequence has been completed, hence closing the channel.
+        /// </summary>
+        internal static string Tracer_Server_PacketsObservableCompleted {
+            get {
+                return ResourceManager.GetString("Tracer_Server_PacketsObservableCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - A connect packet has been received from client {1}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_ConnectPacketReceived {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_ConnectPacketReceived", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - Dispatching {1} message to flow {2} for client {3}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_DispatchingMessage {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_DispatchingMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - An error occurred when subscribing client {1} to topic {2}.
+        /// </summary>
+        internal static string Tracer_ServerSubscribeFlow_ErrorOnSubscription {
+            get {
+                return ResourceManager.GetString("Tracer_ServerSubscribeFlow_ErrorOnSubscription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - The topic {1}, sent by client {2} is invalid. Returning failure code.
+        /// </summary>
+        internal static string Tracer_ServerSubscribeFlow_InvalidTopicSubscription {
+            get {
+                return ResourceManager.GetString("Tracer_ServerSubscribeFlow_InvalidTopicSubscription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
+        /// </summary>
+        internal static string Tracer_TcpChannel_NetworkStreamCompleted {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_NetworkStreamCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - Received packet of {1} bytes.
+        /// </summary>
+        internal static string Tracer_TcpChannel_ReceivedPacket {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_ReceivedPacket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - {0} - Sending packet of {1} bytes.
+        /// </summary>
+        internal static string Tracer_TcpChannel_SendingPacket {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_SendingPacket", resourceCulture);
             }
         }
     }

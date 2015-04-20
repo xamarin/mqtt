@@ -30,7 +30,7 @@ namespace Hermes
 				} catch (ProtocolException ex) {
 					this.receiver.OnError (ex);
 				}
-			}, onError: ex => this.receiver.OnError (ex));
+			}, onError: ex => this.receiver.OnError (ex), onCompleted: () => this.receiver.OnCompleted());
 		}
 
 		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }
@@ -41,8 +41,9 @@ namespace Hermes
 
 		public async Task SendAsync (IPacket packet)
 		{
-			if (this.disposed)
+			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
 
 			var bytes = await this.manager.GetBytesAsync (packet);
 
@@ -62,9 +63,9 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				this.receiver.Dispose ();
 				this.subscription.Dispose ();
 				this.innerChannel.Dispose ();
+				this.receiver.OnCompleted ();
 				this.disposed = true;
 			}
 		}

@@ -81,10 +81,15 @@ namespace Hermes.Storage
 			var packetId = default (ushort?);
 
 			if(qos != QualityOfService.AtMostOnce) {
-				packetId = repository.GetPacketIdentifier (new Random ());
+				packetId = repository.GetPacketIdentifier ();
 			}
 
 			return packetId;
+		}
+
+		public static ushort GetPacketIdentifier(this IRepository<PacketIdentifier> repository)
+		{
+			return repository.GetPacketIdentifier (new Random ());
 		}
 
 		public static ushort GetPacketIdentifier(this IRepository<PacketIdentifier> repository, Random random)

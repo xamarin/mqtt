@@ -61,7 +61,7 @@ namespace Tests.Formatters
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
-			Assert.True (ex.InnerException is ConnectProtocolException);
+			Assert.True (ex.InnerException is ProtocolConnectionException);
 		}
 
 		[Theory]

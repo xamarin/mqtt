@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
@@ -10,6 +12,14 @@ namespace Hermes
 {
 	public class ServerPacketListener : IPacketListener
 	{
+		static readonly ITracer tracer = Tracer.Get<ServerPacketListener> ();
+
+		IDisposable firstPacketSubscription;
+		IDisposable nextPacketsSubscription;
+		IDisposable allPacketsSubscription;
+		IDisposable senderSubscription;
+		IDisposable keepAliveSubscription;
+
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
@@ -31,11 +41,12 @@ namespace Hermes
 		{
 			var clientId = string.Empty;
 			var keepAlive = 0;
-			var packetDueTime = new TimeSpan(0, 0, this.configuration.WaitingTimeoutSecs);
+			var packetDueTime = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
 
-			channel.Receiver
+			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
+				.SubscribeOn(Scheduler.Default)
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
 						return;
@@ -52,12 +63,14 @@ namespace Hermes
 					keepAlive = connect.KeepAlive;
 					this.connectionProvider.AddConnection (clientId, channel);
 
+					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId);
+
 					await this.DispatchPacketAsync (connect, clientId, channel);
 				}, async ex => {
 					await this.HandleConnectionExceptionAsync (ex, channel);
 				});
 
-			channel.Receiver
+			this.nextPacketsSubscription = channel.Receiver
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
@@ -70,7 +83,9 @@ namespace Hermes
 					this.NotifyError (ex, clientId);
 				});
 
-			channel.Receiver.Subscribe (_ => { }, () => {
+			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId);
+
 				if (!string.IsNullOrEmpty (clientId)) {
 					this.RemoveClient (clientId);
 				}
@@ -78,12 +93,12 @@ namespace Hermes
 				this.packets.OnCompleted ();	
 			});
 
-			channel.Sender
+			this.senderSubscription = channel.Sender
 				.OfType<ConnectAck> ()
 				.FirstAsync ()
-				.Subscribe (async connectAck => {
+				.Subscribe (connectAck => {
 					if (keepAlive > 0) {
-						await this.MonitorKeepAliveAsync (channel, clientId, keepAlive);
+						this.MonitorKeepAliveAsync (channel, clientId, keepAlive);
 					}
 				});
 		}
@@ -92,8 +107,8 @@ namespace Hermes
 		{
 			if (exception is TimeoutException) {
 				this.NotifyError (Resources.ServerPacketListener_NoConnectReceived, exception);
-			} else if (exception is ConnectProtocolException) {
-				var connectEx = exception as ConnectProtocolException;
+			} else if (exception is ProtocolConnectionException) {
+				var connectEx = exception as ProtocolConnectionException;
 				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
 
 				try {
@@ -108,38 +123,47 @@ namespace Hermes
 			}
 		}
 
+		private void MonitorKeepAliveAsync(IChannel<IPacket> channel, string clientId, int keepAlive)
+		{
+			var tolerance = GetKeepAliveTolerance (keepAlive);
+
+			this.keepAliveSubscription = channel.Receiver
+				.Timeout (tolerance)
+				.SubscribeOn(Scheduler.Default)
+				.Subscribe (_ => { }, ex => {
+					var timeEx = ex as TimeoutException;
+
+					if (timeEx == null) {
+						this.NotifyError (ex, clientId);
+					} else {
+						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), tolerance, clientId);
+
+						this.NotifyError(message, timeEx, clientId);
+					}
+				});
+		}
+		
+		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
+		{
+			var tolerance = (int)Math.Round (keepAlive * 1.5, MidpointRounding.AwayFromZero);
+
+			return TimeSpan.FromSeconds (tolerance);
+		}
+
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)
 		{
 			var flow = this.flowProvider.GetFlow (packet.Type);
 
 			if (flow != null) {
 				try {
+					tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), packet.Type, flow.GetType().Name, clientId);
+
 					this.packets.OnNext (packet);
 
 					await flow.ExecuteAsync (clientId, packet, channel);
 				} catch (Exception ex) {
 					this.NotifyError (ex, clientId);
 				}
-			}
-		}
-
-		private static TimeSpan GetKeepAliveTolerance(int keepAlive)
-		{
-			keepAlive = (int)(keepAlive * 1.5);
-
-			return new TimeSpan (0, 0, keepAlive);
-		}
-
-		private async Task MonitorKeepAliveAsync(IChannel<IPacket> channel, string clientId, int keepAlive)
-		{
-			try {
-				var packet = await channel.Receiver.Timeout (GetKeepAliveTolerance(keepAlive));
-			} catch(TimeoutException timeEx) {
-				var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, keepAlive);
-
-				this.NotifyError(message, timeEx, clientId);
-			} catch(Exception ex) {
-				this.NotifyError (ex, clientId);
 			}
 		}
 

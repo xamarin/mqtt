@@ -4,6 +4,9 @@ using System.Linq;
 using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
+using Hermes.Properties;
+using System.Reactive.Linq;
+using System.Reactive.Concurrency;
 
 namespace Hermes
 {
@@ -41,16 +44,19 @@ namespace Hermes
 
 		public IEnumerable<string> ActiveClients { get { return this.connectionProvider.ActiveClients; } }
 
+		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="ObjectDisposedException">ObjectDisposedException</exception>
 		public void Start()
 		{
 			if (this.disposed)
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
-			this.channelSubscription = this.binaryChannelProvider.Subscribe (
-				binaryChannel => this.ProcessChannel(binaryChannel), 
-				ex => { tracer.Error (ex); }, 
-				() => {}	
-			);
+			this.channelSubscription = this.binaryChannelProvider
+				.Subscribe (
+					binaryChannel => this.ProcessChannel(binaryChannel), 
+					ex => { tracer.Error (ex); }, 
+					() => {}	
+				);
 		}
 
 		public void Stop ()
@@ -68,14 +74,16 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				foreach (var channel in channels) {
-					channel.Dispose ();
-				}
-
 				if (this.channelSubscription != null) {
 					this.channelSubscription.Dispose ();
 				}
 				
+				foreach (var channel in channels) {
+					channel.Dispose ();
+				}
+
+				channels.Clear ();
+
 				this.disposed = true;
 			}
 		}
@@ -89,6 +97,8 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
+			tracer.Info (Resources.Tracer_Server_NewSocketAccepted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
 
@@ -97,6 +107,8 @@ namespace Hermes
 				tracer.Error (ex);
 				this.CloseChannel (packetChannel);
 			}, () => {
+				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+
 				this.CloseChannel (packetChannel);
 			});
 
@@ -105,7 +117,6 @@ namespace Hermes
 
 		private void CloseChannel(IChannel<IPacket> channel)
 		{
-			this.channels.Remove (channel);
 			channel.Dispose ();
 		}
 	}

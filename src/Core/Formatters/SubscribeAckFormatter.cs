@@ -24,10 +24,10 @@ namespace Hermes.Formatters
 			var returnCodeBytes = bytes.Bytes(headerLength);
 
 			if(!returnCodeBytes.Any())
-				throw new ViolationProtocolException(Resources.SubscribeAckFormatter_MissingReturnCodes);
+				throw new ProtocolViolationException(Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			if (returnCodeBytes.Any (b => !Enum.IsDefined (typeof (SubscribeReturnCode), b)))
-				throw new ViolationProtocolException (Resources.SubscribeAckFormatter_InvalidReturnCodes);
+				throw new ProtocolViolationException (Resources.SubscribeAckFormatter_InvalidReturnCodes);
 				
 			var returnCodes = returnCodeBytes.Select(b => (SubscribeReturnCode)b).ToArray();
 
@@ -79,7 +79,7 @@ namespace Hermes.Formatters
 		private byte[] GetPayload(SubscribeAck packet)
 		{
 			if(packet.ReturnCodes == null || !packet.ReturnCodes.Any())
-				throw new ViolationProtocolException(Resources.SubscribeAckFormatter_MissingReturnCodes);
+				throw new ProtocolViolationException(Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			return packet.ReturnCodes
 				.Select(c => Convert.ToByte(c))
