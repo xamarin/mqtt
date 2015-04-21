@@ -52,6 +52,7 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
 			this.channelSubscription = this.binaryChannelProvider
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (
 					binaryChannel => this.ProcessChannel(binaryChannel), 
 					ex => { tracer.Error (ex); }, 

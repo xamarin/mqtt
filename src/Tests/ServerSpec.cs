@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Subjects;
+using System.Threading;
 using Hermes;
 using Hermes.Flows;
 using Hermes.Packets;
@@ -147,6 +148,8 @@ namespace Tests
 				packets.OnError (new Exception ("Protocol exception"));
 			} catch (Exception) {
 			}
+
+			Thread.Sleep (TimeSpan.FromSeconds (1));
 
 			packetChannel.Verify (x => x.Dispose ());
 		}

@@ -39,7 +39,7 @@ namespace Hermes
 
 			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync()
-				.SubscribeOn(Scheduler.Default)
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
 						return;
@@ -61,6 +61,7 @@ namespace Hermes
 
 			this.nextPacketsSubscription = channel.Receiver
 				.Skip(1)
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (async packet => {
 					await this.DispatchPacketAsync (packet, clientId, channel);
 				}, ex => {
@@ -88,7 +89,6 @@ namespace Hermes
 		private void MaintainKeepAlive(IChannel<IPacket> channel, string clientId)
 		{
 			this.keepAliveSubscription = this.GetTimeoutMonitor(channel, clientId)
-				.SubscribeOn(Scheduler.Default)
 				.Subscribe(_ => {}, ex => {
 					this.NotifyError (ex);
 				});
@@ -98,7 +98,7 @@ namespace Hermes
 		{
 			return channel.Sender
 				.Timeout (TimeSpan.FromSeconds (this.configuration.KeepAliveSecs))
-				.SubscribeOn(Scheduler.Default)
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Catch<IPacket, TimeoutException> (timeEx => {
 					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), this.configuration.KeepAliveSecs);
 

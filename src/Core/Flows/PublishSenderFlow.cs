@@ -91,7 +91,7 @@ namespace Hermes.Flows
 		protected async Task MonitorAck<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			await this.GetAckMonitor<T> (sentMessage, clientId, channel).ObserveOn(Scheduler.Default);
+			await this.GetAckMonitor<T> (sentMessage, clientId, channel);
 		}
 
 		protected IObservable<T> GetAckMonitor<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel, int retries = 0)
@@ -104,7 +104,7 @@ namespace Hermes.Flows
 			return channel.Receiver.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value)
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
-				.ObserveOn(Scheduler.Default)
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Catch<T, TimeoutException> (timeEx => {
 					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), sentMessage.Type, clientId);
 

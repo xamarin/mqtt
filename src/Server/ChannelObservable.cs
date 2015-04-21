@@ -26,6 +26,7 @@ namespace Hermes
 			if (!this.isStarted) {
 				try {
 					this.listener.Start ();
+					this.isStarted = true;
 				} catch (SocketException socketEx) {
 					tracer.Error (socketEx);
 
