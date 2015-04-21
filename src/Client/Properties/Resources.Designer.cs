@@ -196,7 +196,34 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client - {0} - Packet observable sequence has been completed, hence closing the channel.
+        ///   Looks up a localized string similar to Client {0} - Cleaned old session.
+        /// </summary>
+        internal static string Tracer_Client_CleanedOldSession {
+            get {
+                return ResourceManager.GetString("Tracer_Client_CleanedOldSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client {0} - Created new client session.
+        /// </summary>
+        internal static string Tracer_Client_CreatedSession {
+            get {
+                return ResourceManager.GetString("Tracer_Client_CreatedSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client {0} - Removed client session as part of Disconnect.
+        /// </summary>
+        internal static string Tracer_Client_DeletedSessionOnDisconnect {
+            get {
+                return ResourceManager.GetString("Tracer_Client_DeletedSessionOnDisconnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client - Packet observable sequence has been completed, hence closing the channel.
         /// </summary>
         internal static string Tracer_Client_PacketsObservableCompleted {
             get {
@@ -205,7 +232,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - {1} - Dispatching {2} message to flow {3}.
+        ///   Looks up a localized string similar to Client {0} - Dispatching {1} message to flow {2}.
         /// </summary>
         internal static string Tracer_ClientPacketListener_DispatchingMessage {
             get {
@@ -214,7 +241,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - {1} - First packet from Server has been received. Type: {2}.
+        ///   Looks up a localized string similar to Client {0} - First packet from Server has been received. Type: {1}.
         /// </summary>
         internal static string Tracer_ClientPacketListener_FirstPacketReceived {
             get {
@@ -223,7 +250,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - {1} - No packet has been sent in {2} seconds. Sending Ping to Server to maintain Keep Alive.
+        ///   Looks up a localized string similar to Client {0} - No packet has been sent in {1} seconds. Sending Ping to Server to maintain Keep Alive.
         /// </summary>
         internal static string Tracer_ClientPacketListener_SendingKeepAlive {
             get {
@@ -232,7 +259,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - {1} - An application message for topic {2} was received.
+        ///   Looks up a localized string similar to Client {0} - An application message for topic {1} was received.
         /// </summary>
         internal static string Tracer_NewApplicationMessageReceived {
             get {
@@ -241,7 +268,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - {1} - Packet Channel observable sequence has been completed.
+        ///   Looks up a localized string similar to Client {0} - Packet Channel observable sequence has been completed.
         /// </summary>
         internal static string Tracer_PacketChannelCompleted {
             get {
@@ -259,7 +286,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client - {0} - Received packet of {1} bytes.
+        ///   Looks up a localized string similar to Client - Received packet of {0} bytes.
         /// </summary>
         internal static string Tracer_TcpChannel_ReceivedPacket {
             get {
@@ -268,7 +295,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client - {0} - Sending packet of {1} bytes.
+        ///   Looks up a localized string similar to Client - Sending packet of {0} bytes.
         /// </summary>
         internal static string Tracer_TcpChannel_SendingPacket {
             get {

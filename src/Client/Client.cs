@@ -50,9 +50,9 @@ namespace Hermes
 
 			this.publishSubscription = this.packetListener.Packets
 				.OfType<Publish>()
-				.SubscribeOn(NewThreadScheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (publish => {
-					tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), publish.Topic);
+					tracer.Info (LogMessage.Create(Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic));
 
 					var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
@@ -65,7 +65,7 @@ namespace Hermes
 					this.sender.OnError (ex);
 					this.Close (ex);
 				}, () => {
-					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+					tracer.Warn (LogMessage.Create(Resources.Tracer_Client_PacketsObservableCompleted));
 
 					this.receiver.OnCompleted ();
 					this.Close ();
@@ -137,7 +137,7 @@ namespace Hermes
 			if (ack == null) {
 				var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
 
-				tracer.Error (message);
+				tracer.Error (LogMessage.Create(message));
 
 				throw new ClientException (message);
 			}
@@ -183,7 +183,7 @@ namespace Hermes
 			if (ack == null) {
 				var message = string.Format(Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
 
-				tracer.Error (message);
+				tracer.Error (LogMessage.Create(message));
 
 				throw new ClientException (message);
 			}
@@ -235,7 +235,7 @@ namespace Hermes
 
 				var message = string.Format (Resources.Client_UnsubscribeTimeout, this.Id, string.Join(", ", topics));
 
-				tracer.Error (message);
+				tracer.Error (LogMessage.Create(message));
 
 				throw new ClientException (message, timeEx);
 			} catch (Exception ex) {
@@ -243,7 +243,7 @@ namespace Hermes
 
 				var message = string.Format (Resources.Client_UnsubscribeError, this.Id, string.Join(", ", topics));
 
-				tracer.Error (message);
+				tracer.Error (LogMessage.Create(message));
 
 				throw new ClientException (message, ex);
 			}
@@ -251,7 +251,7 @@ namespace Hermes
 			if (ack == null) {
 				var message = string.Format(Resources.Client_UnsubscribeDisconnected, this.Id, string.Join(", ", topics));
 
-				tracer.Error (message);
+				tracer.Error (LogMessage.Create(message));
 
 				throw new ClientException (message);
 			}
@@ -303,7 +303,7 @@ namespace Hermes
 
 		private void Close(Exception ex)
 		{
-			tracer.Error (ex);
+			tracer.Error (ex, LogMessage.Create(ex.Message));
 			this.Close (ClosedReason.Error, ex.Message);
 		}
 
@@ -322,12 +322,16 @@ namespace Hermes
 			if (cleanSession && session != null) {
 				this.sessionRepository.Delete(session);
 				session = null;
+
+				tracer.Info (LogMessage.Create (Resources.Tracer_Client_CleanedOldSession, clientId));
 			}
 
 			if (session == null) {
 				session = new ClientSession { ClientId = clientId, Clean = cleanSession };
 
 				this.sessionRepository.Create (session);
+
+				tracer.Info (LogMessage.Create (Resources.Tracer_Client_CreatedSession, clientId));
 			}
 		}
 
@@ -338,13 +342,15 @@ namespace Hermes
 			if (session == null) {
 				var message = string.Format (Resources.SessionRepository_ClientSessionNotFound, this.Id);
 
-				tracer.Error (message);
+				tracer.Error (LogMessage.Create(message));
 
 				throw new ClientException (message);
 			}
 
 			if (session.Clean) {
 				this.sessionRepository.Delete (session);
+
+				tracer.Info (LogMessage.Create (Resources.Tracer_Client_DeletedSessionOnDisconnect, this.Id));
 			}
 		}
 

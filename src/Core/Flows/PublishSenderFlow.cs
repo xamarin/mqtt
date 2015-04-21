@@ -66,9 +66,9 @@ namespace Hermes.Flows
 			await channel.SendAsync (message);
 
 			if(qos == QualityOfService.AtLeastOnce) {
-				await this.MonitorAck<PublishAck> (message, clientId, channel);
+				await this.MonitorAckAsync<PublishAck> (message, clientId, channel);
 			} else if (qos == QualityOfService.ExactlyOnce) {
-				await this.MonitorAck<PublishReceived> (message, clientId, channel);
+				await this.MonitorAckAsync<PublishReceived> (message, clientId, channel);
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 		}
 
-		protected async Task MonitorAck<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
+		protected async Task MonitorAckAsync<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
 			await this.GetAckMonitor<T> (sentMessage, clientId, channel);
@@ -104,9 +104,9 @@ namespace Hermes.Flows
 			return channel.Receiver.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value)
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
-				.SubscribeOn(NewThreadScheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Catch<T, TimeoutException> (timeEx => {
-					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), sentMessage.Type, clientId);
+					tracer.Warn (timeEx, LogMessage.Create(Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId));
 
 					var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
 						sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId);

@@ -163,30 +163,39 @@
     <value>The underlying network stream is not available. The socket could became disconnected</value>
   </data>
   <data name="Tracer_ClientPacketListener_DispatchingMessage" xml:space="preserve">
-    <value>Client {0} - {1} - Dispatching {2} message to flow {3}</value>
+    <value>Client {0} - Dispatching {1} message to flow {2}</value>
   </data>
   <data name="Tracer_ClientPacketListener_FirstPacketReceived" xml:space="preserve">
-    <value>Client {0} - {1} - First packet from Server has been received. Type: {2}</value>
+    <value>Client {0} - First packet from Server has been received. Type: {1}</value>
   </data>
   <data name="Tracer_ClientPacketListener_SendingKeepAlive" xml:space="preserve">
-    <value>Client {0} - {1} - No packet has been sent in {2} seconds. Sending Ping to Server to maintain Keep Alive</value>
+    <value>Client {0} - No packet has been sent in {1} seconds. Sending Ping to Server to maintain Keep Alive</value>
+  </data>
+  <data name="Tracer_Client_CleanedOldSession" xml:space="preserve">
+    <value>Client {0} - Cleaned old session</value>
+  </data>
+  <data name="Tracer_Client_CreatedSession" xml:space="preserve">
+    <value>Client {0} - Created new client session</value>
+  </data>
+  <data name="Tracer_Client_DeletedSessionOnDisconnect" xml:space="preserve">
+    <value>Client {0} - Removed client session as part of Disconnect</value>
   </data>
   <data name="Tracer_Client_PacketsObservableCompleted" xml:space="preserve">
-    <value>Client - {0} - Packet observable sequence has been completed, hence closing the channel</value>
+    <value>Client - Packet observable sequence has been completed, hence closing the channel</value>
   </data>
   <data name="Tracer_NewApplicationMessageReceived" xml:space="preserve">
-    <value>Client {0} - {1} - An application message for topic {2} was received</value>
+    <value>Client {0} - An application message for topic {1} was received</value>
   </data>
   <data name="Tracer_PacketChannelCompleted" xml:space="preserve">
-    <value>Client {0} - {1} - Packet Channel observable sequence has been completed</value>
+    <value>Client {0} - Packet Channel observable sequence has been completed</value>
   </data>
   <data name="Tracer_TcpChannel_NetworkStreamCompleted" xml:space="preserve">
     <value>Client - {0} - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>
   </data>
   <data name="Tracer_TcpChannel_ReceivedPacket" xml:space="preserve">
-    <value>Client - {0} - Received packet of {1} bytes</value>
+    <value>Client - Received packet of {0} bytes</value>
   </data>
   <data name="Tracer_TcpChannel_SendingPacket" xml:space="preserve">
-    <value>Client - {0} - Sending packet of {1} bytes</value>
+    <value>Client - Sending packet of {0} bytes</value>
   </data>
 </root>

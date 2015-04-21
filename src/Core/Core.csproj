@@ -58,6 +58,7 @@
     <Compile Include="IPacketManager.cs" />
     <Compile Include="IPacketBuffer.cs" />
     <Compile Include="ITopicEvaluator.cs" />
+    <Compile Include="LogMessage.cs" />
     <Compile Include="PacketChannel.cs" />
     <Compile Include="PacketChannelFactory.cs" />
     <Compile Include="PacketManager.cs" />

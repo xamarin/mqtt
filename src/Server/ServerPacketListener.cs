@@ -46,7 +46,6 @@ namespace Hermes
 			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
 						return;
@@ -63,7 +62,7 @@ namespace Hermes
 					keepAlive = connect.KeepAlive;
 					this.connectionProvider.AddConnection (clientId, channel);
 
-					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId);
+					tracer.Info (LogMessage.Create(Resources.Tracer_ServerPacketListener_ConnectPacketReceived, clientId));
 
 					await this.DispatchPacketAsync (connect, clientId, channel);
 				}, async ex => {
@@ -72,7 +71,6 @@ namespace Hermes
 
 			this.nextPacketsSubscription = channel.Receiver
 				.Skip (1)
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
 						this.NotifyError (Resources.ServerPacketListener_SecondConnectNotAllowed, clientId);
@@ -85,7 +83,7 @@ namespace Hermes
 				});
 
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
-				tracer.Warn (Resources.Tracer_PacketChannelCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId);
+				tracer.Warn (LogMessage.Create(Resources.Tracer_PacketChannelCompleted, clientId));
 
 				if (!string.IsNullOrEmpty (clientId)) {
 					this.RemoveClient (clientId);
@@ -130,14 +128,14 @@ namespace Hermes
 
 			this.keepAliveSubscription = channel.Receiver
 				.Timeout (tolerance)
-				.SubscribeOn(NewThreadScheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;
 
 					if (timeEx == null) {
 						this.NotifyError (ex, clientId);
 					} else {
-						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), tolerance, clientId);
+						var message = LogMessage.Create (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, clientId);
 
 						this.NotifyError(message, timeEx, clientId);
 					}
@@ -157,7 +155,7 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), packet.Type, flow.GetType().Name, clientId);
+					tracer.Info (LogMessage.Create(Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId));
 
 					this.packets.OnNext (packet);
 

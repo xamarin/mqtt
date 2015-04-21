@@ -78,9 +78,9 @@ namespace Hermes.Flows
 			return channel.Receiver.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId)
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
-				.SubscribeOn(NewThreadScheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Catch<T, TimeoutException> (timeEx => {
-					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), sentMessage.Type, clientId);
+					tracer.Warn (timeEx, LogMessage.Create (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId));
 
 					channel.SendAsync (sentMessage).Wait ();
 
