@@ -52,7 +52,6 @@ namespace IntegrationTests
 					timer.Dispose();
 				};
 			})
-			.SubscribeOn(NewThreadScheduler.Default)
 			.Subscribe (
 				_ => { },
 				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
