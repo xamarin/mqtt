@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -108,6 +109,7 @@ namespace Hermes
 			})
 			.Repeat()
 			.TakeWhile(bytes => bytes.Any())
+			.SubscribeOn(NewThreadScheduler.Default)
 			.Subscribe(bytes => {
 				var packets = default(IEnumerable<byte[]>);
 

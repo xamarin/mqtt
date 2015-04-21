@@ -164,6 +164,9 @@ namespace Tests
 		public void when_second_connect_received_then_fails()
 		{
 			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider.Setup (p => p.RemoveConnection (It.IsAny<string> ()));
+
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
 			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider, configuration);
@@ -176,10 +179,10 @@ namespace Tests
 
 			listener.Listen (packetChannel.Object);
 			
-			var errorOccured = false;
+			var errorSignal = new ManualResetEventSlim();
 			
 			listener.Packets.Subscribe (_ => { }, ex => {
-				errorOccured = true;
+				errorSignal.Set ();
 			});
 
 			var clientId = Guid.NewGuid().ToString();
@@ -188,7 +191,10 @@ namespace Tests
 			receiver.OnNext (connect);
 			receiver.OnNext (connect);
 
+			var errorOccured = errorSignal.Wait (TimeSpan.FromSeconds(1));
+
 			Assert.True (errorOccured);
+			connectionProvider.Verify (p => p.RemoveConnection (It.Is<string> (s => s == clientId)));
 		}
 
 		[Fact]

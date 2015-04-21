@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -49,6 +50,7 @@ namespace Hermes
 
 			this.publishSubscription = this.packetListener.Packets
 				.OfType<Publish>()
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (publish => {
 					tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), publish.Topic);
 

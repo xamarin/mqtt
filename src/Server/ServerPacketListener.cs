@@ -46,7 +46,7 @@ namespace Hermes
 			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
-				.SubscribeOn(Scheduler.Default)
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
 						return;
@@ -72,6 +72,7 @@ namespace Hermes
 
 			this.nextPacketsSubscription = channel.Receiver
 				.Skip (1)
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
 						this.NotifyError (Resources.ServerPacketListener_SecondConnectNotAllowed, clientId);
@@ -129,7 +130,7 @@ namespace Hermes
 
 			this.keepAliveSubscription = channel.Receiver
 				.Timeout (tolerance)
-				.SubscribeOn(Scheduler.Default)
+				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;
 
