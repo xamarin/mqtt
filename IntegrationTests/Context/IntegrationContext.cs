@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using Hermes;
+using Hermes.Diagnostics;
 using Hermes.Packets;
 
 namespace IntegrationTests.Context
@@ -8,6 +10,12 @@ namespace IntegrationTests.Context
 	public abstract class IntegrationContext
 	{
 		protected readonly ushort keepAliveSecs;
+
+		static IntegrationContext()
+		{
+			Tracer.Manager.AddListener ("Hermes", new TestTracerListener ());
+			Tracer.Manager.SetTracingLevel ("Hermes", SourceLevels.All);
+		}
 
 		public IntegrationContext (ushort keepAliveSecs = 0)
 		{

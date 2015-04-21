@@ -62,7 +62,7 @@ namespace Hermes
 					keepAlive = connect.KeepAlive;
 					this.connectionProvider.AddConnection (clientId, channel);
 
-					tracer.Info (LogMessage.Create(Resources.Tracer_ServerPacketListener_ConnectPacketReceived, clientId));
+					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, clientId);
 
 					await this.DispatchPacketAsync (connect, clientId, channel);
 				}, async ex => {
@@ -83,7 +83,7 @@ namespace Hermes
 				});
 
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
-				tracer.Warn (LogMessage.Create(Resources.Tracer_PacketChannelCompleted, clientId));
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
 
 				if (!string.IsNullOrEmpty (clientId)) {
 					this.RemoveClient (clientId);
@@ -135,7 +135,7 @@ namespace Hermes
 					if (timeEx == null) {
 						this.NotifyError (ex, clientId);
 					} else {
-						var message = LogMessage.Create (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, clientId);
+						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, clientId);
 
 						this.NotifyError(message, timeEx, clientId);
 					}
@@ -155,7 +155,7 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					tracer.Info (LogMessage.Create(Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId));
+					tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
 
 					this.packets.OnNext (packet);
 

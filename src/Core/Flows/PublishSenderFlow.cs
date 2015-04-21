@@ -106,7 +106,7 @@ namespace Hermes.Flows
 				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
 				.ObserveOn(NewThreadScheduler.Default)
 				.Catch<T, TimeoutException> (timeEx => {
-					tracer.Warn (timeEx, LogMessage.Create(Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId));
+					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 					var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
 						sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId);

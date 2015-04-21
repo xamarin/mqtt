@@ -44,7 +44,7 @@ namespace Hermes
 						return;
 					}
 
-					tracer.Info (LogMessage.Create(Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, packet.Type));
+					tracer.Info (Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, packet.Type);
 
 					var connectAck = packet as ConnectAck;
 
@@ -67,7 +67,7 @@ namespace Hermes
 				});
 
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
-				tracer.Warn (LogMessage.Create(Resources.Tracer_PacketChannelCompleted, clientId));
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
 
 				this.packets.OnCompleted ();	
 			});
@@ -98,7 +98,7 @@ namespace Hermes
 				.Timeout (TimeSpan.FromSeconds (this.configuration.KeepAliveSecs))
 				.ObserveOn(NewThreadScheduler.Default)
 				.Catch<IPacket, TimeoutException> (timeEx => {
-					tracer.Warn (LogMessage.Create(Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs));
+					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs);
 
 					var ping = new PingRequest ();
 
@@ -114,7 +114,7 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					tracer.Info (LogMessage.Create(Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name));
+					tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
 
 					this.packets.OnNext (packet);
 

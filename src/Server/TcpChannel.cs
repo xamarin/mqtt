@@ -67,7 +67,7 @@ namespace Hermes
 			this.sender.OnNext (message);
 
 			try {
-				tracer.Info (LogMessage.Create(Resources.Tracer_TcpChannel_SendingPacket, message.Length));
+				tracer.Info (Resources.Tracer_TcpChannel_SendingPacket, message.Length);
 
 				await this.client.GetStream ().WriteAsync(message, 0, message.Length);
 			} catch (ObjectDisposedException disposedEx) {
@@ -115,7 +115,7 @@ namespace Hermes
 
 				if (this.buffer.TryGetPackets (bytes, out packets)) {
 					foreach (var packet in packets) {
-						tracer.Info (LogMessage.Create(Resources.Tracer_TcpChannel_ReceivedPacket, packet.Length));
+						tracer.Info (Resources.Tracer_TcpChannel_ReceivedPacket, packet.Length);
 
 						this.receiver.OnNext (packet);
 					}
@@ -127,7 +127,7 @@ namespace Hermes
 					this.receiver.OnError (ex);
 				}
 			}, () => {
-				tracer.Warn (LogMessage.Create(Resources.Tracer_TcpChannel_NetworkStreamCompleted));
+				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted);
 
 				this.Dispose ();
 			});

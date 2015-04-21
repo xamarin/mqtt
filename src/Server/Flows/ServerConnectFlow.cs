@@ -40,7 +40,7 @@ namespace Hermes.Flows
 				this.sessionRepository.Delete(session);
 				session = null;
 
-				tracer.Info (LogMessage.Create (Resources.Tracer_Server_CleanedOldSession, clientId));
+				tracer.Info (Resources.Tracer_Server_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -48,7 +48,7 @@ namespace Hermes.Flows
 
 				this.sessionRepository.Create (session);
 
-				tracer.Info (LogMessage.Create (Resources.Tracer_Server_CreatedSession, clientId));
+				tracer.Info (Resources.Tracer_Server_CreatedSession, clientId);
 			} else {
 				await this.SendPendingMessagesAsync (session, channel);
 				await this.SendPendingAcknowledgementsAsync (session, channel);

@@ -277,7 +277,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client - {0} - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
+        ///   Looks up a localized string similar to Client - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
         /// </summary>
         internal static string Tracer_TcpChannel_NetworkStreamCompleted {
             get {

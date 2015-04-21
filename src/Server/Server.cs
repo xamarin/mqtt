@@ -54,7 +54,7 @@ namespace Hermes
 			this.channelSubscription = this.binaryChannelProvider
 				.Subscribe (
 					binaryChannel => this.ProcessChannel(binaryChannel), 
-					ex => { tracer.Error (ex, LogMessage.Create(ex.Message)); }, 
+					ex => { tracer.Error (ex); }, 
 					() => {}	
 				);
 		}
@@ -97,17 +97,17 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			tracer.Info (LogMessage.Create(Resources.Tracer_Server_NewSocketAccepted));
+			tracer.Info (Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
 
 			packetListener.Listen (packetChannel);
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
-				tracer.Error (ex, LogMessage.Create(ex.Message));
+				tracer.Error (ex);
 				this.CloseChannel (packetChannel);
 			}, () => {
-				tracer.Warn (LogMessage.Create(Resources.Tracer_Server_PacketsObservableCompleted));
+				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
 
 				this.CloseChannel (packetChannel);
 			});

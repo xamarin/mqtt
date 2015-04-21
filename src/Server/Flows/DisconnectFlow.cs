@@ -43,7 +43,7 @@ namespace Hermes.Flows
 				if (session.Clean) {
 					this.sessionRepository.Delete (session);
 
-					tracer.Info (LogMessage.Create (Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId));
+					tracer.Info (Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
 				}
 
 				this.connectionProvider.RemoveConnection (clientId);

@@ -27,7 +27,7 @@ namespace Hermes
 			} catch (SocketException socketEx) {
 				var message = string.Format(Resources.Client_TcpClient_Failed, this.hostAddress, configuration.Port);
 
-				tracer.Error (socketEx, LogMessage.Create(message));
+				tracer.Error (socketEx, message);
 
 				throw new ClientException(message, socketEx);
 			}
