@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Hermes.Exceptions
 {
+	[Serializable]
 	public class RepositoryException : Exception
 	{
 		public RepositoryException ()
@@ -13,6 +15,11 @@ namespace Hermes.Exceptions
 		}
 
 		public RepositoryException (string message, Exception innerException) : base(message, innerException)
+		{
+		}
+
+		protected RepositoryException (SerializationInfo info, StreamingContext context)
+			: base (info, context)
 		{
 		}
 	}
