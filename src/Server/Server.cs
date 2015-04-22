@@ -52,7 +52,6 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
 			this.channelSubscription = this.binaryChannelProvider
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (
 					binaryChannel => this.ProcessChannel(binaryChannel), 
 					ex => { tracer.Error (ex); }, 
@@ -98,7 +97,7 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			tracer.Info (Resources.Tracer_Server_NewSocketAccepted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+			tracer.Info (Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
@@ -108,7 +107,7 @@ namespace Hermes
 				tracer.Error (ex);
 				this.CloseChannel (packetChannel);
 			}, () => {
-				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
 
 				this.CloseChannel (packetChannel);
 			});

@@ -112,7 +112,6 @@ namespace IntegrationTests
 			await subscriber2.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce);
 
 			subscriber1.Receiver
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber1Received++;
@@ -123,7 +122,6 @@ namespace IntegrationTests
 				});
 
 			subscriber2.Receiver
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber2Received++;
@@ -173,7 +171,6 @@ namespace IntegrationTests
 			await publisher.SubscribeAsync (responseTopic, QualityOfService.AtMostOnce);
 
 			subscriber.Receiver
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (async m => {
 					if (m.Topic == requestTopic) {
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
@@ -188,7 +185,6 @@ namespace IntegrationTests
 				});
 
 			publisher.Receiver
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (m => {
 					if (m.Topic == responseTopic) {
 						subscriberReceived++;

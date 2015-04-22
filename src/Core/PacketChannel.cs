@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Hermes.Packets;
-using System.Reactive.Linq;
 
 namespace Hermes
 {
@@ -25,7 +23,6 @@ namespace Hermes
 			this.receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 			this.sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 			this.subscription = innerChannel.Receiver
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (async bytes => {
 					try {
 						var packet = await this.manager.GetPacketAsync (bytes);

@@ -72,6 +72,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messages\TestMessage.cs" />
+    <Compile Include="TestTracerListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

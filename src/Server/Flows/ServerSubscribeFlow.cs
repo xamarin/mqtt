@@ -54,7 +54,7 @@ namespace Hermes.Flows
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
 					if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-						tracer.Error(Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), subscription.TopicFilter, clientId);
+						tracer.Error(Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
 
 						returnCodes.Add (SubscribeReturnCode.Failure);
 						continue;
@@ -81,7 +81,7 @@ namespace Hermes.Flows
 
 					returnCodes.Add (returnCode);
 				} catch (RepositoryException repoEx) {
-					tracer.Error(repoEx, Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), clientId, subscription.TopicFilter);
+					tracer.Error(repoEx, Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
 
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}

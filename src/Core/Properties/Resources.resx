@@ -229,6 +229,6 @@
     <value>No session has been found for client {0}</value>
   </data>
   <data name="Tracer_PublishFlow_RetryingQoSFlow" xml:space="preserve">
-    <value>{0} - The ack for message {1} has not been received. Re sending message for client {2}</value>
+    <value>The ack for message {0} has not been received. Re sending message for client {1}</value>
   </data>
 </root>

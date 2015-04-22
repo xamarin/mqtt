@@ -28,7 +28,7 @@ namespace Hermes
 					this.listener.Start ();
 					this.isStarted = true;
 				} catch (SocketException socketEx) {
-					tracer.Error (socketEx);
+					tracer.Error (socketEx, Resources.ChannelObservable_TcpListener_Failed);
 
 					throw new ProtocolException (Resources.ChannelObservable_TcpListener_Failed, socketEx);
 				}

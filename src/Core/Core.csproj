@@ -28,6 +28,8 @@
     <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
+    <Compile Include="External\Diagnostics\Tracer\SystemDiagnostics\StartActivityExtension.cs" />
+    <Compile Include="External\Diagnostics\Tracer\SystemDiagnostics\TracerManager.cs" />
     <Compile Include="External\Diagnostics\Tracer\Tracer.cs" />
     <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="Flows\IPublishSenderFlow.cs" />
@@ -58,6 +60,8 @@
     <Compile Include="IPacketManager.cs" />
     <Compile Include="IPacketBuffer.cs" />
     <Compile Include="ITopicEvaluator.cs" />
+    <Compile Include="netfx\System\AppDomainData.cs" />
+    <Compile Include="netfx\System\Collections\Generic\DictionaryGetOrAdd.cs" />
     <Compile Include="PacketChannel.cs" />
     <Compile Include="PacketChannelFactory.cs" />
     <Compile Include="PacketManager.cs" />
@@ -109,6 +113,7 @@
     <Compile Include="Storage\PendingAcknowledgement.cs" />
     <Compile Include="Storage\StorageObject.cs" />
     <Compile Include="TopicEvaluator.cs" />
+    <Compile Include="Tracer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">
@@ -126,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Net" />
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -143,6 +149,8 @@
       <HintPath>$(SolutionDir)packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
     <Reference Include="System.Reflection.Context" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\Hermes.targets" />

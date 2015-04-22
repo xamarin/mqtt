@@ -67,7 +67,7 @@ namespace Hermes
 			this.sender.OnNext (message);
 
 			try {
-				tracer.Info (Resources.Tracer_TcpChannel_SendingPacket, DateTime.Now.ToString ("MM/dd/yyyy hh:mm:ss.fff"), message.Length);
+				tracer.Info (Resources.Tracer_TcpChannel_SendingPacket, message.Length);
 
 				await this.client.GetStream ().WriteAsync(message, 0, message.Length);
 			} catch (ObjectDisposedException disposedEx) {
@@ -109,13 +109,13 @@ namespace Hermes
 			})
 			.Repeat()
 			.TakeWhile(bytes => bytes.Any())
-			.SubscribeOn(NewThreadScheduler.Default)
+			.ObserveOn(NewThreadScheduler.Default)
 			.Subscribe(bytes => {
 				var packets = default(IEnumerable<byte[]>);
 
 				if (this.buffer.TryGetPackets (bytes, out packets)) {
 					foreach (var packet in packets) {
-						tracer.Info (Resources.Tracer_TcpChannel_ReceivedPacket, DateTime.Now.ToString ("MM/dd/yyyy hh:mm:ss.fff"), packet.Length);
+						tracer.Info (Resources.Tracer_TcpChannel_ReceivedPacket, packet.Length);
 
 						this.receiver.OnNext (packet);
 					}
@@ -127,7 +127,7 @@ namespace Hermes
 					this.receiver.OnError (ex);
 				}
 			}, () => {
-				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted);
 
 				this.Dispose ();
 			});

@@ -124,7 +124,7 @@
     <value>The first packet sent by a Client must be a Connect. The connection will be closed.</value>
   </data>
   <data name="ServerPacketListener_KeepAliveTimeExceeded" xml:space="preserve">
-    <value>{0} - The keep alive tolerance of {1} seconds has been exceeded and no packet has been received from client {2}. The connection will be closed.</value>
+    <value>The keep alive tolerance of {0} seconds has been exceeded and no packet has been received from client {1}. The connection will be closed.</value>
   </data>
   <data name="ServerPacketListener_NoConnectReceived" xml:space="preserve">
     <value>No connect packet has been received since the network connection was established. The connection will be closed.</value>
@@ -142,33 +142,42 @@
     <value>The underlying network stream is not available. The socket could became disconnected</value>
   </data>
   <data name="Tracer_PacketChannelCompleted" xml:space="preserve">
-    <value>Server - {0} - Packet Channel observable sequence has been completed for client {1}</value>
+    <value>Server - Packet Channel observable sequence has been completed for client {0}</value>
   </data>
   <data name="Tracer_ServerPacketListener_ConnectPacketReceived" xml:space="preserve">
-    <value>Server - {0} - A connect packet has been received from client {1}</value>
+    <value>Server - A connect packet has been received from client {0}</value>
   </data>
   <data name="Tracer_ServerPacketListener_DispatchingMessage" xml:space="preserve">
-    <value>Server - {0} - Dispatching {1} message to flow {2} for client {3}</value>
+    <value>Server - Dispatching {0} message to flow {1} for client {2}</value>
   </data>
   <data name="Tracer_ServerSubscribeFlow_ErrorOnSubscription" xml:space="preserve">
-    <value>Server - {0} - An error occurred when subscribing client {1} to topic {2}</value>
+    <value>Server - An error occurred when subscribing client {0} to topic {1}</value>
   </data>
   <data name="Tracer_ServerSubscribeFlow_InvalidTopicSubscription" xml:space="preserve">
-    <value>Server - {0} - The topic {1}, sent by client {2} is invalid. Returning failure code</value>
+    <value>Server - The topic {0}, sent by client {1} is invalid. Returning failure code</value>
+  </data>
+  <data name="Tracer_Server_CleanedOldSession" xml:space="preserve">
+    <value>Server - Cleaned old session for client {0}</value>
+  </data>
+  <data name="Tracer_Server_CreatedSession" xml:space="preserve">
+    <value>Server - Created new session for client {0}</value>
+  </data>
+  <data name="Tracer_Server_DeletedSessionOnDisconnect" xml:space="preserve">
+    <value>Server - Removed session for client {0} as part of Disconnect flow</value>
   </data>
   <data name="Tracer_Server_NewSocketAccepted" xml:space="preserve">
-    <value>Server - {0} - A new TCP channel has been accepted</value>
+    <value>Server - A new TCP channel has been accepted</value>
   </data>
   <data name="Tracer_Server_PacketsObservableCompleted" xml:space="preserve">
-    <value>Server - {0} - Packet observable sequence has been completed, hence closing the channel</value>
+    <value>Server - Packet observable sequence has been completed, hence closing the channel</value>
   </data>
   <data name="Tracer_TcpChannel_NetworkStreamCompleted" xml:space="preserve">
-    <value>Server - {0} - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>
+    <value>Server - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>
   </data>
   <data name="Tracer_TcpChannel_ReceivedPacket" xml:space="preserve">
-    <value>Server - {0} - Received packet of {1} bytes</value>
+    <value>Server - Received packet of {0} bytes</value>
   </data>
   <data name="Tracer_TcpChannel_SendingPacket" xml:space="preserve">
-    <value>Server - {0} - Sending packet of {1} bytes</value>
+    <value>Server - Sending packet of {0} bytes</value>
   </data>
 </root>

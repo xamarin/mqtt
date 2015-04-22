@@ -60,8 +60,8 @@ namespace Hermes.Flows
 			}
 
 			if(qos == QualityOfService.ExactlyOnce && 
-				session.PendingAcknowledgements.Any(ack => ack.Type == PacketType.PublishReceived &&
-					ack.PacketId == publish.PacketId.Value)) {
+				session.PendingAcknowledgements.ToList()
+					.Any(ack => ack.Type == PacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {
 				await this.SendQosAck (clientId, qos, publish, channel);
 
 				return;

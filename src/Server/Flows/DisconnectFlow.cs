@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
@@ -7,6 +8,8 @@ namespace Hermes.Flows
 {
 	public class DisconnectFlow : IProtocolFlow
 	{
+		static readonly ITracer tracer = Tracer.Get<DisconnectFlow> ();
+
 		readonly IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
@@ -39,6 +42,8 @@ namespace Hermes.Flows
 
 				if (session.Clean) {
 					this.sessionRepository.Delete (session);
+
+					tracer.Info (Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
 				}
 
 				this.connectionProvider.RemoveConnection (clientId);

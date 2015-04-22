@@ -39,13 +39,12 @@ namespace Hermes
 
 			this.firstPacketSubscription = channel.Receiver
 				.FirstOrDefaultAsync()
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe(async packet => {
 					if (packet == default (IPacket)) {
 						return;
 					}
 
-					tracer.Info (Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), packet.Type);
+					tracer.Info (Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, packet.Type);
 
 					var connectAck = packet as ConnectAck;
 
@@ -61,7 +60,6 @@ namespace Hermes
 
 			this.nextPacketsSubscription = channel.Receiver
 				.Skip(1)
-				.SubscribeOn(NewThreadScheduler.Default)
 				.Subscribe (async packet => {
 					await this.DispatchPacketAsync (packet, clientId, channel);
 				}, ex => {
@@ -69,7 +67,7 @@ namespace Hermes
 				});
 
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
-				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
 
 				this.packets.OnCompleted ();	
 			});
@@ -98,9 +96,9 @@ namespace Hermes
 		{
 			return channel.Sender
 				.Timeout (TimeSpan.FromSeconds (this.configuration.KeepAliveSecs))
-				.SubscribeOn(NewThreadScheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Catch<IPacket, TimeoutException> (timeEx => {
-					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), this.configuration.KeepAliveSecs);
+					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs);
 
 					var ping = new PingRequest ();
 
@@ -116,7 +114,7 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), packet.Type, flow.GetType().Name);
+					tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
 
 					this.packets.OnNext (packet);
 

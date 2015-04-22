@@ -50,9 +50,9 @@ namespace Hermes
 
 			this.publishSubscription = this.packetListener.Packets
 				.OfType<Publish>()
-				.SubscribeOn(NewThreadScheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (publish => {
-					tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"), publish.Topic);
+					tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic);
 
 					var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
@@ -65,7 +65,7 @@ namespace Hermes
 					this.sender.OnError (ex);
 					this.Close (ex);
 				}, () => {
-					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss.fff"));
+					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
 
 					this.receiver.OnCompleted ();
 					this.Close ();
@@ -322,12 +322,16 @@ namespace Hermes
 			if (cleanSession && session != null) {
 				this.sessionRepository.Delete(session);
 				session = null;
+
+				tracer.Info (Resources.Tracer_Client_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
 				session = new ClientSession { ClientId = clientId, Clean = cleanSession };
 
 				this.sessionRepository.Create (session);
+
+				tracer.Info (Resources.Tracer_Client_CreatedSession, clientId);
 			}
 		}
 
@@ -345,6 +349,8 @@ namespace Hermes
 
 			if (session.Clean) {
 				this.sessionRepository.Delete (session);
+
+				tracer.Info (Resources.Tracer_Client_DeletedSessionOnDisconnect, this.Id);
 			}
 		}
 

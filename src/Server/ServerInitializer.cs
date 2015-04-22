@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Hermes.Flows;
@@ -14,7 +15,7 @@ namespace Hermes
 			var listener = new TcpListener(IPAddress.Any, configuration.Port);
 			var binaryChannelProvider = Observable
 				.FromAsync (() => {
-					return Task.Factory.FromAsync<TcpClient> (listener.BeginAcceptTcpClient, 
+					return Task.Factory.FromAsync<TcpClient> (listener.BeginAcceptTcpClient,
 						listener.EndAcceptTcpClient, TaskCreationOptions.AttachedToParent);
 				})
 				.Repeat ()

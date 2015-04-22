@@ -1,12 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Packets;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
 {
 	public class ServerConnectFlow : IProtocolFlow
 	{
+		static readonly ITracer tracer = Tracer.Get<ServerConnectFlow> ();
+
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
@@ -35,12 +39,16 @@ namespace Hermes.Flows
 			if (connect.CleanSession && session != null) {
 				this.sessionRepository.Delete(session);
 				session = null;
+
+				tracer.Info (Resources.Tracer_Server_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
 				session = new ClientSession { ClientId = clientId, Clean = connect.CleanSession };
 
 				this.sessionRepository.Create (session);
+
+				tracer.Info (Resources.Tracer_Server_CreatedSession, clientId);
 			} else {
 				await this.SendPendingMessagesAsync (session, channel);
 				await this.SendPendingAcknowledgementsAsync (session, channel);
