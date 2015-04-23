@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Hermes
 {
+	[Serializable]
 	public class ProtocolViolationException : ProtocolException
 	{
 		public ProtocolViolationException ()
@@ -13,6 +15,11 @@ namespace Hermes
 		}
 
 		public ProtocolViolationException (string message, Exception innerException) : base(message, innerException)
+		{
+		}
+
+		protected ProtocolViolationException (SerializationInfo info, StreamingContext context)
+			: base (info, context)
 		{
 		}
 	}
