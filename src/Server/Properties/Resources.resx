@@ -150,6 +150,9 @@
   <data name="Tracer_ServerPacketListener_DispatchingMessage" xml:space="preserve">
     <value>Server - Dispatching {0} message to flow {1} for client {2}</value>
   </data>
+  <data name="Tracer_ServerPublishReceiverFlow_TopicNotSubscribed" xml:space="preserve">
+    <value>The topic {0} has no subscribers, hence the message sent by {1} will not be forwarded</value>
+  </data>
   <data name="Tracer_ServerSubscribeFlow_ErrorOnSubscription" xml:space="preserve">
     <value>Server - An error occurred when subscribing client {0} to topic {1}</value>
   </data>
