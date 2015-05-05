@@ -63,7 +63,7 @@ namespace Hermes.Flows
 			if (!subscriptions.Any ()) {
 				tracer.Info (Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
-				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId });
+				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId, Payload = publish.Payload });
 			} else {
 				foreach (var subscription in subscriptions) {
 					await this.DispatchAsync (subscription, publish);
