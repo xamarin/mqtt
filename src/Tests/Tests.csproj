@@ -74,12 +74,6 @@
     <Compile Include="ServerSpec.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Guard.cs" />
-    <Compile Include="netfx\System\Reactive\EventPattern.cs" />
-    <Compile Include="netfx\System\Reactive\EventStream.cs" />
-    <Compile Include="netfx\System\Reactive\IEventPattern.cs" />
-    <Compile Include="netfx\System\Reactive\IEventStream.cs" />
-    <Compile Include="netfx\System\Reactive\IEventStreamExtensions.cs" />
-    <Compile Include="netfx\System\Reactive\Visibility.cs" />
     <Compile Include="PacketManagerSpec.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -345,9 +339,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="netfx\System\Reactive\Readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

@@ -5,8 +5,7 @@ using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
-using System.Reactive.Linq;
-using System.Reactive.Concurrency;
+using System.Reactive;
 
 namespace Hermes
 {
@@ -16,11 +15,13 @@ namespace Hermes
 
 		bool disposed;
 		IDisposable channelSubscription;
+		IDisposable streamSubscription;
 
 		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
+		readonly IEventStream eventStream;
 		readonly ProtocolConfiguration configuration;
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
@@ -29,14 +30,18 @@ namespace Hermes
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
+			IEventStream eventStream,
 			ProtocolConfiguration configuration)
 		{
 			this.binaryChannelProvider = binaryChannelProvider;
 			this.channelFactory = channelFactory;
 			this.flowProvider = flowProvider;
 			this.connectionProvider = connectionProvider;
+			this.eventStream = eventStream;
 			this.configuration = configuration;
 		}
+
+		public event EventHandler<TopicNotSubscribed> TopicNotSubscribed = (sender, args) => { };
 
 		public event EventHandler<ClosedEventArgs> Stopped = (sender, args) => { };
 
@@ -57,6 +62,12 @@ namespace Hermes
 					ex => { tracer.Error (ex); }, 
 					() => {}	
 				);
+
+			this.streamSubscription = this.eventStream
+				.Of<TopicNotSubscribed> ()
+				.Subscribe (e => {
+					this.TopicNotSubscribed (this, e);
+				});
 		}
 
 		public void Stop ()
@@ -77,7 +88,11 @@ namespace Hermes
 				if (this.channelSubscription != null) {
 					this.channelSubscription.Dispose ();
 				}
-				
+
+				if (this.streamSubscription != null) {
+					this.streamSubscription.Dispose ();
+				}
+
 				foreach (var channel in channels) {
 					channel.Dispose ();
 				}

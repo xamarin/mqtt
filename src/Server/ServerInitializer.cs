@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Reactive.Concurrency;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Hermes.Flows;
@@ -25,9 +25,10 @@ namespace Hermes
 			var channelFactory = new PacketChannelFactory (topicEvaluator, configuration);
 			var repositoryProvider = new InMemoryRepositoryProvider ();
 			var connectionProvider = new ConnectionProvider ();
-			var flowProvider = new ServerProtocolFlowProvider (connectionProvider, topicEvaluator, repositoryProvider, configuration);
+			var eventStream = new EventStream ();
+			var flowProvider = new ServerProtocolFlowProvider (connectionProvider, topicEvaluator, repositoryProvider, eventStream, configuration);
 
-			return new Server (channelObservable, channelFactory, flowProvider, connectionProvider, configuration);
+			return new Server (channelObservable, channelFactory, flowProvider, connectionProvider, eventStream, configuration);
 		}
 	}
 }

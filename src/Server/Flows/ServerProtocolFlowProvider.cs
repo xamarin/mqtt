@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reactive;
 using Hermes.Packets;
 using Hermes.Storage;
 
@@ -7,14 +8,17 @@ namespace Hermes.Flows
 	public class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
 		readonly IConnectionProvider connectionProvider;
+		readonly IEventStream eventStream;
 
 		public ServerProtocolFlowProvider (IConnectionProvider connectionProvider,
 			ITopicEvaluator topicEvaluator,
-			IRepositoryProvider repositoryProvider, 
+			IRepositoryProvider repositoryProvider,
+			IEventStream eventStream,
 			ProtocolConfiguration configuration)
 			: base(topicEvaluator, repositoryProvider, configuration)
 		{
 			this.connectionProvider = connectionProvider;
+			this.eventStream = eventStream;
 		}
 
 		protected override IDictionary<ProtocolFlowType, IProtocolFlow> InitializeFlows ()
@@ -32,7 +36,7 @@ namespace Hermes.Flows
 				packetIdentifierRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
 			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (topicEvaluator, connectionProvider,
-				senderFlow, retainedRepository, sessionRepository, packetIdentifierRepository, configuration));
+				senderFlow, retainedRepository, sessionRepository, packetIdentifierRepository, eventStream, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository, 
 				packetIdentifierRepository, retainedRepository, senderFlow, configuration));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (sessionRepository, packetIdentifierRepository));
