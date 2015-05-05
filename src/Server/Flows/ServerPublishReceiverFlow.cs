@@ -1,14 +1,20 @@
 ﻿using System.Linq;
+using System.Reactive;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Packets;
+using Hermes.Properties;
 using Hermes.Storage;
 
 namespace Hermes.Flows
 {
 	public class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
+		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
+
 		readonly IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
+		readonly IEventStream eventStream;
 
 		public ServerPublishReceiverFlow (ITopicEvaluator topicEvaluator,
 			IConnectionProvider connectionProvider,
@@ -16,14 +22,16 @@ namespace Hermes.Flows
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
 			IRepository<PacketIdentifier> packetIdentifierRepository,
+			IEventStream eventStream,
 			ProtocolConfiguration configuration)
 			: base(topicEvaluator, retainedRepository, sessionRepository, packetIdentifierRepository, configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.senderFlow = senderFlow;
+			this.eventStream = eventStream;
 		}
 
-		protected override async Task ProcessPublishAsync (Publish publish)
+		protected override async Task ProcessPublishAsync (Publish publish, string clientId)
 		{
 			if (publish.Retain) {
 				var existingRetainedMessage = this.retainedRepository.Get(r => r.Topic == publish.Topic);
@@ -43,17 +51,23 @@ namespace Hermes.Flows
 				}
 			}
 
-			await this.DispatchAsync (publish);
+			await this.DispatchAsync (publish, clientId);
 		}
 
-		private async Task DispatchAsync (Publish publish)
+		private async Task DispatchAsync (Publish publish, string clientId)
 		{
 			var sessions = this.sessionRepository.GetAll ();
 			var subscriptions = sessions.SelectMany(s => s.Subscriptions)
 				.Where(x => this.topicEvaluator.Matches(publish.Topic, x.TopicFilter));
 
-			foreach (var subscription in subscriptions) {
-				await this.DispatchAsync (subscription, publish);
+			if (!subscriptions.Any ()) {
+				tracer.Info (Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
+
+				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId });
+			} else {
+				foreach (var subscription in subscriptions) {
+					await this.DispatchAsync (subscription, publish);
+				}
 			}
 		}
 

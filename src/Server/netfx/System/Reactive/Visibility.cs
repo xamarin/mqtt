@@ -32,9 +32,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // In order to make types introduced by this package public
 // uncomment the following:
 
-//namespace System.Reactive
-//{
-//    public partial interface IEventStream { }
-//    public partial interface IEventPattern<out TEvent> { }
-//    public partial class EventPattern { }
-//}
+namespace System.Reactive
+{
+    public partial interface IEventStream { }
+    public partial interface IEventPattern<out TEvent> { }
+    public partial class EventPattern { }
+	public partial class EventStream { }
+}

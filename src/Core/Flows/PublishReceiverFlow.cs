@@ -37,7 +37,7 @@ namespace Hermes.Flows
 			}
 		}
 
-		protected virtual Task ProcessPublishAsync(Publish publish)
+		protected virtual Task ProcessPublishAsync(Publish publish, string clientId)
 		{
 			return Task.Delay (0);
 		}
@@ -67,7 +67,7 @@ namespace Hermes.Flows
 				return;
 			}
 
-			await this.ProcessPublishAsync(publish);
+			await this.ProcessPublishAsync(publish, clientId);
 			await this.SendQosAck (clientId, qos, publish, channel);
 		}
 

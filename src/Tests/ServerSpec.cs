@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Subjects;
 using System.Threading;
 using Hermes;
@@ -33,8 +34,9 @@ namespace Tests
 
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
+			var eventStream = new EventStream ();
 
-			var server = new Server (sockets, factory, flowProvider, connectionProvider.Object, configuration);
+			var server = new Server (sockets, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
 
 			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
 
@@ -63,8 +65,9 @@ namespace Tests
 
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
+			var eventStream = new EventStream ();
 
-			var server = new Server (sockets, factory, flowProvider, connectionProvider.Object, configuration);
+			var server = new Server (sockets, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
 
 			server.Start ();
 
@@ -93,8 +96,10 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
+			var eventStream = new EventStream ();
+
 			var server = new Server (sockets, Mock.Of<IPacketChannelFactory> (x => x.Create (It.IsAny<IChannel<byte[]>> ()) == packetChannel.Object), 
-				flowProvider, connectionProvider.Object, configuration);
+				flowProvider, connectionProvider.Object, eventStream, configuration);
 
 			server.Start ();
 
@@ -133,8 +138,9 @@ namespace Tests
 
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
+			var eventStream = new EventStream ();
 
-			var server = new Server (sockets, factory.Object, flowProvider, connectionProvider.Object, configuration);
+			var server = new Server (sockets, factory.Object, flowProvider, connectionProvider.Object, eventStream, configuration);
 			var receiver = new Subject<byte[]> ();
 			var socket = new Mock<IChannel<byte[]>> ();
 
