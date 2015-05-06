@@ -19,7 +19,9 @@ namespace Hermes
 
 		/// <exception cref="ClientException">ClientException</exception>
 		public Client Initialize (ProtocolConfiguration configuration)
-		{			
+		{
+			Tracing.Initialize (configuration);
+
 			var tcpClient = new TcpClient();
 
 			try {

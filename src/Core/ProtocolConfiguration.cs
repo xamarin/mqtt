@@ -15,6 +15,7 @@ namespace Hermes
 			this.KeepAliveSecs = 0;
 			this.WaitingTimeoutSecs = 5;
 			this.AllowWildcardsInTopicFilters = true;
+			this.TracingEnabled = true;
 		}
 
 		public int Port { get; set; }
@@ -30,5 +31,7 @@ namespace Hermes
 		public int WaitingTimeoutSecs { get; set; }
 
 		public bool AllowWildcardsInTopicFilters { get; set; }
+
+		public bool TracingEnabled { get; set; }
 	}
 }

@@ -112,8 +112,10 @@
     <Compile Include="Storage\ClientSession.cs" />
     <Compile Include="Storage\PendingAcknowledgement.cs" />
     <Compile Include="Storage\StorageObject.cs" />
+    <Compile Include="HermesTraceListener.cs" />
     <Compile Include="TopicEvaluator.cs" />
     <Compile Include="Tracer.cs" />
+    <Compile Include="Tracing.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">
