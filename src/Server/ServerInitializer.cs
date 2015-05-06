@@ -12,6 +12,8 @@ namespace Hermes
 	{
 		public Server Initialize(ProtocolConfiguration configuration)
 		{
+			Tracing.Initialize (configuration);
+
 			var listener = new TcpListener(IPAddress.Any, configuration.Port);
 			var binaryChannelProvider = Observable
 				.FromAsync (() => {
