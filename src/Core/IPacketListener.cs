@@ -3,7 +3,7 @@ using Hermes.Packets;
 
 namespace Hermes
 {
-	public interface IPacketListener
+	public interface IPacketListener : IDisposable
 	{
 		IObservable<IPacket> Packets { get; }
 

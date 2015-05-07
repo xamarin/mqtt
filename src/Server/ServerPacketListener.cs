@@ -24,6 +24,7 @@ namespace Hermes
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
+		bool disposed;
 
 		public ServerPacketListener (IConnectionProvider connectionProvider, 
 			IProtocolFlowProvider flowProvider,
@@ -39,6 +40,10 @@ namespace Hermes
 
 		public void Listen (IChannel<IPacket> channel)
 		{
+			if (this.disposed) {
+				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
+
 			var clientId = string.Empty;
 			var keepAlive = 0;
 			var packetDueTime = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
@@ -100,6 +105,28 @@ namespace Hermes
 						this.MonitorKeepAliveAsync (channel, clientId, keepAlive);
 					}
 				});
+		}
+
+		public void Dispose ()
+		{
+			this.Dispose (disposing: true);
+			GC.SuppressFinalize (this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (this.disposed) {
+				return;
+			}
+
+			if (disposing) {
+				this.firstPacketSubscription.Dispose ();
+				this.nextPacketsSubscription.Dispose ();
+				this.allPacketsSubscription.Dispose ();
+				this.senderSubscription.Dispose ();
+				this.keepAliveSubscription.Dispose ();
+				this.disposed = true;
+			}
 		}
 
 		private async Task HandleConnectionExceptionAsync(Exception exception, IChannel<IPacket> channel)

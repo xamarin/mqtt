@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using System.Timers;
 using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
@@ -18,11 +18,12 @@ namespace Hermes
 		IDisposable nextPacketsSubscription;
 		IDisposable allPacketsSubscription;
 		IDisposable senderSubscription;
-		IDisposable keepAliveSubscription;
 
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
+		Timer keepAliveTimer;
+		bool disposed;
 
 		public ClientPacketListener (IProtocolFlowProvider flowProvider, ProtocolConfiguration configuration)
 		{
@@ -35,6 +36,10 @@ namespace Hermes
 
 		public void Listen (IChannel<IPacket> channel)
 		{
+			if (this.disposed) {
+				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
+
 			var clientId = string.Empty;
 
 			this.firstPacketSubscription = channel.Receiver
@@ -79,33 +84,57 @@ namespace Hermes
 					clientId = connect.ClientId;
 
 					if (this.configuration.KeepAliveSecs > 0) {
-						this.MaintainKeepAlive (channel, clientId);
+						this.StartKeepAliveMonitor (channel, clientId);
 					}
 				});
 		}
 
-		private void MaintainKeepAlive(IChannel<IPacket> channel, string clientId)
+		public void Dispose ()
 		{
-			this.keepAliveSubscription = this.GetTimeoutMonitor(channel, clientId)
-				.Subscribe(_ => {}, ex => {
-					this.NotifyError (ex);
-				});
+			this.Dispose (disposing: true);
+			GC.SuppressFinalize (this);
 		}
 
-		private IObservable<IPacket> GetTimeoutMonitor(IChannel<IPacket> channel, string clientId)
+		protected virtual void Dispose(bool disposing)
 		{
-			return channel.Sender
-				.Timeout (TimeSpan.FromSeconds (this.configuration.KeepAliveSecs))
-				.ObserveOn(NewThreadScheduler.Default)
-				.Catch<IPacket, TimeoutException> (timeEx => {
-					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs);
+			if (this.disposed) {
+				return;
+			}
 
-					var ping = new PingRequest ();
+			if (disposing) {
+				this.firstPacketSubscription.Dispose ();
+				this.nextPacketsSubscription.Dispose ();
+				this.allPacketsSubscription.Dispose ();
+				this.senderSubscription.Dispose ();
 
-					channel.SendAsync (ping).Wait ();
+				if (this.keepAliveTimer != null) {
+					this.keepAliveTimer.Dispose ();
+				}
+				
+				this.disposed = true;
+			}
+		}
 
-					return this.GetTimeoutMonitor (channel, clientId);
-				});
+		private void StartKeepAliveMonitor(IChannel<IPacket> channel, string clientId)
+		{
+			var interval = this.configuration.KeepAliveSecs * 1000;
+
+			this.keepAliveTimer = new Timer();
+
+			this.keepAliveTimer.AutoReset = true;
+			this.keepAliveTimer.Interval = interval;
+			this.keepAliveTimer.Elapsed += async (sender, e) => {
+				tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs);
+
+				var ping = new PingRequest ();
+
+				await channel.SendAsync (ping);
+			};
+			this.keepAliveTimer.Start ();
+
+			channel.Sender.Subscribe (p => {
+				this.keepAliveTimer.Interval = interval;
+			});
 		}
 
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)

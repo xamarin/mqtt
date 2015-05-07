@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Diagnostics;
+using System.Net;
 using Hermes;
 using Hermes.Diagnostics;
 using Hermes.Packets;
@@ -43,7 +44,7 @@ namespace IntegrationTests.Context
 
 		protected virtual Client GetClient()
 		{
-			var initializer = new ClientInitializer ("127.0.0.1");
+			var initializer = new ClientInitializer (IPAddress.Loopback.ToString());
 			
 			return initializer.Initialize (this.Configuration);
 		}

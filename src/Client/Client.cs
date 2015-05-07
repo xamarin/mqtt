@@ -292,6 +292,7 @@ namespace Hermes
 			if (disposing) {
 				tracer.Info ("Disposing Client {0}", this.Id);
 
+				this.packetListener.Dispose ();
 				this.packetsSubscription.Dispose ();
 				this.packetChannel.Dispose ();
 				this.IsConnected = false; 
