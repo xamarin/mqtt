@@ -14,6 +14,7 @@ namespace Hermes.Flows
 
 		readonly IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
+		readonly IPacketIdProvider packetIdProvider;
 		readonly IEventStream eventStream;
 
 		public ServerPublishReceiverFlow (ITopicEvaluator topicEvaluator,
@@ -21,13 +22,14 @@ namespace Hermes.Flows
 			IPublishSenderFlow senderFlow,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository,
+			IPacketIdProvider packetIdProvider,
 			IEventStream eventStream,
 			ProtocolConfiguration configuration)
-			: base(topicEvaluator, retainedRepository, sessionRepository, packetIdentifierRepository, configuration)
+			: base(topicEvaluator, retainedRepository, sessionRepository, configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.senderFlow = senderFlow;
+			this.packetIdProvider = packetIdProvider;
 			this.eventStream = eventStream;
 		}
 
@@ -74,7 +76,7 @@ namespace Hermes.Flows
 		private async Task DispatchAsync (ClientSubscription subscription, Publish publish)
 		{
 			var requestedQos = configuration.GetSupportedQos(subscription.MaximumQualityOfService);
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier (requestedQos);
+			ushort? packetId = requestedQos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
 			var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicated: false, packetId: packetId) {
 				Payload = publish.Payload
 			};

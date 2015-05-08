@@ -21,7 +21,7 @@ namespace Tests.Flows
 			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
 			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
 			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
@@ -56,8 +56,7 @@ namespace Tests.Flows
 				.Returns (channel.Object);
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
-				packetIdentifierRepository, retainedMessageRepository,
-				senderFlow, configuration);
+				retainedMessageRepository, packetIdProvider, senderFlow, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 
@@ -80,7 +79,7 @@ namespace Tests.Flows
 			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
 			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
 			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
@@ -118,7 +117,7 @@ namespace Tests.Flows
 				.Returns (channel.Object);
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object,  sessionRepository.Object, 
-				packetIdentifierRepository, retainedMessageRepository,
+				retainedMessageRepository, packetIdProvider,
 				senderFlow, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
@@ -141,7 +140,7 @@ namespace Tests.Flows
 			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
 			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
 			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
@@ -173,7 +172,7 @@ namespace Tests.Flows
 				.Returns (channel.Object);
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
-				packetIdentifierRepository, retainedMessageRepository,
+				retainedMessageRepository, packetIdProvider,
 				senderFlow, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
@@ -189,37 +188,12 @@ namespace Tests.Flows
 		}
 
 		[Fact]
-		public async Task when_sending_subscribe_ack_then_packet_identifier_is_deleted()
-		{
-			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-
-			var clientId = Guid.NewGuid().ToString();
-			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
-			var subscribeAck = new SubscribeAck (packetId, SubscribeReturnCode.MaximumQoS0, SubscribeReturnCode.MaximumQoS1);
-
-			var flow = new ClientSubscribeFlow (packetIdentifierRepository.Object);
-
-			var channel = new Mock<IChannel<IPacket>> ();
-
-			var response = default(IPacket);
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (p => response = p)
-				.Returns(Task.Delay(0));
-
-			await flow.ExecuteAsync (clientId, subscribeAck, channel.Object);
-
-			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
-			Assert.Null (response);
-		}
-
-		[Fact]
 		public async Task when_subscribing_topic_with_retain_message_then_retained_is_sent()
 		{
 			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
 			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = new Mock<IRepository<RetainedMessage>> ();
 			var senderFlow = new Mock<IPublishSenderFlow> ();
 
@@ -259,8 +233,8 @@ namespace Tests.Flows
 				.Returns (channel.Object);
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, 
-				sessionRepository.Object, packetIdentifierRepository.Object, retainedMessageRepository.Object,
-				senderFlow.Object, configuration);
+				sessionRepository.Object, retainedMessageRepository.Object,
+				packetIdProvider, senderFlow.Object, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object);
 

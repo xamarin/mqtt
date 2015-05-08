@@ -37,13 +37,13 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object,
-				publishSenderFlow.Object, retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				publishSenderFlow.Object, retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var subscribedClientId1 = Guid.NewGuid().ToString();
 			var subscribedClientId2 = Guid.NewGuid().ToString();
@@ -127,13 +127,13 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -201,13 +201,13 @@ namespace Tests.Flows
 				});
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -275,13 +275,13 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -415,7 +415,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
@@ -437,7 +437,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
@@ -463,7 +463,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
@@ -487,7 +487,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object);
 
@@ -514,13 +514,13 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -583,7 +583,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
@@ -603,7 +603,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
@@ -631,13 +631,13 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.AtLeastOnce;
@@ -711,13 +711,13 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -788,11 +788,11 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
+			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var eventStream = new EventStream ();
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, packetIdentifierRepository, eventStream, configuration);
+				retainedRepository, sessionRepository.Object, packetIdProvider, eventStream, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishRelease = new PublishRelease (packetId);

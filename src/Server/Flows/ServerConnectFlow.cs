@@ -13,17 +13,14 @@ namespace Hermes.Flows
 
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IPublishSenderFlow senderFlow;
 
 		public ServerConnectFlow (IRepository<ClientSession> sessionRepository, 
 			IRepository<ConnectionWill> willRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository,
 			IPublishSenderFlow senderFlow)
 		{
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.senderFlow = senderFlow;
 		}
 

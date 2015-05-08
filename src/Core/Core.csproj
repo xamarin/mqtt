@@ -55,6 +55,7 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IChannel.cs" />
     <Compile Include="IInitalizer.cs" />
+    <Compile Include="IPacketIdProvider.cs" />
     <Compile Include="IPacketListener.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
     <Compile Include="IPacketManager.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="netfx\System\Collections\Generic\DictionaryGetOrAdd.cs" />
     <Compile Include="PacketChannel.cs" />
     <Compile Include="PacketChannelFactory.cs" />
+    <Compile Include="PacketIdProvider.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="PacketBuffer.cs" />
     <Compile Include="Packets\Connect.cs" />
@@ -102,7 +104,6 @@
     <Compile Include="StoppedEventArgs.cs" />
     <Compile Include="Storage\InMemoryRepositoryProvider.cs" />
     <Compile Include="Storage\IRepositoryProvider.cs" />
-    <Compile Include="Storage\PacketIdentifier.cs" />
     <Compile Include="Storage\PendingMessage.cs" />
     <Compile Include="Storage\RetainedMessage.cs" />
     <Compile Include="Storage\ClientSubscription.cs" />

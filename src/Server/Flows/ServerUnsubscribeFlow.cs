@@ -9,13 +9,10 @@ namespace Hermes.Flows
 	public class ServerUnsubscribeFlow : IProtocolFlow
 	{
 		readonly IRepository<ClientSession> sessionRepository;
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
-		public ServerUnsubscribeFlow (IRepository<ClientSession> sessionRepository, 
-			IRepository<PacketIdentifier> packetIdentifierRepository)
+		public ServerUnsubscribeFlow (IRepository<ClientSession> sessionRepository)
 		{
 			this.sessionRepository = sessionRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Hermes;
 using Hermes.Flows;
 using Hermes.Packets;
@@ -32,9 +30,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-
-			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -78,9 +74,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-
-			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -124,9 +118,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-
-			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);
@@ -160,9 +152,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-
-			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);
@@ -231,85 +221,5 @@ namespace Tests.Flows
 		//	channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishRelease 
 		//		&& (p as PublishRelease).PacketId == packetId)), Times.Once);
 		//}
-
-		[Fact]
-		public async Task when_sending_publish_ack_then_packet_identifier_is_deleted()
-		{
-			var clientId = Guid.NewGuid().ToString();
-
-			var configuration = Mock.Of<ProtocolConfiguration> ();
-			var topicEvaluator = new Mock<ITopicEvaluator> ();
-			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
-					PendingMessages = new List<PendingMessage> { new PendingMessage() }
-				});
-
-			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-			
-			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
-			var publishAck = new PublishAck (packetId);
-			
-			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
-
-			channel.Setup (c => c.Receiver).Returns (receiver);
-
-			var connectionProvider = new Mock<IConnectionProvider> ();
-
-			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
-
-			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository.Object, configuration);
-
-			await flow.ExecuteAsync (clientId, publishAck, channel.Object);
-
-			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
-			channel.Verify (c => c.SendAsync (It.IsAny<IPacket>()), Times.Never);
-		}
-
-		[Fact]
-		public async Task when_sending_publish_complete_then_packet_identifier_is_deleted()
-		{
-			var clientId = Guid.NewGuid().ToString();
-
-			var configuration = Mock.Of<ProtocolConfiguration> ();
-			var topicEvaluator = new Mock<ITopicEvaluator> ();
-			var retainedRepository = Mock.Of<IRepository<RetainedMessage>> ();
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
-					PendingMessages = new List<PendingMessage> { new PendingMessage() }
-				});
-
-			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-
-			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
-			var publishComplete = new PublishComplete (packetId);
-
-			var receiver = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
-
-			channel.Setup (c => c.Receiver).Returns (receiver);
-			
-			var connectionProvider = new Mock<IConnectionProvider> ();
-
-			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
-
-			var flow = new PublishSenderFlow (sessionRepository.Object, packetIdentifierRepository.Object, configuration);
-
-			await flow.ExecuteAsync (clientId, publishComplete, channel.Object);
-
-			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
-			channel.Verify (c => c.SendAsync (It.IsAny<IPacket>()), Times.Never);
-		}
 	}
 }

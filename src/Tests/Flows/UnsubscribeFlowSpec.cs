@@ -17,8 +17,6 @@ namespace Tests.Flows
 		public async Task when_unsubscribing_existing_subscriptions_then_subscriptions_are_deleted_and_ack_is_sent()
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var topic = "foo/bar/test";
@@ -51,7 +49,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerUnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
+			var flow = new ServerUnsubscribeFlow (sessionRepository.Object);
 
 			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
@@ -68,8 +66,6 @@ namespace Tests.Flows
 		public async Task when_unsubscribing_not_existing_subscriptions_then_ack_is_sent()
 		{
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var packetIdentifierRepository = Mock.Of<IRepository<PacketIdentifier>> ();
-
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var session = new ClientSession { 
@@ -95,7 +91,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerUnsubscribeFlow (sessionRepository.Object, packetIdentifierRepository);
+			var flow = new ServerUnsubscribeFlow (sessionRepository.Object);
 
 			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object);
 
@@ -106,31 +102,6 @@ namespace Tests.Flows
 
 			Assert.NotNull (unsubscribeAck);
 			Assert.Equal (packetId, unsubscribeAck.PacketId);
-		}
-
-		[Fact]
-		public async Task when_sending_unsubscribe_ack_then_packet_identifier_is_deleted()
-		{
-			var packetIdentifierRepository = new Mock<IRepository<PacketIdentifier>> ();
-
-			var clientId = Guid.NewGuid().ToString();
-			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
-			var unsubscribeAck = new UnsubscribeAck (packetId);
-
-			var channel = new Mock<IChannel<IPacket>> ();
-
-			var response = default(IPacket);
-
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (p => response = p)
-				.Returns(Task.Delay(0));
-
-			var flow = new ClientUnsubscribeFlow (packetIdentifierRepository.Object);
-
-			await flow.ExecuteAsync (clientId, unsubscribeAck, channel.Object);
-
-			packetIdentifierRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<PacketIdentifier, bool>>> ()));
-			Assert.Null (response);
 		}
 	}
 }
