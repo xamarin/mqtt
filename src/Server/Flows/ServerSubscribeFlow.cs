@@ -73,7 +73,8 @@ namespace Hermes.Flows
 						session.Subscriptions.Add (clientSubscription);
 					}
 
-					await this.SendRetainedMessagesAsync (clientSubscription, channel);
+					await this.SendRetainedMessagesAsync (clientSubscription, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 		
 					var supportedQos = configuration.GetSupportedQos(subscription.MaximumQualityOfService);
 					var returnCode = supportedQos.ToReturnCode ();
@@ -88,7 +89,8 @@ namespace Hermes.Flows
 
 			this.sessionRepository.Update (session);
 
-			await channel.SendAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()));
+			await channel.SendAsync(new SubscribeAck (subscribe.PacketId, returnCodes.ToArray()))
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		private async Task SendRetainedMessagesAsync(ClientSubscription subscription, IChannel<IPacket> channel)
@@ -105,7 +107,8 @@ namespace Hermes.Flows
 						Payload = retainedMessage.Payload
 					};
 
-					await this.senderFlow.SendPublishAsync(subscription.ClientId, publish, channel);
+					await this.senderFlow.SendPublishAsync(subscription.ClientId, publish, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				}
 			}
 		}

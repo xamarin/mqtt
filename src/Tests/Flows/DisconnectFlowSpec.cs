@@ -37,7 +37,8 @@ namespace Tests.Flows
 
 			sessionRepository.Setup(r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns(session);
 
-			await flow.ExecuteAsync (clientId, disconnect, channel.Object);
+			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
@@ -69,7 +70,8 @@ namespace Tests.Flows
 
 			sessionRepository.Setup(r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns(session);
 
-			await flow.ExecuteAsync (clientId, disconnect, channel.Object);
+			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));

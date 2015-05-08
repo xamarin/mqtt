@@ -35,7 +35,8 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, QualityOfService.AtMostOnce);
+				await client.PublishAsync (message, QualityOfService.AtMostOnce)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			Assert.True (client.IsConnected);
@@ -59,7 +60,8 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, QualityOfService.AtLeastOnce);
+				await client.PublishAsync (message, QualityOfService.AtLeastOnce)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			Assert.True (client.IsConnected);
@@ -82,7 +84,8 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, Hermes.Packets.QualityOfService.ExactlyOnce);
+				await client.PublishAsync (message, Hermes.Packets.QualityOfService.ExactlyOnce)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			Assert.True (client.IsConnected);
@@ -107,8 +110,10 @@ namespace IntegrationTests
 			var subscriber1Received = 0;
 			var subscriber2Received = 0;
 
-			await subscriber1.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce);
-			await subscriber2.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce);
+			await subscriber1.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			await subscriber2.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber1.Receiver
 				.Subscribe (m => {
@@ -138,7 +143,8 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await publisher.PublishAsync (message, QualityOfService.AtMostOnce);
+				await publisher.PublishAsync (message, QualityOfService.AtMostOnce)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(this.Configuration.WaitingTimeoutSecs));
@@ -178,7 +184,8 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await publisher.PublishAsync (message, QualityOfService.AtMostOnce);
+				await publisher.PublishAsync (message, QualityOfService.AtMostOnce)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(this.keepAliveSecs));
@@ -203,8 +210,10 @@ namespace IntegrationTests
 			var subscriberDone = new ManualResetEventSlim ();
 			var subscriberReceived = 0;
 
-			await subscriber.SubscribeAsync (requestTopic, QualityOfService.AtMostOnce);
-			await publisher.SubscribeAsync (responseTopic, QualityOfService.AtMostOnce);
+			await subscriber.SubscribeAsync (requestTopic, QualityOfService.AtMostOnce)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			await publisher.SubscribeAsync (responseTopic, QualityOfService.AtMostOnce)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber.Receiver
 				.Subscribe (async m => {
@@ -216,7 +225,8 @@ namespace IntegrationTests
 							Payload = Serializer.Serialize(response)
 						};
 
-						await subscriber.PublishAsync (message, QualityOfService.AtMostOnce);
+						await subscriber.PublishAsync (message, QualityOfService.AtMostOnce)
+							.ConfigureAwait(continueOnCapturedContext: false);
 					}
 				});
 
@@ -238,7 +248,8 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(request)
 				};
 
-				await publisher.PublishAsync (message, QualityOfService.AtMostOnce);
+				await publisher.PublishAsync (message, QualityOfService.AtMostOnce)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (this.Configuration.WaitingTimeoutSecs));

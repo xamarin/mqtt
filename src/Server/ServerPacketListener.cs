@@ -69,9 +69,11 @@ namespace Hermes
 
 					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, clientId);
 
-					await this.DispatchPacketAsync (connect, clientId, channel);
+					await this.DispatchPacketAsync (connect, clientId, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				}, async ex => {
-					await this.HandleConnectionExceptionAsync (ex, channel);
+					await this.HandleConnectionExceptionAsync (ex, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				});
 
 			this.nextPacketsSubscription = channel.Receiver
@@ -82,7 +84,8 @@ namespace Hermes
 						return;
 					}
 
-					await this.DispatchPacketAsync (packet, clientId, channel);
+					await this.DispatchPacketAsync (packet, clientId, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				}, ex => {
 					this.NotifyError (ex, clientId);
 				});
@@ -138,7 +141,8 @@ namespace Hermes
 				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
 
 				try {
-					await channel.SendAsync (errorAck);
+					await channel.SendAsync (errorAck)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					this.NotifyError (ex);
 				}
@@ -186,7 +190,8 @@ namespace Hermes
 
 					this.packets.OnNext (packet);
 
-					await flow.ExecuteAsync (clientId, packet, channel);
+					await flow.ExecuteAsync (clientId, packet, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					this.NotifyError (ex, clientId);
 				}

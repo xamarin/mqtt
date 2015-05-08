@@ -216,7 +216,8 @@ namespace Tests.Flows
 		//	connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
 
 		//	//TODO: Fix this
-		//	await flow.ExecuteAsync (clientId, publishReceived, channel.Object);
+		//	await flow.ExecuteAsync (clientId, publishReceived, channel.Object)
+		//.ConfigureAwait(continueOnCapturedContext: false);
 
 		//	channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishRelease 
 		//		&& (p as PublishRelease).PacketId == packetId)), Times.Once);

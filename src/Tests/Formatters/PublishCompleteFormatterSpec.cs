@@ -22,7 +22,8 @@ namespace Tests.Formatters
 			var formatter = new FlowPacketFormatter<PublishComplete>(PacketType.PublishComplete, id => new PublishComplete(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			var result = await formatter.FormatAsync (packet);
+			var result = await formatter.FormatAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedPublishComplete, result);
 		}
@@ -52,7 +53,8 @@ namespace Tests.Formatters
 			var formatter = new FlowPacketFormatter<PublishComplete>(PacketType.PublishComplete, id => new PublishComplete(id));
 			var publishComplete = Packet.ReadPacket<PublishComplete> (jsonPath);
 
-			var result = await formatter.FormatAsync (publishComplete);
+			var result = await formatter.FormatAsync (publishComplete)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedPacket, result);
 		}

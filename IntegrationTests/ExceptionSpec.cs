@@ -26,7 +26,8 @@ namespace IntegrationTests
 			var server = this.GetServer ();
 			var client = this.GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials(this.GetClientId()));
+			await client.ConnectAsync (new ClientCredentials(this.GetClientId()))
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			server.Stop ();
 

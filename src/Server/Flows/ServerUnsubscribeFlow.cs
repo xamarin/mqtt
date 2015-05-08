@@ -38,7 +38,8 @@ namespace Hermes.Flows
 
 			this.sessionRepository.Update(session);
 
-			await channel.SendAsync(new UnsubscribeAck (unsubscribe.PacketId));
+			await channel.SendAsync(new UnsubscribeAck (unsubscribe.PacketId))
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 	}
 }

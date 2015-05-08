@@ -96,7 +96,8 @@ namespace Hermes
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, bool cleanSession = false)
 		{
-			await this.ConnectAsync (credentials, null, cleanSession);
+			await this.ConnectAsync (credentials, null, cleanSession)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		/// <exception cref="ClientException">ClientException</exception>
@@ -119,7 +120,8 @@ namespace Hermes
 			var connectTimeout = TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs);
 
 			try {
-				await this.SendPacket (connect);
+				await this.SendPacket (connect)
+					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
 					.OfType<ConnectAck> ()
@@ -159,7 +161,8 @@ namespace Hermes
 			var subscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
 
 			try {
-				await this.SendPacket (subscribe);
+				await this.SendPacket (subscribe)
+					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
 					.OfType<SubscribeAck> ()
@@ -203,7 +206,8 @@ namespace Hermes
 			var senderFlow = this.flowProvider.GetFlow<PublishSenderFlow> ();
 
 			try {
-				await senderFlow.SendPublishAsync (this.Id, publish, this.packetChannel);
+				await senderFlow.SendPublishAsync (this.Id, publish, this.packetChannel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (Exception ex) {
 				this.Close (ex);
 				throw;
@@ -223,7 +227,8 @@ namespace Hermes
 			var unsubscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
 
 			try {
-				await this.SendPacket (unsubscribe);
+				await this.SendPacket (unsubscribe)
+					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
 					.OfType<UnsubscribeAck> ()
@@ -267,9 +272,9 @@ namespace Hermes
 			var disconnect = new Disconnect ();
 
 			try {
-				await this.SendPacket (disconnect).ContinueWith(t => {
-					this.Close (ClosedReason.Disconnect);
-				});
+				await this.SendPacket (disconnect)
+					.ContinueWith(t => this.Close (ClosedReason.Disconnect))
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (Exception ex) {
 				this.Close (ex);
 				throw;
@@ -359,7 +364,8 @@ namespace Hermes
 		{
 			this.sender.OnNext (packet);
 
-			await this.packetChannel.SendAsync (packet);
+			await this.packetChannel.SendAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		private void CheckUnderlyingConnection ()

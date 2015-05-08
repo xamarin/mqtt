@@ -69,7 +69,9 @@ namespace Hermes
 			try {
 				tracer.Info (Resources.Tracer_TcpChannel_SendingPacket, message.Length);
 
-				await this.client.GetStream ().WriteAsync(message, 0, message.Length);
+				await this.client.GetStream ()
+					.WriteAsync(message, 0, message.Length)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (ObjectDisposedException disposedEx) {
 				throw new ProtocolException (Resources.TcpChannel_SocketDisconnected, disposedEx);
 			}

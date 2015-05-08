@@ -26,11 +26,13 @@ namespace Hermes.Flows
 			if (input.Type == PacketType.Publish) {
 				var publish = input as Publish;
 
-				await this.HandlePublishAsync (clientId, publish, channel);
+				await this.HandlePublishAsync (clientId, publish, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} else if (input.Type == PacketType.PublishRelease) {
 				var publishRelease = input as PublishRelease;
 
-				await this.HandlePublishReleaseAsync (clientId, publishRelease, channel);
+				await this.HandlePublishReleaseAsync (clientId, publishRelease, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 
@@ -59,20 +61,24 @@ namespace Hermes.Flows
 			if(qos == QualityOfService.ExactlyOnce && 
 				session.PendingAcknowledgements.ToList()
 					.Any(ack => ack.Type == PacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {
-				await this.SendQosAck (clientId, qos, publish, channel);
+				await this.SendQosAck (clientId, qos, publish, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 
 				return;
 			}
 
-			await this.ProcessPublishAsync(publish, clientId);
-			await this.SendQosAck (clientId, qos, publish, channel);
+			await this.ProcessPublishAsync(publish, clientId)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			await this.SendQosAck (clientId, qos, publish, channel)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		private async Task HandlePublishReleaseAsync(string clientId, PublishRelease publishRelease, IChannel<IPacket> channel)
 		{
 			this.RemovePendingAcknowledgement (clientId, publishRelease.PacketId, PacketType.PublishReceived);
 
-			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId), channel);
+			await this.SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId), channel)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		private async Task SendQosAck(string clientId, QualityOfService qos, Publish publish, IChannel<IPacket> channel)
@@ -80,9 +86,11 @@ namespace Hermes.Flows
 			if (qos == QualityOfService.AtMostOnce) {
 				return;
 			} else if (qos == QualityOfService.AtLeastOnce) {
-				await this.SendAckAsync (clientId, new PublishAck (publish.PacketId.Value), channel);
+				await this.SendAckAsync (clientId, new PublishAck (publish.PacketId.Value), channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} else {
-				await this.SendAckAsync (clientId, new PublishReceived (publish.PacketId.Value), channel);
+				await this.SendAckAsync (clientId, new PublishReceived (publish.PacketId.Value), channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 	}

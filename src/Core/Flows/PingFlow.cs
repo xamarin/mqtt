@@ -11,7 +11,8 @@ namespace Hermes.Flows
 				return;
 			}
 
-			await channel.SendAsync(new PingResponse());
+			await channel.SendAsync(new PingResponse())
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 	}
 }

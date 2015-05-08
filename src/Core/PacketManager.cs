@@ -32,7 +32,8 @@ namespace Hermes
 			if (!formatters.TryGetValue(packetType, out formatter))
 				throw new ProtocolException (Resources.PacketManager_PacketUnknown);
 
-			var packet = await formatter.FormatAsync (bytes);
+			var packet = await formatter.FormatAsync (bytes)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return packet;
 		}
@@ -47,7 +48,8 @@ namespace Hermes
 			if (!formatters.TryGetValue(packet.Type, out formatter))
 				throw new ProtocolException (Resources.PacketManager_PacketUnknown);
 
-			var bytes = await formatter.FormatAsync (packet);
+			var bytes = await formatter.FormatAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return bytes;
 		}

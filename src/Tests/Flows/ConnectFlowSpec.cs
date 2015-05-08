@@ -36,7 +36,8 @@ namespace Tests.Flows
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -82,7 +83,8 @@ namespace Tests.Flows
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			sessionRepository.Verify (r => r.Create (It.IsAny<ClientSession> ()), Times.Never);
 			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
@@ -126,7 +128,8 @@ namespace Tests.Flows
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var connectAck = sentPacket as ConnectAck;
 
@@ -169,7 +172,8 @@ namespace Tests.Flows
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var connectAck = sentPacket as ConnectAck;
 
@@ -206,7 +210,8 @@ namespace Tests.Flows
 
 			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object);
+			await flow.ExecuteAsync (clientId, connect, channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var connectAck = sentPacket as ConnectAck;
 

@@ -23,7 +23,8 @@ namespace Tests.Formatters
 			var formatter = new SubscribeAckFormatter ();
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			var result = await formatter.FormatAsync (packet);
+			var result = await formatter.FormatAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedSubscribeAck, result);
 		}
@@ -69,7 +70,8 @@ namespace Tests.Formatters
 			var formatter = new SubscribeAckFormatter ();
 			var subscribeAck = Packet.ReadPacket<SubscribeAck> (jsonPath);
 
-			var result = await formatter.FormatAsync (subscribeAck);
+			var result = await formatter.FormatAsync (subscribeAck)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedPacket, result);
 		}
