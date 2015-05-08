@@ -25,7 +25,7 @@ namespace Hermes
 		readonly IPacketListener packetListener;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IRepository<ClientSession> sessionRepository;
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
+		readonly IPacketIdProvider packetIdProvider;
 		readonly ProtocolConfiguration configuration;
 
         public Client(IChannel<byte[]> binaryChannel, 
@@ -33,6 +33,7 @@ namespace Hermes
 			IPacketListener packetListener,
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
+			IPacketIdProvider packetIdProvider,
 			ProtocolConfiguration configuration)
         {
 			this.receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
@@ -41,7 +42,7 @@ namespace Hermes
 			this.packetListener = packetListener;
 			this.flowProvider = flowProvider;
 			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
-			this.packetIdentifierRepository = repositoryProvider.GetRepository<PacketIdentifier>();
+			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
 
 			this.packetChannel = channelFactory.Create (binaryChannel);
@@ -151,7 +152,7 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier();
+			var packetId = this.packetIdProvider.GetPacketId ();
 			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 			var ack = default (SubscribeAck);
@@ -193,7 +194,7 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier(qos);
+			ushort? packetId = qos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
 			var publish = new Publish (message.Topic, qos, retain, duplicated: false, packetId: packetId)
 			{
 				Payload = message.Payload
@@ -215,7 +216,7 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			var packetId = this.packetIdentifierRepository.GetPacketIdentifier();
+			var packetId = this.packetIdProvider.GetPacketId ();
 			var unsubscribe = new Unsubscribe(packetId, topics);
 
 			var ack = default (UnsubscribeAck);
@@ -292,6 +293,7 @@ namespace Hermes
 			if (disposing) {
 				tracer.Info ("Disposing Client {0}", this.Id);
 
+				this.packetListener.Dispose ();
 				this.packetsSubscription.Dispose ();
 				this.packetChannel.Dispose ();
 				this.IsConnected = false; 

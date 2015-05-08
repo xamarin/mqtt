@@ -6,22 +6,23 @@ using Hermes.Packets;
 using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using Xunit;
-using System.Reactive.Linq;
-using System.Reactive.Concurrency;
 using System.Collections.Generic;
 
 namespace IntegrationTests
 {
-	public class PublishingSpec : ConnectedContext
+	public class PublishingSpec : ConnectedContext, IDisposable
 	{
-		public PublishingSpec () : base(keepAliveSecs: 2)
+		private readonly Server server;
+
+		public PublishingSpec () 
+			: base(keepAliveSecs: 2)
 		{
+			this.server = this.GetServer ();
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos0_then_succeeds()
 		{
-			var server = this.GetServer ();
 			var client = this.GetClient ();
 			var topic = "foo/test/qos0";
 			var count = this.GetTestLoad();
@@ -40,13 +41,11 @@ namespace IntegrationTests
 			Assert.True (client.IsConnected);
 
 			client.Close ();
-			server.Stop ();
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos1_then_succeeds()
 		{
-			var server = this.GetServer ();
 			var client = this.GetClient ();
 			var topic = "foo/test/qos1";
 			var count = this.GetTestLoad();
@@ -66,13 +65,11 @@ namespace IntegrationTests
 			Assert.True (client.IsConnected);
 
 			client.Close ();
-			server.Stop ();
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos2_then_succeeds()
 		{
-			var server = this.GetServer ();
 			var client = this.GetClient ();
 			var topic = "foo/test/qos2";
 			var count = this.GetTestLoad();
@@ -91,14 +88,11 @@ namespace IntegrationTests
 			Assert.True (client.IsConnected);
 
 			client.Close ();
-			server.Stop ();
 		}
 
 		[Fact]
 		public async Task when_publish_message_to_topic_then_message_is_dispatched_to_subscribers()
 		{
-			var server = this.GetServer ();
-
 			var count = this.GetTestLoad();
 
 			var topicFilter = "test/#";
@@ -156,14 +150,11 @@ namespace IntegrationTests
 			subscriber1.Close ();
 			subscriber2.Close ();
 			publisher.Close ();
-			server.Stop ();
 		}
 
 		[Fact]
 		public async Task when_publish_message_to_topic_and_there_is_no_subscribers_then_server_notifies()
 		{
-			var server = this.GetServer ();
-
 			var count = this.GetTestLoad();
 
 			var topic = "test/foo/nosubscribers";
@@ -192,18 +183,15 @@ namespace IntegrationTests
 
 			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(this.keepAliveSecs));
 
+			publisher.Close ();
+
 			Assert.Equal (count, topicsNotSubscribedCount);
 			Assert.True (success);
-
-			publisher.Close ();
-			server.Stop ();
 		}
 
 		[Fact]
 		public async Task when_publish_message_to_topic_and_expect_reponse_to_other_topic_then_succeeds()
 		{
-			var server = this.GetServer ();
-
 			var count = this.GetTestLoad();
 
 			var requestTopic = "test/foo";
@@ -257,8 +245,11 @@ namespace IntegrationTests
 
 			Assert.Equal (count, subscriberReceived);
 			Assert.True (completed);
+		}
 
-			server.Stop ();
+		public void Dispose ()
+		{
+			this.server.Stop ();
 		}
 
 		private TestMessage GetTestMessage()

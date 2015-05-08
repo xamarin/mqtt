@@ -45,7 +45,7 @@ namespace Tests
 		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
 			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), new EventStream(), new ProtocolConfiguration ());
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 
@@ -56,7 +56,7 @@ namespace Tests
 		public void when_getting_explicit_server_flow_from_type_then_succeeds()
 		{
 			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), new EventStream(), new ProtocolConfiguration ());
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new ProtocolConfiguration ());
 
 			var connectFlow = flowProvider.GetFlow<ServerConnectFlow> ();
 			var senderFlow = flowProvider.GetFlow<PublishSenderFlow> ();

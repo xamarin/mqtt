@@ -1,12 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Concurrency;
+﻿using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using System.Timers;
 using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
+using System;
 
 namespace Hermes.Flows
 {
@@ -65,27 +66,44 @@ namespace Hermes.Flows
 		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			await this.GetAckMonitor<T> (sentMessage, clientId, channel);
-		}
+			var ackSubject = new Subject<T> ();
+			var retries = 0;
+			var qosTimer = new Timer();
 
-		protected IObservable<T> GetAckMonitor<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel, int retries = 0)
-			where T : IFlowPacket
-		{
-			if (retries == this.configuration.QualityOfServiceAckRetries) {
-				throw new ProtocolException (string.Format(Resources.PublishFlow_AckMonitor_ExceededMaximumAckRetries, this.configuration.QualityOfServiceAckRetries));
-			}
+			qosTimer.AutoReset = true;
+			qosTimer.Interval = this.configuration.WaitingTimeoutSecs * 1000;
+			qosTimer.Elapsed += async (sender, e) => {
+				if (retries == this.configuration.QualityOfServiceAckRetries) {
+					ackSubject.OnError (new ProtocolException (string.Format (Resources.PublishFlow_AckMonitor_ExceededMaximumAckRetries, this.configuration.QualityOfServiceAckRetries)));
+				}
 
-			return channel.Receiver.OfType<T> ()
-				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId)
-				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
-				.ObserveOn(NewThreadScheduler.Default)
-				.Catch<T, TimeoutException> (timeEx => {
-					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+				tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
-					channel.SendAsync (sentMessage).Wait ();
+				try {
+					await channel.SendAsync (sentMessage);
+				} catch (Exception ex) {
+					qosTimer.Stop ();
+					ackSubject.OnError (ex);
+				}
 
-					return this.GetAckMonitor<T> (sentMessage, clientId, channel, retries + 1);
+				retries++;
+			};
+			qosTimer.Start ();
+
+			var ackSubscription = channel.Receiver
+				.OfType<T> ()
+				.Where (x => x.PacketId == sentMessage.PacketId)
+				.Subscribe (x => {
+					ackSubject.OnNext (x);
 				});
+
+			try {
+				await ackSubject.FirstOrDefaultAsync ();
+			} finally {
+				ackSubscription.Dispose ();
+				ackSubject.Dispose ();
+				qosTimer.Dispose ();
+			}
 		}
 
 		private void SavePendingAcknowledgement(IFlowPacket ack, string clientId)

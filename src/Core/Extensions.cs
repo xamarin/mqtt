@@ -1,6 +1,6 @@
-﻿using System;
-using Hermes.Flows;
+﻿using Hermes.Flows;
 using Hermes.Packets;
+using System.Linq;
 
 namespace Hermes
 {
@@ -68,41 +68,6 @@ namespace Hermes
 			}
 
 			return returnCode;
-		}
-	}
-}
-
-namespace Hermes.Storage
-{
-	public static class StorageExtensions
-	{
-		public static ushort? GetPacketIdentifier(this IRepository<PacketIdentifier> repository, QualityOfService qos)
-		{
-			var packetId = default (ushort?);
-
-			if(qos != QualityOfService.AtMostOnce) {
-				packetId = repository.GetPacketIdentifier ();
-			}
-
-			return packetId;
-		}
-
-		public static ushort GetPacketIdentifier(this IRepository<PacketIdentifier> repository)
-		{
-			return repository.GetPacketIdentifier (new Random ());
-		}
-
-		public static ushort GetPacketIdentifier(this IRepository<PacketIdentifier> repository, Random random)
-		{
-			var packetId = (ushort)random.Next (1, ushort.MaxValue);
-
-			if (repository.Exist (i => i.Value == packetId)) {
-				packetId = repository.GetPacketIdentifier (random);
-			}
-
-			repository.Create (new PacketIdentifier { Value = packetId });
-
-			return packetId;
 		}
 	}
 }

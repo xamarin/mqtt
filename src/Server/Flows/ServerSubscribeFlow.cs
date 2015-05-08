@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hermes.Diagnostics;
@@ -16,22 +15,22 @@ namespace Hermes.Flows
 
 		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
+		readonly IPacketIdProvider packetIdProvider;
 		readonly IPublishSenderFlow senderFlow;
 		readonly ProtocolConfiguration configuration;
 
 		public ServerSubscribeFlow (ITopicEvaluator topicEvaluator, 
 			IRepository<ClientSession> sessionRepository, 
-			IRepository<PacketIdentifier> packetIdentifierRepository, 
 			IRepository<RetainedMessage> retainedRepository,
+			IPacketIdProvider packetIdProvider,
 			IPublishSenderFlow senderFlow,
 			ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.sessionRepository = sessionRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
 			this.retainedRepository = retainedRepository;
+			this.packetIdProvider = packetIdProvider;
 			this.senderFlow = senderFlow;
 			this.configuration = configuration;
 		}
@@ -99,7 +98,8 @@ namespace Hermes.Flows
 
 			if (retainedMessages != null) {
 				foreach (var retainedMessage in retainedMessages) {
-					var packetId = this.packetIdentifierRepository.GetPacketIdentifier (subscription.MaximumQualityOfService);
+					ushort? packetId = subscription.MaximumQualityOfService == QualityOfService.AtMostOnce ?
+						null : (ushort?)this.packetIdProvider.GetPacketId ();
 					var publish = new Publish (retainedMessage.Topic, subscription.MaximumQualityOfService, 
 						retain: true, duplicated: false, packetId: packetId) {
 						Payload = retainedMessage.Payload

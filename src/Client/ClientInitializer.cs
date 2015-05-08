@@ -36,11 +36,13 @@ namespace Hermes
 			var channel = new TcpChannel(tcpClient, buffer, configuration);
 			var topicEvaluator = new TopicEvaluator(configuration);
 			var channelFactory = new PacketChannelFactory(topicEvaluator, configuration);
+			var packetIdProvider = new PacketIdProvider ();
 			var repositoryProvider = new InMemoryRepositoryProvider();
 			var flowProvider = new ClientProtocolFlowProvider(topicEvaluator, repositoryProvider, configuration);
 			var packetListener = new ClientPacketListener(flowProvider, configuration);
 
-			return new Client (channel, channelFactory, packetListener, flowProvider, repositoryProvider, configuration);
+			return new Client (channel, channelFactory, packetListener, flowProvider, 
+				repositoryProvider, packetIdProvider, configuration);
 		}
 	}
 }

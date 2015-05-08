@@ -25,8 +25,10 @@ namespace Hermes
 			var channelFactory = new PacketChannelFactory (topicEvaluator, configuration);
 			var repositoryProvider = new InMemoryRepositoryProvider ();
 			var connectionProvider = new ConnectionProvider ();
+			var packetIdProvider = new PacketIdProvider ();
 			var eventStream = new EventStream ();
-			var flowProvider = new ServerProtocolFlowProvider (connectionProvider, topicEvaluator, repositoryProvider, eventStream, configuration);
+			var flowProvider = new ServerProtocolFlowProvider (connectionProvider, topicEvaluator, 
+				repositoryProvider, packetIdProvider, eventStream, configuration);
 
 			return new Server (channelObservable, channelFactory, flowProvider, connectionProvider, eventStream, configuration);
 		}

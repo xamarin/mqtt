@@ -10,18 +10,15 @@ namespace Hermes.Flows
 	{
 		protected readonly ITopicEvaluator topicEvaluator;
 		protected readonly IRepository<RetainedMessage> retainedRepository;
-		protected readonly IRepository<PacketIdentifier> packetIdentifierRepository;
 
 		public PublishReceiverFlow (ITopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository,
 			ProtocolConfiguration configuration)
 			: base(sessionRepository, configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;
-			this.packetIdentifierRepository = packetIdentifierRepository;
 		}
 
 		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
