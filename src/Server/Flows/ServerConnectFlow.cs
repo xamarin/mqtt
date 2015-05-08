@@ -47,8 +47,10 @@ namespace Hermes.Flows
 
 				tracer.Info (Resources.Tracer_Server_CreatedSession, clientId);
 			} else {
-				await this.SendPendingMessagesAsync (session, channel);
-				await this.SendPendingAcknowledgementsAsync (session, channel);
+				await this.SendPendingMessagesAsync (session, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
+				await this.SendPendingAcknowledgementsAsync (session, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			if (connect.Will != null) {
@@ -57,7 +59,8 @@ namespace Hermes.Flows
 				this.willRepository.Create (connectionWill);
 			}
 
-			await channel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent));
+			await channel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent))
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
@@ -72,9 +75,11 @@ namespace Hermes.Flows
 					session.PendingMessages.Remove (pendingMessage);
 					this.sessionRepository.Update (session);
 
-					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel);
+					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} else {
-					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge);
+					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				}
 			}
 		}
@@ -91,7 +96,8 @@ namespace Hermes.Flows
 				else if(pendingAcknowledgement.Type == PacketType.PublishRelease)
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel, PendingMessageStatus.PendingToAcknowledge);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel, PendingMessageStatus.PendingToAcknowledge)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 	}

@@ -27,7 +27,8 @@ namespace IntegrationTests
 		{
 			var client = this.GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
 			var existClientAfterConnect = this.server.ActiveClients.Any (c => c == clientId);
@@ -77,7 +78,8 @@ namespace IntegrationTests
 				var client = this.GetClient ();
 
 				clients.Add (client);
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			Thread.Sleep (TimeSpan.FromSeconds(this.keepAliveSecs * 3));

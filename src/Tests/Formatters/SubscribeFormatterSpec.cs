@@ -25,7 +25,8 @@ namespace Tests.Formatters
 			var formatter = new SubscribeFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			var result = await formatter.FormatAsync (packet);
+			var result = await formatter.FormatAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedSubscribe, result);
 		}
@@ -75,7 +76,8 @@ namespace Tests.Formatters
 			var formatter = new SubscribeFormatter (topicEvaluator);
 			var subscribe = Packet.ReadPacket<Subscribe> (jsonPath);
 
-			var result = await formatter.FormatAsync (subscribe);
+			var result = await formatter.FormatAsync (subscribe)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedPacket, result);
 		}

@@ -53,7 +53,8 @@ namespace Hermes.Flows
 				}
 			}
 
-			await this.DispatchAsync (publish, clientId);
+			await this.DispatchAsync (publish, clientId)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		private async Task DispatchAsync (Publish publish, string clientId)
@@ -68,7 +69,8 @@ namespace Hermes.Flows
 				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId, Payload = publish.Payload });
 			} else {
 				foreach (var subscription in subscriptions) {
-					await this.DispatchAsync (subscription, publish);
+					await this.DispatchAsync (subscription, publish)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				}
 			}
 		}
@@ -82,7 +84,8 @@ namespace Hermes.Flows
 			};
 			var clientChannel = this.connectionProvider.GetConnection (subscription.ClientId);
 
-			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, clientChannel);
+			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, clientChannel)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 	}
 }

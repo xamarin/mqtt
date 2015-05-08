@@ -29,8 +29,10 @@ namespace Hermes.Flows
 				throw new ProtocolException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
-			await this.SendPendingMessagesAsync (session, channel);
-			await this.SendPendingAcknowledgementsAsync (session, channel);
+			await this.SendPendingMessagesAsync (session, channel)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			await this.SendPendingAcknowledgementsAsync (session, channel)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
@@ -39,7 +41,9 @@ namespace Hermes.Flows
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
-				await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge);
+				await this.senderFlow
+					.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 
@@ -54,7 +58,8 @@ namespace Hermes.Flows
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 				}
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel);
+				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 	}

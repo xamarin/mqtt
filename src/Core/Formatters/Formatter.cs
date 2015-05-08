@@ -27,7 +27,8 @@ namespace Hermes.Formatters
 				throw new ProtocolException (error);
 			}
 
-			var packet = await Task.Run(() => this.Read (bytes));
+			var packet = await Task.Run(() => this.Read (bytes))
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return packet;
 		}
@@ -43,7 +44,8 @@ namespace Hermes.Formatters
 				throw new ProtocolException (error);
 			}
 
-			var bytes = await Task.Run(() => this.Write (packet as T));
+			var bytes = await Task.Run(() => this.Write (packet as T))
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return bytes;
 		}

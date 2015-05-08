@@ -25,7 +25,8 @@ namespace Hermes
 			this.subscription = innerChannel.Receiver
 				.Subscribe (async bytes => {
 					try {
-						var packet = await this.manager.GetPacketAsync (bytes);
+						var packet = await this.manager.GetPacketAsync (bytes)
+							.ConfigureAwait(continueOnCapturedContext: false);
 
 						this.receiver.OnNext (packet);
 					} catch (ProtocolException ex) {
@@ -46,11 +47,13 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			var bytes = await this.manager.GetBytesAsync (packet);
+			var bytes = await this.manager.GetBytesAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			this.sender.OnNext (packet);
 
-			await this.innerChannel.SendAsync (bytes);
+			await this.innerChannel.SendAsync (bytes)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		public void Dispose ()

@@ -38,12 +38,15 @@ namespace Hermes.Flows
 				return;
 			}
 
-			await channel.SendAsync (ack);
+			await channel.SendAsync (ack)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			if(ack.Type == PacketType.PublishReceived) {
-				await this.MonitorAckAsync<PublishRelease> (ack, clientId, channel);
+				await this.MonitorAckAsync<PublishRelease> (ack, clientId, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} else if (ack.Type == PacketType.PublishRelease) {
-				await this.MonitorAckAsync<PublishComplete> (ack, clientId, channel);
+				await this.MonitorAckAsync<PublishComplete> (ack, clientId, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 
@@ -80,7 +83,8 @@ namespace Hermes.Flows
 				tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 				try {
-					await channel.SendAsync (sentMessage);
+					await channel.SendAsync (sentMessage)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					qosTimer.Stop ();
 					ackSubject.OnError (ex);

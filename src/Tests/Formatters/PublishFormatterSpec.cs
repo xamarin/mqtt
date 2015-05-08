@@ -34,7 +34,8 @@ namespace Tests.Formatters
 			var formatter = new PublishFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			var result = await formatter.FormatAsync (packet);
+			var result = await formatter.FormatAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedPublish, result);
 		}
@@ -69,7 +70,8 @@ namespace Tests.Formatters
 			var formatter = new PublishFormatter (topicEvaluator);
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
-			var result = await formatter.FormatAsync (publish);
+			var result = await formatter.FormatAsync (publish)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedPacket, result);
 		}

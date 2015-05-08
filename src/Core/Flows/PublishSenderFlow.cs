@@ -42,7 +42,8 @@ namespace Hermes.Flows
 			var ackPacket = senderRule (clientId, flowPacket.PacketId);
 
 			if (ackPacket != default(IFlowPacket)) {
-				await this.SendAckAsync (clientId, ackPacket, channel);
+				await this.SendAckAsync (clientId, ackPacket, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 
@@ -59,12 +60,15 @@ namespace Hermes.Flows
 				this.SaveMessage (message, clientId, PendingMessageStatus.PendingToAcknowledge);
 			}
 
-			await channel.SendAsync (message);
+			await channel.SendAsync (message)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			if(qos == QualityOfService.AtLeastOnce) {
-				await this.MonitorAckAsync<PublishAck> (message, clientId, channel);
+				await this.MonitorAckAsync<PublishAck> (message, clientId, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} else if (qos == QualityOfService.ExactlyOnce) {
-				await this.MonitorAckAsync<PublishReceived> (message, clientId, channel);
+				await this.MonitorAckAsync<PublishReceived> (message, clientId, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 
@@ -106,7 +110,8 @@ namespace Hermes.Flows
 						};
 
 				try {
-					await channel.SendAsync (duplicated);
+					await channel.SendAsync (duplicated)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					qosTimer.Stop ();
 					ackSubject.OnError (ex);

@@ -160,7 +160,8 @@ namespace Tests
 
 			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
 
-			await channel.SendAsync (packet);
+			await channel.SendAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			innerChannel.Verify (x => x.SendAsync (It.Is<byte[]> (b => b.ToList ().SequenceEqual (bytes))));
 			manager.Verify (x => x.GetBytesAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)));
@@ -194,7 +195,8 @@ namespace Tests
 
 			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
 
-			await channel.SendAsync (packet);
+			await channel.SendAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			innerChannel.Verify (x => x.SendAsync (It.Is<byte[]> (b => b.ToList ().SequenceEqual (bytes))));
 			manager.Verify (x => x.GetBytesAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)));

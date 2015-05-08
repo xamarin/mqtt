@@ -22,7 +22,8 @@ namespace Tests.Formatters
 			var formatter = new FlowPacketFormatter<UnsubscribeAck>(PacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 
-			var result = await formatter.FormatAsync (packet);
+			var result = await formatter.FormatAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedUnsubscribeAck, result);
 		}
@@ -52,7 +53,8 @@ namespace Tests.Formatters
 			var formatter = new FlowPacketFormatter<UnsubscribeAck>(PacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
 			var unsubscribeAck = Packet.ReadPacket<UnsubscribeAck> (jsonPath);
 
-			var result = await formatter.FormatAsync (unsubscribeAck);
+			var result = await formatter.FormatAsync (unsubscribeAck)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (expectedPacket, result);
 		}

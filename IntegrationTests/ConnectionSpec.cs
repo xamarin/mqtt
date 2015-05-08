@@ -31,7 +31,8 @@ namespace IntegrationTests
 				var client = this.GetClient ();
 
 				clients.Add (client);
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			Assert.True (clients.All(c => c.IsConnected));
@@ -52,11 +53,13 @@ namespace IntegrationTests
 				var client = this.GetClient ();
 
 				clients.Add (client);
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			foreach (var client in clients) {
-				await client.DisconnectAsync ();
+				await client.DisconnectAsync ()
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			Assert.True (clients.All(c => !c.IsConnected));
@@ -72,12 +75,14 @@ namespace IntegrationTests
 		{
 			var client = this.GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
 			var existClientAfterConnect = this.server.ActiveClients.Any (c => c == clientId);
 
-			await client.DisconnectAsync ();
+			await client.DisconnectAsync ()
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientClosed = new ManualResetEventSlim ();
 

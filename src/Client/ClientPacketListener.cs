@@ -58,7 +58,8 @@ namespace Hermes
 						return;
 					}
 
-					await this.DispatchPacketAsync (packet, clientId, channel);
+					await this.DispatchPacketAsync (packet, clientId, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				}, ex => {
 					this.NotifyError (ex);
 				});
@@ -66,7 +67,8 @@ namespace Hermes
 			this.nextPacketsSubscription = channel.Receiver
 				.Skip(1)
 				.Subscribe (async packet => {
-					await this.DispatchPacketAsync (packet, clientId, channel);
+					await this.DispatchPacketAsync (packet, clientId, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				}, ex => {
 					this.NotifyError (ex);
 				});
@@ -129,7 +131,8 @@ namespace Hermes
 
 					var ping = new PingRequest ();
 
-					await channel.SendAsync (ping);
+					await channel.SendAsync (ping)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					this.NotifyError (ex);
 				}
@@ -151,7 +154,8 @@ namespace Hermes
 
 					this.packets.OnNext (packet);
 
-					await flow.ExecuteAsync (clientId, packet, channel);
+					await flow.ExecuteAsync (clientId, packet, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					this.NotifyError (ex);
 				}

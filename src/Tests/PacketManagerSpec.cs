@@ -48,7 +48,8 @@ namespace Tests
 				.Returns (Task.FromResult<IPacket>((IPacket)packet));
 
 			var packetManager = new PacketManager (formatter.Object);
-			var result =  await packetManager.GetPacketAsync (bytes);
+			var result =  await packetManager.GetPacketAsync (bytes)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (packet, result);
 		}
@@ -88,7 +89,8 @@ namespace Tests
 				.Returns (Task.FromResult(bytes));
 
 			var packetManager = new PacketManager (formatter.Object);
-			var result = await packetManager.GetBytesAsync (packet);
+			var result = await packetManager.GetBytesAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (bytes, result);
 		}
@@ -113,7 +115,8 @@ namespace Tests
 				.Returns (Task.FromResult(bytes));
 
 			var packetManager = new PacketManager (formatter.Object);
-			var result = await packetManager.GetBytesAsync (packet);
+			var result = await packetManager.GetBytesAsync (packet)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.Equal (bytes, result);
 		}

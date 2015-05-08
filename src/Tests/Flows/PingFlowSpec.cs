@@ -23,7 +23,8 @@ namespace Tests.Flows
 
 			var flow = new PingFlow ();
 
-			await flow.ExecuteAsync (clientId, new PingRequest(), channel.Object);
+			await flow.ExecuteAsync (clientId, new PingRequest(), channel.Object)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var pingResponse = sentPacket as PingResponse;
 
