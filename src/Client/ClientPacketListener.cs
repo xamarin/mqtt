@@ -124,11 +124,15 @@ namespace Hermes
 			this.keepAliveTimer.AutoReset = true;
 			this.keepAliveTimer.Interval = interval;
 			this.keepAliveTimer.Elapsed += async (sender, e) => {
-				tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs);
+				try {
+					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, this.configuration.KeepAliveSecs);
 
-				var ping = new PingRequest ();
+					var ping = new PingRequest ();
 
-				await channel.SendAsync (ping);
+					await channel.SendAsync (ping);
+				} catch (Exception ex) {
+					this.NotifyError (ex);
+				}
 			};
 			this.keepAliveTimer.Start ();
 

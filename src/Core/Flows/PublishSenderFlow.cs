@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using System.Timers;
 using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
@@ -15,17 +16,12 @@ namespace Hermes.Flows
 	{
 		private static readonly ITracer tracer = Tracer.Get<PublishSenderFlow> ();
 
-		readonly IRepository<PacketIdentifier> packetIdentifierRepository;
-
 		IDictionary<PacketType, Func<string, ushort, IFlowPacket>> senderRules;
 
 		public PublishSenderFlow (IRepository<ClientSession> sessionRepository,
-			IRepository<PacketIdentifier> packetIdentifierRepository,
 			ProtocolConfiguration configuration)
 			: base(sessionRepository, configuration)
 		{
-			this.packetIdentifierRepository = packetIdentifierRepository;
-
 			this.DefineSenderRules ();
 		}
 
@@ -91,30 +87,49 @@ namespace Hermes.Flows
 		protected async Task MonitorAckAsync<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			await this.GetAckMonitor<T> (sentMessage, clientId, channel);
-		}
+			var ackSubject = new Subject<T> ();
+			var retries = 0;
+			var qosTimer = new Timer();
 
-		protected IObservable<T> GetAckMonitor<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel, int retries = 0)
-			where T : IFlowPacket
-		{
-			if (retries == this.configuration.QualityOfServiceAckRetries) {
-				throw new ProtocolException (string.Format(Resources.PublishFlow_AckMonitor_ExceededMaximumAckRetries, this.configuration.QualityOfServiceAckRetries));
-			}
+			qosTimer.AutoReset = true;
+			qosTimer.Interval = this.configuration.WaitingTimeoutSecs * 1000;
+			qosTimer.Elapsed += async (sender, e) => {
+				if (retries == this.configuration.QualityOfServiceAckRetries) {
+					ackSubject.OnError (new ProtocolException (string.Format (Resources.PublishFlow_AckMonitor_ExceededMaximumAckRetries, this.configuration.QualityOfServiceAckRetries)));
+				}
 
-			return channel.Receiver.OfType<T> ()
-				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value)
-				.Timeout (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs))
-				.ObserveOn(NewThreadScheduler.Default)
-				.Catch<T, TimeoutException> (timeEx => {
-					tracer.Warn (timeEx, Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+				tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
-					var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
-						sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId);
+				var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
+						sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
+							Payload = sentMessage.Payload
+						};
 
-					channel.SendAsync (duplicated).Wait();
+				try {
+					await channel.SendAsync (duplicated);
+				} catch (Exception ex) {
+					qosTimer.Stop ();
+					ackSubject.OnError (ex);
+				}
 
-					return this.GetAckMonitor<T> (sentMessage, clientId, channel, retries + 1);
+				retries++;
+			};
+			qosTimer.Start ();
+
+			var ackSubscription = channel.Receiver
+				.OfType<T> ()
+				.Where (x => x.PacketId == sentMessage.PacketId.Value)
+				.Subscribe (x => {
+					ackSubject.OnNext (x);
 				});
+
+			try {
+				await ackSubject.FirstOrDefaultAsync ();
+			} finally {
+				ackSubscription.Dispose ();
+				ackSubject.Dispose ();
+				qosTimer.Dispose ();
+			}
 		}
 
 		private void DefineSenderRules ()
@@ -123,8 +138,6 @@ namespace Hermes.Flows
 
 			this.senderRules.Add (PacketType.PublishAck, (clientId, packetId) => {
 				this.RemovePendingMessage (clientId, packetId);
-
-				this.packetIdentifierRepository.Delete (i => i.Value == packetId);
 
 				return default (IFlowPacket);
 			});
@@ -137,8 +150,6 @@ namespace Hermes.Flows
 
 			this.senderRules.Add (PacketType.PublishComplete, (clientId, packetId) => {
 				this.RemovePendingAcknowledgement (clientId, packetId, PacketType.PublishRelease);
-
-				this.packetIdentifierRepository.Delete (i => i.Value == packetId);
 
 				return default (IFlowPacket);
 			});
