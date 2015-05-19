@@ -35,7 +35,7 @@ namespace IntegrationTests
 
 			Assert.NotNull (aggregateException);
 			Assert.NotNull (aggregateException.InnerException);
-			Assert.True (aggregateException.InnerException is ClientException);
+			Assert.True (aggregateException.InnerException is ClientException || aggregateException.InnerException is ObjectDisposedException);
 		}
 	}
 }

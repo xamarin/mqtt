@@ -21,12 +21,14 @@ namespace IntegrationTests
 		public async Task when_subscribe_topic_then_succeeds()
 		{
 			var client = this.GetClient ();
-			var topicFilter = "test/topic1/*";
+			var topicFilter = "test/topic1/#";
 
 			await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.True (client.IsConnected);
+
+			await client.UnsubscribeAsync (topicFilter);
 		}
 
 		[Fact]
@@ -34,16 +36,20 @@ namespace IntegrationTests
 		{
 			var client = this.GetClient ();
 			var topicsToSubscribe = this.GetTestLoad();
+			var topics = new List<string> ();
 
 			for (var i = 1; i <= topicsToSubscribe; i++) {
 				var topicFilter = string.Format ("test/topic{0}", i);
 
 				await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
 					.ConfigureAwait(continueOnCapturedContext: false);
+
+				topics.Add (topicFilter);
 			}
 
 			Assert.True (client.IsConnected);
 
+			await client.UnsubscribeAsync (topics.ToArray ());
 			client.Close ();
 		}
 

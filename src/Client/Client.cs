@@ -27,6 +27,7 @@ namespace Hermes
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly ProtocolConfiguration configuration;
+		readonly TaskRunner packetSender;
 
         public Client(IChannel<byte[]> binaryChannel, 
 			IPacketChannelFactory channelFactory, 
@@ -44,12 +45,13 @@ namespace Hermes
 			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
 			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
+			this.packetSender = TaskRunner.Get();
 
 			this.packetChannel = channelFactory.Create (binaryChannel);
 			this.packetListener.Listen (this.packetChannel);
 
 			this.packetsSubscription = this.packetListener.Packets
-				.ObserveOn(NewThreadScheduler.Default)
+				.ObserveOn(Scheduler.Default)
 				.Subscribe (packet => { 
 					if (packet.Type == PacketType.Publish) {
 						var publish = packet as Publish;
@@ -107,44 +109,49 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			this.OpenClientSession (credentials.ClientId, cleanSession);
-
-			var connect = new Connect (credentials.ClientId, cleanSession) {
-				UserName = credentials.UserName,
-				Password = credentials.Password,
-				Will = will,
-				KeepAlive = this.configuration.KeepAliveSecs
-			};
-
 			var ack = default (ConnectAck);
-			var connectTimeout = TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs);
 
 			try {
-				await this.SendPacket (connect)
+				this.OpenClientSession (credentials.ClientId, cleanSession);
+
+				var connect = new Connect (credentials.ClientId, cleanSession) {
+					UserName = credentials.UserName,
+					Password = credentials.Password,
+					Will = will,
+					KeepAlive = this.configuration.KeepAliveSecs
+				};
+
+				var connectTimeout = TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs);
+
+				await this.SendPacketAsync (connect)
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
+					.ObserveOn (Scheduler.Default)
 					.OfType<ConnectAck> ()
-					.FirstOrDefaultAsync()
-					.Timeout(connectTimeout);
+					.FirstOrDefaultAsync ()
+					.Timeout (connectTimeout);
+
+				if (ack == null) {
+					var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
+
+					tracer.Error (message);
+
+					throw new ClientException (message);
+				}
+
+				this.Id = credentials.ClientId;
+				this.IsConnected = true;
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
 				throw new ClientException (string.Format(Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+			} catch(ClientException clientEx) {
+				this.Close (clientEx);
+				throw;
 			} catch (Exception ex) {
 				this.Close (ex);
 				throw new ClientException (string.Format(Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
-
-			if (ack == null) {
-				var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
-
-				tracer.Error (message);
-
-				throw new ClientException (message);
-			}
-
-			this.Id = credentials.ClientId;
-			this.IsConnected = true;
 		}
 
 		/// <exception cref="ClientException">ClientException</exception>
@@ -154,40 +161,44 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			var packetId = this.packetIdProvider.GetPacketId ();
-			var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
-
-			var ack = default (SubscribeAck);
-			var subscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
-
 			try {
-				await this.SendPacket (subscribe)
+				var packetId = this.packetIdProvider.GetPacketId ();
+				var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
+
+				var ack = default (SubscribeAck);
+				var subscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
+
+				await this.SendPacketAsync (subscribe)
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
+					.ObserveOn (Scheduler.Default)
 					.OfType<SubscribeAck> ()
-					.FirstOrDefaultAsync(x => x.PacketId == packetId)
-					.Timeout(subscribeTimeout);
+					.FirstOrDefaultAsync (x => x.PacketId == packetId)
+					.Timeout (subscribeTimeout);
+
+				if (ack == null) {
+					var message = string.Format(Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
+
+					tracer.Error (message);
+
+					throw new ClientException (message);
+				}
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
 
 				var message = string.Format (Resources.Client_SubscribeTimeout, this.Id, topicFilter);
 
 				throw new ClientException (message, timeEx);
+			} catch(ClientException clientEx) {
+				this.Close (clientEx);
+				throw;
 			} catch (Exception ex) {
 				this.Close (ex);
 
 				var message = string.Format (Resources.Client_SubscribeError, this.Id, topicFilter);
 
 				throw new ClientException (message, ex);
-			}
-
-			if (ack == null) {
-				var message = string.Format(Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
-
-				tracer.Error (message);
-
-				throw new ClientException (message);
 			}
 		}
 
@@ -197,15 +208,15 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			ushort? packetId = qos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
-			var publish = new Publish (message.Topic, qos, retain, duplicated: false, packetId: packetId)
-			{
-				Payload = message.Payload
-			};
-
-			var senderFlow = this.flowProvider.GetFlow<PublishSenderFlow> ();
-
 			try {
+				ushort? packetId = qos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
+				var publish = new Publish (message.Topic, qos, retain, duplicated: false, packetId: packetId)
+				{
+					Payload = message.Payload
+				};
+
+				var senderFlow = this.flowProvider.GetFlow<PublishSenderFlow> ();
+
 				await senderFlow.SendPublishAsync (this.Id, publish, this.packetChannel)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (Exception ex) {
@@ -220,20 +231,29 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			var packetId = this.packetIdProvider.GetPacketId ();
-			var unsubscribe = new Unsubscribe(packetId, topics);
-
-			var ack = default (UnsubscribeAck);
-			var unsubscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
-
 			try {
-				await this.SendPacket (unsubscribe)
+				var packetId = this.packetIdProvider.GetPacketId ();
+				var unsubscribe = new Unsubscribe(packetId, topics);
+
+				var ack = default (UnsubscribeAck);
+				var unsubscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
+
+				await this.SendPacketAsync (unsubscribe)
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
+					.ObserveOn (Scheduler.Default)
 					.OfType<UnsubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
-					.Timeout(unsubscribeTimeout);
+					.Timeout (unsubscribeTimeout);
+
+				if (ack == null) {
+					var message = string.Format(Resources.Client_UnsubscribeDisconnected, this.Id, string.Join(", ", topics));
+
+					tracer.Error (message);
+
+					throw new ClientException (message);
+				}
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
 
@@ -242,6 +262,9 @@ namespace Hermes
 				tracer.Error (message);
 
 				throw new ClientException (message, timeEx);
+			} catch(ClientException clientEx) {
+				this.Close (clientEx);
+				throw;
 			} catch (Exception ex) {
 				this.Close (ex);
 
@@ -251,14 +274,6 @@ namespace Hermes
 
 				throw new ClientException (message, ex);
 			}
-
-			if (ack == null) {
-				var message = string.Format(Resources.Client_UnsubscribeDisconnected, this.Id, string.Join(", ", topics));
-
-				tracer.Error (message);
-
-				throw new ClientException (message);
-			}
 		}
 
 		public async Task DisconnectAsync ()
@@ -267,12 +282,12 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			this.CloseClientSession ();
-
-			var disconnect = new Disconnect ();
-
 			try {
-				await this.SendPacket (disconnect)
+				this.CloseClientSession ();
+
+				var disconnect = new Disconnect ();
+
+				await this.SendPacketAsync (disconnect)
 					.ContinueWith(t => this.Close (ClosedReason.Disconnect))
 					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (Exception ex) {
@@ -296,7 +311,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info ("Disposing Client {0}", this.Id);
+				tracer.Info (Resources.Tracer_Client_Disposing, this.Id);
 
 				this.packetListener.Dispose ();
 				this.packetsSubscription.Dispose ();
@@ -360,11 +375,11 @@ namespace Hermes
 			}
 		}
 
-		private async Task SendPacket(IPacket packet)
+		private async Task SendPacketAsync(IPacket packet)
 		{
 			this.sender.OnNext (packet);
 
-			await this.packetChannel.SendAsync (packet)
+			await this.packetSender.Run(() => this.packetChannel.SendAsync (packet))
 				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 

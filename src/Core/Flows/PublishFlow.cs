@@ -8,6 +8,8 @@ using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
 using System;
+using System.Reactive.Concurrency;
+using System.Reactive.Threading.Tasks;
 
 namespace Hermes.Flows
 {
@@ -83,10 +85,13 @@ namespace Hermes.Flows
 				tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 				try {
-					await channel.SendAsync (sentMessage)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					if (channel.IsConnected) {
+						await channel.SendAsync (sentMessage)
+							.ConfigureAwait(continueOnCapturedContext: false);
+					} else {
+						ackSubject.OnCompleted ();
+					}	
 				} catch (Exception ex) {
-					qosTimer.Stop ();
 					ackSubject.OnError (ex);
 				}
 
@@ -95,6 +100,7 @@ namespace Hermes.Flows
 			qosTimer.Start ();
 
 			var ackSubscription = channel.Receiver
+				.ObserveOn(Scheduler.Default)
 				.OfType<T> ()
 				.Where (x => x.PacketId == sentMessage.PacketId)
 				.Subscribe (x => {
@@ -102,7 +108,8 @@ namespace Hermes.Flows
 				});
 
 			try {
-				await ackSubject.FirstOrDefaultAsync ();
+				await ackSubject.FirstOrDefaultAsync ()
+					.ToTask().ConfigureAwait(continueOnCapturedContext: false);
 			} finally {
 				ackSubscription.Dispose ();
 				ackSubject.Dispose ();

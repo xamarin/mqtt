@@ -105,13 +105,13 @@ namespace Hermes
 				var buffer = new byte[client.ReceiveBufferSize];
 
 				return Observable.FromAsync<int>(() => {
-					return this.client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
+					return client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
 				})
 				.Select(x => buffer.Take(x).ToArray());
 			})
 			.Repeat()
 			.TakeWhile(bytes => bytes.Any())
-			.ObserveOn(NewThreadScheduler.Default)
+			.ObserveOn(Scheduler.Default)
 			.Subscribe(bytes => {
 				var packets = default(IEnumerable<byte[]>);
 

@@ -180,6 +180,9 @@
   <data name="Tracer_Client_DeletedSessionOnDisconnect" xml:space="preserve">
     <value>Client {0} - Removed client session as part of Disconnect</value>
   </data>
+  <data name="Tracer_Client_Disposing" xml:space="preserve">
+    <value>Client {0} - Disposing</value>
+  </data>
   <data name="Tracer_Client_PacketsObservableCompleted" xml:space="preserve">
     <value>Client - Packet observable sequence has been completed, hence closing the channel</value>
   </data>

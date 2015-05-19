@@ -2,7 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using System.Timers;
+using Timers = System.Timers;
 using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
@@ -22,7 +22,9 @@ namespace Hermes
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
-		Timer keepAliveTimer;
+		readonly TaskRunner dispatcher;
+
+		Timers.Timer keepAliveTimer;
 		bool disposed;
 
 		public ClientPacketListener (IProtocolFlowProvider flowProvider, ProtocolConfiguration configuration)
@@ -30,6 +32,7 @@ namespace Hermes
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 			this.packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+			this.dispatcher = TaskRunner.Get ();
 		}
 
 		public IObservable<IPacket> Packets { get { return this.packets; } }
@@ -121,7 +124,7 @@ namespace Hermes
 		{
 			var interval = this.configuration.KeepAliveSecs * 1000;
 
-			this.keepAliveTimer = new Timer();
+			this.keepAliveTimer = new Timers.Timer();
 
 			this.keepAliveTimer.AutoReset = true;
 			this.keepAliveTimer.Interval = interval;
@@ -150,12 +153,14 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
-
 					this.packets.OnNext (packet);
 
-					await flow.ExecuteAsync (clientId, packet, channel)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await this.dispatcher.Run (() => {
+						tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
+
+						return flow.ExecuteAsync (clientId, packet, channel);
+					})
+					.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					this.NotifyError (ex);
 				}

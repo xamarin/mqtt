@@ -223,6 +223,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client {0} - Disposing.
+        /// </summary>
+        internal static string Tracer_Client_Disposing {
+            get {
+                return ResourceManager.GetString("Tracer_Client_Disposing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client - Packet observable sequence has been completed, hence closing the channel.
         /// </summary>
         internal static string Tracer_Client_PacketsObservableCompleted {
