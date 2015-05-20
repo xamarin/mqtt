@@ -9,24 +9,24 @@ namespace Hermes.Storage
 	public class InMemoryRepository<T> : IRepository<T>
 		where T : StorageObject
     {
-        static readonly ConcurrentDictionary<string, T> elements;
+        readonly ConcurrentDictionary<string, T> elements;
 
-		static InMemoryRepository()
+		public InMemoryRepository()
 		{
-			elements = new ConcurrentDictionary<string, T>();
+			this.elements = new ConcurrentDictionary<string, T>();
 		}
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
-        public IQueryable<T> GetAll(Expression<Func<T, bool>> predicate = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>> predicate = null)
         {
-            IEnumerable<T> result = elements.Select(x => x.Value);
+            var result = elements.Select(x => x.Value);
 
             if (predicate != null)
             {
                 result = result.Where(predicate.Compile());
             }
 
-            return result.AsQueryable();
+			return result;
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
@@ -42,19 +42,19 @@ namespace Hermes.Storage
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public T Get(Expression<Func<T, bool>> predicate)
         {
-			return elements.Select(x => x.Value).FirstOrDefault (predicate.Compile ());
+			return this.GetAll().FirstOrDefault (predicate.Compile ());
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public bool Exist(string id)
         {
-            return elements.Select(x => x.Value).Any (x => x.Id == id);
+			return this.Get (id) != default (T);
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
         public bool Exist(Expression<Func<T, bool>> predicate)
         {
-            return elements.Select(x => x.Value).Any (predicate.Compile ());
+			return this.Get (predicate) != default (T);
         }
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>

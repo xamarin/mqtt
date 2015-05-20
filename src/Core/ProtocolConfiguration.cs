@@ -6,6 +6,7 @@ namespace Hermes
 	{
 		public ProtocolConfiguration ()
 		{
+			this.Port = Protocol.DefaultNonSecurePort;
 			// The default receive buffer size of TcpClient according to
 			// http://msdn.microsoft.com/en-us/library/system.net.sockets.tcpclient.receivebuffersize.aspx
 			// is 8192 bytes

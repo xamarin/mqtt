@@ -14,7 +14,7 @@
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
         <dependencies>
-			<dependency id="Rx-Core" version="2.2.5" />
+			<dependency id="Rx-Main" version="2.2.5" />
         </dependencies>
     </metadata>
     <files>

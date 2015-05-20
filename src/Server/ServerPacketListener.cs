@@ -24,6 +24,7 @@ namespace Hermes
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
+		readonly TaskRunner dispatcher;
 		bool disposed;
 
 		public ServerPacketListener (IConnectionProvider connectionProvider, 
@@ -34,6 +35,7 @@ namespace Hermes
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 			this.packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+			this.dispatcher = TaskRunner.Get ();
 		}
 
 		public IObservable<IPacket> Packets { get { return this.packets; } }
@@ -186,11 +188,13 @@ namespace Hermes
 
 			if (flow != null) {
 				try {
-					tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
-
 					this.packets.OnNext (packet);
 
-					await flow.ExecuteAsync (clientId, packet, channel)
+					await this.dispatcher.Run (() => {
+						tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
+
+						return flow.ExecuteAsync (clientId, packet, channel);
+					})
 						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					this.NotifyError (ex, clientId);

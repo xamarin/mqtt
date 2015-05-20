@@ -7,7 +7,7 @@ using System.Threading;
 using System;
 using System.Reactive.Linq;
 using System.Collections.Generic;
-using System.Reactive.Concurrency;
+using Hermes.Packets;
 
 namespace IntegrationTests
 {
@@ -19,6 +19,51 @@ namespace IntegrationTests
 			: base()
 		{
 			this.server = this.GetServer ();
+		}
+
+		[Fact]
+		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
+		{
+			var fooClient = this.GetClient ();
+			var barClient = this.GetClient ();
+
+			await fooClient.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await barClient.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+
+			var exceptionThrown = false;
+			var serverSignal = new ManualResetEventSlim ();
+			var serverTimer = new System.Timers.Timer ();
+
+			serverTimer.Interval = 100;
+			serverTimer.AutoReset = true;
+			serverTimer.Elapsed += (sender, e) => {
+				if (this.server.ActiveChannels == 1 && server.ActiveClients.Count() == 1) {
+					serverSignal.Set ();
+					serverTimer.Stop ();
+				}
+			};
+
+			serverTimer.Start ();
+
+			try {
+				//Force an exception to be thrown by publishing null message
+				await fooClient.PublishAsync (message: null, qos: QualityOfService.AtMostOnce);
+			} catch {
+				exceptionThrown = true;
+			}
+			
+			var topic = "foo/#";
+
+			await barClient.SubscribeAsync (topic, QualityOfService.AtMostOnce);
+
+			var serverNotified = serverSignal.Wait (TimeSpan.FromSeconds (1));
+
+			Assert.True (serverNotified);
+			Assert.True (exceptionThrown);
+			Assert.Equal(1, this.server.ActiveChannels);
+			Assert.Equal(1, this.server.ActiveClients.Count ());
+
+			serverTimer.Dispose ();
 		}
 
 		[Fact]

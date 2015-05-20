@@ -101,6 +101,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="TaskRunner.cs" />
+    <Compile Include="SingleThreadScheduler.cs" />
     <Compile Include="StoppedEventArgs.cs" />
     <Compile Include="Storage\InMemoryRepositoryProvider.cs" />
     <Compile Include="Storage\IRepositoryProvider.cs" />

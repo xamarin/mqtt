@@ -6,7 +6,6 @@ using Hermes.Packets;
 using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using Xunit;
-using System.Collections.Generic;
 
 namespace IntegrationTests
 {
@@ -50,7 +49,6 @@ namespace IntegrationTests
 			var client = this.GetClient ();
 			var topic = "foo/test/qos1";
 			var count = this.GetTestLoad();
-			var publishTasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
@@ -152,6 +150,11 @@ namespace IntegrationTests
 			Assert.Equal (count, subscriber1Received);
 			Assert.Equal (count, subscriber2Received);
 			Assert.True (completed);
+
+			await subscriber1.UnsubscribeAsync (topicFilter)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			await subscriber2.UnsubscribeAsync (topicFilter)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber1.Close ();
 			subscriber2.Close ();
@@ -256,6 +259,11 @@ namespace IntegrationTests
 
 			Assert.Equal (count, subscriberReceived);
 			Assert.True (completed);
+
+			await subscriber.UnsubscribeAsync (requestTopic)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			await publisher.UnsubscribeAsync (responseTopic)
+				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		public void Dispose ()

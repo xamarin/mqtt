@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Hermes.Storage
@@ -8,7 +8,7 @@ namespace Hermes.Storage
 		 where T : StorageObject
     {
 		/// <exception cref="RepositoryException">RepositoryException</exception>
-        IQueryable<T> GetAll(Expression<Func<T, bool>> predicate = null);
+        IEnumerable<T> GetAll(Expression<Func<T, bool>> predicate = null);
 
 		/// <exception cref="RepositoryException">RepositoryException</exception>
 		T Get (string id);

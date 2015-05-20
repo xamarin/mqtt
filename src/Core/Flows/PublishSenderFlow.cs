@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
+using System.Reactive.Threading.Tasks;
 
 namespace Hermes.Flows
 {
@@ -104,16 +106,19 @@ namespace Hermes.Flows
 
 				tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
-				var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
+				try {
+					var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
 						sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
 							Payload = sentMessage.Payload
 						};
 
-				try {
-					await channel.SendAsync (duplicated)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					if (channel.IsConnected) {
+						await channel.SendAsync (duplicated)
+							.ConfigureAwait(continueOnCapturedContext: false);
+					} else {
+						ackSubject.OnCompleted ();
+					}		
 				} catch (Exception ex) {
-					qosTimer.Stop ();
 					ackSubject.OnError (ex);
 				}
 
@@ -122,6 +127,7 @@ namespace Hermes.Flows
 			qosTimer.Start ();
 
 			var ackSubscription = channel.Receiver
+				.ObserveOn(NewThreadScheduler.Default)
 				.OfType<T> ()
 				.Where (x => x.PacketId == sentMessage.PacketId.Value)
 				.Subscribe (x => {
@@ -129,7 +135,8 @@ namespace Hermes.Flows
 				});
 
 			try {
-				await ackSubject.FirstOrDefaultAsync ();
+				await ackSubject.FirstOrDefaultAsync ()
+					.ToTask().ConfigureAwait(continueOnCapturedContext: false);
 			} finally {
 				ackSubscription.Dispose ();
 				ackSubject.Dispose ();
