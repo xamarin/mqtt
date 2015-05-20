@@ -51,7 +51,7 @@ namespace Hermes
 			this.packetListener.Listen (this.packetChannel);
 
 			this.packetsSubscription = this.packetListener.Packets
-				.ObserveOn(Scheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (packet => { 
 					if (packet.Type == PacketType.Publish) {
 						var publish = packet as Publish;
@@ -127,7 +127,7 @@ namespace Hermes
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
-					.ObserveOn (Scheduler.Default)
+					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<ConnectAck> ()
 					.FirstOrDefaultAsync ()
 					.Timeout (connectTimeout);
@@ -172,7 +172,7 @@ namespace Hermes
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
-					.ObserveOn (Scheduler.Default)
+					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<SubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
 					.Timeout (subscribeTimeout);
@@ -242,7 +242,7 @@ namespace Hermes
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await this.packetListener.Packets
-					.ObserveOn (Scheduler.Default)
+					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<UnsubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
 					.Timeout (unsubscribeTimeout);

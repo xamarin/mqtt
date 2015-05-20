@@ -111,7 +111,7 @@ namespace Hermes
 			})
 			.Repeat()
 			.TakeWhile(bytes => bytes.Any())
-			.ObserveOn(Scheduler.Default)
+			.ObserveOn(NewThreadScheduler.Default)
 			.Subscribe(bytes => {
 				var packets = default(IEnumerable<byte[]>);
 

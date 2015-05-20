@@ -161,7 +161,7 @@ namespace Hermes
 
 			this.keepAliveSubscription = channel.Receiver
 				.Timeout (tolerance)
-				.ObserveOn(Scheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;
 

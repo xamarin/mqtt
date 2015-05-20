@@ -100,7 +100,7 @@ namespace Hermes.Flows
 			qosTimer.Start ();
 
 			var ackSubscription = channel.Receiver
-				.ObserveOn(Scheduler.Default)
+				.ObserveOn(NewThreadScheduler.Default)
 				.OfType<T> ()
 				.Where (x => x.PacketId == sentMessage.PacketId)
 				.Subscribe (x => {
