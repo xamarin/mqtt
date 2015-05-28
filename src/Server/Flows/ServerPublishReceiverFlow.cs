@@ -64,7 +64,7 @@ namespace Hermes.Flows
 				.Where(x => this.topicEvaluator.Matches(publish.Topic, x.TopicFilter));
 
 			if (!subscriptions.Any ()) {
-				tracer.Info (Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
+				tracer.Verbose (Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
 				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId, Payload = publish.Payload });
 			} else {

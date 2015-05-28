@@ -68,8 +68,8 @@ namespace Hermes
 
 			if (disposing) {
 				this.subscription.Dispose ();
-				this.innerChannel.Dispose ();
 				this.receiver.OnCompleted ();
+				this.innerChannel.Dispose ();
 				this.disposed = true;
 			}
 		}

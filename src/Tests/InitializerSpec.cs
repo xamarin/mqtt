@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using Hermes;
 using Hermes.Packets;
@@ -40,13 +41,14 @@ namespace Tests
 		[Fact]
 		public void when_initializing_client_then_succeeds()
 		{
-			var listener = new TcpListener(IPAddress.Loopback, Protocol.DefaultNonSecurePort);
+			var port = new Random().Next(IPEndPoint.MinPort, IPEndPoint.MaxPort);
+			var listener = new TcpListener(IPAddress.Loopback, port);
 
 			listener.Start ();
 
 			var configuration = new ProtocolConfiguration {
 				BufferSize = 131072,
-				Port = Protocol.DefaultNonSecurePort
+				Port = port
 			};
 			var initializer = new ClientInitializer (IPAddress.Loopback.ToString());
 			var client = initializer.Initialize (configuration);

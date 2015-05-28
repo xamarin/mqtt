@@ -112,27 +112,24 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			tracer.Info (Resources.Tracer_Server_NewSocketAccepted);
+			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
 
 			packetListener.Listen (packetChannel);
+			
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex);
-				this.CloseChannel (packetChannel);
+				packetChannel.Dispose ();
+				packetListener.Dispose ();
 			}, () => {
 				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
-
-				this.CloseChannel (packetChannel);
+				packetChannel.Dispose ();
+				packetListener.Dispose ();
 			});
 
 			this.channels.Add (packetChannel);
-		}
-
-		private void CloseChannel(IChannel<IPacket> channel)
-		{
-			channel.Dispose ();
 		}
 	}
 }

@@ -205,6 +205,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Server - Dispatching Publish message to flow {0} for client {1} and topic {2}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_DispatchingPublish {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_DispatchingPublish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The topic {0} has no subscribers, hence the message sent by {1} will not be forwarded.
         /// </summary>
         internal static string Tracer_ServerPublishReceiverFlow_TopicNotSubscribed {
