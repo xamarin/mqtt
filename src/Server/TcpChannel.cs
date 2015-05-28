@@ -67,7 +67,7 @@ namespace Hermes
 			this.sender.OnNext (message);
 
 			try {
-				tracer.Info (Resources.Tracer_TcpChannel_SendingPacket, message.Length);
+				tracer.Verbose (Resources.Tracer_TcpChannel_SendingPacket, message.Length);
 
 				await this.client.GetStream ()
 					.WriteAsync(message, 0, message.Length)
@@ -117,7 +117,7 @@ namespace Hermes
 
 				if (this.buffer.TryGetPackets (bytes, out packets)) {
 					foreach (var packet in packets) {
-						tracer.Info (Resources.Tracer_TcpChannel_ReceivedPacket, packet.Length);
+						tracer.Verbose (Resources.Tracer_TcpChannel_ReceivedPacket, packet.Length);
 
 						this.receiver.OnNext (packet);
 					}
@@ -130,8 +130,7 @@ namespace Hermes
 				}
 			}, () => {
 				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted);
-
-				this.Dispose ();
+				this.receiver.OnCompleted ();
 			});
 		}
 	}

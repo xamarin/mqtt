@@ -62,13 +62,9 @@ namespace Hermes
 						tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic);
 					}
 				}, ex => {
-					this.receiver.OnError (ex);
-					this.sender.OnError (ex);
 					this.Close (ex);
 				}, () => {
 					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
-
-					this.receiver.OnCompleted ();
 					this.Close ();
 				});
 		}
@@ -313,8 +309,9 @@ namespace Hermes
 			if (disposing) {
 				tracer.Info (Resources.Tracer_Client_Disposing, this.Id);
 
-				this.packetListener.Dispose ();
+				this.receiver.OnCompleted ();
 				this.packetsSubscription.Dispose ();
+				this.packetListener.Dispose ();
 				this.packetChannel.Dispose ();
 				this.IsConnected = false; 
 				this.Id = null;
@@ -325,6 +322,7 @@ namespace Hermes
 		private void Close(Exception ex)
 		{
 			tracer.Error (ex);
+			this.receiver.OnError (ex);
 			this.Close (ClosedReason.Error, ex.Message);
 		}
 

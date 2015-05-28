@@ -250,6 +250,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client {0} - Dispatching Publish message to flow {1} and topic {2}.
+        /// </summary>
+        internal static string Tracer_ClientPacketListener_DispatchingPublish {
+            get {
+                return ResourceManager.GetString("Tracer_ClientPacketListener_DispatchingPublish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client {0} - First packet from Server has been received. Type: {1}.
         /// </summary>
         internal static string Tracer_ClientPacketListener_FirstPacketReceived {

@@ -129,7 +129,12 @@ namespace Hermes
 				this.nextPacketsSubscription.Dispose ();
 				this.allPacketsSubscription.Dispose ();
 				this.senderSubscription.Dispose ();
-				this.keepAliveSubscription.Dispose ();
+
+				if (this.keepAliveSubscription != null) {
+					this.keepAliveSubscription.Dispose ();
+				}
+				
+				this.packets.OnCompleted ();
 				this.disposed = true;
 			}
 		}
@@ -191,11 +196,17 @@ namespace Hermes
 					this.packets.OnNext (packet);
 
 					await this.dispatcher.Run (() => {
-						tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
+						var publish = packet as Publish;
+
+						if (publish == null) {
+							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
+						} else {
+							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType().Name, clientId, publish.Topic);
+						}
 
 						return flow.ExecuteAsync (clientId, packet, channel);
 					})
-						.ConfigureAwait(continueOnCapturedContext: false);
+					.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					this.NotifyError (ex, clientId);
 				}

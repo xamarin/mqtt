@@ -116,6 +116,7 @@ namespace Hermes
 					this.keepAliveTimer.Dispose ();
 				}
 				
+				this.packets.OnCompleted ();
 				this.disposed = true;
 			}
 		}
@@ -156,7 +157,13 @@ namespace Hermes
 					this.packets.OnNext (packet);
 
 					await this.dispatcher.Run (() => {
-						tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
+						var publish = packet as Publish;
+
+						if (publish == null) {
+							tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
+						} else {
+							tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingPublish, clientId, flow.GetType().Name, publish.Topic);
+						}
 
 						return flow.ExecuteAsync (clientId, packet, channel);
 					})
