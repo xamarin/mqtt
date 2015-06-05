@@ -72,12 +72,12 @@ namespace Hermes
 
 		public void Stop ()
 		{
-			this.Stop (ClosedReason.Disconnect);
+			this.Stop (ClosedReason.Disposed);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Stop (ClosedReason.Dispose);
+			this.Stop ();
 		}
 
 		protected virtual void Dispose (bool disposing)
