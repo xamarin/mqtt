@@ -4,8 +4,8 @@ namespace Hermes
 {
 	public enum ClosedReason
 	{
-		Disconnect,
-		Dispose,
+		Disconnected,
+		Disposed,
 		Error
 	}
 
