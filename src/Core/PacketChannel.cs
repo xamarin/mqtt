@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Hermes.Diagnostics;
 using Hermes.Packets;
+using Hermes.Properties;
 
 namespace Hermes
 {
 	public class PacketChannel : IChannel<IPacket>
 	{
+		static readonly ITracer tracer = Tracer.Get<PacketChannel> ();
+
 		bool disposed;
 
 		readonly IChannel<byte[]> innerChannel;
@@ -67,6 +71,8 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
+				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+
 				this.subscription.Dispose ();
 				this.receiver.OnCompleted ();
 				this.innerChannel.Dispose ();

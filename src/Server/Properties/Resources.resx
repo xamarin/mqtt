@@ -141,6 +141,18 @@
   <data name="TcpChannel_SocketDisconnected" xml:space="preserve">
     <value>The underlying network stream is not available. The socket could became disconnected</value>
   </data>
+  <data name="Tracer_ConnectionProvider_ClientIdExists" xml:space="preserve">
+    <value>An active connection already exists for client {0}. Disposing current connection and adding the new one</value>
+  </data>
+  <data name="Tracer_ConnectionProvider_RemovingClient" xml:space="preserve">
+    <value>Server - Removing connection of client {0}</value>
+  </data>
+  <data name="Tracer_DisconnectFlow_Disconnecting" xml:space="preserve">
+    <value>Server - Disconnecting client {0}</value>
+  </data>
+  <data name="Tracer_Disposing" xml:space="preserve">
+    <value>Disposing {0}</value>
+  </data>
   <data name="Tracer_PacketChannelCompleted" xml:space="preserve">
     <value>Server - Packet Channel observable sequence has been completed for client {0}</value>
   </data>
@@ -176,6 +188,9 @@
   </data>
   <data name="Tracer_Server_PacketsObservableCompleted" xml:space="preserve">
     <value>Server - Packet observable sequence has been completed, hence closing the channel</value>
+  </data>
+  <data name="Tracer_Server_PacketsObservableError" xml:space="preserve">
+    <value>Server - Packet observable sequence had an error, hence closing the channel</value>
   </data>
   <data name="Tracer_TcpChannel_NetworkStreamCompleted" xml:space="preserve">
     <value>Server - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>

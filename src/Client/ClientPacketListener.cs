@@ -76,11 +76,14 @@ namespace Hermes
 					this.NotifyError (ex);
 				});
 
-			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, () => {
-				tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
+			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, 
+				ex => {
+					this.NotifyError (ex);
+				}, () => {
+					tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
 
-				this.packets.OnCompleted ();	
-			});
+					this.packets.OnCompleted ();	
+				});
 
 			this.senderSubscription = channel.Sender
 				.OfType<Connect> ()
@@ -107,6 +110,8 @@ namespace Hermes
 			}
 
 			if (disposing) {
+				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+
 				this.firstPacketSubscription.Dispose ();
 				this.nextPacketsSubscription.Dispose ();
 				this.allPacketsSubscription.Dispose ();

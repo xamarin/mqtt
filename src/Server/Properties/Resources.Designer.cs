@@ -133,6 +133,42 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An active connection already exists for client {0}. Disposing current connection and adding the new one.
+        /// </summary>
+        internal static string Tracer_ConnectionProvider_ClientIdExists {
+            get {
+                return ResourceManager.GetString("Tracer_ConnectionProvider_ClientIdExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - Removing connection of client {0}.
+        /// </summary>
+        internal static string Tracer_ConnectionProvider_RemovingClient {
+            get {
+                return ResourceManager.GetString("Tracer_ConnectionProvider_RemovingClient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - Disconnecting client {0}.
+        /// </summary>
+        internal static string Tracer_DisconnectFlow_Disconnecting {
+            get {
+                return ResourceManager.GetString("Tracer_DisconnectFlow_Disconnecting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disposing {0}.
+        /// </summary>
+        internal static string Tracer_Disposing {
+            get {
+                return ResourceManager.GetString("Tracer_Disposing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Server - Packet Channel observable sequence has been completed for client {0}.
         /// </summary>
         internal static string Tracer_PacketChannelCompleted {
@@ -183,6 +219,15 @@ namespace Hermes.Properties {
         internal static string Tracer_Server_PacketsObservableCompleted {
             get {
                 return ResourceManager.GetString("Tracer_Server_PacketsObservableCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - Packet observable sequence had an error, hence closing the channel.
+        /// </summary>
+        internal static string Tracer_Server_PacketsObservableError {
+            get {
+                return ResourceManager.GetString("Tracer_Server_PacketsObservableError", resourceCulture);
             }
         }
         

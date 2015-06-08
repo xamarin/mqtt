@@ -88,6 +88,8 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
+				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+
 				this.streamSubscription.Dispose ();
 				this.receiver.OnCompleted ();
 

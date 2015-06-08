@@ -189,6 +189,9 @@
   <data name="Tracer_Client_PacketsObservableCompleted" xml:space="preserve">
     <value>Client - Packet observable sequence has been completed, hence closing the channel</value>
   </data>
+  <data name="Tracer_Disposing" xml:space="preserve">
+    <value>Disposing {0}</value>
+  </data>
   <data name="Tracer_NewApplicationMessageReceived" xml:space="preserve">
     <value>Client {0} - An application message for topic {1} was received</value>
   </data>
