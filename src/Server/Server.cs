@@ -85,6 +85,8 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
+				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+
 				if (this.channelSubscription != null) {
 					this.channelSubscription.Dispose ();
 				}
@@ -120,7 +122,7 @@ namespace Hermes
 			packetListener.Listen (packetChannel);
 			
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
-				tracer.Error (ex);
+				tracer.Error (ex, Resources.Tracer_Server_PacketsObservableError);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			}, () => {

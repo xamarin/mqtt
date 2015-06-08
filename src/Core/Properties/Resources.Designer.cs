@@ -385,6 +385,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disposing {0}.
+        /// </summary>
+        internal static string Tracer_Disposing {
+            get {
+                return ResourceManager.GetString("Tracer_Disposing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ack for message {0} has not been received. Re sending message for client {1}.
         /// </summary>
         internal static string Tracer_PublishFlow_RetryingQoSFlow {

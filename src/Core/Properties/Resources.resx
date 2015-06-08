@@ -231,4 +231,7 @@
   <data name="Tracer_PublishFlow_RetryingQoSFlow" xml:space="preserve">
     <value>The ack for message {0} has not been received. Re sending message for client {1}</value>
   </data>
+  <data name="Tracer_Disposing" xml:space="preserve">
+    <value>Disposing {0}</value>
+  </data>
 </root>

@@ -1,12 +1,15 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Hermes.Diagnostics;
 using Hermes.Packets;
+using Hermes.Properties;
 
 namespace Hermes
 {
 	public class ConnectionProvider : IConnectionProvider
 	{
+		static readonly ITracer tracer = Tracer.Get<ConnectionProvider> ();
 		static readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;
 
 		static ConnectionProvider ()
@@ -31,6 +34,8 @@ namespace Hermes
 			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
+				tracer.Warn (Resources.Tracer_ConnectionProvider_ClientIdExists, clientId);
+
 				this.RemoveConnection (clientId);
 			}
 
@@ -57,6 +62,8 @@ namespace Hermes
 			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryRemove (clientId, out existingConnection)) {
+				tracer.Info (Resources.Tracer_ConnectionProvider_RemovingClient, clientId);
+
 				existingConnection.Dispose ();
 			}
         }

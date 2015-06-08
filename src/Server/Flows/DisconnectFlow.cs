@@ -32,6 +32,8 @@ namespace Hermes.Flows
 			var disconnect = input as Disconnect;
 
 			return Task.Run (() => {
+				tracer.Info (Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
+
 				this.willRepository.Delete (w => w.ClientId == clientId);
 
 				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
