@@ -17,7 +17,7 @@ namespace IntegrationTests
 		private readonly Server server;
 
 		public ConnectionSpecWithKeepAlive () 
-			: base(keepAliveSecs: 5)
+			: base(keepAliveSecs: 1)
 		{
 			this.server = this.GetServer ();
 		}
