@@ -220,6 +220,8 @@ namespace Hermes
 
 		private void NotifyError(Exception exception, string clientId = null)
 		{
+			tracer.Error (exception, Resources.Tracer_ServerPacketListener_Error, clientId ?? "N/A");
+
 			if (!string.IsNullOrEmpty (clientId)) {
 				this.RemoveClient (clientId);
 			}

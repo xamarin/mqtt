@@ -14,7 +14,7 @@ namespace IntegrationTests
 		private readonly Server server;
 
 		public PublishingSpec () 
-			: base(keepAliveSecs: 2)
+			: base(keepAliveSecs: 1)
 		{
 			this.server = this.GetServer ();
 		}

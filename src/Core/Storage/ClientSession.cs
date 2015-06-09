@@ -7,7 +7,6 @@ namespace Hermes.Storage
 		public ClientSession ()
 		{
 			this.Subscriptions = new List<ClientSubscription> ();
-			//this.SavedMessages = new List<SavedMessage> ();
 			this.PendingMessages = new List<PendingMessage> ();
 			this.PendingAcknowledgements = new List<PendingAcknowledgement> ();
 		}
@@ -17,8 +16,6 @@ namespace Hermes.Storage
 		public bool Clean { get; set; }
 
 		public List<ClientSubscription> Subscriptions { get; set; }
-
-		//public List<SavedMessage> SavedMessages { get; set; }
 
 		public List<PendingMessage> PendingMessages { get; set; }
 

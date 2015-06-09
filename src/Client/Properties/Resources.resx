@@ -168,6 +168,9 @@
   <data name="Tracer_ClientPacketListener_DispatchingPublish" xml:space="preserve">
     <value>Client {0} - Dispatching Publish message to flow {1} and topic {2}</value>
   </data>
+  <data name="Tracer_ClientPacketListener_Error" xml:space="preserve">
+    <value>Client - An error occurred while listening and dispatching packets</value>
+  </data>
   <data name="Tracer_ClientPacketListener_FirstPacketReceived" xml:space="preserve">
     <value>Client {0} - First packet from Server has been received. Type: {1}</value>
   </data>

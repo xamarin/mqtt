@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
@@ -65,14 +64,12 @@ namespace Hermes.Flows
 
 		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
 		{
-			var pendingMessages = new List<PendingMessage> (session.PendingMessages);
-
-			foreach (var pendingMessage in pendingMessages) {
+			foreach (var pendingMessage in session.GetPendingMessages()) {
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
 				if (pendingMessage.Status == PendingMessageStatus.PendingToSend) {
-					session.PendingMessages.Remove (pendingMessage);
+					session.RemovePendingMessage (pendingMessage);
 					this.sessionRepository.Update (session);
 
 					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel)
@@ -86,9 +83,7 @@ namespace Hermes.Flows
 
 		private async Task SendPendingAcknowledgementsAsync(ClientSession session, IChannel<IPacket> channel)
 		{
-			var pendingAcknowledgements = new List<PendingAcknowledgement> (session.PendingAcknowledgements);
-
-			foreach (var pendingAcknowledgement in pendingAcknowledgements) {
+			foreach (var pendingAcknowledgement in session.GetPendingAcknowledgements()) {
 				var ack = default(IFlowPacket);
 
 				if (pendingAcknowledgement.Type == PacketType.PublishReceived)

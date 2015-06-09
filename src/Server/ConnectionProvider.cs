@@ -48,6 +48,8 @@ namespace Hermes
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
 				if (!existingConnection.IsConnected) {
+					tracer.Warn (Resources.Tracer_ConnectionProvider_ClientDisconnected, clientId);
+
 					this.RemoveConnection (clientId);
 					existingConnection = default (IChannel<IPacket>);
 				}

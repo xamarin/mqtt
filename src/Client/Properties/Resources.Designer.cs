@@ -259,6 +259,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client - An error occurred while listening and dispatching packets.
+        /// </summary>
+        internal static string Tracer_ClientPacketListener_Error {
+            get {
+                return ResourceManager.GetString("Tracer_ClientPacketListener_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client {0} - First packet from Server has been received. Type: {1}.
         /// </summary>
         internal static string Tracer_ClientPacketListener_FirstPacketReceived {

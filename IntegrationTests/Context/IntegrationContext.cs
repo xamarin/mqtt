@@ -25,7 +25,7 @@ namespace IntegrationTests.Context
 				BufferSize = 128 * 1024,
 				Port = Protocol.DefaultNonSecurePort,
 				KeepAliveSecs = this.keepAliveSecs,
-				WaitingTimeoutSecs = 5,
+				WaitingTimeoutSecs = 2,
 				MaximumQualityOfService = QualityOfService.ExactlyOnce
 			};
 		}

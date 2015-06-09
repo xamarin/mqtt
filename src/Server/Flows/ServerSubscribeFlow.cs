@@ -59,7 +59,9 @@ namespace Hermes.Flows
 						continue;
 					}
 
-					var clientSubscription = session.Subscriptions.FirstOrDefault(s => s.TopicFilter == subscription.TopicFilter);
+					var clientSubscription = session
+						.GetSubscriptions()
+						.FirstOrDefault(s => s.TopicFilter == subscription.TopicFilter);
 
 					if (clientSubscription != null) {
 						clientSubscription.MaximumQualityOfService = subscription.MaximumQualityOfService;
@@ -70,7 +72,7 @@ namespace Hermes.Flows
 							MaximumQualityOfService = subscription.MaximumQualityOfService 
 						};
 
-						session.Subscriptions.Add (clientSubscription);
+						session.AddSubscription (clientSubscription);
 					}
 
 					await this.SendRetainedMessagesAsync (clientSubscription, channel)
