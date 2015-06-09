@@ -29,10 +29,10 @@ namespace Hermes.Flows
 			}
 
 			foreach (var topic in unsubscribe.Topics) {
-				var subscription = session.Subscriptions.FirstOrDefault (s => s.TopicFilter == topic);
+				var subscription = session.GetSubscriptions().FirstOrDefault (s => s.TopicFilter == topic);
 
 				if (subscription != null) {
-					session.Subscriptions.Remove (subscription);
+					session.RemoveSubscription (subscription);
 				}
 			}
 

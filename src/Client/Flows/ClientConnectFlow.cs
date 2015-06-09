@@ -37,7 +37,7 @@ namespace Hermes.Flows
 
 		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingMessage in session.PendingMessages) {
+			foreach (var pendingMessage in session.GetPendingMessages()) {
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
@@ -49,7 +49,7 @@ namespace Hermes.Flows
 
 		private async Task SendPendingAcknowledgementsAsync(ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingAcknowledgement in session.PendingAcknowledgements) {
+			foreach (var pendingAcknowledgement in session.GetPendingAcknowledgements()) {
 				var ack = default(IFlowPacket);
 
 				if (pendingAcknowledgement.Type == PacketType.PublishReceived) {

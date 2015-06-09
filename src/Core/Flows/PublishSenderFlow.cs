@@ -82,10 +82,11 @@ namespace Hermes.Flows
 				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
-			var pendingMessage = session.PendingMessages.FirstOrDefault(p => p.PacketId.HasValue 
-				&& p.PacketId.Value == packetId);
+			var pendingMessage = session
+				.GetPendingMessages()
+				.FirstOrDefault(p => p.PacketId.HasValue && p.PacketId.Value == packetId);
 
-			session.PendingMessages.Remove (pendingMessage);
+			session.RemovePendingMessage (pendingMessage);
 
 			this.sessionRepository.Update (session);
 		}
@@ -189,7 +190,7 @@ namespace Hermes.Flows
 				Payload = message.Payload
 			};
 
-			session.PendingMessages.Add (savedMessage);
+			session.AddPendingMessage (savedMessage);
 
 			this.sessionRepository.Update (session);
 		}

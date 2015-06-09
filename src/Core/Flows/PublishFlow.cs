@@ -60,10 +60,11 @@ namespace Hermes.Flows
 				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
-			var pendingAcknowledgement = session.PendingAcknowledgements
+			var pendingAcknowledgement = session
+				.GetPendingAcknowledgements()
 				.FirstOrDefault(u => u.Type == type && u.PacketId == packetId);
 
-			session.PendingAcknowledgements.Remove (pendingAcknowledgement);
+			session.RemovePendingAcknowledgement (pendingAcknowledgement);
 
 			this.sessionRepository.Update (session);
 		}
@@ -134,7 +135,7 @@ namespace Hermes.Flows
 				throw new ProtocolException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
-			session.PendingAcknowledgements.Add (unacknowledgeMessage);
+			session.AddPendingAcknowledgement (unacknowledgeMessage);
 
 			this.sessionRepository.Update (session);
 		}

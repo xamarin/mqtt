@@ -59,9 +59,10 @@ namespace Hermes.Flows
 
 		private async Task DispatchAsync (Publish publish, string clientId)
 		{
-			var sessions = this.sessionRepository.GetAll ();
-			var subscriptions = sessions.SelectMany(s => s.Subscriptions)
-				.Where(x => this.topicEvaluator.Matches(publish.Topic, x.TopicFilter));
+			var subscriptions = this.sessionRepository
+				.GetAll ().ToList ()
+				.SelectMany (s => s.GetSubscriptions ())
+				.Where (x => this.topicEvaluator.Matches (publish.Topic, x.TopicFilter));
 
 			if (!subscriptions.Any ()) {
 				tracer.Verbose (Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
