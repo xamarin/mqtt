@@ -133,6 +133,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Server - The connection for client {0} is not connected. Removing connection.
+        /// </summary>
+        internal static string Tracer_ConnectionProvider_ClientDisconnected {
+            get {
+                return ResourceManager.GetString("Tracer_ConnectionProvider_ClientDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An active connection already exists for client {0}. Disposing current connection and adding the new one.
         /// </summary>
         internal static string Tracer_ConnectionProvider_ClientIdExists {
@@ -255,6 +264,15 @@ namespace Hermes.Properties {
         internal static string Tracer_ServerPacketListener_DispatchingPublish {
             get {
                 return ResourceManager.GetString("Tracer_ServerPacketListener_DispatchingPublish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - An error occurred while listening and dispatching packets - Client: {0}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_Error {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_Error", resourceCulture);
             }
         }
         

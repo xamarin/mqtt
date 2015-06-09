@@ -181,6 +181,8 @@ namespace Hermes
 
 		private void NotifyError(Exception exception)
 		{
+			tracer.Error (exception, Resources.Tracer_ClientPacketListener_Error);
+
 			this.packets.OnError (exception);
 		}
 
