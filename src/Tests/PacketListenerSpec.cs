@@ -88,16 +88,16 @@ namespace Tests
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
 			listener.Listen (packetChannel.Object);
-			
-			var timeoutOccured = false;
+
+			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
 			listener.Packets.Subscribe (_ => { }, ex => {
-				timeoutOccured = true;
+				timeoutSignal.Set ();
 			});
 
-			Thread.Sleep ((waitingTimeout + 1) * 1000);
+			var timeoutOccurred = timeoutSignal.Wait ((waitingTimeout + 1) * 1000);
 
-			Assert.True (timeoutOccured);
+			Assert.True (timeoutOccurred);
 		}
 
 		[Fact]
@@ -219,11 +219,11 @@ namespace Tests
 			var packetChannel = packetChannelMock.Object;
 
 			listener.Listen (packetChannel);
-			
-			var timeoutOccured = false;
+
+			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
 			listener.Packets.Subscribe (_ => { }, ex => {
-				timeoutOccured = true;
+				timeoutSignal.Set ();
 			});
 
 			var clientId = Guid.NewGuid().ToString();
@@ -236,9 +236,9 @@ namespace Tests
 
 			sender.OnNext (connectAck);
 
-			Thread.Sleep ((int)((keepAlive + 1) * 1.5) * 1000);
+			var timeoutOccurred = timeoutSignal.Wait(((int)((keepAlive + 1) * 1.5) * 1000));
 
-			Assert.True (timeoutOccured);
+			Assert.True (timeoutOccurred);
 		}
 
 		[Fact]
@@ -299,11 +299,11 @@ namespace Tests
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
 			listener.Listen (packetChannel.Object);
-			
-			var timeoutOccured = false;
+
+			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
 			listener.Packets.Subscribe (_ => { }, ex => {
-				timeoutOccured = true;
+				timeoutSignal.Set ();
 			});
 
 			var clientId = Guid.NewGuid().ToString();
@@ -312,9 +312,9 @@ namespace Tests
 			receiver.OnNext (connect);
 			packetChannel.Object.SendAsync(new ConnectAck (ConnectionStatus.Accepted, existingSession: false)).Wait();
 
-			Thread.Sleep (2000);
+			var timeoutOccurred = timeoutSignal.Wait (2000); 
 
-			Assert.False (timeoutOccured);
+			Assert.False (timeoutOccurred);
 		}
 	}
 }

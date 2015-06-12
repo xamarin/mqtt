@@ -1,15 +1,13 @@
 ﻿using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using System.Timers;
 using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
 using System;
 using System.Reactive.Concurrency;
-using System.Reactive.Threading.Tasks;
+using System.Threading;
 
 namespace Hermes.Flows
 {
@@ -69,53 +67,41 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 		}
 
-		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
+		protected Task MonitorAckAsync<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			var ackSubject = new Subject<T> ();
-			var retries = 0;
-			var qosTimer = new Timer();
+			return Task.Run (() => {
+				var retries = 0;
+				var ackSignal = new ManualResetEventSlim (initialState: false);
 
-			qosTimer.AutoReset = true;
-			qosTimer.Interval = this.configuration.WaitingTimeoutSecs * 1000;
-			qosTimer.Elapsed += async (sender, e) => {
-				if (retries == this.configuration.QualityOfServiceAckRetries) {
-					ackSubject.OnError (new ProtocolException (string.Format (Resources.PublishFlow_AckMonitor_ExceededMaximumAckRetries, this.configuration.QualityOfServiceAckRetries)));
-				}
+				var intervalSubscription = Observable
+					.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
+					.Subscribe (_ => {
+						if (!ackSignal.IsSet) {
+							tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
-				tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+							if (channel.IsConnected) {
+								channel.SendAsync (sentMessage);
+							} else {
+								ackSignal.Set ();
+							}
 
-				try {
-					if (channel.IsConnected) {
-						await channel.SendAsync (sentMessage)
-							.ConfigureAwait(continueOnCapturedContext: false);
-					} else {
-						ackSubject.OnCompleted ();
-					}	
-				} catch (Exception ex) {
-					ackSubject.OnError (ex);
-				}
+							retries++;
+						}
+					});
 
-				retries++;
-			};
-			qosTimer.Start ();
+				var ackSubscription = channel.Receiver
+					.ObserveOn(NewThreadScheduler.Default)
+					.OfType<T> ()
+					.Where (x => x.PacketId == sentMessage.PacketId)
+					.Subscribe (x => {
+						ackSignal.Set();
+					});
 
-			var ackSubscription = channel.Receiver
-				.ObserveOn(NewThreadScheduler.Default)
-				.OfType<T> ()
-				.Where (x => x.PacketId == sentMessage.PacketId)
-				.Subscribe (x => {
-					ackSubject.OnNext (x);
-				});
-
-			try {
-				await ackSubject.FirstOrDefaultAsync ()
-					.ToTask().ConfigureAwait(continueOnCapturedContext: false);
-			} finally {
+				ackSignal.Wait();
+				intervalSubscription.Dispose();
 				ackSubscription.Dispose ();
-				ackSubject.Dispose ();
-				qosTimer.Dispose ();
-			}
+			});
 		}
 
 		private void SavePendingAcknowledgement(IFlowPacket ack, string clientId)

@@ -8,11 +8,11 @@ using Xunit;
 
 namespace IntegrationTests
 {
-	public class SubscriptionSpec : ConnectedContext, IDisposable
+	public class SubscriptionSpec : ConnectedContext
 	{
-		private readonly Server server;
+		readonly Server server;
 
-		public SubscriptionSpec () : base()
+		public SubscriptionSpec ()
 		{
 			this.server = this.GetServer ();
 		}
@@ -21,7 +21,7 @@ namespace IntegrationTests
 		public async Task when_subscribe_topic_then_succeeds()
 		{
 			var client = this.GetClient ();
-			var topicFilter = "test/topic1/#";
+			var topicFilter = Guid.NewGuid ().ToString () + "/#";
 
 			await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -29,6 +29,8 @@ namespace IntegrationTests
 			Assert.True (client.IsConnected);
 
 			await client.UnsubscribeAsync (topicFilter);
+
+			client.Close ();
 		}
 
 		[Fact]
@@ -39,7 +41,7 @@ namespace IntegrationTests
 			var topics = new List<string> ();
 
 			for (var i = 1; i <= topicsToSubscribe; i++) {
-				var topicFilter = string.Format ("test/topic{0}", i);
+				var topicFilter = Guid.NewGuid ().ToString ();
 
 				await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
 					.ConfigureAwait(continueOnCapturedContext: false);
@@ -50,6 +52,7 @@ namespace IntegrationTests
 			Assert.True (client.IsConnected);
 
 			await client.UnsubscribeAsync (topics.ToArray ());
+
 			client.Close ();
 		}
 
@@ -61,7 +64,7 @@ namespace IntegrationTests
 			var topics = new List<string> ();
 
 			for (var i = 1; i <= topicsToSubscribe; i++) {
-				var topicFilter = string.Format ("test/topic{0}", i);
+				var topicFilter = Guid.NewGuid ().ToString ();
 
 				topics.Add (topicFilter);
 				await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
@@ -78,7 +81,9 @@ namespace IntegrationTests
 
 		public void Dispose ()
 		{
-			this.server.Stop ();
+			if (this.server != null) {
+				this.server.Stop ();
+			}
 		}
 	}
 }

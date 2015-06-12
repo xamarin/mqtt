@@ -11,7 +11,7 @@ namespace IntegrationTests
 {
 	public class PublishingSpec : ConnectedContext, IDisposable
 	{
-		private readonly Server server;
+		readonly Server server;
 
 		public PublishingSpec () 
 			: base(keepAliveSecs: 1)
@@ -23,7 +23,7 @@ namespace IntegrationTests
 		public async Task when_publish_messages_with_qos0_then_succeeds()
 		{
 			var client = this.GetClient ();
-			var topic = "foo/test/qos0";
+			var topic = Guid.NewGuid ().ToString ();
 			var count = this.GetTestLoad();
 
 			for (var i = 1; i <= count; i++) {
@@ -47,7 +47,7 @@ namespace IntegrationTests
 		public async Task when_publish_messages_with_qos1_then_succeeds()
 		{
 			var client = this.GetClient ();
-			var topic = "foo/test/qos1";
+			var topic = Guid.NewGuid ().ToString ();
 			var count = this.GetTestLoad();
 
 			for (var i = 1; i <= count; i++) {
@@ -71,7 +71,7 @@ namespace IntegrationTests
 		public async Task when_publish_messages_with_qos2_then_succeeds()
 		{
 			var client = this.GetClient ();
-			var topic = "foo/test/qos2";
+			var topic = Guid.NewGuid ().ToString ();
 			var count = this.GetTestLoad();
 
 			for (var i = 1; i <= count; i++) {
@@ -96,8 +96,9 @@ namespace IntegrationTests
 		{
 			var count = this.GetTestLoad();
 
-			var topicFilter = "test/#";
-			var topic = "test/foo/bar";
+			var guid = Guid.NewGuid ().ToString ();
+			var topicFilter = guid + "/#";
+			var topic = guid;
 
 			var publisher = this.GetClient ();
 			var subscriber1 = this.GetClient ();
@@ -166,7 +167,7 @@ namespace IntegrationTests
 		{
 			var count = this.GetTestLoad();
 
-			var topic = "test/foo/nosubscribers";
+			var topic = Guid.NewGuid ().ToString ();
 			var publisher = this.GetClient ();
 			var topicsNotSubscribedCount = 0;
 			var topicsNotSubscribedDone = new ManualResetEventSlim ();
@@ -191,12 +192,12 @@ namespace IntegrationTests
 					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
-			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(this.keepAliveSecs));
-
-			publisher.Close ();
+			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(this.keepAliveSecs * 2));
 
 			Assert.Equal (count, topicsNotSubscribedCount);
 			Assert.True (success);
+
+			publisher.Close ();
 		}
 
 		[Fact]
@@ -204,8 +205,9 @@ namespace IntegrationTests
 		{
 			var count = this.GetTestLoad();
 
-			var requestTopic = "test/foo";
-			var responseTopic = "test/foo/response";
+			var guid = Guid.NewGuid ().ToString ();
+			var requestTopic = guid;
+			var responseTopic = guid + "/response";
 
 			var publisher = this.GetClient ();
 			var subscriber = this.GetClient ();
@@ -264,11 +266,16 @@ namespace IntegrationTests
 				.ConfigureAwait(continueOnCapturedContext: false);
 			await publisher.UnsubscribeAsync (responseTopic)
 				.ConfigureAwait(continueOnCapturedContext: false);
+
+			subscriber.Close ();
+			publisher.Close ();
 		}
 
 		public void Dispose ()
 		{
-			this.server.Stop ();
+			if (this.server != null) {
+				this.server.Stop ();
+			}
 		}
 
 		private TestMessage GetTestMessage()

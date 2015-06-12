@@ -286,6 +286,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Server - Sending last will message of client {0} to topic {1}.
+        /// </summary>
+        internal static string Tracer_ServerPublishReceiverFlow_SendingWill {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPublishReceiverFlow_SendingWill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The topic {0} has no subscribers, hence the message sent by {1} will not be forwarded.
         /// </summary>
         internal static string Tracer_ServerPublishReceiverFlow_TopicNotSubscribed {
