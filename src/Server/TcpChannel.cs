@@ -38,7 +38,7 @@ namespace Hermes
 		{ 
 			get 
 			{
-				var connected = this.client != null;
+				var connected = !disposed;
 				
 				try {
 					connected = connected && this.client.Connected;

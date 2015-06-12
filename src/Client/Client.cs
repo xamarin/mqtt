@@ -15,6 +15,7 @@ namespace Hermes
     {
 		static readonly ITracer tracer = Tracer.Get<Client> ();
 
+		bool protocolDisconnected;
 		bool disposed;
 		bool isConnected;
 		IDisposable packetsSubscription;
@@ -74,14 +75,7 @@ namespace Hermes
 		public IObservable<IPacket> Sender { get { return this.sender; } }
 
 		/// <exception cref="ClientException">ClientException</exception>
-		public async Task ConnectAsync (ClientCredentials credentials, bool cleanSession = false)
-		{
-			await this.ConnectAsync (credentials, null, cleanSession)
-				.ConfigureAwait(continueOnCapturedContext: false);
-		}
-
-		/// <exception cref="ClientException">ClientException</exception>
-		public async Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false)
+		public async Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false)
 		{
 			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
@@ -264,11 +258,10 @@ namespace Hermes
 			try {
 				this.CloseClientSession ();
 
-				var disconnect = new Disconnect ();
-
-				await this.SendPacketAsync (disconnect)
-					.ContinueWith(t => this.Close ())
+				await this.SendPacketAsync (new Disconnect ())
 					.ConfigureAwait(continueOnCapturedContext: false);
+
+				this.protocolDisconnected = true;
 			} catch (Exception ex) {
 				this.Close (ex);
 				throw;
@@ -392,7 +385,10 @@ namespace Hermes
 					this.Close (ex);
 				}, () => {
 					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
-					this.Close (ClosedReason.Disconnected);
+
+					var reason = this.protocolDisconnected ? ClosedReason.Disposed : ClosedReason.Disconnected;
+
+					this.Close (reason);
 				});
 		}
 	}

@@ -19,7 +19,7 @@ namespace Hermes
 		{
 			var formatters = this.GetFormatters();
 			var manager = new PacketManager (formatters);
-			
+
 			return new PacketChannel (binaryChannel, manager, this.configuration);
 		}
 

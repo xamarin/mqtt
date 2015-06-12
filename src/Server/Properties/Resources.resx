@@ -171,6 +171,9 @@
   <data name="Tracer_ServerPacketListener_Error" xml:space="preserve">
     <value>Server - An error occurred while listening and dispatching packets - Client: {0}</value>
   </data>
+  <data name="Tracer_ServerPublishReceiverFlow_SendingWill" xml:space="preserve">
+    <value>Server - Sending last will message of client {0} to topic {1}</value>
+  </data>
   <data name="Tracer_ServerPublishReceiverFlow_TopicNotSubscribed" xml:space="preserve">
     <value>The topic {0} has no subscribers, hence the message sent by {1} will not be forwarded</value>
   </data>

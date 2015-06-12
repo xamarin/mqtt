@@ -95,6 +95,15 @@ namespace Hermes
 						this.StartKeepAliveMonitor (channel, clientId);
 					}
 				});
+
+			this.senderSubscription = channel.Sender
+				.OfType<Disconnect> ()
+				.FirstAsync ()
+				.Subscribe (disconnect => {
+					if (this.configuration.KeepAliveSecs > 0) {
+						this.StopKeepAliveMonitor ();
+					}
+				});
 		}
 
 		public void Dispose ()
@@ -116,11 +125,7 @@ namespace Hermes
 				this.nextPacketsSubscription.Dispose ();
 				this.allPacketsSubscription.Dispose ();
 				this.senderSubscription.Dispose ();
-
-				if (this.keepAliveTimer != null) {
-					this.keepAliveTimer.Dispose ();
-				}
-				
+				this.StopKeepAliveMonitor ();
 				this.packets.OnCompleted ();
 				this.disposed = true;
 			}
@@ -151,6 +156,13 @@ namespace Hermes
 			channel.Sender.Subscribe (p => {
 				this.keepAliveTimer.Interval = interval;
 			});
+		}
+
+		private void StopKeepAliveMonitor()
+		{
+			if (this.keepAliveTimer != null) {
+				this.keepAliveTimer.Dispose ();
+			}
 		}
 
 		private async Task DispatchPacketAsync(IPacket packet, string clientId, IChannel<IPacket> channel)
