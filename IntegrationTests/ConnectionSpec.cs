@@ -22,6 +22,18 @@ namespace IntegrationTests
 		}
 
 		[Fact]
+		public void when_stopping_server_then_it_is_not_reachable()
+		{
+			this.server.Stop ();
+
+			var ex = Assert.Throws<ClientException>(() => this.GetClient ());
+
+			Assert.NotNull (ex);
+			Assert.NotNull (ex.InnerException);
+			Assert.True (ex.InnerException is ProtocolException);
+		}
+
+		[Fact]
 		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
 		{
 			var fooClient = this.GetClient ();

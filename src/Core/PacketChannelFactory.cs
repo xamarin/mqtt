@@ -1,18 +1,37 @@
 ﻿using System.Collections.Generic;
 using Hermes.Formatters;
 using Hermes.Packets;
+using Hermes.Properties;
 
 namespace Hermes
 {
 	public class PacketChannelFactory : IPacketChannelFactory
 	{
+		readonly IChannelFactory innerChannelFactory;
 		readonly ITopicEvaluator topicEvaluator;
 		readonly ProtocolConfiguration configuration;
+
+		public PacketChannelFactory (IChannelFactory innerChannelFactory, ITopicEvaluator topicEvaluator, ProtocolConfiguration configuration)
+			: this(topicEvaluator, configuration)
+		{
+			this.innerChannelFactory = innerChannelFactory;
+		}
 
 		public PacketChannelFactory (ITopicEvaluator topicEvaluator, ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.configuration = configuration;
+		}
+
+		public IChannel<IPacket> Create ()
+		{
+			if (this.innerChannelFactory == null) {
+				throw new ProtocolException (Resources.PacketChannelFactory_InnerChannelFactoryNotFound);
+			}
+
+			var binaryChannel = this.innerChannelFactory.Create ();
+
+			return this.Create (binaryChannel);
 		}
 
 		public IChannel<IPacket> Create (IChannel<byte[]> binaryChannel)

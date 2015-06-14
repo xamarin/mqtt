@@ -54,6 +54,7 @@
     <Compile Include="Formatters\UnsubscribeFormatter.cs" />
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IChannel.cs" />
+    <Compile Include="IChannelFactory.cs" />
     <Compile Include="IInitalizer.cs" />
     <Compile Include="IPacketIdProvider.cs" />
     <Compile Include="IPacketListener.cs" />
@@ -116,6 +117,8 @@
     <Compile Include="Storage\ClientSession.cs" />
     <Compile Include="Storage\PendingAcknowledgement.cs" />
     <Compile Include="Storage\StorageObject.cs" />
+    <Compile Include="TcpChannel.cs" />
+    <Compile Include="TcpChannelFactory.cs" />
     <Compile Include="TopicEvaluator.cs" />
     <Compile Include="Tracer.cs" />
   </ItemGroup>
