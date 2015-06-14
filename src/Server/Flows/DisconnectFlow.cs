@@ -23,15 +23,15 @@ namespace Hermes.Flows
 			this.willRepository = willRepository;
 		}
 
-		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
 			if (input.Type != PacketType.Disconnect) {
-				return Task.Delay(0);
+				return;
 			}
 
-			var disconnect = input as Disconnect;
+			await Task.Run (() => {
+				var disconnect = input as Disconnect;
 
-			return Task.Run (() => {
 				tracer.Info (Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
 
 				this.willRepository.Delete (w => w.ClientId == clientId);

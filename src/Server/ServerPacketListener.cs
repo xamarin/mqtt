@@ -95,11 +95,16 @@ namespace Hermes
 			this.allPacketsSubscription = channel.Receiver.Subscribe (_ => { }, 
 				ex => {
 					this.NotifyError (ex, clientId);
-				}, () => {
+				}, async () => {
 					tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
 
 					if (!string.IsNullOrEmpty (clientId)) {
 						this.RemoveClient (clientId);
+
+						var publishFlow = this.flowProvider.GetFlow<ServerPublishReceiverFlow> ();
+
+						await publishFlow.SendWillAsync (clientId)
+							.ConfigureAwait(continueOnCapturedContext: false);
 					}
 				
 					this.packets.OnCompleted ();	

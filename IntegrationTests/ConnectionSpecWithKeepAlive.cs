@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +11,7 @@ namespace IntegrationTests
 {
 	public class ConnectionSpecWithKeepAlive : IntegrationContext, IDisposable
 	{
-		private readonly Server server;
+		readonly Server server;
 
 		public ConnectionSpecWithKeepAlive () 
 			: base(keepAliveSecs: 1)
@@ -31,7 +28,7 @@ namespace IntegrationTests
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
-			var existClientAfterConnect = this.server.ActiveClients.Any (c => c == clientId);
+			var existClientAfterConnect = server.ActiveClients.Any (c => c == clientId);
 			var clientClosed = new ManualResetEventSlim ();
 
 			var subscription = Observable.Create<bool> (observer => {
@@ -39,7 +36,7 @@ namespace IntegrationTests
 
 				timer.Interval = 200;
 				timer.Elapsed += (sender, args) => {
-					if (this.server.ActiveClients.Any (c => c == clientId)) {
+					if (server.ActiveClients.Any (c => c == clientId)) {
 						observer.OnNext (false);
 					} else {
 						observer.OnNext (true);
@@ -65,42 +62,31 @@ namespace IntegrationTests
 
 			Assert.True (existClientAfterConnect);
 			Assert.True (serverDetectedClientClosed);
-			Assert.False (this.server.ActiveClients.Any (c => c == clientId));
+			Assert.False (server.ActiveClients.Any (c => c == clientId));
 		}
 
 		[Fact]
 		public async Task when_keep_alive_enabled_and_no_packets_are_sent_then_connection_is_maintained()
 		{
-			var clients = new List<Client>();
-			var count = this.GetTestLoad();
+			var client = this.GetClient ();
 
-			for (var i = 1; i <= count; i++) {
-				var client = this.GetClient ();
+			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+				.ConfigureAwait(continueOnCapturedContext: false);
 
-				clients.Add (client);
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
-					.ConfigureAwait(continueOnCapturedContext: false);
-			}
+			Thread.Sleep (TimeSpan.FromSeconds(this.keepAliveSecs * 5));
 
-			Thread.Sleep (TimeSpan.FromSeconds(this.keepAliveSecs * 3));
+			Assert.Equal (1, server.ActiveClients.Count ());
+			Assert.True(client.IsConnected);
+			Assert.False (string.IsNullOrEmpty (client.Id));
 
-			var connectedClients = clients.Where (c => c.IsConnected);
-			var serverClients = clients.Select(c => c.Id).Where(x => this.server.ActiveClients.Any(y => y == x));
-
-			Debug.WriteLine (string.Format ("Connected Clients: {0}", connectedClients.Count ()));
-			Debug.WriteLine (string.Format ("Server Clients: {0}", serverClients.Count ()));
-
-			Assert.Equal (clients.Count, connectedClients.Count ());
-			Assert.Equal(clients.Count, serverClients.Count());
-
-			foreach (var client in clients) {
-				client.Close ();
-			}
+			client.Close ();
 		}
 
 		public void Dispose ()
 		{
-			this.server.Stop ();
+			if (this.server != null) {
+				this.server.Stop ();
+			}
 		}
 	}
 }

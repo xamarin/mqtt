@@ -36,7 +36,7 @@ namespace Hermes.Flows
 			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (sessionRepository, willRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
 			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (topicEvaluator, connectionProvider,
-				senderFlow, retainedRepository, sessionRepository, packetIdProvider, eventStream, configuration));
+				senderFlow, retainedRepository, sessionRepository, willRepository, packetIdProvider, eventStream, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository, 
 				retainedRepository, packetIdProvider, senderFlow, configuration));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (sessionRepository));
