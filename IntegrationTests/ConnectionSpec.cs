@@ -8,6 +8,7 @@ using System;
 using System.Reactive.Linq;
 using Hermes.Packets;
 using System.Text;
+using System.Collections.Generic;
 
 namespace IntegrationTests
 {
@@ -57,41 +58,59 @@ namespace IntegrationTests
 		}
 
 		[Fact]
-		public async Task when_connect_client_then_succeeds()
+		public async Task when_connect_clients_then_succeeds()
 		{
-			var client = this.GetClient ();
+			var count = this.GetTestLoad ();
+			var clients = new List<IClient> ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
-				.ConfigureAwait(continueOnCapturedContext: false);
+			for (var i = 1; i <= count; i++) {
+				var client = this.GetClient ();
 
-			Assert.Equal (1, server.ActiveClients.Count ());
-			Assert.True (client.IsConnected);
-			Assert.True (!string.IsNullOrEmpty (client.Id));
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+					.ConfigureAwait(continueOnCapturedContext: false);
 
-			client.Close ();
+				clients.Add (client);
+			}
+
+			Assert.Equal (count, server.ActiveClients.Count ());
+			Assert.True (clients.All(c => c.IsConnected));
+			Assert.True (clients.All(c => !string.IsNullOrEmpty (c.Id)));
+
+			foreach (var client in clients) {
+				client.Close ();
+			}
 		}
 
 		[Fact]
-		public async Task when_disconnect_client_then_succeeds()
+		public async Task when_disconnect_clients_then_succeeds()
 		{
-			var client = this.GetClient ();
+			var count = this.GetTestLoad ();
+			var clients = new List<IClient> ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
-			await client.DisconnectAsync ();
+			for (var i = 1; i <= count; i++) {
+				var client = this.GetClient ();
+
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+				await client.DisconnectAsync ();
+
+				clients.Add (client);
+			}
 
 			var disconnectedSignal = new ManualResetEventSlim (initialState: false);
 
 			while (!disconnectedSignal.IsSet) {
-				if (server.ActiveClients.Count () == 0 && !client.IsConnected) {
+				if (server.ActiveClients.Count () == 0 && clients.All(c => !c.IsConnected)) {
 					disconnectedSignal.Set ();
 				}
 			}
 
 			Assert.Equal (0, server.ActiveClients.Count ());
-			Assert.True (!client.IsConnected);
-			Assert.True (string.IsNullOrEmpty(client.Id));
+			Assert.True (clients.All(c => !c.IsConnected));
+			Assert.True (clients.All(c => string.IsNullOrEmpty (c.Id)));
 
-			client.Close ();
+			foreach (var client in clients) {
+				client.Close ();
+			}
 		}
 
 		[Fact]

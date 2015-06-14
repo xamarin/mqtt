@@ -331,7 +331,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Server - An error occurred while closing underlying channel. Error code: {0}.
+        ///   Looks up a localized string similar to Client - An error occurred while closing underlying channel. Error code: {0}.
         /// </summary>
         internal static string Tracer_TcpChannel_DisposeError {
             get {

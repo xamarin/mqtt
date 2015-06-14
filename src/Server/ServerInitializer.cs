@@ -14,7 +14,7 @@ namespace Hermes
 
 		public ServerInitializer (IAuthenticationProvider authenticationProvider = null)
 		{
-			this.authenticationProvider = authenticationProvider ?? new NoAuthenticationProvider ();
+			this.authenticationProvider = authenticationProvider ?? NullAuthenticationProvider.Instance;
 		}
 
 		public Server Initialize(ProtocolConfiguration configuration)

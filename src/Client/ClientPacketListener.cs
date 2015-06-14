@@ -7,6 +7,7 @@ using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
+using System.Reactive.Disposables;
 
 namespace Hermes
 {
@@ -14,16 +15,12 @@ namespace Hermes
 	{
 		private static readonly ITracer tracer = Tracer.Get<ClientPacketListener> ();
 
-		IDisposable firstPacketSubscription;
-		IDisposable nextPacketsSubscription;
-		IDisposable allPacketsSubscription;
-		IDisposable senderSubscription;
-
 		readonly IChannel<IPacket> channel;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
 		readonly TaskRunner dispatcher;
+		IDisposable disposable;
 		bool disposed;
 		string clientId = string.Empty;
 		Timers.Timer keepAliveTimer;
@@ -45,11 +42,12 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			this.firstPacketSubscription = this.ListenFirstPacket ();
-			this.nextPacketsSubscription = this.ListenNextPackets ();
-			this.allPacketsSubscription = this.ListenCompletionAndErrors ();
-			this.senderSubscription = this.ListenSentConnectPacket ();
-			this.senderSubscription = this.ListenSentDisconnectPacket ();
+			this.disposable = new CompositeDisposable (
+				this.ListenFirstPacket (),
+				this.ListenNextPackets (),
+				this.ListenCompletionAndErrors (),
+				this.ListenSentConnectPacket (),
+				this.ListenSentDisconnectPacket ());
 		}
 
 		public void Dispose ()
@@ -67,10 +65,7 @@ namespace Hermes
 			if (disposing) {
 				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
 
-				this.firstPacketSubscription.Dispose ();
-				this.nextPacketsSubscription.Dispose ();
-				this.allPacketsSubscription.Dispose ();
-				this.senderSubscription.Dispose ();
+				this.disposable.Dispose ();
 				this.StopKeepAliveMonitor ();
 				this.packets.OnCompleted ();
 				this.disposed = true;
