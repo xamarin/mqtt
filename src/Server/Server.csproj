@@ -53,6 +53,7 @@
     <Compile Include="Flows\DisconnectFlow.cs" />
     <Compile Include="Flows\ServerConnectFlow.cs" />
     <Compile Include="Flows\ServerUnsubscribeFlow.cs" />
+    <Compile Include="IAuthenticationProvider.cs" />
     <Compile Include="IConnectionProvider.cs" />
     <Compile Include="netfx\System\Guard.cs" />
     <Compile Include="netfx\System\Reactive\EventPattern.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="netfx\System\Reactive\IEventStreamExtensions.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Reactive\Visibility.cs" />
+    <Compile Include="NoAuthenticationProvider.cs" />
     <Compile Include="ServerInitializer.cs" />
     <Compile Include="ServerPacketListener.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
