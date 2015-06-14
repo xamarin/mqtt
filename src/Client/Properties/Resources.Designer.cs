@@ -97,6 +97,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occurred while initializing a client.
+        /// </summary>
+        internal static string Client_InitializeError {
+            get {
+                return ResourceManager.GetString("Client_InitializeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while trying to subscribe the client {0} to topic {1}.
         /// </summary>
         internal static string Client_SubscribeError {
@@ -120,15 +129,6 @@ namespace Hermes.Properties {
         internal static string Client_SubscriptionDisconnected {
             get {
                 return ResourceManager.GetString("Client_SubscriptionDisconnected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while connecting to the endpoint address {0} and port {1}, to establish an MQTT connection.
-        /// </summary>
-        internal static string Client_TcpClient_Failed {
-            get {
-                return ResourceManager.GetString("Client_TcpClient_Failed", resourceCulture);
             }
         }
         
@@ -183,24 +183,6 @@ namespace Hermes.Properties {
         internal static string SessionRepository_ClientSessionNotFound {
             get {
                 return ResourceManager.GetString("SessionRepository_ClientSessionNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The underlying TCP client is not connected.
-        /// </summary>
-        internal static string TcpChannel_ClientIsNotConnected {
-            get {
-                return ResourceManager.GetString("TcpChannel_ClientIsNotConnected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The underlying network stream is not available. The socket could became disconnected.
-        /// </summary>
-        internal static string TcpChannel_SocketDisconnected {
-            get {
-                return ResourceManager.GetString("TcpChannel_SocketDisconnected", resourceCulture);
             }
         }
         
@@ -318,42 +300,6 @@ namespace Hermes.Properties {
         internal static string Tracer_PacketChannelCompleted {
             get {
                 return ResourceManager.GetString("Tracer_PacketChannelCompleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client - An error occurred while closing underlying channel. Error code: {0}.
-        /// </summary>
-        internal static string Tracer_TcpChannel_DisposeError {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_DisposeError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
-        /// </summary>
-        internal static string Tracer_TcpChannel_NetworkStreamCompleted {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_NetworkStreamCompleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client - Received packet of {0} bytes.
-        /// </summary>
-        internal static string Tracer_TcpChannel_ReceivedPacket {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_ReceivedPacket", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client - Sending packet of {0} bytes.
-        /// </summary>
-        internal static string Tracer_TcpChannel_SendingPacket {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_SendingPacket", resourceCulture);
             }
         }
     }

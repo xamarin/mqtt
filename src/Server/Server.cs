@@ -17,7 +17,7 @@ namespace Hermes
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
-		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
+		readonly IChannelProvider binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
@@ -26,7 +26,7 @@ namespace Hermes
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		public Server (IObservable<IChannel<byte[]>> binaryChannelProvider, 
+		public Server (IChannelProvider binaryChannelProvider, 
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
@@ -57,6 +57,7 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
 			this.channelSubscription = this.binaryChannelProvider
+				.GetChannels()
 				.Subscribe (
 					binaryChannel => this.ProcessChannel(binaryChannel), 
 					ex => { tracer.Error (ex); }, 
@@ -100,6 +101,8 @@ namespace Hermes
 				if (this.channelSubscription != null) {
 					this.channelSubscription.Dispose ();
 				}
+
+				this.binaryChannelProvider.Dispose ();
 
 				this.disposed = true;
 			}

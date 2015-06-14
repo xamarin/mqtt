@@ -61,15 +61,6 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred while starting to listen incoming TCP connections.
-        /// </summary>
-        internal static string ChannelObservable_TcpListener_Failed {
-            get {
-                return ResourceManager.GetString("ChannelObservable_TcpListener_Failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The first packet sent by a Client must be a Connect. The connection will be closed..
         /// </summary>
         internal static string ServerPacketListener_FirstPacketMustBeConnect {
@@ -115,20 +106,11 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The underlying TCP client is not connected.
+        ///   Looks up a localized string similar to An error occurred while starting to listen incoming TCP connections.
         /// </summary>
-        internal static string TcpChannel_ClientIsNotConnected {
+        internal static string TcpChannelProvider_TcpListener_Failed {
             get {
-                return ResourceManager.GetString("TcpChannel_ClientIsNotConnected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The underlying network stream is not available. The socket could became disconnected.
-        /// </summary>
-        internal static string TcpChannel_SocketDisconnected {
-            get {
-                return ResourceManager.GetString("TcpChannel_SocketDisconnected", resourceCulture);
+                return ResourceManager.GetString("TcpChannelProvider_TcpListener_Failed", resourceCulture);
             }
         }
         
@@ -327,42 +309,6 @@ namespace Hermes.Properties {
         internal static string Tracer_ServerSubscribeFlow_InvalidTopicSubscription {
             get {
                 return ResourceManager.GetString("Tracer_ServerSubscribeFlow_InvalidTopicSubscription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client - An error occurred while closing underlying channel. Error code: {0}.
-        /// </summary>
-        internal static string Tracer_TcpChannel_DisposeError {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_DisposeError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Server - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
-        /// </summary>
-        internal static string Tracer_TcpChannel_NetworkStreamCompleted {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_NetworkStreamCompleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Server - Received packet of {0} bytes.
-        /// </summary>
-        internal static string Tracer_TcpChannel_ReceivedPacket {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_ReceivedPacket", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Server - Sending packet of {0} bytes.
-        /// </summary>
-        internal static string Tracer_TcpChannel_SendingPacket {
-            get {
-                return ResourceManager.GetString("Tracer_TcpChannel_SendingPacket", resourceCulture);
             }
         }
     }

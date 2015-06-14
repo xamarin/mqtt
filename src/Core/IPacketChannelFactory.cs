@@ -4,6 +4,8 @@ namespace Hermes
 {
 	public interface IPacketChannelFactory
 	{
+		IChannel<IPacket> Create ();
+
 		IChannel<IPacket> Create (IChannel<byte[]> binaryChannel);
 	}
 }
