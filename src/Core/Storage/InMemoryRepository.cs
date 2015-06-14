@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Hermes.Storage
+namespace System.Net.Mqtt.Storage
 {
 	public class InMemoryRepository<T> : IRepository<T>
 		where T : StorageObject

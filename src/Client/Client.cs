@@ -1,15 +1,13 @@
-﻿using System;
-using System.Reactive.Concurrency;
+﻿using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
     public class Client : IClient, IDisposable
     {
@@ -103,7 +101,7 @@ namespace Hermes
 					.Timeout (connectTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
+					var message = string.Format(Properties.Resources.Client_ConnectionDisconnected, credentials.ClientId);
 
 					throw new ClientException (message);
 				}
@@ -117,11 +115,11 @@ namespace Hermes
 				this.ObservePackets ();
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
-				throw new ClientException (string.Format(Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+				throw new ClientException (string.Format(Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
 			} catch(ProtocolConnectionException connectionEx) {
 				this.Close (connectionEx);
 
-				var message = string.Format(Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
+				var message = string.Format(Properties.Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
 
 				throw new ClientException (message, connectionEx);
 			} catch(ClientException clientEx) {
@@ -129,7 +127,7 @@ namespace Hermes
 				throw;
 			} catch (Exception ex) {
 				this.Close (ex);
-				throw new ClientException (string.Format(Resources.Client_ConnectionError, credentials.ClientId), ex);
+				throw new ClientException (string.Format(Properties.Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
 		}
 
@@ -157,7 +155,7 @@ namespace Hermes
 					.Timeout (subscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
+					var message = string.Format(Properties.Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
 
 					tracer.Error (message);
 
@@ -166,7 +164,7 @@ namespace Hermes
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
 
-				var message = string.Format (Resources.Client_SubscribeTimeout, this.Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeTimeout, this.Id, topicFilter);
 
 				throw new ClientException (message, timeEx);
 			} catch(ClientException clientEx) {
@@ -175,7 +173,7 @@ namespace Hermes
 			} catch (Exception ex) {
 				this.Close (ex);
 
-				var message = string.Format (Resources.Client_SubscribeError, this.Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeError, this.Id, topicFilter);
 
 				throw new ClientException (message, ex);
 			}
@@ -227,7 +225,7 @@ namespace Hermes
 					.Timeout (unsubscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_UnsubscribeDisconnected, this.Id, string.Join(", ", topics));
+					var message = string.Format(Properties.Resources.Client_UnsubscribeDisconnected, this.Id, string.Join(", ", topics));
 
 					tracer.Error (message);
 
@@ -236,7 +234,7 @@ namespace Hermes
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
 
-				var message = string.Format (Resources.Client_UnsubscribeTimeout, this.Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeTimeout, this.Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
@@ -247,7 +245,7 @@ namespace Hermes
 			} catch (Exception ex) {
 				this.Close (ex);
 
-				var message = string.Format (Resources.Client_UnsubscribeError, this.Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeError, this.Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
@@ -289,7 +287,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Client_Disposing, this.Id);
+				tracer.Info (Properties.Resources.Tracer_Client_Disposing, this.Id);
 
 				this.receiver.OnCompleted ();
 
@@ -328,7 +326,7 @@ namespace Hermes
 				this.sessionRepository.Delete(session);
 				session = null;
 
-				tracer.Info (Resources.Tracer_Client_CleanedOldSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Client_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -336,7 +334,7 @@ namespace Hermes
 
 				this.sessionRepository.Create (session);
 
-				tracer.Info (Resources.Tracer_Client_CreatedSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Client_CreatedSession, clientId);
 			}
 		}
 
@@ -345,7 +343,7 @@ namespace Hermes
 			var session = this.sessionRepository.Get (s => s.ClientId == this.Id);
 
 			if (session == null) {
-				var message = string.Format (Resources.SessionRepository_ClientSessionNotFound, this.Id);
+				var message = string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, this.Id);
 
 				tracer.Error (message);
 
@@ -355,7 +353,7 @@ namespace Hermes
 			if (session.Clean) {
 				this.sessionRepository.Delete (session);
 
-				tracer.Info (Resources.Tracer_Client_DeletedSessionOnDisconnect, this.Id);
+				tracer.Info (Properties.Resources.Tracer_Client_DeletedSessionOnDisconnect, this.Id);
 			}
 		}
 
@@ -370,7 +368,7 @@ namespace Hermes
 		private void CheckUnderlyingConnection ()
 		{
 			if (this.isConnected && !this.packetChannel.IsConnected) {
-				this.Close (ClosedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
+				this.Close (ClosedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 
@@ -385,12 +383,12 @@ namespace Hermes
 
 						this.receiver.OnNext (message);
 
-						tracer.Info (Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic);
+						tracer.Info (Properties.Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic);
 					}
 				}, ex => {
 					this.Close (ex);
 				}, () => {
-					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
+					tracer.Warn (Properties.Resources.Tracer_Client_PacketsObservableCompleted);
 
 					var reason = this.protocolDisconnected ? ClosedReason.Disposed : ClosedReason.Disconnected;
 

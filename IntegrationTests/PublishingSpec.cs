@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Hermes;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using Xunit;
@@ -82,7 +82,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, Hermes.Packets.QualityOfService.ExactlyOnce)
+				await client.PublishAsync (message, System.Net.Mqtt.Packets.QualityOfService.ExactlyOnce)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 

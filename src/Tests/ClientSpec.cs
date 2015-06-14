@@ -1,5 +1,5 @@
 ﻿using System.Reactive.Subjects;
-using Hermes;
+using System.Net.Mqtt;
 using Moq;
 using Xunit;
 

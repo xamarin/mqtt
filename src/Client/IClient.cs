@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Hermes.Packets;
+﻿using System.Threading.Tasks;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public interface IClient
 	{

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Timers = System.Timers;
-using Hermes.Diagnostics;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 using System.Reactive.Disposables;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class ClientPacketListener : IPacketListener
 	{
@@ -63,7 +60,7 @@ namespace Hermes
 			}
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
 
 				this.disposable.Dispose ();
 				this.StopKeepAliveMonitor ();
@@ -81,12 +78,12 @@ namespace Hermes
 						return;
 					}
 
-					tracer.Info (Resources.Tracer_ClientPacketListener_FirstPacketReceived, this.clientId, packet.Type);
+					tracer.Info (Properties.Resources.Tracer_ClientPacketListener_FirstPacketReceived, this.clientId, packet.Type);
 
 					var connectAck = packet as ConnectAck;
 
 					if (connectAck == null) {
-						this.NotifyError (Resources.ClientPacketListener_FirstReceivedPacketMustBeConnectAck);
+						this.NotifyError (Properties.Resources.ClientPacketListener_FirstReceivedPacketMustBeConnectAck);
 						return;
 					}
 
@@ -115,7 +112,7 @@ namespace Hermes
 				ex => {
 					this.NotifyError (ex);
 				}, () => {
-					tracer.Warn (Resources.Tracer_PacketChannelCompleted, this.clientId);
+					tracer.Warn (Properties.Resources.Tracer_PacketChannelCompleted, this.clientId);
 
 					this.packets.OnCompleted ();	
 				});
@@ -157,7 +154,7 @@ namespace Hermes
 			this.keepAliveTimer.Interval = interval;
 			this.keepAliveTimer.Elapsed += async (sender, e) => {
 				try {
-					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, this.clientId, this.configuration.KeepAliveSecs);
+					tracer.Warn (Properties.Resources.Tracer_ClientPacketListener_SendingKeepAlive, this.clientId, this.configuration.KeepAliveSecs);
 
 					var ping = new PingRequest ();
 
@@ -193,9 +190,9 @@ namespace Hermes
 						var publish = packet as Publish;
 
 						if (publish == null) {
-							tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, this.clientId, packet.Type, flow.GetType().Name);
+							tracer.Info (Properties.Resources.Tracer_ClientPacketListener_DispatchingMessage, this.clientId, packet.Type, flow.GetType().Name);
 						} else {
-							tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingPublish, this.clientId, flow.GetType().Name, publish.Topic);
+							tracer.Info (Properties.Resources.Tracer_ClientPacketListener_DispatchingPublish, this.clientId, flow.GetType().Name, publish.Topic);
 						}
 
 						return flow.ExecuteAsync (this.clientId, packet, this.channel);
@@ -209,7 +206,7 @@ namespace Hermes
 
 		private void NotifyError(Exception exception)
 		{
-			tracer.Error (exception, Resources.Tracer_ClientPacketListener_Error);
+			tracer.Error (exception, Properties.Resources.Tracer_ClientPacketListener_Error);
 
 			this.packets.OnError (exception);
 		}

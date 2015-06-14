@@ -1,10 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
 	public class PublishReceiverFlow : PublishFlow
 	{
@@ -44,18 +43,18 @@ namespace Hermes.Flows
 		private async Task HandlePublishAsync(string clientId, Publish publish, IChannel<IPacket> channel)
 		{
 			if (publish.QualityOfService != QualityOfService.AtMostOnce && !publish.PacketId.HasValue) {
-				throw new ProtocolException (Resources.PublishReceiverFlow_PacketIdRequired);
+				throw new ProtocolException (Properties.Resources.PublishReceiverFlow_PacketIdRequired);
 			}
 
 			if (publish.QualityOfService == QualityOfService.AtMostOnce && publish.PacketId.HasValue) {
-				throw new ProtocolException (Resources.PublishReceiverFlow_PacketIdNotAllowed);
+				throw new ProtocolException (Properties.Resources.PublishReceiverFlow_PacketIdNotAllowed);
 			}
 			
 			var qos = configuration.GetSupportedQos(publish.QualityOfService);
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			if(qos == QualityOfService.ExactlyOnce && 

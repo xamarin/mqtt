@@ -1,8 +1,8 @@
 ﻿using System.Reactive;
-using Hermes.Flows;
-using Hermes.Storage;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class ServerInitializer : IInitalizer<Server>
 	{

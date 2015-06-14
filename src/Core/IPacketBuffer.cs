@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public interface IPacketBuffer
 	{

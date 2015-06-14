@@ -1,7 +1,6 @@
-﻿using System;
-using Hermes.Packets;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public interface IPacketListener : IDisposable
 	{

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	[Serializable]
 	public class ProtocolViolationException : ProtocolException

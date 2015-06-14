@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Packets;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
 	public interface IFormatter
 	{

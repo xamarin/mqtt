@@ -1,4 +1,4 @@
-﻿namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
 	/// <summary>
 	/// Protocol flow packets implement the various quality of service levels, 

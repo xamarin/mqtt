@@ -1,15 +1,13 @@
-﻿using System;
-using System.Reactive.Concurrency;
+﻿using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class ServerPacketListener : IPacketListener
 	{
@@ -67,7 +65,7 @@ namespace Hermes
 			}
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
 
 				this.disposable.Dispose ();
 				this.packets.OnCompleted ();
@@ -90,7 +88,7 @@ namespace Hermes
 					var connect = packet as Connect;
 
 					if (connect == null) {
-						this.NotifyError (Resources.ServerPacketListener_FirstPacketMustBeConnect);
+						this.NotifyError (Properties.Resources.ServerPacketListener_FirstPacketMustBeConnect);
 						return;
 					}
 
@@ -98,7 +96,7 @@ namespace Hermes
 					this.keepAlive = connect.KeepAlive;
 					this.connectionProvider.AddConnection (this.clientId, this.channel);
 
-					tracer.Info (Resources.Tracer_ServerPacketListener_ConnectPacketReceived, this.clientId);
+					tracer.Info (Properties.Resources.Tracer_ServerPacketListener_ConnectPacketReceived, this.clientId);
 
 					await this.DispatchPacketAsync (connect)
 						.ConfigureAwait(continueOnCapturedContext: false);
@@ -114,7 +112,7 @@ namespace Hermes
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
-						this.NotifyError (Resources.ServerPacketListener_SecondConnectNotAllowed);
+						this.NotifyError (Properties.Resources.ServerPacketListener_SecondConnectNotAllowed);
 						return;
 					}
 
@@ -131,7 +129,7 @@ namespace Hermes
 				ex => {
 					this.NotifyError (ex);
 				}, async () => {
-					tracer.Warn (Resources.Tracer_PacketChannelCompleted, this.clientId);
+					tracer.Warn (Properties.Resources.Tracer_PacketChannelCompleted, this.clientId);
 
 					if (!string.IsNullOrEmpty (this.clientId)) {
 						this.RemoveClient ();
@@ -161,9 +159,9 @@ namespace Hermes
 		private async Task HandleConnectionExceptionAsync(Exception exception)
 		{
 			if (exception is TimeoutException) {
-				this.NotifyError (Resources.ServerPacketListener_NoConnectReceived, exception);
+				this.NotifyError (Properties.Resources.ServerPacketListener_NoConnectReceived, exception);
 			} else if (exception is ProtocolConnectionException) {
-				tracer.Error (exception, Resources.Tracer_ServerPacketListener_ConnectionError, this.clientId ?? "N/A");
+				tracer.Error (exception, Properties.Resources.Tracer_ServerPacketListener_ConnectionError, this.clientId ?? "N/A");
 
 				var connectEx = exception as ProtocolConnectionException;
 				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
@@ -192,7 +190,7 @@ namespace Hermes
 					if (timeEx == null) {
 						this.NotifyError (ex);
 					} else {
-						var message = string.Format (Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, this.clientId);
+						var message = string.Format (Properties.Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, this.clientId);
 
 						this.NotifyError(message, timeEx);
 					}
@@ -223,9 +221,9 @@ namespace Hermes
 					var publish = packet as Publish;
 
 					if (publish == null) {
-						tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, this.clientId);
+						tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, this.clientId);
 					} else {
-						tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType().Name, this.clientId, publish.Topic);
+						tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType().Name, this.clientId, publish.Topic);
 					}
 
 					return flow.ExecuteAsync (this.clientId, packet, this.channel);
@@ -242,7 +240,7 @@ namespace Hermes
 
 		private void NotifyError(Exception exception)
 		{
-			tracer.Error (exception, Resources.Tracer_ServerPacketListener_Error, this.clientId ?? "N/A");
+			tracer.Error (exception, Properties.Resources.Tracer_ServerPacketListener_Error, this.clientId ?? "N/A");
 			
 			this.RemoveClient ();
 			

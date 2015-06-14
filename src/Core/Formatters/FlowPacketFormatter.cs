@@ -1,7 +1,6 @@
-﻿using System;
-using Hermes.Packets;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
 	public class FlowPacketFormatter<T> : Formatter<T>
 		where T : class, IFlowPacket

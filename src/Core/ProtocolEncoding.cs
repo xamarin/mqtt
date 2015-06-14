@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
-using Hermes.Properties;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class ProtocolEncoding
 	{
@@ -18,7 +16,7 @@ namespace Hermes
 			var textBytes = Encoding.UTF8.GetBytes (text);
 
 			if(textBytes.Length > Protocol.MaxIntegerLength) {
-				throw new ProtocolException(Resources.ProtocolEncoding_StringMaxLengthExceeded);
+				throw new ProtocolException(Properties.Resources.ProtocolEncoding_StringMaxLengthExceeded);
 			}
 
 			var numberBytes = Protocol.Encoding.EncodeInteger (textBytes.Length);
@@ -34,7 +32,7 @@ namespace Hermes
 		public byte[] EncodeInteger(int number)
 		{
 			if(number > Protocol.MaxIntegerLength){
-				throw new ProtocolException(Resources.ProtocolEncoding_IntegerMaxValueExceeded);
+				throw new ProtocolException(Properties.Resources.ProtocolEncoding_IntegerMaxValueExceeded);
 			}
 
 			return this.EncodeInteger ((ushort)number);
@@ -85,7 +83,7 @@ namespace Hermes
 				multiplier *= 128;
 
 				if (multiplier > 128 * 128 * 128 * 128 || index > 4)
-					throw new ProtocolException (Resources.ProtocolEncoding_MalformedRemainingLength);
+					throw new ProtocolException (Properties.Resources.ProtocolEncoding_MalformedRemainingLength);
 			} while((encodedByte & 128) != 0);
 
 			arrayLength = index;

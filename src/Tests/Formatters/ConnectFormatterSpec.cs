@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Hermes;
-using Hermes.Formatters;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Formatters;
+using System.Net.Mqtt.Packets;
 using Xunit;
 using Xunit.Extensions;
 

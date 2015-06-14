@@ -1,4 +1,4 @@
-﻿namespace Hermes.Flows
+﻿namespace System.Net.Mqtt.Flows
 {
 	public enum ProtocolFlowType
 	{
