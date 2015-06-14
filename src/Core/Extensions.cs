@@ -1,8 +1,7 @@
-﻿using Hermes.Flows;
-using Hermes.Packets;
-using System.Linq;
+﻿using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public static class Extensions
 	{

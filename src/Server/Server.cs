@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Hermes.Diagnostics;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 using System.Reactive;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class Server : IDisposable
 	{
@@ -86,7 +84,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
 
 				if (this.streamSubscription != null) {
 					this.streamSubscription.Dispose ();
@@ -117,18 +115,18 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
+			tracer.Verbose (Properties.Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (packetChannel, this.connectionProvider, this.flowProvider, this.configuration);
 
 			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
-				tracer.Error (ex, Resources.Tracer_Server_PacketsObservableError);
+				tracer.Error (ex, Properties.Resources.Tracer_Server_PacketsObservableError);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			}, () => {
-				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
+				tracer.Warn (Properties.Resources.Tracer_Server_PacketsObservableCompleted);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			});

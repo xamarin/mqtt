@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
-namespace Hermes.Packets
+namespace System.Net.Mqtt.Packets
 {
 	public class Publish : IPacket, IEquatable<Publish>
     {

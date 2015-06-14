@@ -1,4 +1,4 @@
-﻿namespace Hermes
+﻿namespace System.Net.Mqtt
 {
 	public class PacketIdProvider : IPacketIdProvider
 	{

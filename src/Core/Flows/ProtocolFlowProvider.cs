@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
 	public abstract class ProtocolFlowProvider : IProtocolFlowProvider
 	{
@@ -31,7 +30,7 @@ namespace Hermes.Flows
 		public IProtocolFlow GetFlow (PacketType packetType)
 		{
 			if (!this.IsValidPacketType (packetType)) {
-				var error = string.Format (Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
+				var error = string.Format (Properties.Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
 				
 				throw new ProtocolException (error);
 			}
@@ -40,7 +39,7 @@ namespace Hermes.Flows
 			var flowType = packetType.ToFlowType();
 
 			if (!this.GetFlows().TryGetValue (flowType, out flow)) {
-				var error = string.Format (Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
+				var error = string.Format (Properties.Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
 				
 				throw new ProtocolException (error);
 			}

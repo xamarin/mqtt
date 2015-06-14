@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Hermes;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using Xunit;

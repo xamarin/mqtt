@@ -1,6 +1,4 @@
-﻿using Hermes.Packets;
-
-namespace Hermes
+﻿namespace System.Net.Mqtt
 {
 	public class TopicNotSubscribed
 	{

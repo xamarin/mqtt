@@ -1,10 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
 	public class ServerUnsubscribeFlow : IProtocolFlow
 	{
@@ -25,7 +24,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			foreach (var topic in unsubscribe.Topics) {

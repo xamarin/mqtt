@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Exceptions;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
 	public class ServerSubscribeFlow : IProtocolFlow
 	{
@@ -45,7 +44,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var returnCodes = new List<SubscribeReturnCode> ();
@@ -53,7 +52,7 @@ namespace Hermes.Flows
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
 					if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-						tracer.Error(Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
+						tracer.Error(Properties.Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
 
 						returnCodes.Add (SubscribeReturnCode.Failure);
 						continue;
@@ -83,7 +82,7 @@ namespace Hermes.Flows
 
 					returnCodes.Add (returnCode);
 				} catch (RepositoryException repoEx) {
-					tracer.Error(repoEx, Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
+					tracer.Error(repoEx, Properties.Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
 
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}

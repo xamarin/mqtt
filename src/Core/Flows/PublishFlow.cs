@@ -1,14 +1,13 @@
 ﻿using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
-using System;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 using System.Reactive.Concurrency;
+using System.Threading;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
 	public abstract class PublishFlow : IPublishFlow
 	{
@@ -54,7 +53,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var pendingAcknowledgement = session
@@ -101,7 +100,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			session.AddPendingAcknowledgement (unacknowledgeMessage);

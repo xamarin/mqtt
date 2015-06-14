@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hermes.Formatters;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Formatters;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class PacketManager : IPacketManager
 	{
@@ -30,7 +29,7 @@ namespace Hermes
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue(packetType, out formatter))
-				throw new ProtocolException (Resources.PacketManager_PacketUnknown);
+				throw new ProtocolException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var packet = await formatter.FormatAsync (bytes)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -46,7 +45,7 @@ namespace Hermes
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue(packet.Type, out formatter))
-				throw new ProtocolException (Resources.PacketManager_PacketUnknown);
+				throw new ProtocolException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var bytes = await formatter.FormatAsync (packet)
 				.ConfigureAwait(continueOnCapturedContext: false);

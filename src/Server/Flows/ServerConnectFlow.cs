@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
 	public class ServerConnectFlow : IProtocolFlow
 	{
@@ -44,7 +43,7 @@ namespace Hermes.Flows
 				this.sessionRepository.Delete(session);
 				session = null;
 
-				tracer.Info (Resources.Tracer_Server_CleanedOldSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Server_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -52,7 +51,7 @@ namespace Hermes.Flows
 
 				this.sessionRepository.Create (session);
 
-				tracer.Info (Resources.Tracer_Server_CreatedSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Server_CreatedSession, clientId);
 			} else {
 				await this.SendPendingMessagesAsync (session, channel)
 					.ConfigureAwait(continueOnCapturedContext: false);

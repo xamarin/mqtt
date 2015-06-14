@@ -12,5 +12,5 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Hermes.Client")]
+[assembly: AssemblyTitle("System.Net.Mqtt.Client")]
 [assembly: AssemblyDescription("A lightweight and high-performance MQTT client.")]

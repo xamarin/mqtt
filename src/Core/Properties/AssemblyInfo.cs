@@ -12,5 +12,5 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Hermes.Portable")]
+[assembly: AssemblyTitle("System.Net.Mqtt.Core")]
 [assembly: AssemblyDescription("Shared components between Hermes Broker and Client.")]

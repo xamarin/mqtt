@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class TcpChannel : IChannel<byte[]>
 	{
@@ -61,19 +59,19 @@ namespace Hermes
 			}
 
 			if (!this.IsConnected) {
-				throw new ProtocolException (Resources.TcpChannel_ClientIsNotConnected);
+				throw new ProtocolException (Properties.Resources.TcpChannel_ClientIsNotConnected);
 			}
 
 			this.sender.OnNext (message);
 
 			try {
-				tracer.Verbose (Resources.Tracer_TcpChannel_SendingPacket, message.Length);
+				tracer.Verbose (Properties.Resources.Tracer_TcpChannel_SendingPacket, message.Length);
 
 				await this.client.GetStream()
 					.WriteAsync(message, 0, message.Length)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (ObjectDisposedException disposedEx) {
-				throw new ProtocolException (Resources.TcpChannel_SocketDisconnected, disposedEx);
+				throw new ProtocolException (Properties.Resources.TcpChannel_SocketDisconnected, disposedEx);
 			}
 		}
 
@@ -88,7 +86,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
 
 				this.streamSubscription.Dispose ();
 				this.receiver.OnCompleted ();
@@ -98,7 +96,7 @@ namespace Hermes
 						this.client.Client.Shutdown (SocketShutdown.Both);
 						this.client.Close ();
 					} catch (SocketException socketEx) {
-						tracer.Error (socketEx, Resources.Tracer_TcpChannel_DisposeError, socketEx.ErrorCode);
+						tracer.Error (socketEx, Properties.Resources.Tracer_TcpChannel_DisposeError, socketEx.ErrorCode);
 					}
 				}
 
@@ -124,19 +122,19 @@ namespace Hermes
 
 				if (this.buffer.TryGetPackets (bytes, out packets)) {
 					foreach (var packet in packets) {
-						tracer.Verbose (Resources.Tracer_TcpChannel_ReceivedPacket, packet.Length);
+						tracer.Verbose (Properties.Resources.Tracer_TcpChannel_ReceivedPacket, packet.Length);
 
 						this.receiver.OnNext (packet);
 					}
 				}
 			}, ex => {
 				if (ex is ObjectDisposedException) {
-					this.receiver.OnError (new ProtocolException (Resources.TcpChannel_SocketDisconnected, ex));
+					this.receiver.OnError (new ProtocolException (Properties.Resources.TcpChannel_SocketDisconnected, ex));
 				} else {
 					this.receiver.OnError (ex);
 				}
 			}, () => {
-				tracer.Warn (Resources.Tracer_TcpChannel_NetworkStreamCompleted);
+				tracer.Warn (Properties.Resources.Tracer_TcpChannel_NetworkStreamCompleted);
 				this.receiver.OnCompleted ();
 			});
 		}

@@ -7,8 +7,8 @@
     <ProjectGuid>{6481B999-0479-4162-AC53-5936CE5FD8BF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Hermes</RootNamespace>
-    <AssemblyName>Hermes.Core</AssemblyName>
+    <RootNamespace>System.Net.Mqtt</RootNamespace>
+    <AssemblyName>System.Net.Mqtt.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

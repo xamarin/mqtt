@@ -1,10 +1,8 @@
-﻿using System;
-using Hermes.Diagnostics;
-using Hermes.Flows;
-using Hermes.Properties;
-using Hermes.Storage;
+﻿using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class ClientInitializer : IInitalizer<Client>
 	{
@@ -36,9 +34,9 @@ namespace Hermes
 
 				return new Client (packetChannel, flowProvider, repositoryProvider, packetIdProvider, configuration);
 			} catch (Exception ex) {
-				tracer.Error (ex, Resources.Client_InitializeError);
+				tracer.Error (ex, Properties.Resources.Client_InitializeError);
 
-				throw new ClientException (Resources.Client_InitializeError, ex);
+				throw new ClientException (Properties.Resources.Client_InitializeError, ex);
 			}
 		}
 	}

@@ -18,9 +18,9 @@
         </dependencies>
     </metadata>
     <files>
-		<file src="bin\Release\Hermes.Client.dll" target="lib\net45" />
-		<file src="bin\Release\Hermes.Client.pdb" target="lib\net45" />
-		<file src="bin\Release\Hermes.Core.dll" target="lib\net45" />
-		<file src="bin\Release\Hermes.Core.pdb" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.Client.dll" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.Client.pdb" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.Core.dll" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.Core.pdb" target="lib\net45" />
     </files>
 </package>

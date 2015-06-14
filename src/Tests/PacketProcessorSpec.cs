@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Hermes;
+using System.Net.Mqtt;
 using Xunit;
 using Xunit.Extensions;
 using System.Linq;

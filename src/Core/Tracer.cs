@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Hermes.Diagnostics
+namespace System.Net.Mqtt.Diagnostics
 {
 	static partial class Tracer
 	{

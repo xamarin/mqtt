@@ -1,8 +1,7 @@
 ﻿using System.Net.Sockets;
-using Hermes.Diagnostics;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class TcpChannelFactory : IChannelFactory
 	{
@@ -25,7 +24,7 @@ namespace Hermes
 			try {
 				tcpClient.Connect (this.hostAddress, this.configuration.Port);
 			} catch (SocketException socketEx) {
-				var message = string.Format(Resources.TcpChannelFactory_TcpClient_Failed, this.hostAddress, configuration.Port);
+				var message = string.Format(Properties.Resources.TcpChannelFactory_TcpClient_Failed, this.hostAddress, configuration.Port);
 
 				tracer.Error (socketEx, message);
 

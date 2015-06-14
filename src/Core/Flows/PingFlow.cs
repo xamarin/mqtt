@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Packets;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
 	public class PingFlow : IProtocolFlow
 	{

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
 	public class PublishReceived : IFlowPacket, IEquatable<PublishReceived>
 	{

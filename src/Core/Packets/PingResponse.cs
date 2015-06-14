@@ -1,4 +1,4 @@
-﻿namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
 	public class PingResponse : IPacket
     {

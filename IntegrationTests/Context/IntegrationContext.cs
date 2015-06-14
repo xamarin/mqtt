@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Configuration;
 using System.Diagnostics;
 using System.Net;
-using Hermes;
-using Hermes.Diagnostics;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
 using System.Linq;
 using System.Net.Sockets;
 

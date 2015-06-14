@@ -30,7 +30,7 @@ DAMAGE.
 */
 #endregion
 
-namespace Hermes.Diagnostics
+namespace System.Net.Mqtt.Diagnostics
 {
     /// <summary>
     /// Manages <see cref="ITracer"/> instances. Provides the implementation 
