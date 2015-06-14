@@ -241,6 +241,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Server - An error occurred while executing the connect flow. Client: {0}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_ConnectionError {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_ConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Server - A connect packet has been received from client {0}.
         /// </summary>
         internal static string Tracer_ServerPacketListener_ConnectPacketReceived {

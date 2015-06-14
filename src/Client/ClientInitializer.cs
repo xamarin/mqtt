@@ -33,16 +33,15 @@ namespace Hermes
 			}
 
 			var buffer = new PacketBuffer();
-			var channel = new TcpChannel(tcpClient, buffer, configuration);
+			var binaryChannel = new TcpChannel(tcpClient, buffer, configuration);
 			var topicEvaluator = new TopicEvaluator(configuration);
 			var channelFactory = new PacketChannelFactory(topicEvaluator, configuration);
 			var packetIdProvider = new PacketIdProvider ();
 			var repositoryProvider = new InMemoryRepositoryProvider();
 			var flowProvider = new ClientProtocolFlowProvider(topicEvaluator, repositoryProvider, configuration);
-			var packetListener = new ClientPacketListener(flowProvider, configuration);
+			var packetChannel = channelFactory.Create (binaryChannel);
 
-			return new Client (channel, channelFactory, packetListener, flowProvider, 
-				repositoryProvider, packetIdProvider, configuration);
+			return new Client (packetChannel, flowProvider, repositoryProvider, packetIdProvider, configuration);
 		}
 	}
 }

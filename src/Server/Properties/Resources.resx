@@ -159,6 +159,9 @@
   <data name="Tracer_PacketChannelCompleted" xml:space="preserve">
     <value>Server - Packet Channel observable sequence has been completed for client {0}</value>
   </data>
+  <data name="Tracer_ServerPacketListener_ConnectionError" xml:space="preserve">
+    <value>Server - An error occurred while executing the connect flow. Client: {0}</value>
+  </data>
   <data name="Tracer_ServerPacketListener_ConnectPacketReceived" xml:space="preserve">
     <value>Server - A connect packet has been received from client {0}</value>
   </data>

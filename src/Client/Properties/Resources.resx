@@ -129,6 +129,9 @@
   <data name="Client_ConnectionTimeout" xml:space="preserve">
     <value>A timeout occured while waiting for the client {0} connection confirmation</value>
   </data>
+  <data name="Client_ConnectNotAccepted" xml:space="preserve">
+    <value>The connect packet of client {0} has not been accepted by the server. Status: {1}. The connection will be closed</value>
+  </data>
   <data name="Client_SubscribeError" xml:space="preserve">
     <value>An error occurred while trying to subscribe the client {0} to topic {1}</value>
   </data>

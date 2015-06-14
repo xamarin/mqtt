@@ -23,6 +23,12 @@ namespace Hermes.Flows
 				return;
 			}
 
+			var ack = input as ConnectAck;
+
+			if (ack.Status != ConnectionStatus.Accepted) {
+				return;
+			}
+
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {

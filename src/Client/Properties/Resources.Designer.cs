@@ -88,6 +88,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The connect packet of client {0} has not been accepted by the server. Status: {1}. The connection will be closed.
+        /// </summary>
+        internal static string Client_ConnectNotAccepted {
+            get {
+                return ResourceManager.GetString("Client_ConnectNotAccepted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while trying to subscribe the client {0} to topic {1}.
         /// </summary>
         internal static string Client_SubscribeError {
