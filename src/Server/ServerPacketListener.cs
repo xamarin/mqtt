@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -14,18 +15,13 @@ namespace Hermes
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPacketListener> ();
 
-		IDisposable firstPacketSubscription;
-		IDisposable nextPacketsSubscription;
-		IDisposable allPacketsSubscription;
-		IDisposable senderSubscription;
-		IDisposable keepAliveSubscription;
-
 		readonly IChannel<IPacket> channel;
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
 		readonly TaskRunner dispatcher;
+		CompositeDisposable disposable;
 		bool disposed;
 		string clientId = string.Empty;
 		int keepAlive = 0;
@@ -51,10 +47,11 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 			}
 
-			this.firstPacketSubscription = this.ListenFirstPacket ();
-			this.nextPacketsSubscription = this.ListenNextPackets ();
-			this.allPacketsSubscription = this.ListenCompletionAndErrors ();
-			this.senderSubscription = this.ListenSentPackets ();
+			this.disposable = new CompositeDisposable (
+				this.ListenFirstPacket (),
+				this.ListenNextPackets (),
+				this.ListenCompletionAndErrors (),
+				this.ListenSentPackets ());
 		}
 
 		public void Dispose ()
@@ -72,15 +69,7 @@ namespace Hermes
 			if (disposing) {
 				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
 
-				this.firstPacketSubscription.Dispose ();
-				this.nextPacketsSubscription.Dispose ();
-				this.allPacketsSubscription.Dispose ();
-				this.senderSubscription.Dispose ();
-
-				if (this.keepAliveSubscription != null) {
-					this.keepAliveSubscription.Dispose ();
-				}
-				
+				this.disposable.Dispose ();
 				this.packets.OnCompleted ();
 				this.disposed = true;
 			}
@@ -194,7 +183,7 @@ namespace Hermes
 		{
 			var tolerance = this.GetKeepAliveTolerance ();
 
-			this.keepAliveSubscription = this.channel.Receiver
+			var keepAliveSubscription = this.channel.Receiver
 				.Timeout (tolerance)
 				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (_ => { }, ex => {
@@ -208,6 +197,8 @@ namespace Hermes
 						this.NotifyError(message, timeEx);
 					}
 				});
+
+			this.disposable.Add (keepAliveSubscription);
 		}
 		
 		private TimeSpan GetKeepAliveTolerance()

@@ -213,4 +213,7 @@
   <data name="Tracer_TcpChannel_SendingPacket" xml:space="preserve">
     <value>Server - Sending packet of {0} bytes</value>
   </data>
+  <data name="Tracer_TcpChannel_DisposeError" xml:space="preserve">
+    <value>Client - An error occurred while closing underlying channel. Error code: {0}</value>
+  </data>
 </root>

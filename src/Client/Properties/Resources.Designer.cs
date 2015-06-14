@@ -322,6 +322,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client - An error occurred while closing underlying channel. Error code: {0}.
+        /// </summary>
+        internal static string Tracer_TcpChannel_DisposeError {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_DisposeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
         /// </summary>
         internal static string Tracer_TcpChannel_NetworkStreamCompleted {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Hermes;
 using Hermes.Packets;
 using IntegrationTests.Context;
@@ -29,6 +30,19 @@ namespace IntegrationTests
 			Assert.NotNull (aggregateEx.InnerException.InnerException);
 			Assert.True (aggregateEx.InnerException.InnerException is ProtocolConnectionException);
 			Assert.Equal (ConnectionStatus.BadUserNameOrPassword, ((ProtocolConnectionException)aggregateEx.InnerException.InnerException).ReturnCode);
+		}
+
+		[Fact]
+		public async Task when_client_connects_with_valid_credentials_and_authentication_is_supported_then_connection_succeeds()
+		{
+			var username = "foo";
+			var password = "foo123";
+			var client = this.GetClient ();
+
+			await client.ConnectAsync (new ClientCredentials (this.GetClientId (), username, password));
+
+			Assert.True(client.IsConnected);
+			Assert.False(string.IsNullOrEmpty(client.Id));
 		}
 
 		public void Dispose ()

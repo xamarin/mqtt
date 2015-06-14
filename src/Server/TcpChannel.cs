@@ -31,7 +31,7 @@ namespace Hermes
 			this.buffer = buffer;
 			this.receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
 			this.sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
-			this.streamSubscription = this.GetStreamSubscription (this.client);
+			this.streamSubscription = this.SubscribeStream ();
 		}
 
 		public bool IsConnected 
@@ -69,7 +69,7 @@ namespace Hermes
 			try {
 				tracer.Verbose (Resources.Tracer_TcpChannel_SendingPacket, message.Length);
 
-				await this.client.GetStream ()
+				await this.client.GetStream()
 					.WriteAsync(message, 0, message.Length)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (ObjectDisposedException disposedEx) {
@@ -94,20 +94,25 @@ namespace Hermes
 				this.receiver.OnCompleted ();
 
 				if (this.IsConnected) {
-					this.client.Close ();
+					try {
+						this.client.Client.Shutdown (SocketShutdown.Both);
+						this.client.Close ();
+					} catch (SocketException socketEx) {
+						tracer.Error (socketEx, Resources.Tracer_TcpChannel_DisposeError, socketEx.ErrorCode);
+					}
 				}
 
 				this.disposed = true;
 			}
 		}
 
-		private IDisposable GetStreamSubscription(TcpClient client)
+		private IDisposable SubscribeStream()
 		{
 			return Observable.Defer(() => {
-				var buffer = new byte[client.ReceiveBufferSize];
+				var buffer = new byte[this.client.ReceiveBufferSize];
 
 				return Observable.FromAsync<int>(() => {
-					return client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
+					return this.client.GetStream().ReadAsync (buffer, 0, buffer.Length);
 				})
 				.Select(x => buffer.Take(x).ToArray());
 			})
