@@ -15,6 +15,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_then_session_is_created_and_ack_is_sent()
 		{
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -34,7 +35,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -56,6 +57,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_without_clean_session_then_session_is_not_deleted_and_ack_is_sent_with_session_present()
 		{
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -81,7 +83,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -101,6 +103,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_clean_session_then_session_is_deleted_and_ack_is_sent_with_session_present()
 		{
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -126,7 +129,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -146,6 +149,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_without_existing_session_and_without_clean_session_then_ack_is_sent_with_no_session_present()
 		{
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -170,7 +174,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -183,6 +187,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_with_will_then_will_is_created_and_ack_is_sent()
 		{
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -208,7 +213,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -223,6 +228,38 @@ namespace Tests.Flows
 			Assert.Equal (PacketType.ConnectAck, connectAck.Type);
 			Assert.Equal (ConnectionStatus.Accepted, connectAck.Status);
 			Assert.False (connectAck.SessionPresent);
+		}
+
+		[Fact]
+		public void when_sending_connect_with_invalid_user_credentials_then_connection_exception_is_thrown()
+		{
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == false);
+			var sessionRepository = new Mock<IRepository<ClientSession>> ();
+			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+			var senderFlow = new Mock<IPublishSenderFlow> ();
+
+			var clientId = Guid.NewGuid ().ToString ();
+			var connect = new Connect (clientId, cleanSession: true);
+			var channel = new Mock<IChannel<IPacket>> ();
+			var sentPacket = default(IPacket);
+
+			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
+				.Callback<IPacket> (packet => sentPacket = packet)
+				.Returns(Task.Delay(0));
+
+			var connectionProvider = new Mock<IConnectionProvider> ();
+
+			connectionProvider
+				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
+				.Returns (channel.Object);
+
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+
+			var aggregateEx = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, connect, channel.Object).Wait());
+
+			Assert.NotNull (aggregateEx.InnerException);
+			Assert.True (aggregateEx.InnerException is ProtocolConnectionException);
+			Assert.Equal (ConnectionStatus.BadUserNameOrPassword, ((ProtocolConnectionException)aggregateEx.InnerException).ReturnCode);
 		}
 	}
 }

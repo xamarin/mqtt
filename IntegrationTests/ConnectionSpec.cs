@@ -133,7 +133,7 @@ namespace IntegrationTests
 				_ => { },
 				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
 
-			var clientDisconnected = clientClosed.Wait (TimeSpan.FromSeconds(1));
+			var clientDisconnected = clientClosed.Wait (2000);
 
 			Assert.True (existClientAfterConnect);
 			Assert.True (clientDisconnected);

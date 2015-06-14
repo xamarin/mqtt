@@ -10,14 +10,17 @@ namespace Hermes.Flows
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerConnectFlow> ();
 
+		readonly IAuthenticationProvider authenticationProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IPublishSenderFlow senderFlow;
 
-		public ServerConnectFlow (IRepository<ClientSession> sessionRepository, 
+		public ServerConnectFlow (IAuthenticationProvider authenticationProvider,
+			IRepository<ClientSession> sessionRepository, 
 			IRepository<ConnectionWill> willRepository,
 			IPublishSenderFlow senderFlow)
 		{
+			this.authenticationProvider = authenticationProvider;
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
 			this.senderFlow = senderFlow;
@@ -29,6 +32,11 @@ namespace Hermes.Flows
 				return;
 
 			var connect = input as Connect;
+
+			if (!this.authenticationProvider.Authenticate (connect.UserName, connect.Password)) {
+				throw new ProtocolConnectionException (ConnectionStatus.BadUserNameOrPassword);
+			}
+
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 

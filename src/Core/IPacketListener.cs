@@ -7,6 +7,6 @@ namespace Hermes
 	{
 		IObservable<IPacket> Packets { get; }
 
-		void Listen (IChannel<IPacket> channel);
+		void Listen ();
 	}
 }

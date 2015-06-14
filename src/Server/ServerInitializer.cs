@@ -10,6 +10,13 @@ namespace Hermes
 {
 	public class ServerInitializer : IInitalizer<Server>
 	{
+		readonly IAuthenticationProvider authenticationProvider;
+
+		public ServerInitializer (IAuthenticationProvider authenticationProvider = null)
+		{
+			this.authenticationProvider = authenticationProvider ?? new NoAuthenticationProvider ();
+		}
+
 		public Server Initialize(ProtocolConfiguration configuration)
 		{
 			var listener = new TcpListener(IPAddress.Any, configuration.Port);
@@ -27,7 +34,7 @@ namespace Hermes
 			var connectionProvider = new ConnectionProvider ();
 			var packetIdProvider = new PacketIdProvider ();
 			var eventStream = new EventStream ();
-			var flowProvider = new ServerProtocolFlowProvider (connectionProvider, topicEvaluator, 
+			var flowProvider = new ServerProtocolFlowProvider (this.authenticationProvider, connectionProvider, topicEvaluator, 
 				repositoryProvider, packetIdProvider, eventStream, configuration);
 
 			return new Server (channelObservable, channelFactory, flowProvider, connectionProvider, eventStream, configuration);

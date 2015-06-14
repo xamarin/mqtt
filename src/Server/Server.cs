@@ -117,10 +117,9 @@ namespace Hermes
 			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
-			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
+			var packetListener = new ServerPacketListener (packetChannel, this.connectionProvider, this.flowProvider, this.configuration);
 
-			packetListener.Listen (packetChannel);
-			
+			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex, Resources.Tracer_Server_PacketsObservableError);
 				packetChannel.Dispose ();

@@ -33,12 +33,12 @@ namespace IntegrationTests.Context
 
 		protected ProtocolConfiguration Configuration { get; private set; }
 
-		protected Server GetServer()
+		protected Server GetServer(IAuthenticationProvider authenticationProvider = null)
 		{
 			try {
 				this.LoadConfiguration ();
 
-				var initializer = new ServerInitializer ();
+				var initializer = new ServerInitializer (authenticationProvider);
 				var server = initializer.Initialize (this.Configuration);
 
 				server.Start ();

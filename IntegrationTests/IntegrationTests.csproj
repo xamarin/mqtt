@@ -58,6 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthenticationSpec.cs" />
     <Compile Include="ConnectionSpecWithKeepAlive.cs" />
     <Compile Include="Context\ConnectedContext.cs" />
     <Compile Include="ConnectionSpec.cs" />
@@ -72,6 +73,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messages\TestMessage.cs" />
+    <Compile Include="TestAuthenticationProvider.cs" />
     <Compile Include="TestTracerListener.cs" />
   </ItemGroup>
   <ItemGroup>
