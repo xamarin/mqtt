@@ -8,6 +8,7 @@ using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
+using System.Net.Mqtt.Server;
 
 namespace Tests.Flows
 {

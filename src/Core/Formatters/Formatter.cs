@@ -3,7 +3,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Formatters
 {
-	public abstract class Formatter<T> : IFormatter
+	internal abstract class Formatter<T> : IFormatter
 		where T : class, IPacket
 	{
 		public abstract PacketType PacketType { get; }

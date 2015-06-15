@@ -5,10 +5,11 @@ using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
+using Props = System.Net.Mqtt.Server.Properties;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ServerSubscribeFlow : IProtocolFlow
+	internal class ServerSubscribeFlow : IProtocolFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerSubscribeFlow> ();
 
@@ -52,7 +53,7 @@ namespace System.Net.Mqtt.Flows
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
 					if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-						tracer.Error(Properties.Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
+						tracer.Error(Props.Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
 
 						returnCodes.Add (SubscribeReturnCode.Failure);
 						continue;
@@ -82,7 +83,7 @@ namespace System.Net.Mqtt.Flows
 
 					returnCodes.Add (returnCode);
 				} catch (RepositoryException repoEx) {
-					tracer.Error(repoEx, Properties.Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
+					tracer.Error(repoEx, Props.Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
 
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}

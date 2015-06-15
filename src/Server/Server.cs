@@ -5,7 +5,7 @@ using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 using System.Reactive;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Server
 {
 	public class Server : IDisposable
 	{
@@ -24,7 +24,7 @@ namespace System.Net.Mqtt
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		public Server (IChannelProvider binaryChannelProvider, 
+		internal Server (IChannelProvider binaryChannelProvider, 
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,

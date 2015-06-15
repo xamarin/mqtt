@@ -8,6 +8,8 @@ using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 using System.Linq;
 using System.Net.Sockets;
+using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Client;
 
 namespace IntegrationTests.Context
 {
@@ -20,8 +22,8 @@ namespace IntegrationTests.Context
 		
 		static IntegrationContext()
 		{
-			Tracer.Manager.AddListener ("Hermes", new TestTracerListener ());
-			Tracer.Manager.SetTracingLevel ("Hermes", SourceLevels.All);
+			Tracer.Manager.AddListener ("System.Net.Mqtt", new TestTracerListener ());
+			Tracer.Manager.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
 
 			usedPorts = new ConcurrentBag<int> ();
 		}

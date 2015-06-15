@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt.Storage
 {
-	public class ClientSession : StorageObject
+	internal class ClientSession : StorageObject
 	{
 		public ClientSession ()
 		{

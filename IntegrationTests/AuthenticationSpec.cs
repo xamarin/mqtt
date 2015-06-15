@@ -4,6 +4,8 @@ using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using Xunit;
+using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Client;
 
 namespace IntegrationTests
 {

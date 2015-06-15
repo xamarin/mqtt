@@ -6,7 +6,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt
 {
-	public class PacketManager : IPacketManager
+	internal class PacketManager : IPacketManager
 	{
 		readonly IDictionary<PacketType, IFormatter> formatters;
 

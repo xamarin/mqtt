@@ -5,7 +5,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class PublishReceiverFlow : PublishFlow
+	internal class PublishReceiverFlow : PublishFlow
 	{
 		protected readonly ITopicEvaluator topicEvaluator;
 		protected readonly IRepository<RetainedMessage> retainedRepository;

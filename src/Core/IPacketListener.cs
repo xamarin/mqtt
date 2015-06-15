@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt
 {
-	public interface IPacketListener : IDisposable
+	internal interface IPacketListener : IDisposable
 	{
 		IObservable<IPacket> Packets { get; }
 

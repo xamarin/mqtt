@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
-	public enum SubscribeReturnCode: byte
+	internal enum SubscribeReturnCode: byte
     {
         MaximumQoS0 = 0x00,
         MaximumQoS1 = 0x01,

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using Xunit;
+using System.Net.Mqtt.Server;
 
 namespace IntegrationTests
 {

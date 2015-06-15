@@ -4,7 +4,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Formatters
 {
-	public class SubscribeAckFormatter : Formatter<SubscribeAck>
+	internal class SubscribeAckFormatter : Formatter<SubscribeAck>
 	{
 		public override PacketType PacketType { get { return Packets.PacketType.SubscribeAck; } }
 

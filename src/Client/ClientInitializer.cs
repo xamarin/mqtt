@@ -2,7 +2,7 @@
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Storage;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Client
 {
 	public class ClientInitializer : IInitalizer<Client>
 	{

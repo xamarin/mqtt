@@ -5,6 +5,7 @@ using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
+using System.Net.Mqtt.Server;
 
 namespace Tests
 {

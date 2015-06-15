@@ -2,10 +2,11 @@
 using System.Reactive;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Server;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ServerProtocolFlowProvider : ProtocolFlowProvider
+	internal class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
 		readonly IAuthenticationProvider authenticationProvider;
 		readonly IConnectionProvider connectionProvider;

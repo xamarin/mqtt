@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Net.Mqtt.Packets;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Client
 {
 	public interface IClient
 	{
@@ -12,8 +12,6 @@ namespace System.Net.Mqtt
 		bool IsConnected { get; }
 
 		IObservable<ApplicationMessage> Receiver { get; }
-
-		IObservable<IPacket> Sender { get; }
 
 		/// <exception cref="ClientException">ClientException</exception>
 		Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false);

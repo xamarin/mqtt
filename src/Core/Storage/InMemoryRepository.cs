@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace System.Net.Mqtt.Storage
 {
-	public class InMemoryRepository<T> : IRepository<T>
+	internal class InMemoryRepository<T> : IRepository<T>
 		where T : StorageObject
     {
         readonly ConcurrentDictionary<string, T> elements;

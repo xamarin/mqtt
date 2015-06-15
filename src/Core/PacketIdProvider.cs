@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt
 {
-	public class PacketIdProvider : IPacketIdProvider
+	internal class PacketIdProvider : IPacketIdProvider
 	{
 		private readonly object lockObject;
 		private volatile ushort lastValue;

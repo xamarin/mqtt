@@ -2,13 +2,13 @@
 
 namespace System.Net.Mqtt.Storage
 {
-	public enum PendingMessageStatus
+	internal enum PendingMessageStatus
 	{
 		PendingToAcknowledge = 1,
 		PendingToSend = 2
 	}
 
-	public class PendingMessage
+	internal class PendingMessage
 	{
 		public PendingMessageStatus Status { get; set; }
 

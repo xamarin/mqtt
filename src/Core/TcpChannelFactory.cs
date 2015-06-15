@@ -3,7 +3,7 @@ using System.Net.Mqtt.Diagnostics;
 
 namespace System.Net.Mqtt
 {
-	public class TcpChannelFactory : IChannelFactory
+	internal class TcpChannelFactory : IChannelFactory
 	{
 		static readonly ITracer tracer = Tracer.Get<TcpChannelFactory> ();
 

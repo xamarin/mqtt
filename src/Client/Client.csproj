@@ -7,8 +7,8 @@
     <ProjectGuid>{D3EB8C4F-6CF4-4EB4-94E3-BCA31767AE53}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>System.Net.Mqtt</RootNamespace>
-    <AssemblyName>System.Net.Mqtt.Client</AssemblyName>
+    <RootNamespace>System.Net.Mqtt.Client</RootNamespace>
+    <AssemblyName>System.Net.Mqtt</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

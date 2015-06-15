@@ -7,7 +7,7 @@
     <ProjectGuid>{1397EC83-6D03-4D81-95D5-5D11C766C43A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>System.Net.Mqtt</RootNamespace>
+    <RootNamespace>System.Net.Mqtt.Server</RootNamespace>
     <AssemblyName>System.Net.Mqtt.Server</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -63,7 +63,7 @@
     <Compile Include="netfx\System\Reactive\IEventStreamExtensions.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Reactive\Visibility.cs" />
-    <Compile Include="NoAuthenticationProvider.cs" />
+    <Compile Include="NullAuthenticationProvider.cs" />
     <Compile Include="ServerInitializer.cs" />
     <Compile Include="ServerPacketListener.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

@@ -7,7 +7,7 @@ using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Client
 {
     public class Client : IClient, IDisposable
     {
@@ -28,7 +28,7 @@ namespace System.Net.Mqtt
 		readonly TaskRunner clientSender;
 		readonly IPacketListener packetListener;
 
-        public Client(IChannel<IPacket> packetChannel, 
+        internal Client(IChannel<IPacket> packetChannel, 
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
@@ -68,7 +68,7 @@ namespace System.Net.Mqtt
 
 		public IObservable<ApplicationMessage> Receiver { get { return this.receiver; } }
 
-		public IObservable<IPacket> Sender { get { return this.sender; } }
+		internal IObservable<IPacket> Sender { get { return this.sender; } }
 
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false)
@@ -312,7 +312,7 @@ namespace System.Net.Mqtt
 
 		private void Close (ClosedReason reason, string message = null)
 		{
-			tracer.Info (Resources.Tracer_Client_Disposing, this.Id, reason);
+			tracer.Info (Properties.Resources.Tracer_Client_Disposing, this.Id, reason);
 			this.Dispose (true);
 			this.Closed (this, new ClosedEventArgs(reason, message));
 			GC.SuppressFinalize (this);

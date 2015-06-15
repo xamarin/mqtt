@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Client
 {
 	[Serializable]
 	public class ClientException : ApplicationException

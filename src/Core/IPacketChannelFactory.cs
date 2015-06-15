@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt
 {
-	public interface IPacketChannelFactory
+	internal interface IPacketChannelFactory
 	{
 		IChannel<IPacket> Create ();
 

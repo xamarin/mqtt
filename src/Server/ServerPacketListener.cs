@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Server
 {
-	public class ServerPacketListener : IPacketListener
+	internal class ServerPacketListener : IPacketListener
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPacketListener> ();
 
@@ -221,14 +223,14 @@ namespace System.Net.Mqtt
 					if (packet.Type == PacketType.Publish) {
 							var publish = packet as Publish;
 
-							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType().Name, clientId, publish.Topic);
+							tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType().Name, clientId, publish.Topic);
 						} else if (packet.Type == PacketType.Subscribe) {
 							var subscribe = packet as Subscribe;
 							var topics = subscribe.Subscriptions == null ? new List<string> () : subscribe.Subscriptions.Select (s => s.TopicFilter);
 
-							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingSubscribe, flow.GetType().Name, clientId, string.Join(", ", topics));
+							tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingSubscribe, flow.GetType().Name, clientId, string.Join(", ", topics));
 						} else {
-							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
+							tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
 						}
 
 					await flow.ExecuteAsync (this.clientId, packet, this.channel)

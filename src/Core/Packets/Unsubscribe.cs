@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace System.Net.Mqtt.Packets
 {
-	public class Unsubscribe : IPacket, IEquatable<Unsubscribe>
+	internal class Unsubscribe : IPacket, IEquatable<Unsubscribe>
 	{
 		public Unsubscribe(ushort packetId, params string[] topics)
 		{

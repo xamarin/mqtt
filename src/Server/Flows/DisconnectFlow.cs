@@ -2,10 +2,12 @@
 using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Server;
+using Props = System.Net.Mqtt.Server.Properties;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class DisconnectFlow : IProtocolFlow
+	internal class DisconnectFlow : IProtocolFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<DisconnectFlow> ();
 
@@ -31,7 +33,7 @@ namespace System.Net.Mqtt.Flows
 			await Task.Run (() => {
 				var disconnect = input as Disconnect;
 
-				tracer.Info (Properties.Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
+				tracer.Info (Props.Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
 
 				this.willRepository.Delete (w => w.ClientId == clientId);
 
@@ -44,7 +46,7 @@ namespace System.Net.Mqtt.Flows
 				if (session.Clean) {
 					this.sessionRepository.Delete (session);
 
-					tracer.Info (Properties.Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
+					tracer.Info (Props.Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
 				}
 
 				this.connectionProvider.RemoveConnection (clientId);

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace System.Net.Mqtt.Storage
 {
-	public static class StorageExtensions
+	internal static class StorageExtensions
 	{
 		static readonly object subscriptionsLock = new object ();
 		static readonly object pendingMessagesLock = new object ();

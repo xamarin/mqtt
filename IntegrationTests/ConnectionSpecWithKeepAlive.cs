@@ -3,9 +3,10 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Mqtt;
 using IntegrationTests.Context;
 using Xunit;
+using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Client;
 
 namespace IntegrationTests
 {

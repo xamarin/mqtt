@@ -1,4 +1,4 @@
-﻿namespace System.Net.Mqtt
+﻿namespace System.Net.Mqtt.Server
 {
 	public class TopicNotSubscribed
 	{

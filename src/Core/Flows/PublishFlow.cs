@@ -5,11 +5,10 @@ using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Concurrency;
-using System.Threading;
 
 namespace System.Net.Mqtt.Flows
 {
-	public abstract class PublishFlow : IPublishFlow
+	internal abstract class PublishFlow : IPublishFlow
 	{
 		private static readonly ITracer tracer = Tracer.Get<PublishFlow> ();
 
@@ -72,7 +71,7 @@ namespace System.Net.Mqtt.Flows
 				.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
-						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						tracer.Warn (Properties.Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 						await channel.SendAsync (sentMessage);
 					}

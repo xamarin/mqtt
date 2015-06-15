@@ -7,6 +7,7 @@ using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
+using System.Net.Mqtt.Server;
 
 namespace Tests
 {

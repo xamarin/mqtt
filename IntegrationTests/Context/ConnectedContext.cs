@@ -1,4 +1,4 @@
-﻿using System.Net.Mqtt;
+﻿using System.Net.Mqtt.Client;
 
 namespace IntegrationTests.Context
 {

@@ -5,7 +5,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt
 {
-	public class PacketChannel : IChannel<IPacket>
+	internal class PacketChannel : IChannel<IPacket>
 	{
 		static readonly ITracer tracer = Tracer.Get<PacketChannel> ();
 

@@ -5,7 +5,7 @@
 	/// and are simple packets with a <see cref="PacketType"/> and a 
 	/// <see cref="PacketId"/>.
 	/// </summary>
-	public interface IFlowPacket : IPacket
+	internal interface IFlowPacket : IPacket
     {
 		/// <summary>
 		/// The packet identifier for the specific protocol flow.

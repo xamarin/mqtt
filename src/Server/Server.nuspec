@@ -3,7 +3,7 @@
     <metadata>
         <id>$id$</id>
         <version>$version$</version>
-        <title>Hermes Server: a lightweight C# MQTT messenger</title>
+        <title>System.Net.Mqtt.Server: a lightweight C# MQTT messenger</title>
         <authors>$author$</authors>
         <licenseUrl>http://clarius.io/hermes/license</licenseUrl>
         <projectUrl>http://clarius.io/hermes/home</projectUrl>

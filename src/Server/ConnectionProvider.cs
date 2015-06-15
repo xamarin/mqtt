@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Server
 {
-	public class ConnectionProvider : IConnectionProvider
+	internal class ConnectionProvider : IConnectionProvider
 	{
 		static readonly ITracer tracer = Tracer.Get<ConnectionProvider> ();
 		static readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;

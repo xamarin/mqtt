@@ -5,7 +5,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ServerUnsubscribeFlow : IProtocolFlow
+	internal class ServerUnsubscribeFlow : IProtocolFlow
 	{
 		readonly IRepository<ClientSession> sessionRepository;
 

@@ -9,7 +9,7 @@ using System.Net.Mqtt.Diagnostics;
 
 namespace System.Net.Mqtt
 {
-	public class TcpChannel : IChannel<byte[]>
+	internal class TcpChannel : IChannel<byte[]>
 	{
 		static readonly ITracer tracer = Tracer.Get<TcpChannel> ();
 

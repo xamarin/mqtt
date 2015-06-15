@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt.Packets
 {
-	public class Publish : IPacket, IEquatable<Publish>
+	internal class Publish : IPacket, IEquatable<Publish>
     {
         public Publish(string topic, QualityOfService qualityOfService, bool retain, bool duplicated, ushort? packetId = null)
         {

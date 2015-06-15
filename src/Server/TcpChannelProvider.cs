@@ -3,9 +3,9 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Net.Mqtt.Diagnostics;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Server
 {
-	public class TcpChannelProvider : IChannelProvider
+	internal class TcpChannelProvider : IChannelProvider
 	{
 		static readonly ITracer tracer = Tracer.Get<TcpChannelProvider> ();
 

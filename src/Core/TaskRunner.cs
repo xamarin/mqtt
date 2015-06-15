@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-	public class TaskRunner
+	internal class TaskRunner
 	{
 		private readonly TaskFactory taskFactory;
 

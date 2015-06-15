@@ -4,7 +4,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Formatters
 {
-	public class ConnectFormatter : Formatter<Connect>
+	internal class ConnectFormatter : Formatter<Connect>
 	{
 		public override PacketType PacketType { get { return Packets.PacketType.Connect; } }
 
