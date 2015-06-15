@@ -13,8 +13,6 @@ namespace System.Net.Mqtt
 
 		IObservable<ApplicationMessage> Receiver { get; }
 
-		IObservable<IPacket> Sender { get; }
-
 		/// <exception cref="ClientException">ClientException</exception>
 		Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false);
 

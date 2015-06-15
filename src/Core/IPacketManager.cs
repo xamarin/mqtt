@@ -3,7 +3,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt
 {
-	public interface IPacketManager
+	internal interface IPacketManager
 	{
 		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
 		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>

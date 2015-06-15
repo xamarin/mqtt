@@ -3,7 +3,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Formatters
 {
-	public class PublishFormatter : Formatter<Publish>
+	internal class PublishFormatter : Formatter<Publish>
 	{
 		readonly ITopicEvaluator topicEvaluator;
 

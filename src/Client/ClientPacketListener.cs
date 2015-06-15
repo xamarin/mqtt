@@ -8,7 +8,7 @@ using System.Reactive.Disposables;
 
 namespace System.Net.Mqtt
 {
-	public class ClientPacketListener : IPacketListener
+	internal class ClientPacketListener : IPacketListener
 	{
 		private static readonly ITracer tracer = Tracer.Get<ClientPacketListener> ();
 

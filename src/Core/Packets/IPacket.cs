@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
-	public interface IPacket
+	internal interface IPacket
     {
         PacketType Type { get; }
     }

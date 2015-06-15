@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt.Formatters
 {
-	public class FlowPacketFormatter<T> : Formatter<T>
+	internal class FlowPacketFormatter<T> : Formatter<T>
 		where T : class, IFlowPacket
 	{
 		readonly PacketType packetType;

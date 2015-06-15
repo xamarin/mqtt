@@ -4,7 +4,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ClientProtocolFlowProvider : ProtocolFlowProvider
+	internal class ClientProtocolFlowProvider : ProtocolFlowProvider
 	{
 		public ClientProtocolFlowProvider (ITopicEvaluator topicEvaluator, IRepositoryProvider repositoryProvider, ProtocolConfiguration configuration)
 			: base(topicEvaluator, repositoryProvider, configuration)

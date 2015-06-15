@@ -5,7 +5,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public abstract class ProtocolFlowProvider : IProtocolFlowProvider
+	internal abstract class ProtocolFlowProvider : IProtocolFlowProvider
 	{
 		protected readonly ITopicEvaluator topicEvaluator;
 		protected readonly IRepositoryProvider repositoryProvider;

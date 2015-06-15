@@ -5,7 +5,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ServerConnectFlow : IProtocolFlow
+	internal class ServerConnectFlow : IProtocolFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerConnectFlow> ();
 

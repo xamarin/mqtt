@@ -5,7 +5,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class DisconnectFlow : IProtocolFlow
+	internal class DisconnectFlow : IProtocolFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<DisconnectFlow> ();
 

@@ -5,7 +5,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ServerProtocolFlowProvider : ProtocolFlowProvider
+	internal class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
 		readonly IAuthenticationProvider authenticationProvider;
 		readonly IConnectionProvider connectionProvider;

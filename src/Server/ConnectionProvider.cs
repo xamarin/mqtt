@@ -6,7 +6,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt
 {
-	public class ConnectionProvider : IConnectionProvider
+	internal class ConnectionProvider : IConnectionProvider
 	{
 		static readonly ITracer tracer = Tracer.Get<ConnectionProvider> ();
 		static readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;

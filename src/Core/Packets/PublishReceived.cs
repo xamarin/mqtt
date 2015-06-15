@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
-	public class PublishReceived : IFlowPacket, IEquatable<PublishReceived>
+	internal class PublishReceived : IFlowPacket, IEquatable<PublishReceived>
 	{
 		public PublishReceived(ushort packetId)
 		{

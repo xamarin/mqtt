@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
-	public class PublishComplete : IFlowPacket, IEquatable<PublishComplete>
+	internal class PublishComplete : IFlowPacket, IEquatable<PublishComplete>
 	{
 		public PublishComplete(ushort packetId)
 		{

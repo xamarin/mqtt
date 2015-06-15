@@ -4,7 +4,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public interface IPublishSenderFlow : IPublishFlow
+	internal interface IPublishSenderFlow : IPublishFlow
 	{
 		Task SendPublishAsync (string clientId, Publish message, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend);
 	}

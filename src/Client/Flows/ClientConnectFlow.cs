@@ -4,7 +4,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ClientConnectFlow : IProtocolFlow
+	internal class ClientConnectFlow : IProtocolFlow
 	{
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPublishSenderFlow senderFlow;

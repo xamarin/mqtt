@@ -4,7 +4,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt
 {
-	public class PacketChannelFactory : IPacketChannelFactory
+	internal class PacketChannelFactory : IPacketChannelFactory
 	{
 		readonly IChannelFactory innerChannelFactory;
 		readonly ITopicEvaluator topicEvaluator;

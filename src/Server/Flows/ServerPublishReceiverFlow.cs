@@ -8,7 +8,7 @@ using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class ServerPublishReceiverFlow : PublishReceiverFlow
+	internal class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
 

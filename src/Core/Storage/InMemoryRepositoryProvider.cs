@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace System.Net.Mqtt.Storage
 {
-	public class InMemoryRepositoryProvider : IRepositoryProvider
+	internal class InMemoryRepositoryProvider : IRepositoryProvider
 	{
 		readonly IDictionary<Type, object> repositories;
 

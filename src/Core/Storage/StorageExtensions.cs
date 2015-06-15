@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace System.Net.Mqtt.Storage
 {
-	public static class StorageExtensions
+	internal static class StorageExtensions
 	{
 		public static IEnumerable<ClientSubscription> GetSubscriptions(this ClientSession session)
 		{

@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt
 {
-	public interface IPacketIdProvider
+	internal interface IPacketIdProvider
 	{
 		ushort GetPacketId ();
 	}

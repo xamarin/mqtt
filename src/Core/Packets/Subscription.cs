@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
-	public class Subscription : IEquatable<Subscription>
+	internal class Subscription : IEquatable<Subscription>
     {
         public Subscription(string topicFilter, QualityOfService requestedQos)
         {

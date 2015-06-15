@@ -4,7 +4,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Formatters
 {
-	public class SubscribeFormatter : Formatter<Subscribe>
+	internal class SubscribeFormatter : Formatter<Subscribe>
 	{
 		readonly ITopicEvaluator topicEvaluator;
 

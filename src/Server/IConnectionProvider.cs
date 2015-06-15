@@ -3,7 +3,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt
 {
-	public interface IConnectionProvider
+	internal interface IConnectionProvider
     {
 		int Connections { get; }
 

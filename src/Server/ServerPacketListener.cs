@@ -9,7 +9,7 @@ using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt
 {
-	public class ServerPacketListener : IPacketListener
+	internal class ServerPacketListener : IPacketListener
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPacketListener> ();
 

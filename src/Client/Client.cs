@@ -28,7 +28,7 @@ namespace System.Net.Mqtt
 		readonly TaskRunner packetSender;
 		readonly IPacketListener packetListener;
 
-        public Client(IChannel<IPacket> packetChannel, 
+        internal Client(IChannel<IPacket> packetChannel, 
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
@@ -68,7 +68,7 @@ namespace System.Net.Mqtt
 
 		public IObservable<ApplicationMessage> Receiver { get { return this.receiver; } }
 
-		public IObservable<IPacket> Sender { get { return this.sender; } }
+		internal IObservable<IPacket> Sender { get { return this.sender; } }
 
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false)

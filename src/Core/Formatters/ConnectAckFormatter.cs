@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt.Formatters
 {
-	public class ConnectAckFormatter : Formatter<ConnectAck>
+	internal class ConnectAckFormatter : Formatter<ConnectAck>
 	{
 		public override PacketType PacketType { get { return Packets.PacketType.ConnectAck; } }
 

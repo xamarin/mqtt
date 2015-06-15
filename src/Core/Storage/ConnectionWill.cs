@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt.Storage
 {
-	public class ConnectionWill : StorageObject
+	internal class ConnectionWill : StorageObject
 	{
 		public string ClientId { get; set; }
 

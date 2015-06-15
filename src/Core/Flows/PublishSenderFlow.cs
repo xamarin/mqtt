@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace System.Net.Mqtt.Flows
 {
-	public class PublishSenderFlow : PublishFlow, IPublishSenderFlow
+	internal class PublishSenderFlow : PublishFlow, IPublishSenderFlow
 	{
 		private static readonly ITracer tracer = Tracer.Get<PublishSenderFlow> ();
 

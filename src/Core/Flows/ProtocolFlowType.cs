@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Flows
 {
-	public enum ProtocolFlowType
+	internal enum ProtocolFlowType
 	{
 		Connect,
 		PublishSender,

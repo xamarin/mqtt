@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace System.Net.Mqtt.Packets
 {
-	public class SubscribeAck : IPacket, IEquatable<SubscribeAck>
+	internal class SubscribeAck : IPacket, IEquatable<SubscribeAck>
     {
         public SubscribeAck(ushort packetId, params SubscribeReturnCode[] returnCodes)
         {

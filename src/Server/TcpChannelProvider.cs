@@ -5,7 +5,7 @@ using System.Net.Mqtt.Diagnostics;
 
 namespace System.Net.Mqtt
 {
-	public class TcpChannelProvider : IChannelProvider
+	internal class TcpChannelProvider : IChannelProvider
 	{
 		static readonly ITracer tracer = Tracer.Get<TcpChannelProvider> ();
 

@@ -24,7 +24,7 @@ namespace System.Net.Mqtt
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		public Server (IChannelProvider binaryChannelProvider, 
+		internal Server (IChannelProvider binaryChannelProvider, 
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
