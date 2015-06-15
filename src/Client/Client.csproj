@@ -7,8 +7,8 @@
     <ProjectGuid>{D3EB8C4F-6CF4-4EB4-94E3-BCA31767AE53}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Hermes</RootNamespace>
-    <AssemblyName>Hermes.Client</AssemblyName>
+    <RootNamespace>System.Net.Mqtt</RootNamespace>
+    <AssemblyName>System.Net.Mqtt</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -21,9 +21,6 @@
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\Server\TcpChannel.cs">
-      <Link>TcpChannel.cs</Link>
     </Compile>
     <Compile Include="ApplicationMessage.cs" />
     <Compile Include="Client.cs" />

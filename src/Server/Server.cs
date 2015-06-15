@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Hermes.Diagnostics;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 using System.Reactive;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class Server : IDisposable
 	{
@@ -17,7 +15,7 @@ namespace Hermes
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
-		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
+		readonly IChannelProvider binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
@@ -26,7 +24,7 @@ namespace Hermes
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		public Server (IObservable<IChannel<byte[]>> binaryChannelProvider, 
+		internal Server (IChannelProvider binaryChannelProvider, 
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
@@ -57,6 +55,7 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
 			this.channelSubscription = this.binaryChannelProvider
+				.GetChannels()
 				.Subscribe (
 					binaryChannel => this.ProcessChannel(binaryChannel), 
 					ex => { tracer.Error (ex); }, 
@@ -85,7 +84,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
 
 				if (this.channelSubscription != null) {
 					this.channelSubscription.Dispose ();
@@ -94,6 +93,8 @@ namespace Hermes
 				if (this.streamSubscription != null) {
 					this.streamSubscription.Dispose ();
 				}
+
+				this.binaryChannelProvider.Dispose ();
 
 				foreach (var channel in channels) {
 					channel.Dispose ();
@@ -114,19 +115,18 @@ namespace Hermes
 
 		private void ProcessChannel(IChannel<byte[]> binaryChannel)
 		{
-			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
+			tracer.Verbose (Properties.Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
-			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
+			var packetListener = new ServerPacketListener (packetChannel, this.connectionProvider, this.flowProvider, this.configuration);
 
-			packetListener.Listen (packetChannel);
-			
+			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
-				tracer.Error (ex, Resources.Tracer_Server_PacketsObservableError);
+				tracer.Error (ex, Properties.Resources.Tracer_Server_PacketsObservableError);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			}, () => {
-				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
+				tracer.Warn (Properties.Resources.Tracer_Server_PacketsObservableCompleted);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			});

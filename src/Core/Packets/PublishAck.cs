@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
-	public class PublishAck : IFlowPacket, IEquatable<PublishAck>
+	internal class PublishAck : IFlowPacket, IEquatable<PublishAck>
     {
         public PublishAck(ushort packetId)
         {

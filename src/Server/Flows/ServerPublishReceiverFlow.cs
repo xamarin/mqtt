@@ -1,19 +1,20 @@
 ﻿using System.Linq;
 using System.Reactive;
+using System.Text;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public class ServerPublishReceiverFlow : PublishReceiverFlow
+	internal class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
 
 		readonly IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
+		readonly IRepository<ConnectionWill> willRepository;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly IEventStream eventStream;
 
@@ -22,6 +23,7 @@ namespace Hermes.Flows
 			IPublishSenderFlow senderFlow,
 			IRepository<RetainedMessage> retainedRepository, 
 			IRepository<ClientSession> sessionRepository,
+			IRepository<ConnectionWill> willRepository,
 			IPacketIdProvider packetIdProvider,
 			IEventStream eventStream,
 			ProtocolConfiguration configuration)
@@ -29,6 +31,7 @@ namespace Hermes.Flows
 		{
 			this.connectionProvider = connectionProvider;
 			this.senderFlow = senderFlow;
+			this.willRepository = willRepository;
 			this.packetIdProvider = packetIdProvider;
 			this.eventStream = eventStream;
 		}
@@ -57,7 +60,23 @@ namespace Hermes.Flows
 				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
-		private async Task DispatchAsync (Publish publish, string clientId)
+		internal async Task SendWillAsync(string clientId)
+		{
+			var will = this.willRepository.Get (w => w.ClientId == clientId);
+
+			if (will != null && will.Will != null) {
+				var willPublish = new Publish (will.Will.Topic, will.Will.QualityOfService, will.Will.Retain, duplicated: false) {
+					Payload = Encoding.UTF8.GetBytes (will.Will.Message)
+				};
+
+				tracer.Info (Properties.Resources.Tracer_ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
+
+				await this.DispatchAsync(willPublish, clientId, isWill: true)
+					.ConfigureAwait(continueOnCapturedContext: false);
+			}
+		}
+
+		private async Task DispatchAsync (Publish publish, string clientId, bool isWill = false)
 		{
 			var subscriptions = this.sessionRepository
 				.GetAll ().ToList ()
@@ -65,22 +84,24 @@ namespace Hermes.Flows
 				.Where (x => this.topicEvaluator.Matches (publish.Topic, x.TopicFilter));
 
 			if (!subscriptions.Any ()) {
-				tracer.Verbose (Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
+				tracer.Verbose (Properties.Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
 				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId, Payload = publish.Payload });
 			} else {
 				foreach (var subscription in subscriptions) {
-					await this.DispatchAsync (subscription, publish)
+					await this.DispatchAsync (publish, subscription, isWill)
 						.ConfigureAwait(continueOnCapturedContext: false);
 				}
 			}
 		}
 
-		private async Task DispatchAsync (ClientSubscription subscription, Publish publish)
+		private async Task DispatchAsync (Publish publish, ClientSubscription subscription, bool isWill = false)
 		{
-			var requestedQos = configuration.GetSupportedQos(subscription.MaximumQualityOfService);
-			ushort? packetId = requestedQos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
-			var subscriptionPublish = new Publish (publish.Topic, requestedQos, retain: false, duplicated: false, packetId: packetId) {
+			var requestedQos = isWill ? publish.QualityOfService : subscription.MaximumQualityOfService;
+			var supportedQos = configuration.GetSupportedQos(requestedQos);
+			var retain = isWill ? publish.Retain : false;
+			ushort? packetId = supportedQos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
+			var subscriptionPublish = new Publish (publish.Topic, supportedQos, retain, duplicated: false, packetId: packetId) {
 				Payload = publish.Payload
 			};
 			var clientChannel = this.connectionProvider.GetConnection (subscription.ClientId);

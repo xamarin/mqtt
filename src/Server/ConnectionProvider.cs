@@ -1,13 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
-	public class ConnectionProvider : IConnectionProvider
+	internal class ConnectionProvider : IConnectionProvider
 	{
 		static readonly ITracer tracer = Tracer.Get<ConnectionProvider> ();
 		static readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;
@@ -34,7 +33,7 @@ namespace Hermes
 			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
-				tracer.Warn (Resources.Tracer_ConnectionProvider_ClientIdExists, clientId);
+				tracer.Warn (Properties.Resources.Tracer_ConnectionProvider_ClientIdExists, clientId);
 
 				this.RemoveConnection (clientId);
 			}
@@ -48,7 +47,7 @@ namespace Hermes
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
 				if (!existingConnection.IsConnected) {
-					tracer.Warn (Resources.Tracer_ConnectionProvider_ClientDisconnected, clientId);
+					tracer.Warn (Properties.Resources.Tracer_ConnectionProvider_ClientDisconnected, clientId);
 
 					this.RemoveConnection (clientId);
 					existingConnection = default (IChannel<IPacket>);
@@ -64,7 +63,7 @@ namespace Hermes
 			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryRemove (clientId, out existingConnection)) {
-				tracer.Info (Resources.Tracer_ConnectionProvider_RemovingClient, clientId);
+				tracer.Info (Properties.Resources.Tracer_ConnectionProvider_RemovingClient, clientId);
 
 				existingConnection.Dispose ();
 			}

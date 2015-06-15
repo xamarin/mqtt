@@ -7,8 +7,8 @@
     <ProjectGuid>{6481B999-0479-4162-AC53-5936CE5FD8BF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Hermes</RootNamespace>
-    <AssemblyName>Hermes.Core</AssemblyName>
+    <RootNamespace>System.Net.Mqtt</RootNamespace>
+    <AssemblyName>System.Net.Mqtt.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -54,6 +54,7 @@
     <Compile Include="Formatters\UnsubscribeFormatter.cs" />
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IChannel.cs" />
+    <Compile Include="IChannelFactory.cs" />
     <Compile Include="IInitalizer.cs" />
     <Compile Include="IPacketIdProvider.cs" />
     <Compile Include="IPacketListener.cs" />
@@ -116,6 +117,8 @@
     <Compile Include="Storage\ClientSession.cs" />
     <Compile Include="Storage\PendingAcknowledgement.cs" />
     <Compile Include="Storage\StorageObject.cs" />
+    <Compile Include="TcpChannel.cs" />
+    <Compile Include="TcpChannelFactory.cs" />
     <Compile Include="TopicEvaluator.cs" />
     <Compile Include="Tracer.cs" />
   </ItemGroup>

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Hermes.Storage
+namespace System.Net.Mqtt.Storage
 {
-	public interface IRepository<T>
+	internal interface IRepository<T>
 		 where T : StorageObject
     {
 		/// <exception cref="RepositoryException">RepositoryException</exception>

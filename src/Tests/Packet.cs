@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Hermes;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Packets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Tests
 {
-	public class Packet
+	internal class Packet
 	{
-		public const string CommentSymbol = "#";
+		internal const string CommentSymbol = "#";
 
-		public static byte[] ReadAllBytes(string path)
+		internal static byte[] ReadAllBytes(string path)
 		{
 			if (Path.GetExtension (path) != ".packet") {
 				throw new ApplicationException (string.Format ("File extension {0} is invalid. .packet file is expected", Path.GetExtension(path)));
@@ -52,7 +52,7 @@ namespace Tests
 			return bytes.ToArray ();
 		}
 
-		public static T ReadPacket<T> (string path) where T : class, IPacket
+		internal static T ReadPacket<T> (string path) where T : class, IPacket
 		{
 			if (Path.GetExtension (path) != ".json") {
 				throw new ApplicationException (string.Format ("File extension {0} is invalid. .json file is expected", Path.GetExtension(path)));
@@ -67,7 +67,7 @@ namespace Tests
 			return Deserialize<T> (text);
 		}
 
-		public static object ReadPacket (string path, Type type)
+		internal static object ReadPacket (string path, Type type)
 		{
 			if (Path.GetExtension (path) != ".json") {
 				throw new ApplicationException (string.Format ("File extension {0} is invalid. .json file is expected", Path.GetExtension(path)));

@@ -1,12 +1,11 @@
-﻿using System;
-using Hermes.Packets;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
-	public interface IPacketListener : IDisposable
+	internal interface IPacketListener : IDisposable
 	{
 		IObservable<IPacket> Packets { get; }
 
-		void Listen (IChannel<IPacket> channel);
+		void Listen ();
 	}
 }

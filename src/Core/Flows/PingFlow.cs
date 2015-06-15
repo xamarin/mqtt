@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Packets;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public class PingFlow : IProtocolFlow
+	internal class PingFlow : IProtocolFlow
 	{
 		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{

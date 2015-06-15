@@ -1,12 +1,11 @@
-﻿using Hermes.Flows;
-using Hermes.Packets;
-using System.Linq;
+﻿using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
-	public static class Extensions
+	internal static class Extensions
 	{
-		public static ProtocolFlowType ToFlowType(this PacketType packetType)
+		internal static ProtocolFlowType ToFlowType(this PacketType packetType)
 		{
 			var flowType = default (ProtocolFlowType);
 
@@ -44,14 +43,14 @@ namespace Hermes
 			return flowType;
 		}
 
-		public static QualityOfService GetSupportedQos(this ProtocolConfiguration configuration, QualityOfService requestedQos)
+		internal static QualityOfService GetSupportedQos(this ProtocolConfiguration configuration, QualityOfService requestedQos)
 		{
 			return requestedQos > configuration.MaximumQualityOfService ?
 				configuration.MaximumQualityOfService : 
 				requestedQos;
 		}
 
-		public static SubscribeReturnCode ToReturnCode(this QualityOfService qos)
+		internal static SubscribeReturnCode ToReturnCode(this QualityOfService qos)
 		{
 			var returnCode = default (SubscribeReturnCode);
 

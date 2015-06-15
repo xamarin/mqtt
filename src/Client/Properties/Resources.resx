@@ -129,6 +129,9 @@
   <data name="Client_ConnectionTimeout" xml:space="preserve">
     <value>A timeout occured while waiting for the client {0} connection confirmation</value>
   </data>
+  <data name="Client_ConnectNotAccepted" xml:space="preserve">
+    <value>The connect packet of client {0} has not been accepted by the server. Status: {1}. The connection will be closed</value>
+  </data>
   <data name="Client_SubscribeError" xml:space="preserve">
     <value>An error occurred while trying to subscribe the client {0} to topic {1}</value>
   </data>
@@ -137,9 +140,6 @@
   </data>
   <data name="Client_SubscriptionDisconnected" xml:space="preserve">
     <value>The client {0} has been disconnected while trying to perform the subscription to topic {1}</value>
-  </data>
-  <data name="Client_TcpClient_Failed" xml:space="preserve">
-    <value>An error occurred while connecting to the endpoint address {0} and port {1}, to establish an MQTT connection</value>
   </data>
   <data name="Client_UnexpectedChannelDisconnection" xml:space="preserve">
     <value>The underlying connection has been disconnected unexpectedly</value>
@@ -155,12 +155,6 @@
   </data>
   <data name="SessionRepository_ClientSessionNotFound" xml:space="preserve">
     <value>No session has been found for client {0}</value>
-  </data>
-  <data name="TcpChannel_ClientIsNotConnected" xml:space="preserve">
-    <value>The underlying TCP client is not connected</value>
-  </data>
-  <data name="TcpChannel_SocketDisconnected" xml:space="preserve">
-    <value>The underlying network stream is not available. The socket could became disconnected</value>
   </data>
   <data name="Tracer_ClientPacketListener_DispatchingMessage" xml:space="preserve">
     <value>Client {0} - Dispatching {1} message to flow {2}</value>
@@ -201,13 +195,7 @@
   <data name="Tracer_PacketChannelCompleted" xml:space="preserve">
     <value>Client {0} - Packet Channel observable sequence has been completed</value>
   </data>
-  <data name="Tracer_TcpChannel_NetworkStreamCompleted" xml:space="preserve">
-    <value>Client - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>
-  </data>
-  <data name="Tracer_TcpChannel_ReceivedPacket" xml:space="preserve">
-    <value>Client - Received packet of {0} bytes</value>
-  </data>
-  <data name="Tracer_TcpChannel_SendingPacket" xml:space="preserve">
-    <value>Client - Sending packet of {0} bytes</value>
+  <data name="Client_InitializeError" xml:space="preserve">
+    <value>An error occurred while initializing a client</value>
   </data>
 </root>

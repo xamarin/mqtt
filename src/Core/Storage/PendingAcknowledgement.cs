@@ -1,8 +1,8 @@
-﻿using Hermes.Packets;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes.Storage
+namespace System.Net.Mqtt.Storage
 {
-	public class PendingAcknowledgement
+	internal class PendingAcknowledgement
 	{
 		public PacketType Type { get; set; }
 

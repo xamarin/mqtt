@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hermes;
+using System.Net.Mqtt;
 using Xunit;
 
 namespace Tests

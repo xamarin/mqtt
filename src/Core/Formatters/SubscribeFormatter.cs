@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
-	public class SubscribeFormatter : Formatter<Subscribe>
+	internal class SubscribeFormatter : Formatter<Subscribe>
 	{
 		readonly ITopicEvaluator topicEvaluator;
 
@@ -78,13 +76,13 @@ namespace Hermes.Formatters
 		private byte[] GetPayload(Subscribe packet)
 		{
 			if(packet.Subscriptions == null || !packet.Subscriptions.Any())
-				throw new ProtocolViolationException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new ProtocolViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var payload = new List<byte> ();
 
 			foreach (var subscription in packet.Subscriptions) {
 				if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-					var error = string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
+					var error = string.Format (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
 
 					throw new ProtocolException (error);
 				}
@@ -102,7 +100,7 @@ namespace Hermes.Formatters
 		private IEnumerable<Subscription> GetSubscriptions(byte[] bytes, int headerLength, int remainingLength)
 		{
 			if (bytes.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
-				throw new ProtocolViolationException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new ProtocolViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var index = headerLength;
 
@@ -110,7 +108,7 @@ namespace Hermes.Formatters
 				var topicFilter = bytes.GetString (index, out index);
 
 				if (!this.topicEvaluator.IsValidTopicFilter (topicFilter)) {
-					var error = string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
+					var error = string.Format (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
 
 					throw new ProtocolException (error);
 				}
@@ -118,7 +116,7 @@ namespace Hermes.Formatters
 				var requestedQosByte = bytes.Byte (index);
 
 				if (!Enum.IsDefined (typeof (QualityOfService), requestedQosByte))
-					throw new ProtocolViolationException (Resources.Formatter_InvalidQualityOfService);
+					throw new ProtocolViolationException (Properties.Resources.Formatter_InvalidQualityOfService);
 	
 				var requestedQos = (QualityOfService)requestedQosByte;
 

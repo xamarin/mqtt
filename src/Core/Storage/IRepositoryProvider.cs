@@ -1,6 +1,6 @@
-﻿namespace Hermes.Storage
+﻿namespace System.Net.Mqtt.Storage
 {
-	public interface IRepositoryProvider
+	internal interface IRepositoryProvider
 	{
 		IRepository<T> GetRepository<T> () where T : StorageObject;
 	}

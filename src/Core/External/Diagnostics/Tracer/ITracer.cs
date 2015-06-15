@@ -30,7 +30,7 @@ DAMAGE.
 */
 #endregion
 
-namespace Hermes.Diagnostics
+namespace System.Net.Mqtt.Diagnostics
 {
     using System;
     using System.Diagnostics;

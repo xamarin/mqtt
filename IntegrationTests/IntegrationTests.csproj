@@ -29,6 +29,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Hermes.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -58,6 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthenticationSpec.cs" />
     <Compile Include="ConnectionSpecWithKeepAlive.cs" />
     <Compile Include="Context\ConnectedContext.cs" />
     <Compile Include="ConnectionSpec.cs" />
@@ -72,10 +79,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messages\TestMessage.cs" />
+    <Compile Include="TestAuthenticationProvider.cs" />
     <Compile Include="TestTracerListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Hermes.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

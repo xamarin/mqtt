@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
-	public class ConnectAck : IPacket, IEquatable<ConnectAck>
+	internal class ConnectAck : IPacket, IEquatable<ConnectAck>
     {
         public ConnectAck(ConnectionStatus status, bool existingSession)
         {

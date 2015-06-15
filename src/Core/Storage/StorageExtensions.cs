@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Hermes.Storage
+namespace System.Net.Mqtt.Storage
 {
-	public static class StorageExtensions
+	internal static class StorageExtensions
 	{
 		public static IEnumerable<ClientSubscription> GetSubscriptions(this ClientSession session)
 		{

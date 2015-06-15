@@ -1,4 +1,4 @@
-﻿using Hermes;
+﻿using System.Net.Mqtt;
 using Xunit;
 using Xunit.Extensions;
 

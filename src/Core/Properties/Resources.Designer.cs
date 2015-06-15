@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Hermes.Properties {
+namespace System.Net.Mqtt.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Hermes.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hermes.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("System.Net.Mqtt.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -201,6 +201,15 @@ namespace Hermes.Properties {
         internal static string Formatter_InvalidQualityOfService {
             get {
                 return ResourceManager.GetString("Formatter_InvalidQualityOfService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An inner channel factory is required to create a new packet channel.
+        /// </summary>
+        internal static string PacketChannelFactory_InnerChannelFactoryNotFound {
+            get {
+                return ResourceManager.GetString("PacketChannelFactory_InnerChannelFactoryNotFound", resourceCulture);
             }
         }
         
@@ -367,6 +376,33 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The underlying TCP client is not connected.
+        /// </summary>
+        internal static string TcpChannel_ClientIsNotConnected {
+            get {
+                return ResourceManager.GetString("TcpChannel_ClientIsNotConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The underlying network stream is not available. The socket could became disconnected.
+        /// </summary>
+        internal static string TcpChannel_SocketDisconnected {
+            get {
+                return ResourceManager.GetString("TcpChannel_SocketDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while connecting via TCP to the endpoint address {0} and port {1}, to establish an MQTT connection.
+        /// </summary>
+        internal static string TcpChannelFactory_TcpClient_Failed {
+            get {
+                return ResourceManager.GetString("TcpChannelFactory_TcpClient_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The topic filter {0} is invalid according to the protocol rules and configuration.
         /// </summary>
         internal static string TopicEvaluator_InvalidTopicFilter {
@@ -399,6 +435,42 @@ namespace Hermes.Properties {
         internal static string Tracer_PublishFlow_RetryingQoSFlow {
             get {
                 return ResourceManager.GetString("Tracer_PublishFlow_RetryingQoSFlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while closing underlying channel. Error code: {0}.
+        /// </summary>
+        internal static string Tracer_TcpChannel_DisposeError {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_DisposeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed.
+        /// </summary>
+        internal static string Tracer_TcpChannel_NetworkStreamCompleted {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_NetworkStreamCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Received packet of {0} bytes.
+        /// </summary>
+        internal static string Tracer_TcpChannel_ReceivedPacket {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_ReceivedPacket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sending packet of {0} bytes.
+        /// </summary>
+        internal static string Tracer_TcpChannel_SendingPacket {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_SendingPacket", resourceCulture);
             }
         }
         

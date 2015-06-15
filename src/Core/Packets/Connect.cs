@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
-	public class Connect : IPacket, IEquatable<Connect>
+	internal class Connect : IPacket, IEquatable<Connect>
 	{
 		public Connect (string clientId, bool cleanSession)
 		{

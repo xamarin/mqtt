@@ -1,36 +1,36 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using Hermes.Flows;
-using Hermes.Storage;
+﻿using System.Reactive;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class ServerInitializer : IInitalizer<Server>
 	{
+		readonly IAuthenticationProvider authenticationProvider;
+		readonly IChannelProvider channelProvider;
+
+		public ServerInitializer (IAuthenticationProvider authenticationProvider = null, IChannelProvider channelProvider = null)
+		{
+			this.authenticationProvider = authenticationProvider ?? NullAuthenticationProvider.Instance;
+			this.channelProvider = channelProvider;
+		}
+
 		public Server Initialize(ProtocolConfiguration configuration)
 		{
-			var listener = new TcpListener(IPAddress.Any, configuration.Port);
-			var binaryChannelProvider = Observable
-				.FromAsync (() => {
-					return Task.Factory.FromAsync<TcpClient> (listener.BeginAcceptTcpClient,
-						listener.EndAcceptTcpClient, TaskCreationOptions.AttachedToParent);
-				})
-				.Repeat ()
-				.Select (client => new TcpChannel (client, new PacketBuffer (), configuration));
-			var channelObservable = new ChannelObservable (listener, binaryChannelProvider);
 			var topicEvaluator = new TopicEvaluator (configuration);
 			var channelFactory = new PacketChannelFactory (topicEvaluator, configuration);
 			var repositoryProvider = new InMemoryRepositoryProvider ();
 			var connectionProvider = new ConnectionProvider ();
 			var packetIdProvider = new PacketIdProvider ();
 			var eventStream = new EventStream ();
-			var flowProvider = new ServerProtocolFlowProvider (connectionProvider, topicEvaluator, 
+			var flowProvider = new ServerProtocolFlowProvider (this.authenticationProvider, connectionProvider, topicEvaluator, 
 				repositoryProvider, packetIdProvider, eventStream, configuration);
 
-			return new Server (channelObservable, channelFactory, flowProvider, connectionProvider, eventStream, configuration);
+			//TODO: The ChannelProvider injection must be handled better. I would not assume Tcp by default. 
+			//Instead I would delegate the implementation to a different NuGet or assembly.
+			//Maybe having one assembly per provider implementation (like TcpChannelProvider, WebSocketChannelProvider, TLSChannelProvider, etc)
+			return new Server (this.channelProvider ?? new TcpChannelProvider (configuration), channelFactory, 
+				flowProvider, connectionProvider, eventStream, configuration);
 		}
 	}
 }

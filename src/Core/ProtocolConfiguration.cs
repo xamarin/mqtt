@@ -1,6 +1,6 @@
-﻿using Hermes.Packets;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	public class ProtocolConfiguration
 	{
@@ -12,7 +12,6 @@ namespace Hermes
 			// is 8192 bytes
 			this.BufferSize = 8192;
 			this.MaximumQualityOfService = QualityOfService.AtMostOnce;
-			this.QualityOfServiceAckRetries = 3;
 			this.KeepAliveSecs = 0;
 			this.WaitingTimeoutSecs = 5;
 			this.AllowWildcardsInTopicFilters = true;
@@ -23,8 +22,6 @@ namespace Hermes
 		public int BufferSize { get; set; }
 
 		public QualityOfService MaximumQualityOfService { get; set; }
-
-		public int QualityOfServiceAckRetries { get; set; }
 
 		public ushort KeepAliveSecs { get; set; }
 

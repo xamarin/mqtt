@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace Hermes.Exceptions
+namespace System.Net.Mqtt.Exceptions
 {
 	[Serializable]
 	public class RepositoryException : Exception

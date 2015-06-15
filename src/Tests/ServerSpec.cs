@@ -2,9 +2,9 @@
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Threading;
-using Hermes;
-using Hermes.Flows;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
 
@@ -16,6 +16,12 @@ namespace Tests
 		public void when_server_does_not_start_then_connections_are_ignored ()
 		{
 			var sockets = new Subject<IChannel<byte[]>> ();
+			var channelProvider = new Mock<IChannelProvider> ();
+
+			channelProvider
+				.Setup (p => p.GetChannels ())
+				.Returns (sockets);
+
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
@@ -36,8 +42,10 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var eventStream = new EventStream ();
 
-			var server = new Server (sockets, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
+			var server = new Server (channelProvider.Object, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
 
+			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
+			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
 			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
 
 			Assert.Equal (0, server.ActiveChannels);
@@ -47,6 +55,12 @@ namespace Tests
 		public void when_connection_established_then_active_connections_increases ()
 		{
 			var sockets = new Subject<IChannel<byte[]>> ();
+			var channelProvider = new Mock<IChannelProvider> ();
+
+			channelProvider
+				.Setup (p => p.GetChannels ())
+				.Returns (sockets);
+
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
@@ -67,19 +81,27 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var eventStream = new EventStream ();
 
-			var server = new Server (sockets, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
+			var server = new Server (channelProvider.Object, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
 
 			server.Start ();
 
 			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
+			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
+			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
 
-			Assert.Equal (1, server.ActiveChannels);
+			Assert.Equal (3, server.ActiveChannels);
 		}
 
 		[Fact]
 		public void when_server_closed_then_pending_connection_is_closed ()
 		{
 			var sockets = new Subject<IChannel<byte[]>> ();
+			var channelProvider = new Mock<IChannelProvider> ();
+
+			channelProvider
+				.Setup (p => p.GetChannels ())
+				.Returns (sockets);
+
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel
@@ -98,7 +120,7 @@ namespace Tests
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 			var eventStream = new EventStream ();
 
-			var server = new Server (sockets, Mock.Of<IPacketChannelFactory> (x => x.Create (It.IsAny<IChannel<byte[]>> ()) == packetChannel.Object), 
+			var server = new Server (channelProvider.Object, Mock.Of<IPacketChannelFactory> (x => x.Create (It.IsAny<IChannel<byte[]>> ()) == packetChannel.Object), 
 				flowProvider, connectionProvider.Object, eventStream, configuration);
 
 			server.Start ();
@@ -116,6 +138,12 @@ namespace Tests
 		public void when_receiver_error_then_closes_connection ()
 		{
 			var sockets = new Subject<IChannel<byte[]>> ();
+			var channelProvider = new Mock<IChannelProvider> ();
+
+			channelProvider
+				.Setup (p => p.GetChannels ())
+				.Returns (sockets);
+
 			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
@@ -140,7 +168,7 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var eventStream = new EventStream ();
 
-			var server = new Server (sockets, factory.Object, flowProvider, connectionProvider.Object, eventStream, configuration);
+			var server = new Server (channelProvider.Object, factory.Object, flowProvider, connectionProvider.Object, eventStream, configuration);
 			var receiver = new Subject<byte[]> ();
 			var socket = new Mock<IChannel<byte[]>> ();
 

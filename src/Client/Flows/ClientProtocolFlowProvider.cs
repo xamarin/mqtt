@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using Hermes.Packets;
-using Hermes.Storage;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public class ClientProtocolFlowProvider : ProtocolFlowProvider
+	internal class ClientProtocolFlowProvider : ProtocolFlowProvider
 	{
 		public ClientProtocolFlowProvider (ITopicEvaluator topicEvaluator, IRepositoryProvider repositoryProvider, ProtocolConfiguration configuration)
 			: base(topicEvaluator, repositoryProvider, configuration)

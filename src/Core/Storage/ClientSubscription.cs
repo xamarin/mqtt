@@ -1,8 +1,8 @@
-﻿using Hermes.Packets;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes.Storage
+namespace System.Net.Mqtt.Storage
 {
-	public class ClientSubscription
+	internal class ClientSubscription
 	{
 		public string ClientId { get; set; }
 

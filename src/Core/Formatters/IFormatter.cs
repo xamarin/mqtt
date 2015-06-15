@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Packets;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
-	public interface IFormatter
+	internal interface IFormatter
 	{
 		/// <summary>
 		/// Gets the type of packet that this formatter support.

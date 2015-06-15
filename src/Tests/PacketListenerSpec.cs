@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reactive.Subjects;
 using System.Threading;
-using Hermes;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Storage;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 
@@ -24,15 +24,15 @@ namespace Tests
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<PacketType> ())).Returns (flow.Object);
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider.Object, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
+
+			listener.Listen ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var connect = new Connect (clientId, cleanSession: true);
@@ -53,15 +53,15 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
+
+			listener.Listen ();
 
 			var clientId = Guid.NewGuid().ToString();
 			var connect = new Connect (clientId, cleanSession: true);
@@ -79,25 +79,25 @@ namespace Tests
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
-			
-			var timeoutOccured = false;
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
+
+			listener.Listen ();
+
+			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
 			listener.Packets.Subscribe (_ => { }, ex => {
-				timeoutOccured = true;
+				timeoutSignal.Set ();
 			});
 
-			Thread.Sleep ((waitingTimeout + 1) * 1000);
+			var timeoutOccurred = timeoutSignal.Wait ((waitingTimeout + 1) * 1000);
 
-			Assert.True (timeoutOccured);
+			Assert.True (timeoutOccurred);
 		}
 
 		[Fact]
@@ -108,15 +108,15 @@ namespace Tests
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var waitingTimeout = 1;
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = waitingTimeout };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
+
+			listener.Listen ();
 			
 			var timeoutOccured = false;
 			
@@ -139,15 +139,15 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
+
+			listener.Listen ();
 			
 			var errorOccured = false;
 			
@@ -169,15 +169,15 @@ namespace Tests
 
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
+
+			listener.Listen ();
 			
 			var errorSignal = new ManualResetEventSlim();
 			
@@ -207,8 +207,6 @@ namespace Tests
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider.Object, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var sender = new Subject<IPacket> ();
 			var packetChannelMock = new Mock<IChannel<IPacket>> ();
@@ -218,12 +216,14 @@ namespace Tests
 
 			var packetChannel = packetChannelMock.Object;
 
-			listener.Listen (packetChannel);
-			
-			var timeoutOccured = false;
+			var listener = new ServerPacketListener (packetChannel, connectionProvider.Object, flowProvider.Object, configuration);
+
+			listener.Listen ();
+
+			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
 			listener.Packets.Subscribe (_ => { }, ex => {
-				timeoutOccured = true;
+				timeoutSignal.Set ();
 			});
 
 			var clientId = Guid.NewGuid().ToString();
@@ -236,9 +236,9 @@ namespace Tests
 
 			sender.OnNext (connectAck);
 
-			Thread.Sleep ((int)((keepAlive + 1) * 1.5) * 1000);
+			var timeoutOccurred = timeoutSignal.Wait(((int)((keepAlive + 1) * 1.5) * 1000));
 
-			Assert.True (timeoutOccured);
+			Assert.True (timeoutOccurred);
 		}
 
 		[Fact]
@@ -252,15 +252,15 @@ namespace Tests
 
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider.Object, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
+
+			listener.Listen ();
 			
 			var timeoutOccured = false;
 			
@@ -290,20 +290,20 @@ namespace Tests
 
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 10 };
-			var listener = new ServerPacketListener (connectionProvider.Object, flowProvider.Object, configuration);
-
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IChannel<IPacket>> ();
 
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			listener.Listen (packetChannel.Object);
-			
-			var timeoutOccured = false;
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
+
+			listener.Listen ();
+
+			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
 			listener.Packets.Subscribe (_ => { }, ex => {
-				timeoutOccured = true;
+				timeoutSignal.Set ();
 			});
 
 			var clientId = Guid.NewGuid().ToString();
@@ -312,9 +312,9 @@ namespace Tests
 			receiver.OnNext (connect);
 			packetChannel.Object.SendAsync(new ConnectAck (ConnectionStatus.Accepted, existingSession: false)).Wait();
 
-			Thread.Sleep (2000);
+			var timeoutOccurred = timeoutSignal.Wait (2000); 
 
-			Assert.False (timeoutOccured);
+			Assert.False (timeoutOccurred);
 		}
 	}
 }

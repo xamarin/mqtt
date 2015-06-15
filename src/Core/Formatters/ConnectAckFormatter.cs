@@ -1,10 +1,8 @@
-﻿using System;
-using Hermes.Packets;
-using Hermes.Properties;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
-	public class ConnectAckFormatter : Formatter<ConnectAck>
+	internal class ConnectAckFormatter : Formatter<ConnectAck>
 	{
 		public override PacketType PacketType { get { return Packets.PacketType.ConnectAck; } }
 
@@ -19,13 +17,13 @@ namespace Hermes.Formatters
 			var connectAckFlagsIndex = Protocol.PacketTypeLength + remainingLengthBytesLength;
 
 			if (bytes.Byte (connectAckFlagsIndex).Bits (7) != 0x00)
-				throw new ProtocolException (Resources.ConnectAckFormatter_InvalidAckFlags);
+				throw new ProtocolException (Properties.Resources.ConnectAckFormatter_InvalidAckFlags);
 
 			var sessionPresent = bytes.Byte (connectAckFlagsIndex).IsSet(0);
 			var returnCode = (ConnectionStatus)bytes.Byte (connectAckFlagsIndex + 1);
 
 			if (returnCode != ConnectionStatus.Accepted && sessionPresent)
-				throw new ProtocolException (Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
+				throw new ProtocolException (Properties.Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
 
 			var connectAck = new ConnectAck(returnCode, sessionPresent);
 
@@ -61,7 +59,7 @@ namespace Hermes.Formatters
 		private byte[] GetVariableHeader(ConnectAck packet)
 		{
 			if (packet.Status != ConnectionStatus.Accepted && packet.SessionPresent)
-				throw new ProtocolException (Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
+				throw new ProtocolException (Properties.Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
 
 			var connectAckFlagsByte = Convert.ToByte(packet.SessionPresent);
 			var returnCodeByte = Convert.ToByte (packet.Status);

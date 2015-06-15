@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reactive;
-using Hermes;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Storage;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
@@ -44,7 +44,8 @@ namespace Tests
 		[InlineData(PacketType.Unsubscribe, typeof(ServerUnsubscribeFlow))]
 		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
-			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
 				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
@@ -55,7 +56,8 @@ namespace Tests
 		[Fact]
 		public void when_getting_explicit_server_flow_from_type_then_succeeds()
 		{
-			var flowProvider = new ServerProtocolFlowProvider (Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
+			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
 				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new ProtocolConfiguration ());
 
 			var connectFlow = flowProvider.GetFlow<ServerConnectFlow> ();

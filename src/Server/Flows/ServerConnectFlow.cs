@@ -1,23 +1,25 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public class ServerConnectFlow : IProtocolFlow
+	internal class ServerConnectFlow : IProtocolFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerConnectFlow> ();
 
+		readonly IAuthenticationProvider authenticationProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IPublishSenderFlow senderFlow;
 
-		public ServerConnectFlow (IRepository<ClientSession> sessionRepository, 
+		public ServerConnectFlow (IAuthenticationProvider authenticationProvider,
+			IRepository<ClientSession> sessionRepository, 
 			IRepository<ConnectionWill> willRepository,
 			IPublishSenderFlow senderFlow)
 		{
+			this.authenticationProvider = authenticationProvider;
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;
 			this.senderFlow = senderFlow;
@@ -29,6 +31,11 @@ namespace Hermes.Flows
 				return;
 
 			var connect = input as Connect;
+
+			if (!this.authenticationProvider.Authenticate (connect.UserName, connect.Password)) {
+				throw new ProtocolConnectionException (ConnectionStatus.BadUserNameOrPassword);
+			}
+
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 
@@ -36,7 +43,7 @@ namespace Hermes.Flows
 				this.sessionRepository.Delete(session);
 				session = null;
 
-				tracer.Info (Resources.Tracer_Server_CleanedOldSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Server_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -44,7 +51,7 @@ namespace Hermes.Flows
 
 				this.sessionRepository.Create (session);
 
-				tracer.Info (Resources.Tracer_Server_CreatedSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Server_CreatedSession, clientId);
 			} else {
 				await this.SendPendingMessagesAsync (session, channel)
 					.ConfigureAwait(continueOnCapturedContext: false);

@@ -1,6 +1,6 @@
-﻿namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
-	public class Disconnect : IPacket
+	internal class Disconnect : IPacket
     {
 		public PacketType Type { get { return PacketType.Disconnect; }}
     }

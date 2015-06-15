@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using Hermes;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Packets;
 using Xunit;
 
 namespace Tests
@@ -17,7 +17,6 @@ namespace Tests
 			Assert.Equal (Protocol.DefaultNonSecurePort, configuration.Port);
 			Assert.Equal (8192, configuration.BufferSize);
 			Assert.Equal (QualityOfService.AtMostOnce, configuration.MaximumQualityOfService);
-			Assert.Equal (3, configuration.QualityOfServiceAckRetries);
 			Assert.Equal (0, configuration.KeepAliveSecs);
 			Assert.Equal (5, configuration.WaitingTimeoutSecs);
 			Assert.Equal (true, configuration.AllowWildcardsInTopicFilters);

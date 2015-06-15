@@ -1,24 +1,36 @@
 ﻿using System.Threading.Tasks;
-using Hermes;
+using System.Net.Mqtt;
 using IntegrationTests.Context;
 using Xunit;
 using System.Linq;
 using System.Threading;
 using System;
 using System.Reactive.Linq;
+using System.Net.Mqtt.Packets;
+using System.Text;
 using System.Collections.Generic;
-using Hermes.Packets;
 
 namespace IntegrationTests
 {
 	public class ConnectionSpec : IntegrationContext, IDisposable
 	{
-		private readonly Server server;
+		readonly Server server;
 
 		public ConnectionSpec ()
-			: base()
 		{
 			this.server = this.GetServer ();
+		}
+
+		[Fact]
+		public void when_stopping_server_then_it_is_not_reachable()
+		{
+			this.server.Stop ();
+
+			var ex = Assert.Throws<ClientException>(() => this.GetClient ());
+
+			Assert.NotNull (ex);
+			Assert.NotNull (ex.InnerException);
+			Assert.True (ex.InnerException is ProtocolException);
 		}
 
 		[Fact]
@@ -31,19 +43,6 @@ namespace IntegrationTests
 			await barClient.ConnectAsync (new ClientCredentials (this.GetClientId ()));
 
 			var exceptionThrown = false;
-			var serverSignal = new ManualResetEventSlim ();
-			var serverTimer = new System.Timers.Timer ();
-
-			serverTimer.Interval = 100;
-			serverTimer.AutoReset = true;
-			serverTimer.Elapsed += (sender, e) => {
-				if (this.server.ActiveChannels == 1 && server.ActiveClients.Count() == 1) {
-					serverSignal.Set ();
-					serverTimer.Stop ();
-				}
-			};
-
-			serverTimer.Start ();
 
 			try {
 				//Force an exception to be thrown by publishing null message
@@ -51,37 +50,43 @@ namespace IntegrationTests
 			} catch {
 				exceptionThrown = true;
 			}
-			
-			var topic = "foo/#";
 
-			await barClient.SubscribeAsync (topic, QualityOfService.AtMostOnce);
+			var serverSignal = new ManualResetEventSlim ();
 
-			var serverNotified = serverSignal.Wait (TimeSpan.FromSeconds (1));
+			while (!serverSignal.IsSet) {
+				if (server.ActiveChannels == 1 && server.ActiveClients.Count () == 1) {
+					serverSignal.Set ();
+				}
+			}
 
-			Assert.True (serverNotified);
+			serverSignal.Wait ();
+
 			Assert.True (exceptionThrown);
-			Assert.Equal(1, this.server.ActiveChannels);
-			Assert.Equal(1, this.server.ActiveClients.Count ());
+			Assert.Equal(1, server.ActiveChannels);
+			Assert.Equal(1, server.ActiveClients.Count ());
 
-			serverTimer.Dispose ();
+			fooClient.Close ();
+			barClient.Close ();
 		}
 
 		[Fact]
 		public async Task when_connect_clients_then_succeeds()
 		{
-			var clients = new List<Client>();
-			var count = this.GetTestLoad();
+			var count = this.GetTestLoad ();
+			var clients = new List<IClient> ();
 
 			for (var i = 1; i <= count; i++) {
 				var client = this.GetClient ();
 
-				clients.Add (client);
 				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
 					.ConfigureAwait(continueOnCapturedContext: false);
+
+				clients.Add (client);
 			}
 
+			Assert.Equal (count, server.ActiveClients.Count ());
 			Assert.True (clients.All(c => c.IsConnected));
-			Assert.True (clients.All (c => !string.IsNullOrEmpty (c.Id)));
+			Assert.True (clients.All(c => !string.IsNullOrEmpty (c.Id)));
 
 			foreach (var client in clients) {
 				client.Close ();
@@ -89,26 +94,31 @@ namespace IntegrationTests
 		}
 
 		[Fact]
-		public async Task when_disconnect_client_then_succeeds()
+		public async Task when_disconnect_clients_then_succeeds()
 		{
-			var clients = new List<Client>();
-			var count = this.GetTestLoad();
+			var count = this.GetTestLoad ();
+			var clients = new List<IClient> ();
 
 			for (var i = 1; i <= count; i++) {
 				var client = this.GetClient ();
 
+				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+				await client.DisconnectAsync ();
+
 				clients.Add (client);
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
-					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
-			foreach (var client in clients) {
-				await client.DisconnectAsync ()
-					.ConfigureAwait(continueOnCapturedContext: false);
+			var disconnectedSignal = new ManualResetEventSlim (initialState: false);
+
+			while (!disconnectedSignal.IsSet) {
+				if (server.ActiveClients.Count () == 0 && clients.All(c => !c.IsConnected)) {
+					disconnectedSignal.Set ();
+				}
 			}
 
+			Assert.Equal (0, server.ActiveClients.Count ());
 			Assert.True (clients.All(c => !c.IsConnected));
-			Assert.True (clients.All (c => string.IsNullOrEmpty (c.Id)));
+			Assert.True (clients.All(c => string.IsNullOrEmpty (c.Id)));
 
 			foreach (var client in clients) {
 				client.Close ();
@@ -124,7 +134,7 @@ namespace IntegrationTests
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
-			var existClientAfterConnect = this.server.ActiveClients.Any (c => c == clientId);
+			var existClientAfterConnect = server.ActiveClients.Any (c => c == clientId);
 
 			await client.DisconnectAsync ()
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -136,7 +146,7 @@ namespace IntegrationTests
 
 				timer.Interval = 200;
 				timer.Elapsed += (sender, args) => {
-					if (this.server.ActiveClients.Any (c => c == clientId)) {
+					if (server.ActiveClients.Any (c => c == clientId)) {
 						observer.OnNext (false);
 					} else {
 						observer.OnNext (true);
@@ -154,18 +164,114 @@ namespace IntegrationTests
 				_ => { },
 				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
 
-			var clientDisconnected = clientClosed.Wait (TimeSpan.FromSeconds(1));
+			var clientDisconnected = clientClosed.Wait (2000);
 
 			Assert.True (existClientAfterConnect);
 			Assert.True (clientDisconnected);
-			Assert.False (this.server.ActiveClients.Any (c => c == clientId));
+			Assert.False (server.ActiveClients.Any (c => c == clientId));
 
 			client.Close ();
 		}
 
+		[Fact]
+		public async Task when_client_disconnects_by_protocol_then_will_message_is_not_sent()
+		{
+			var client1 = this.GetClient ();
+			var client2 = this.GetClient ();
+			var client3 = this.GetClient ();
+
+			var topic = Guid.NewGuid ().ToString ();
+			var qos = QualityOfService.ExactlyOnce;
+			var retain = true;
+			var message = "Client 1 has been disconnected unexpectedly";
+			var will = new Will(topic, qos, retain, message);
+
+			await client1.ConnectAsync (new ClientCredentials (this.GetClientId ()), will);
+			await client2.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await client3.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+
+			await client2.SubscribeAsync(topic, QualityOfService.AtMostOnce);
+			await client3.SubscribeAsync(topic, QualityOfService.AtLeastOnce);
+
+			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
+
+			client2.Receiver.Subscribe (m => {
+				if (m.Topic == topic) {
+					willReceivedSignal.Set ();
+				}
+			});
+			client3.Receiver.Subscribe (m => {
+				if (m.Topic == topic) {
+					willReceivedSignal.Set ();
+				}
+			});
+
+			await client1.DisconnectAsync ();
+
+			var willReceived = willReceivedSignal.Wait (2000);
+
+			Assert.False (willReceived);
+
+			client1.Close ();
+			client2.Close ();
+			client3.Close ();
+		}
+		
+		[Fact]
+		public async Task when_client_disconnects_unexpectedly_then_will_message_is_sent()
+		{
+			var client1 = this.GetClient ();
+			var client2 = this.GetClient ();
+			var client3 = this.GetClient ();
+
+			var topic = Guid.NewGuid ().ToString ();
+			var qos = QualityOfService.ExactlyOnce;
+			var retain = true;
+			var message = "Client 1 has been disconnected unexpectedly";
+			var will = new Will(topic, qos, retain, message);
+
+			await client1.ConnectAsync (new ClientCredentials (this.GetClientId ()), will);
+			await client2.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await client3.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+
+			await client2.SubscribeAsync(topic, QualityOfService.AtMostOnce);
+			await client3.SubscribeAsync(topic, QualityOfService.AtLeastOnce);
+
+			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
+			var willMessage = default (ApplicationMessage);
+
+			client2.Receiver.Subscribe (m => {
+				if (m.Topic == topic) {
+					willMessage = m;
+					willReceivedSignal.Set ();
+				}
+			});
+			client3.Receiver.Subscribe (m => {
+				if (m.Topic == topic) {
+					willMessage = m;
+					willReceivedSignal.Set ();
+				}
+			});
+
+			client1.Close ();
+
+			var willReceived = willReceivedSignal.Wait (2000);
+
+			Assert.True (willReceived);
+			Assert.NotNull (willMessage);
+			Assert.Equal (topic, willMessage.Topic);
+			Assert.Equal (message, Encoding.UTF8.GetString (willMessage.Payload));
+
+			client1.Close ();
+			client2.Close ();
+			client3.Close ();
+		}
+
 		public void Dispose ()
 		{
-			this.server.Stop ();
+			if (this.server != null) {
+				this.server.Stop ();
+			}
 		}
 	}
 }

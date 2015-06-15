@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Hermes;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Storage;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 
@@ -13,7 +13,7 @@ namespace Tests.Flows
 	public class DisconnectFlowSpec
 	{
 		[Fact]
-		public async Task when_sending_disconnect_and_client_session_has_clean_state_then_disconnects_and_delete_session()
+		public async Task when_sending_disconnect_and_client_session_has_clean_state_then_disconnects_and_delete_will_and_session()
 		{
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>>();
@@ -40,7 +40,6 @@ namespace Tests.Flows
 			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
 			sessionRepository.Verify(r => r.Delete(It.Is<ClientSession>(s => s == session)));
 		}
@@ -73,7 +72,6 @@ namespace Tests.Flows
 			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			connectionProvider.Verify (m => m.RemoveConnection (It.Is<string> (s => s == clientId)));
 			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
 			sessionRepository.Verify(r => r.Delete(It.Is<ClientSession>(s => s == session)), Times.Never);
 		}
