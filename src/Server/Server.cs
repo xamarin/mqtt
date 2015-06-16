@@ -87,10 +87,6 @@ namespace Hermes
 			if (disposing) {
 				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
 
-				if (this.channelSubscription != null) {
-					this.channelSubscription.Dispose ();
-				}
-
 				if (this.streamSubscription != null) {
 					this.streamSubscription.Dispose ();
 				}
@@ -100,6 +96,10 @@ namespace Hermes
 				}
 
 				channels.Clear ();
+				
+				if (this.channelSubscription != null) {
+					this.channelSubscription.Dispose ();
+				}
 
 				this.disposed = true;
 			}

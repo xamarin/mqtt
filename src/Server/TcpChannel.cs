@@ -94,7 +94,12 @@ namespace Hermes
 				this.receiver.OnCompleted ();
 
 				if (this.IsConnected) {
-					this.client.Close ();
+					try {
+						this.client.Client.Shutdown (SocketShutdown.Both);
+						this.client.Close ();
+					} catch (SocketException socketEx) {
+						tracer.Error (socketEx, Properties.Resources.Tracer_TcpChannel_DisposeError, socketEx.ErrorCode);
+					}
 				}
 
 				this.disposed = true;

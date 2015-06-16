@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -7,6 +8,7 @@ using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Packets;
 using Hermes.Properties;
+using System.Linq;
 
 namespace Hermes
 {
@@ -201,12 +203,17 @@ namespace Hermes
 					this.packets.OnNext (packet);
 
 					await this.dispatcher.Run (() => {
-						var publish = packet as Publish;
+						if (packet.Type == PacketType.Publish) {
+							var publish = packet as Publish;
 
-						if (publish == null) {
-							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
-						} else {
 							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType().Name, clientId, publish.Topic);
+						} else if (packet.Type == PacketType.Subscribe) {
+							var subscribe = packet as Subscribe;
+							var topics = subscribe.Subscriptions == null ? new List<string> () : subscribe.Subscriptions.Select (s => s.TopicFilter);
+
+							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingSubscribe, flow.GetType().Name, clientId, string.Join(", ", topics));
+						} else {
+							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
 						}
 
 						return flow.ExecuteAsync (clientId, packet, channel);

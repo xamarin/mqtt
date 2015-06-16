@@ -168,6 +168,9 @@
   <data name="Tracer_ServerPacketListener_DispatchingPublish" xml:space="preserve">
     <value>Server - Dispatching Publish message to flow {0} for client {1} and topic {2}</value>
   </data>
+  <data name="Tracer_ServerPacketListener_DispatchingSubscribe" xml:space="preserve">
+    <value>Server - Dispatching Subscribe message to flow {0} for client {1} and topics: {2}</value>
+  </data>
   <data name="Tracer_ServerPacketListener_Error" xml:space="preserve">
     <value>Server - An error occurred while listening and dispatching packets - Client: {0}</value>
   </data>
@@ -197,6 +200,9 @@
   </data>
   <data name="Tracer_Server_PacketsObservableError" xml:space="preserve">
     <value>Server - Packet observable sequence had an error, hence closing the channel</value>
+  </data>
+  <data name="Tracer_TcpChannel_DisposeError" xml:space="preserve">
+    <value>Server - An error occurred while closing underlying channel. Error code: {0}</value>
   </data>
   <data name="Tracer_TcpChannel_NetworkStreamCompleted" xml:space="preserve">
     <value>Server - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>

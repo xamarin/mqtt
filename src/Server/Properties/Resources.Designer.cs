@@ -268,6 +268,15 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Server - Dispatching Subscribe message to flow {0} for client {1} and topics: {2}.
+        /// </summary>
+        internal static string Tracer_ServerPacketListener_DispatchingSubscribe {
+            get {
+                return ResourceManager.GetString("Tracer_ServerPacketListener_DispatchingSubscribe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Server - An error occurred while listening and dispatching packets - Client: {0}.
         /// </summary>
         internal static string Tracer_ServerPacketListener_Error {
@@ -300,6 +309,15 @@ namespace Hermes.Properties {
         internal static string Tracer_ServerSubscribeFlow_InvalidTopicSubscription {
             get {
                 return ResourceManager.GetString("Tracer_ServerSubscribeFlow_InvalidTopicSubscription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server - An error occurred while closing underlying channel. Error code: {0}.
+        /// </summary>
+        internal static string Tracer_TcpChannel_DisposeError {
+            get {
+                return ResourceManager.GetString("Tracer_TcpChannel_DisposeError", resourceCulture);
             }
         }
         
