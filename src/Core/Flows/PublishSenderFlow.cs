@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using System.Timers;
 using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
-using System.Reactive.Threading.Tasks;
+using System.Threading;
 
 namespace Hermes.Flows
 {
@@ -91,58 +89,46 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 		}
 
-		protected async Task MonitorAckAsync<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
+		protected Task MonitorAckAsync<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			var ackSubject = new Subject<T> ();
-			var retries = 0;
-			var qosTimer = new Timer();
+			return Task.Run (() => {
+				var retries = 0;
+				var ackSignal = new ManualResetEventSlim (initialState: false);
 
-			qosTimer.AutoReset = true;
-			qosTimer.Interval = this.configuration.WaitingTimeoutSecs * 1000;
-			qosTimer.Elapsed += async (sender, e) => {
-				if (retries == this.configuration.QualityOfServiceAckRetries) {
-					ackSubject.OnError (new ProtocolException (string.Format (Resources.PublishFlow_AckMonitor_ExceededMaximumAckRetries, this.configuration.QualityOfServiceAckRetries)));
-				}
+				var intervalSubscription = Observable
+					.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
+					.Subscribe (_ => {
+						if (!ackSignal.IsSet) {
+							tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
-				tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+							var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
+								sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
+									Payload = sentMessage.Payload
+								};
 
-				try {
-					var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
-						sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
-							Payload = sentMessage.Payload
-						};
+							if (channel.IsConnected) {
+								channel.SendAsync (duplicated);
+							} else {
+								ackSignal.Set();
+							}
 
-					if (channel.IsConnected) {
-						await channel.SendAsync (duplicated)
-							.ConfigureAwait(continueOnCapturedContext: false);
-					} else {
-						ackSubject.OnCompleted ();
-					}		
-				} catch (Exception ex) {
-					ackSubject.OnError (ex);
-				}
+							retries++;
+						}
+					});
 
-				retries++;
-			};
-			qosTimer.Start ();
+				var ackSubscription = channel.Receiver
+					.ObserveOn(NewThreadScheduler.Default)
+					.OfType<T> ()
+					.Where (x => x.PacketId == sentMessage.PacketId.Value)
+					.Subscribe (x => {
+						ackSignal.Set();
+					});
 
-			var ackSubscription = channel.Receiver
-				.ObserveOn(NewThreadScheduler.Default)
-				.OfType<T> ()
-				.Where (x => x.PacketId == sentMessage.PacketId.Value)
-				.Subscribe (x => {
-					ackSubject.OnNext (x);
-				});
-
-			try {
-				await ackSubject.FirstOrDefaultAsync ()
-					.ToTask().ConfigureAwait(continueOnCapturedContext: false);
-			} finally {
+				ackSignal.Wait();
+				intervalSubscription.Dispose();
 				ackSubscription.Dispose ();
-				ackSubject.Dispose ();
-				qosTimer.Dispose ();
-			}
+			});
 		}
 
 		private void DefineSenderRules ()

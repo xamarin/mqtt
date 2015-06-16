@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ChannelObservable_TcpListener_Failed" xml:space="preserve">
+  <data name="TcpChannelProvider_TcpListener_Failed" xml:space="preserve">
     <value>An error occurred while starting to listen incoming TCP connections</value>
   </data>
   <data name="ServerPacketListener_FirstPacketMustBeConnect" xml:space="preserve">
@@ -134,12 +134,6 @@
   </data>
   <data name="SessionRepository_ClientSessionNotFound" xml:space="preserve">
     <value>No session has been found for client {0}</value>
-  </data>
-  <data name="TcpChannel_ClientIsNotConnected" xml:space="preserve">
-    <value>The underlying TCP client is not connected</value>
-  </data>
-  <data name="TcpChannel_SocketDisconnected" xml:space="preserve">
-    <value>The underlying network stream is not available. The socket could became disconnected</value>
   </data>
   <data name="Tracer_ConnectionProvider_ClientDisconnected" xml:space="preserve">
     <value>Server - The connection for client {0} is not connected. Removing connection</value>
@@ -159,6 +153,9 @@
   <data name="Tracer_PacketChannelCompleted" xml:space="preserve">
     <value>Server - Packet Channel observable sequence has been completed for client {0}</value>
   </data>
+  <data name="Tracer_ServerPacketListener_ConnectionError" xml:space="preserve">
+    <value>Server - An error occurred while executing the connect flow. Client: {0}</value>
+  </data>
   <data name="Tracer_ServerPacketListener_ConnectPacketReceived" xml:space="preserve">
     <value>Server - A connect packet has been received from client {0}</value>
   </data>
@@ -168,8 +165,14 @@
   <data name="Tracer_ServerPacketListener_DispatchingPublish" xml:space="preserve">
     <value>Server - Dispatching Publish message to flow {0} for client {1} and topic {2}</value>
   </data>
+  <data name="Tracer_ServerPacketListener_DispatchingSubscribe" xml:space="preserve">
+    <value>Server - Dispatching Subscribe message to flow {0} for client {1} and topics: {2}</value>
+  </data>
   <data name="Tracer_ServerPacketListener_Error" xml:space="preserve">
     <value>Server - An error occurred while listening and dispatching packets - Client: {0}</value>
+  </data>
+  <data name="Tracer_ServerPublishReceiverFlow_SendingWill" xml:space="preserve">
+    <value>Server - Sending last will message of client {0} to topic {1}</value>
   </data>
   <data name="Tracer_ServerPublishReceiverFlow_TopicNotSubscribed" xml:space="preserve">
     <value>The topic {0} has no subscribers, hence the message sent by {1} will not be forwarded</value>
@@ -197,14 +200,5 @@
   </data>
   <data name="Tracer_Server_PacketsObservableError" xml:space="preserve">
     <value>Server - Packet observable sequence had an error, hence closing the channel</value>
-  </data>
-  <data name="Tracer_TcpChannel_NetworkStreamCompleted" xml:space="preserve">
-    <value>Server - The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>
-  </data>
-  <data name="Tracer_TcpChannel_ReceivedPacket" xml:space="preserve">
-    <value>Server - Received packet of {0} bytes</value>
-  </data>
-  <data name="Tracer_TcpChannel_SendingPacket" xml:space="preserve">
-    <value>Server - Sending packet of {0} bytes</value>
   </data>
 </root>

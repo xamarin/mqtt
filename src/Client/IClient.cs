@@ -17,10 +17,7 @@ namespace Hermes
 		IObservable<IPacket> Sender { get; }
 
 		/// <exception cref="ClientException">ClientException</exception>
-		Task ConnectAsync (ClientCredentials credentials, bool cleanSession = false);
-
-		/// <exception cref="ClientException">ClientException</exception>
-		Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false);
+		Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false);
 
 		/// <exception cref="ClientException">ClientException</exception>
 		Task SubscribeAsync (string topicFilter, QualityOfService qos);

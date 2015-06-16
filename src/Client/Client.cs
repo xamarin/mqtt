@@ -15,6 +15,7 @@ namespace Hermes
     {
 		static readonly ITracer tracer = Tracer.Get<Client> ();
 
+		bool protocolDisconnected;
 		bool disposed;
 		bool isConnected;
 		IDisposable packetsSubscription;
@@ -22,16 +23,14 @@ namespace Hermes
 		readonly ReplaySubject<ApplicationMessage> receiver;
 		readonly ReplaySubject<IPacket> sender;
 		readonly IChannel<IPacket> packetChannel;
-		readonly IPacketListener packetListener;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly TaskRunner packetSender;
+		readonly IPacketListener packetListener;
 
-        public Client(IChannel<byte[]> binaryChannel, 
-			IPacketChannelFactory channelFactory, 
-			IPacketListener packetListener,
+        public Client(IChannel<IPacket> packetChannel, 
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
@@ -40,15 +39,15 @@ namespace Hermes
 			this.receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
 			this.sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
 
-			this.packetListener = packetListener;
+			this.packetChannel = packetChannel;
 			this.flowProvider = flowProvider;
 			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
 			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
 			this.packetSender = TaskRunner.Get();
+			this.packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
 
-			this.packetChannel = channelFactory.Create (binaryChannel);
-			this.packetListener.Listen (this.packetChannel);
+			this.packetListener.Listen ();
 		}
 
 		public event EventHandler<ClosedEventArgs> Closed = (sender, args) => { };
@@ -74,14 +73,7 @@ namespace Hermes
 		public IObservable<IPacket> Sender { get { return this.sender; } }
 
 		/// <exception cref="ClientException">ClientException</exception>
-		public async Task ConnectAsync (ClientCredentials credentials, bool cleanSession = false)
-		{
-			await this.ConnectAsync (credentials, null, cleanSession)
-				.ConfigureAwait(continueOnCapturedContext: false);
-		}
-
-		/// <exception cref="ClientException">ClientException</exception>
-		public async Task ConnectAsync (ClientCredentials credentials, Will will, bool cleanSession = false)
+		public async Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false)
 		{
 			if (this.disposed) {
 				throw new ObjectDisposedException (this.GetType ().FullName);
@@ -113,9 +105,11 @@ namespace Hermes
 				if (ack == null) {
 					var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
 
-					tracer.Error (message);
-
 					throw new ClientException (message);
+				}
+
+				if (ack.Status != ConnectionStatus.Accepted) {
+					throw new ProtocolConnectionException (ack.Status);
 				}
 
 				this.Id = credentials.ClientId;
@@ -124,6 +118,12 @@ namespace Hermes
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
 				throw new ClientException (string.Format(Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+			} catch(ProtocolConnectionException connectionEx) {
+				this.Close (connectionEx);
+
+				var message = string.Format(Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
+
+				throw new ClientException (message, connectionEx);
 			} catch(ClientException clientEx) {
 				this.Close (clientEx);
 				throw;
@@ -264,11 +264,10 @@ namespace Hermes
 			try {
 				this.CloseClientSession ();
 
-				var disconnect = new Disconnect ();
-
-				await this.SendPacketAsync (disconnect)
-					.ContinueWith(t => this.Close ())
+				await this.SendPacketAsync (new Disconnect ())
 					.ConfigureAwait(continueOnCapturedContext: false);
+
+				this.protocolDisconnected = true;
 			} catch (Exception ex) {
 				this.Close (ex);
 				throw;
@@ -392,7 +391,10 @@ namespace Hermes
 					this.Close (ex);
 				}, () => {
 					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
-					this.Close (ClosedReason.Disconnected);
+
+					var reason = this.protocolDisconnected ? ClosedReason.Disposed : ClosedReason.Disconnected;
+
+					this.Close (reason);
 				});
 		}
 	}

@@ -17,7 +17,7 @@ namespace Hermes
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
-		readonly IObservable<IChannel<byte[]>> binaryChannelProvider;
+		readonly IChannelProvider binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
@@ -26,7 +26,7 @@ namespace Hermes
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		public Server (IObservable<IChannel<byte[]>> binaryChannelProvider, 
+		public Server (IChannelProvider binaryChannelProvider, 
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
@@ -57,6 +57,7 @@ namespace Hermes
 				throw new ObjectDisposedException (this.GetType ().FullName);
 
 			this.channelSubscription = this.binaryChannelProvider
+				.GetChannels()
 				.Subscribe (
 					binaryChannel => this.ProcessChannel(binaryChannel), 
 					ex => { tracer.Error (ex); }, 
@@ -87,10 +88,6 @@ namespace Hermes
 			if (disposing) {
 				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
 
-				if (this.channelSubscription != null) {
-					this.channelSubscription.Dispose ();
-				}
-
 				if (this.streamSubscription != null) {
 					this.streamSubscription.Dispose ();
 				}
@@ -100,6 +97,12 @@ namespace Hermes
 				}
 
 				channels.Clear ();
+				
+				if (this.channelSubscription != null) {
+					this.channelSubscription.Dispose ();
+				}
+
+				this.binaryChannelProvider.Dispose ();
 
 				this.disposed = true;
 			}
@@ -117,10 +120,9 @@ namespace Hermes
 			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = this.channelFactory.Create (binaryChannel);
-			var packetListener = new ServerPacketListener (this.connectionProvider, this.flowProvider, this.configuration);
+			var packetListener = new ServerPacketListener (packetChannel, this.connectionProvider, this.flowProvider, this.configuration);
 
-			packetListener.Listen (packetChannel);
-			
+			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => {}, ex => { 
 				tracer.Error (ex, Resources.Tracer_Server_PacketsObservableError);
 				packetChannel.Dispose ();

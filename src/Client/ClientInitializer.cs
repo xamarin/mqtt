@@ -1,4 +1,4 @@
-﻿using System.Net.Sockets;
+﻿using System;
 using Hermes.Diagnostics;
 using Hermes.Flows;
 using Hermes.Properties;
@@ -8,41 +8,38 @@ namespace Hermes
 {
 	public class ClientInitializer : IInitalizer<Client>
 	{
-		private static readonly ITracer tracer = Tracer.Get<ClientInitializer> ();
+		static readonly ITracer tracer = Tracer.Get<ClientInitializer> ();
 
-		private readonly string hostAddress;
+		readonly string hostAddress;
+		readonly IChannelFactory innerChannelFactory;
 
-		public ClientInitializer (string hostAddress)
+		public ClientInitializer (string hostAddress, IChannelFactory innerChannelFactory = null)
 		{
 			this.hostAddress = hostAddress;
+			this.innerChannelFactory = innerChannelFactory;
 		}
 
 		/// <exception cref="ClientException">ClientException</exception>
 		public Client Initialize (ProtocolConfiguration configuration)
-		{			
-			var tcpClient = new TcpClient();
-
+		{
 			try {
-				tcpClient.Connect (this.hostAddress, configuration.Port);
-			} catch (SocketException socketEx) {
-				var message = string.Format(Resources.Client_TcpClient_Failed, this.hostAddress, configuration.Port);
+				var topicEvaluator = new TopicEvaluator(configuration);
+				//TODO: The ChannelFactory injection must be handled better. I would not assume Tcp by default. 
+				//Instead I would delegate the implementation to a different NuGet or assembly.
+				//Maybe having one assembly per factory implementation (like TcpChannelFactory, WebSocketChannelFactory, TLSChannelFactory, etc)
+				var channelFactory = new PacketChannelFactory(this.innerChannelFactory ?? new TcpChannelFactory (this.hostAddress, configuration), 
+					topicEvaluator, configuration);
+				var packetIdProvider = new PacketIdProvider ();
+				var repositoryProvider = new InMemoryRepositoryProvider();
+				var flowProvider = new ClientProtocolFlowProvider(topicEvaluator, repositoryProvider, configuration);
+				var packetChannel = channelFactory.Create ();
 
-				tracer.Error (socketEx, message);
+				return new Client (packetChannel, flowProvider, repositoryProvider, packetIdProvider, configuration);
+			} catch (Exception ex) {
+				tracer.Error (ex, Resources.Client_InitializeError);
 
-				throw new ClientException(message, socketEx);
+				throw new ClientException (Resources.Client_InitializeError, ex);
 			}
-
-			var buffer = new PacketBuffer();
-			var channel = new TcpChannel(tcpClient, buffer, configuration);
-			var topicEvaluator = new TopicEvaluator(configuration);
-			var channelFactory = new PacketChannelFactory(topicEvaluator, configuration);
-			var packetIdProvider = new PacketIdProvider ();
-			var repositoryProvider = new InMemoryRepositoryProvider();
-			var flowProvider = new ClientProtocolFlowProvider(topicEvaluator, repositoryProvider, configuration);
-			var packetListener = new ClientPacketListener(flowProvider, configuration);
-
-			return new Client (channel, channelFactory, packetListener, flowProvider, 
-				repositoryProvider, packetIdProvider, configuration);
 		}
 	}
 }

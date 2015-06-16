@@ -22,9 +22,6 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Server\TcpChannel.cs">
-      <Link>TcpChannel.cs</Link>
-    </Compile>
     <Compile Include="ApplicationMessage.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientCredentials.cs" />

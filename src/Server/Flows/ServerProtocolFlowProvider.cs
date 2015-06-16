@@ -7,11 +7,13 @@ namespace Hermes.Flows
 {
 	public class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
+		readonly IAuthenticationProvider authenticationProvider;
 		readonly IConnectionProvider connectionProvider;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly IEventStream eventStream;
 
-		public ServerProtocolFlowProvider (IConnectionProvider connectionProvider,
+		public ServerProtocolFlowProvider (IAuthenticationProvider authenticationProvider,
+			IConnectionProvider connectionProvider,
 			ITopicEvaluator topicEvaluator,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
@@ -19,6 +21,7 @@ namespace Hermes.Flows
 			ProtocolConfiguration configuration)
 			: base(topicEvaluator, repositoryProvider, configuration)
 		{
+			this.authenticationProvider = authenticationProvider;
 			this.connectionProvider = connectionProvider;
 			this.packetIdProvider = packetIdProvider;
 			this.eventStream = eventStream;
@@ -33,10 +36,10 @@ namespace Hermes.Flows
 			var retainedRepository = repositoryProvider.GetRepository<RetainedMessage> ();
 			var senderFlow = new PublishSenderFlow (sessionRepository, configuration);
 
-			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (sessionRepository, willRepository, senderFlow));
+			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (this.authenticationProvider, sessionRepository, willRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
 			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (topicEvaluator, connectionProvider,
-				senderFlow, retainedRepository, sessionRepository, packetIdProvider, eventStream, configuration));
+				senderFlow, retainedRepository, sessionRepository, willRepository, packetIdProvider, eventStream, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository, 
 				retainedRepository, packetIdProvider, senderFlow, configuration));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (sessionRepository));
