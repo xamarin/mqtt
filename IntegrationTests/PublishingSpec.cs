@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Hermes;
@@ -269,6 +271,21 @@ namespace IntegrationTests
 
 			subscriber.Close ();
 			publisher.Close ();
+		}
+
+		[Fact]
+		public async Task when_publish_and_subscribe_with_same_client_intensively_then_succeeds()
+		{
+			var client = this.GetClient ();
+			var count = this.GetTestLoad ();
+			var tasks = new List<Task> ();
+
+			for (var i = 1; i <= count; i++) {
+				await client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtMostOnce);
+				await client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.ExactlyOnce);
+			}
+
+			Assert.True (client.IsConnected);
 		}
 
 		public void Dispose ()

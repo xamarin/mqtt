@@ -289,8 +289,6 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Client_Disposing, this.Id);
-
 				this.receiver.OnCompleted ();
 
 				if (this.packetsSubscription != null) {
@@ -314,6 +312,7 @@ namespace Hermes
 
 		private void Close (ClosedReason reason, string message = null)
 		{
+			tracer.Info (Resources.Tracer_Client_Disposing, this.Id, reason);
 			this.Dispose (true);
 			this.Closed (this, new ClosedEventArgs(reason, message));
 			GC.SuppressFinalize (this);

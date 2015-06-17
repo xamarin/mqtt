@@ -91,15 +91,15 @@ namespace Hermes.Flows
 					});
 
 				var ackSubscription = channel.Receiver
-					.ObserveOn(NewThreadScheduler.Default)
+					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<T> ()
 					.Where (x => x.PacketId == sentMessage.PacketId)
 					.Subscribe (x => {
-						ackSignal.Set();
+						ackSignal.Set ();
 					});
 
-				ackSignal.Wait();
-				intervalSubscription.Dispose();
+				ackSignal.Wait ();
+				intervalSubscription.Dispose ();
 				ackSubscription.Dispose ();
 			});
 		}
