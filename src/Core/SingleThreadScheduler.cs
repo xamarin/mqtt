@@ -11,7 +11,7 @@ namespace Hermes
 		private BlockingCollection<Task> tasks;
 		private readonly Thread thread;
 
-		public SingleThreadScheduler ()
+		public SingleThreadScheduler (string name = null)
 		{ 
 			this.tasks = new BlockingCollection<Task> (); 
 			this.thread = new Thread (() => { 
@@ -20,14 +20,16 @@ namespace Hermes
 				} 
 			}); 
 			this.thread.IsBackground = true; 
-			this.thread.SetApartmentState (ApartmentState.STA); 
+			this.thread.SetApartmentState (ApartmentState.STA);
+
+			if (this.thread.Name == null && !string.IsNullOrEmpty (name)) {
+				this.thread.Name = name;
+			}
 
 			this.thread.Start ();
 		}
 
-		public override int MaximumConcurrencyLevel { 
-			get { return 1; } 
-		}
+		public override int MaximumConcurrencyLevel { get { return 1; } }
 
 		protected override void QueueTask (Task task)
 		{ 

@@ -58,19 +58,16 @@ namespace Hermes.Flows
 				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
-			if(qos == QualityOfService.ExactlyOnce && 
-				session
-					.GetPendingAcknowledgements()
-					.Any(ack => ack.Type == PacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {
+			if(qos == QualityOfService.ExactlyOnce && session.GetPendingAcknowledgements().Any(ack => ack.Type == PacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {
 				await this.SendQosAck (clientId, qos, publish, channel)
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				return;
 			}
 
-			await this.ProcessPublishAsync(publish, clientId)
-				.ConfigureAwait(continueOnCapturedContext: false);
 			await this.SendQosAck (clientId, qos, publish, channel)
+				.ConfigureAwait(continueOnCapturedContext: false);
+			await this.ProcessPublishAsync(publish, clientId)
 				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 

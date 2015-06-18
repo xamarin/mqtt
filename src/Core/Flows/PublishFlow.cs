@@ -7,7 +7,6 @@ using Hermes.Properties;
 using Hermes.Storage;
 using System;
 using System.Reactive.Concurrency;
-using System.Threading;
 
 namespace Hermes.Flows
 {
@@ -67,41 +66,25 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 		}
 
-		protected Task MonitorAckAsync<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
+		protected async Task MonitorAckAsync<T>(IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			return Task.Run (() => {
-				var retries = 0;
-				var ackSignal = new ManualResetEventSlim (initialState: false);
+			var intervalSubscription = Observable
+				.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
+				.Subscribe (async _ => {
+					if (channel.IsConnected) {
+						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
-				var intervalSubscription = Observable
-					.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
-					.Subscribe (_ => {
-						if (!ackSignal.IsSet) {
-							tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						await channel.SendAsync (sentMessage);
+					}
+				});
+			
+			await channel.Receiver
+				.ObserveOn (NewThreadScheduler.Default)
+				.OfType<T> ()
+				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId);
 
-							if (channel.IsConnected) {
-								channel.SendAsync (sentMessage);
-							} else {
-								ackSignal.Set ();
-							}
-
-							retries++;
-						}
-					});
-
-				var ackSubscription = channel.Receiver
-					.ObserveOn (NewThreadScheduler.Default)
-					.OfType<T> ()
-					.Where (x => x.PacketId == sentMessage.PacketId)
-					.Subscribe (x => {
-						ackSignal.Set ();
-					});
-
-				ackSignal.Wait ();
-				intervalSubscription.Dispose ();
-				ackSubscription.Dispose ();
-			});
+			intervalSubscription.Dispose ();
 		}
 
 		private void SavePendingAcknowledgement(IFlowPacket ack, string clientId)

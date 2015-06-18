@@ -8,17 +8,17 @@ namespace Hermes
 	{
 		private readonly TaskFactory taskFactory;
 
-		private TaskRunner ()
+		private TaskRunner (string name = null)
 		{
 			this.taskFactory = new TaskFactory(CancellationToken.None, 
 				TaskCreationOptions.DenyChildAttach, 
 				TaskContinuationOptions.None, 
-				new SingleThreadScheduler());
+				new SingleThreadScheduler(name));
 		}
 
-		public static TaskRunner Get()
+		public static TaskRunner Get(string name = null)
 		{
-			return new TaskRunner ();
+			return new TaskRunner (name);
 		}
 
 		public Task Run(Func<Task> func)

@@ -20,7 +20,7 @@ namespace Hermes
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public IChannel<byte[]> Create ()
 		{
-			var tcpClient = new TcpClient();
+			var tcpClient = new TcpClient ();
 
 			try {
 				tcpClient.Connect (this.hostAddress, this.configuration.Port);

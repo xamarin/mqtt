@@ -8,7 +8,6 @@ using Hermes.Diagnostics;
 using Hermes.Packets;
 using Hermes.Properties;
 using Hermes.Storage;
-using System.Threading;
 
 namespace Hermes.Flows
 {
@@ -67,8 +66,11 @@ namespace Hermes.Flows
 				await this.MonitorAckAsync<PublishAck> (message, clientId, channel)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			} else if (qos == QualityOfService.ExactlyOnce) {
-				await this.MonitorAckAsync<PublishReceived> (message, clientId, channel)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await this.MonitorAckAsync<PublishReceived> (message, clientId, channel).ConfigureAwait(continueOnCapturedContext: false);
+				await channel.Receiver
+					.ObserveOn (NewThreadScheduler.Default)
+					.OfType<PublishComplete> ()
+					.FirstOrDefaultAsync (x => x.PacketId == message.PacketId.Value);
 			}
 		}
 
@@ -89,46 +91,30 @@ namespace Hermes.Flows
 			this.sessionRepository.Update (session);
 		}
 
-		protected Task MonitorAckAsync<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
+		protected async Task MonitorAckAsync<T>(Publish sentMessage, string clientId, IChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
-			return Task.Run (() => {
-				var retries = 0;
-				var ackSignal = new ManualResetEventSlim (initialState: false);
+			var intervalSubscription = Observable
+				.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
+				.Subscribe (async _ => {
+					if (channel.IsConnected) {
+						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
-				var intervalSubscription = Observable
-					.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
-					.Subscribe (_ => {
-						if (!ackSignal.IsSet) {
-							tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
+							sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
+								Payload = sentMessage.Payload
+							};
 
-							var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
-								sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
-									Payload = sentMessage.Payload
-								};
+						await channel.SendAsync (duplicated);
+					}
+				});
+			
+			await channel.Receiver
+				.ObserveOn (NewThreadScheduler.Default)
+				.OfType<T> ()
+				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value);
 
-							if (channel.IsConnected) {
-								channel.SendAsync (duplicated);
-							} else {
-								ackSignal.Set ();
-							}
-
-							retries++;
-						}
-					});
-
-				var ackSubscription = channel.Receiver
-					.ObserveOn (NewThreadScheduler.Default)
-					.OfType<T> ()
-					.Where (x => x.PacketId == sentMessage.PacketId.Value)
-					.Subscribe (x => {
-						ackSignal.Set ();
-					});
-
-				ackSignal.Wait ();
-				intervalSubscription.Dispose ();
-				ackSubscription.Dispose ();
-			});
+			intervalSubscription.Dispose ();
 		}
 
 		private void DefineSenderRules ()
