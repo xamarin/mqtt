@@ -266,6 +266,10 @@ namespace Tests.Flows
 
 			var ackSent = ackSentSignal.Wait (1000);
 
+			receiver.OnNext (new PublishRelease (packetId.Value));
+
+			Thread.Sleep (1000);
+
 			Assert.True (ackSent);
 			publishSenderFlow.Verify (s => s.SendPublishAsync (It.Is<string>(x => x == subscribedClientId), 
 				It.Is<Publish> (p => p.Topic == publish.Topic &&

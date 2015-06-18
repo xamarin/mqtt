@@ -27,6 +27,7 @@ namespace IntegrationTests
 			var client = this.GetClient ();
 			var topic = Guid.NewGuid ().ToString ();
 			var count = this.GetTestLoad();
+			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
@@ -36,9 +37,10 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, QualityOfService.AtMostOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				tasks.Add (client.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
+
+			await Task.WhenAll (tasks);
 
 			Assert.True (client.IsConnected);
 
@@ -51,6 +53,7 @@ namespace IntegrationTests
 			var client = this.GetClient ();
 			var topic = Guid.NewGuid ().ToString ();
 			var count = this.GetTestLoad();
+			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
@@ -60,9 +63,10 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, QualityOfService.AtLeastOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				tasks.Add (client.PublishAsync (message, QualityOfService.AtLeastOnce));
 			}
+
+			await Task.WhenAll (tasks);
 
 			Assert.True (client.IsConnected);
 
@@ -75,6 +79,7 @@ namespace IntegrationTests
 			var client = this.GetClient ();
 			var topic = Guid.NewGuid ().ToString ();
 			var count = this.GetTestLoad();
+			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
@@ -84,9 +89,10 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await client.PublishAsync (message, Hermes.Packets.QualityOfService.ExactlyOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				tasks.Add (client.PublishAsync (message, Hermes.Packets.QualityOfService.ExactlyOnce));
 			}
+
+			await Task.WhenAll (tasks);
 
 			Assert.True (client.IsConnected);
 
@@ -136,6 +142,8 @@ namespace IntegrationTests
 					}
 				});
 
+			var tasks = new List<Task> ();
+
 			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
 				var message = new ApplicationMessage
@@ -144,9 +152,10 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await publisher.PublishAsync (message, QualityOfService.AtMostOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				tasks.Add (publisher.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
+
+			await Task.WhenAll (tasks);
 
 			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(this.Configuration.WaitingTimeoutSecs));
 
@@ -182,6 +191,8 @@ namespace IntegrationTests
 				}
 			};
 
+			var tasks = new List<Task> ();
+
 			for (var i = 1; i <= count; i++) {
 				var testMessage = this.GetTestMessage();
 				var message = new ApplicationMessage
@@ -190,9 +201,10 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				await publisher.PublishAsync (message, QualityOfService.AtMostOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				tasks.Add (publisher.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
+
+			await Task.WhenAll (tasks);
 
 			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(this.keepAliveSecs * 2));
 
@@ -247,6 +259,8 @@ namespace IntegrationTests
 					}
 				});
 
+			var tasks = new List<Task> ();
+
 			for (var i = 1; i <= count; i++) {
 				var request = this.GetRequestMessage ();
 				var message = new ApplicationMessage
@@ -255,9 +269,10 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(request)
 				};
 
-				await publisher.PublishAsync (message, QualityOfService.AtMostOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				tasks.Add (publisher.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
+
+			await Task.WhenAll (tasks);
 
 			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (this.Configuration.WaitingTimeoutSecs));
 
@@ -274,16 +289,52 @@ namespace IntegrationTests
 		}
 
 		[Fact]
-		public async Task when_publish_and_subscribe_with_same_client_intensively_then_succeeds()
+		public async Task when_publish_with_qos0_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
 			var client = this.GetClient ();
 			var count = this.GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				await client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtMostOnce);
-				await client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.ExactlyOnce);
+				tasks.Add(client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtMostOnce));
+				tasks.Add (client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtMostOnce));
 			}
+
+			await Task.WhenAll (tasks);
+
+			Assert.True (client.IsConnected);
+		}
+
+		[Fact]
+		public async Task when_publish_with_qos1_and_subscribe_with_same_client_intensively_then_succeeds()
+		{
+			var client = this.GetClient ();
+			var count = this.GetTestLoad ();
+			var tasks = new List<Task> ();
+
+			for (var i = 1; i <= count; i++) {
+				tasks.Add(client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtLeastOnce));
+				tasks.Add (client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtLeastOnce));
+			}
+
+			await Task.WhenAll (tasks);
+
+			Assert.True (client.IsConnected);
+		}
+
+		[Fact]
+		public async Task when_publish_with_qos2_and_subscribe_with_same_client_intensively_then_succeeds()
+		{
+			var client = this.GetClient ();
+			var count = this.GetTestLoad ();
+			var tasks = new List<Task> ();
+
+			for (var i = 1; i <= count; i++) {
+				tasks.Add(client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.ExactlyOnce));
+				tasks.Add (client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.ExactlyOnce));
+			}
+
+			await Task.WhenAll (tasks);
 
 			Assert.True (client.IsConnected);
 		}

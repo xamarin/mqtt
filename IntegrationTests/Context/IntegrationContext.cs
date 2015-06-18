@@ -92,7 +92,7 @@ namespace IntegrationTests.Context
 
 		private static int GetPort()
 		{
-			var port = random.Next (minValue: 50000, maxValue: 60000);
+			var port = random.Next (minValue: 40000, maxValue: 65535);
 
 			if(usedPorts.Any(p => p == port)) {
 				port = GetPort ();

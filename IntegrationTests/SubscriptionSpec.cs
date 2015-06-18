@@ -39,15 +39,16 @@ namespace IntegrationTests
 			var client = this.GetClient ();
 			var topicsToSubscribe = this.GetTestLoad();
 			var topics = new List<string> ();
+			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= topicsToSubscribe; i++) {
 				var topicFilter = Guid.NewGuid ().ToString ();
 
-				await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
-
+				tasks.Add (client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce));
 				topics.Add (topicFilter);
 			}
+
+			await Task.WhenAll (tasks);
 
 			Assert.True (client.IsConnected);
 
@@ -62,15 +63,16 @@ namespace IntegrationTests
 			var client = this.GetClient ();
 			var topicsToSubscribe = this.GetTestLoad();
 			var topics = new List<string> ();
+			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= topicsToSubscribe; i++) {
 				var topicFilter = Guid.NewGuid ().ToString ();
 
+				tasks.Add (client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce));
 				topics.Add (topicFilter);
-				await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
-					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
+			await Task.WhenAll (tasks);
 			await client.UnsubscribeAsync (topics.ToArray())
 				.ConfigureAwait(continueOnCapturedContext: false);
 

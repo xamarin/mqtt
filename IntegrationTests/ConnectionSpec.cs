@@ -74,15 +74,16 @@ namespace IntegrationTests
 		{
 			var count = this.GetTestLoad ();
 			var clients = new List<IClient> ();
+			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var client = this.GetClient ();
 
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
-					.ConfigureAwait(continueOnCapturedContext: false);
-
+				tasks.Add (client.ConnectAsync (new ClientCredentials (this.GetClientId ())));
 				clients.Add (client);
 			}
+
+			await Task.WhenAll (tasks);
 
 			Assert.Equal (count, server.ActiveClients.Count ());
 			Assert.True (clients.All(c => c.IsConnected));
@@ -98,15 +99,24 @@ namespace IntegrationTests
 		{
 			var count = this.GetTestLoad ();
 			var clients = new List<IClient> ();
+			var connectTasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var client = this.GetClient ();
 
-				await client.ConnectAsync (new ClientCredentials (this.GetClientId ()));
-				await client.DisconnectAsync ();
-
+				connectTasks.Add(client.ConnectAsync (new ClientCredentials (this.GetClientId ())));
 				clients.Add (client);
 			}
+
+			await Task.WhenAll (connectTasks);
+
+			var disconnectTasks = new List<Task> ();
+
+			foreach (var client in clients) {
+				disconnectTasks.Add(client.DisconnectAsync ());
+			}
+
+			await Task.WhenAll (disconnectTasks);
 
 			var disconnectedSignal = new ManualResetEventSlim (initialState: false);
 
