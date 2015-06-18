@@ -214,7 +214,7 @@ namespace Hermes.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - Disposing.
+        ///   Looks up a localized string similar to Client {0} - Disposing. Reason: {1}.
         /// </summary>
         internal static string Tracer_Client_Disposing {
             get {

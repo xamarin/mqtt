@@ -22,7 +22,7 @@ namespace Hermes
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
-		readonly TaskRunner dispatcher;
+		readonly TaskRunner flowRunner;
 		CompositeDisposable disposable;
 		bool disposed;
 		string clientId = string.Empty;
@@ -38,7 +38,7 @@ namespace Hermes
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 			this.packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
-			this.dispatcher = TaskRunner.Get ();
+			this.flowRunner = TaskRunner.Get ("ServerFlowRunner");
 		}
 
 		public IObservable<IPacket> Packets { get { return this.packets; } }
@@ -221,7 +221,7 @@ namespace Hermes
 			try {
 				this.packets.OnNext (packet);
 
-				await this.dispatcher.Run (() => {
+				await this.flowRunner.Run (async () => {
 					if (packet.Type == PacketType.Publish) {
 							var publish = packet as Publish;
 
@@ -235,7 +235,8 @@ namespace Hermes
 							tracer.Info (Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
 						}
 
-					return flow.ExecuteAsync (this.clientId, packet, this.channel);
+					await flow.ExecuteAsync (this.clientId, packet, this.channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				})
 				.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (Exception ex) {

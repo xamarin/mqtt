@@ -27,7 +27,7 @@ namespace Hermes
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly ProtocolConfiguration configuration;
-		readonly TaskRunner packetSender;
+		readonly TaskRunner clientSender;
 		readonly IPacketListener packetListener;
 
         public Client(IChannel<IPacket> packetChannel, 
@@ -44,7 +44,7 @@ namespace Hermes
 			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
 			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
-			this.packetSender = TaskRunner.Get();
+			this.clientSender = TaskRunner.Get("ClientSender");
 			this.packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
 
 			this.packetListener.Listen ();
@@ -196,8 +196,10 @@ namespace Hermes
 
 				var senderFlow = this.flowProvider.GetFlow<PublishSenderFlow> ();
 
-				await senderFlow.SendPublishAsync (this.Id, publish, this.packetChannel)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await this.clientSender.Run (async () => {
+					await senderFlow.SendPublishAsync (this.Id, publish, this.packetChannel)
+						.ConfigureAwait(continueOnCapturedContext: false);
+				}).ConfigureAwait(continueOnCapturedContext: false);
 			} catch (Exception ex) {
 				this.Close (ex);
 				throw;
@@ -289,8 +291,6 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Client_Disposing, this.Id);
-
 				this.receiver.OnCompleted ();
 
 				if (this.packetsSubscription != null) {
@@ -314,6 +314,7 @@ namespace Hermes
 
 		private void Close (ClosedReason reason, string message = null)
 		{
+			tracer.Info (Resources.Tracer_Client_Disposing, this.Id, reason);
 			this.Dispose (true);
 			this.Closed (this, new ClosedEventArgs(reason, message));
 			GC.SuppressFinalize (this);
@@ -363,7 +364,7 @@ namespace Hermes
 		{
 			this.sender.OnNext (packet);
 
-			await this.packetSender.Run(() => this.packetChannel.SendAsync (packet))
+			await this.clientSender.Run(async () => await this.packetChannel.SendAsync (packet).ConfigureAwait(continueOnCapturedContext: false))
 				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
