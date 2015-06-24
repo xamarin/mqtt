@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt
 {
-	internal class TopicEvaluator : ITopicEvaluator
+	public class TopicEvaluator : ITopicEvaluator
 	{
 		readonly ProtocolConfiguration configuration;
 
