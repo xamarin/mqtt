@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Hermes.Storage
+namespace System.Net.Mqtt.Storage
 {
-	public class ClientSession : StorageObject
+	internal class ClientSession : StorageObject
 	{
 		public ClientSession ()
 		{

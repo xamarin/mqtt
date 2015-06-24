@@ -1,4 +1,4 @@
-﻿using Hermes;
+﻿using System.Net.Mqtt.Server;
 
 namespace IntegrationTests
 {

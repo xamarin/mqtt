@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using Hermes.Formatters;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Formatters;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
-	public class PacketChannelFactory : IPacketChannelFactory
+	internal class PacketChannelFactory : IPacketChannelFactory
 	{
 		readonly IChannelFactory innerChannelFactory;
 		readonly ITopicEvaluator topicEvaluator;
@@ -26,7 +25,7 @@ namespace Hermes
 		public IChannel<IPacket> Create ()
 		{
 			if (this.innerChannelFactory == null) {
-				throw new ProtocolException (Resources.PacketChannelFactory_InnerChannelFactoryNotFound);
+				throw new ProtocolException (Properties.Resources.PacketChannelFactory_InnerChannelFactoryNotFound);
 			}
 
 			var binaryChannel = this.innerChannelFactory.Create ();

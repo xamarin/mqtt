@@ -1,4 +1,4 @@
-﻿namespace Hermes
+﻿namespace System.Net.Mqtt.Server
 {
 	public interface IAuthenticationProvider
 	{

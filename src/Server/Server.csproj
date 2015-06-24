@@ -7,10 +7,11 @@
     <ProjectGuid>{1397EC83-6D03-4D81-95D5-5D11C766C43A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Hermes</RootNamespace>
-    <AssemblyName>Hermes.Server</AssemblyName>
+    <RootNamespace>System.Net.Mqtt.Server</RootNamespace>
+    <AssemblyName>System.Net.Mqtt.Server</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>0018b13d</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -63,7 +64,7 @@
     <Compile Include="netfx\System\Reactive\IEventStreamExtensions.cs" />
     <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
     <Compile Include="netfx\System\Reactive\Visibility.cs" />
-    <Compile Include="NoAuthenticationProvider.cs" />
+    <Compile Include="NullAuthenticationProvider.cs" />
     <Compile Include="ServerInitializer.cs" />
     <Compile Include="ServerPacketListener.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -103,4 +104,11 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
+  <Import Project="..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets" Condition="Exists('..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets'))" />
+  </Target>
 </Project>

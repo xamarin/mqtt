@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Hermes.Storage
+﻿namespace System.Net.Mqtt.Storage
 {
-	public abstract class StorageObject
+	internal abstract class StorageObject
 	{
 		public StorageObject ()
 		{

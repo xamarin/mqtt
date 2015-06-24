@@ -12,6 +12,12 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Hermes.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Moq">
       <HintPath>$(SolutionDir)packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
@@ -339,6 +345,7 @@
     <None Include="Files\Binaries\Connect_Full.packet">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Hermes.snk" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

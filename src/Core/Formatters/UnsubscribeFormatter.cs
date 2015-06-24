@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
-	public class UnsubscribeFormatter : Formatter<Unsubscribe>
+	internal class UnsubscribeFormatter : Formatter<Unsubscribe>
 	{
 		public override PacketType PacketType { get { return Packets.PacketType.Unsubscribe; } }
 
@@ -23,7 +21,7 @@ namespace Hermes.Formatters
 			var index = 1 + remainingLengthBytesLength + 2;
 
 			if (bytes.Length == index)
-				throw new ProtocolViolationException (Resources.UnsubscribeFormatter_MissingTopics);
+				throw new ProtocolViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
 			var topics = new List<string> ();
 
@@ -81,7 +79,7 @@ namespace Hermes.Formatters
 		private byte[] GetPayload(Unsubscribe packet)
 		{
 			if(packet.Topics == null || !packet.Topics.Any())
-				throw new ProtocolViolationException (Resources.UnsubscribeFormatter_MissingTopics);
+				throw new ProtocolViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
 			var payload = new List<byte> ();
 

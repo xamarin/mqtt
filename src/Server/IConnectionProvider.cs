@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Hermes.Packets;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt.Server
 {
-	public interface IConnectionProvider
+	internal interface IConnectionProvider
     {
 		int Connections { get; }
 

@@ -1,16 +1,14 @@
 ﻿using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
-using System;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 using System.Reactive.Concurrency;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public abstract class PublishFlow : IPublishFlow
+	internal abstract class PublishFlow : IPublishFlow
 	{
 		private static readonly ITracer tracer = Tracer.Get<PublishFlow> ();
 
@@ -54,7 +52,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var pendingAcknowledgement = session
@@ -73,7 +71,7 @@ namespace Hermes.Flows
 				.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
-						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						tracer.Warn (Properties.Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 						await channel.SendAsync (sentMessage);
 					}
@@ -101,7 +99,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			session.AddPendingAcknowledgement (unacknowledgeMessage);

@@ -1,14 +1,16 @@
 ﻿using System.Threading.Tasks;
-using Hermes;
+using System.Net.Mqtt;
 using IntegrationTests.Context;
 using Xunit;
 using System.Linq;
 using System.Threading;
 using System;
 using System.Reactive.Linq;
-using Hermes.Packets;
+using System.Net.Mqtt.Packets;
 using System.Text;
 using System.Collections.Generic;
+using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Client;
 
 namespace IntegrationTests
 {

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Hermes;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Storage;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
+using System.Net.Mqtt.Server;
 
 namespace Tests.Flows
 {

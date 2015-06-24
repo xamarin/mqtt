@@ -2,14 +2,15 @@
 using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Server;
+using Props = System.Net.Mqtt.Server.Properties;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public class ServerPublishReceiverFlow : PublishReceiverFlow
+	internal class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
 
@@ -70,7 +71,7 @@ namespace Hermes.Flows
 					Payload = Encoding.UTF8.GetBytes (will.Will.Message)
 				};
 
-				tracer.Info (Resources.Tracer_ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
+				tracer.Info (Props.Resources.Tracer_ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
 
 				await this.DispatchAsync(willPublish, clientId, isWill: true)
 					.ConfigureAwait(continueOnCapturedContext: false);
@@ -85,7 +86,7 @@ namespace Hermes.Flows
 				.Where (x => this.topicEvaluator.Matches (publish.Topic, x.TopicFilter));
 
 			if (!subscriptions.Any ()) {
-				tracer.Verbose (Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
+				tracer.Verbose (Props.Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
 				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId, Payload = publish.Payload });
 			} else {

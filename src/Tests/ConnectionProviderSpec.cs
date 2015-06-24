@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Subjects;
-using Hermes;
-using Hermes.Packets;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
+using System.Net.Mqtt.Server;
 
 namespace Tests
 {

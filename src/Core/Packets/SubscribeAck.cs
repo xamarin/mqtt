@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Hermes.Packets
+namespace System.Net.Mqtt.Packets
 {
-	public class SubscribeAck : IPacket, IEquatable<SubscribeAck>
+	internal class SubscribeAck : IPacket, IEquatable<SubscribeAck>
     {
         public SubscribeAck(ushort packetId, params SubscribeReturnCode[] returnCodes)
         {

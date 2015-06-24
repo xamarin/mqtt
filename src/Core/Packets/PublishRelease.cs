@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
-	public class PublishRelease : IFlowPacket, IEquatable<PublishRelease>
+	internal class PublishRelease : IFlowPacket, IEquatable<PublishRelease>
     {
         public PublishRelease(ushort packetId)
         {

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
-	public class PacketBuffer : IPacketBuffer
+	internal class PacketBuffer : IPacketBuffer
 	{
 		bool packetReadStarted;
 		bool packetRemainingLengthReadCompleted;

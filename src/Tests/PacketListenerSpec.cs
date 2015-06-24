@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Reactive.Subjects;
 using System.Threading;
-using Hermes;
-using Hermes.Flows;
-using Hermes.Packets;
-using Hermes.Storage;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
+using System.Net.Mqtt.Server;
 
 namespace Tests
 {
@@ -40,6 +41,26 @@ namespace Tests
 
 			receiver.OnNext (connect);
 			receiver.OnNext (publish);
+
+			var connectReceived = false;
+			var publishReceived = false;
+			var signal = new ManualResetEventSlim ();
+
+			listener.Packets.Subscribe (p => {
+				if (p is Connect) {
+					connectReceived = true;
+				} else if (p is Publish) {
+					publishReceived = true;
+				}
+
+				if (connectReceived && publishReceived) {
+					signal.Set ();
+				}
+			});
+
+			var signalSet = signal.Wait (1000);
+
+			Assert.True (signalSet);
 
 			flowProvider.Verify (p => p.GetFlow (It.Is<PacketType> (t => t == PacketType.Publish)));
 			flow.Verify (f => f.ExecuteAsync (It.Is<string> (s => s == clientId), It.Is<IPacket> (p => p is Connect), It.Is<IChannel<IPacket>>(c => c == packetChannel.Object)));

@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Hermes.Packets
+﻿namespace System.Net.Mqtt.Packets
 {
-	public class UnsubscribeAck : IFlowPacket, IEquatable<UnsubscribeAck>
+	internal class UnsubscribeAck : IFlowPacket, IEquatable<UnsubscribeAck>
     {
         public UnsubscribeAck(ushort packetId)
         {

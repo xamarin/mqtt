@@ -1,11 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using Hermes.Packets;
-using Hermes.Properties;
+﻿using System.Threading.Tasks;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
-	public abstract class Formatter<T> : IFormatter
+	internal abstract class Formatter<T> : IFormatter
 		where T : class, IPacket
 	{
 		public abstract PacketType PacketType { get; }
@@ -22,7 +20,7 @@ namespace Hermes.Formatters
 			var actualType = (PacketType)bytes.Byte (0).Bits (4);
 
 			if (PacketType != actualType) {
-				var error = string.Format(Resources.Formatter_InvalidPacket, typeof(T).Name);
+				var error = string.Format(Properties.Resources.Formatter_InvalidPacket, typeof(T).Name);
 
 				throw new ProtocolException (error);
 			}
@@ -39,7 +37,7 @@ namespace Hermes.Formatters
 		public async Task<byte[]> FormatAsync (IPacket packet)
 		{
 			if (packet.Type != PacketType) {
-				var error = string.Format(Resources.Formatter_InvalidPacket, typeof(T).Name);
+				var error = string.Format(Properties.Resources.Formatter_InvalidPacket, typeof(T).Name);
 
 				throw new ProtocolException (error);
 			}
@@ -55,7 +53,7 @@ namespace Hermes.Formatters
 			var headerFlag = bytes.Byte (0).Bits (5, 4);
 
 			if (packetTypePredicate(this.PacketType) && headerFlag != expectedFlag) {
-				var error = string.Format (Resources.Formatter_InvalidHeaderFlag, headerFlag, typeof(T).Name, expectedFlag);
+				var error = string.Format (Properties.Resources.Formatter_InvalidHeaderFlag, headerFlag, typeof(T).Name, expectedFlag);
 
 				throw new ProtocolException (error);
 			}

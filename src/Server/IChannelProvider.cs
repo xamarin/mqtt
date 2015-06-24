@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Hermes
+﻿namespace System.Net.Mqtt.Server
 {
 	public interface IChannelProvider : IDisposable
 	{

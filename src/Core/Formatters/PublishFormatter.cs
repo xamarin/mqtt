@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Hermes.Packets;
-using Hermes.Properties;
+﻿using System.Collections.Generic;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
-	public class PublishFormatter : Formatter<Publish>
+	internal class PublishFormatter : Formatter<Publish>
 	{
 		readonly ITopicEvaluator topicEvaluator;
 
@@ -24,13 +22,13 @@ namespace Hermes.Formatters
 			var packetFlags = bytes.Byte (0).Bits(5, 4);
 
 			if (packetFlags.Bits (6, 2) == 0x03)
-				throw new ProtocolException (Resources.Formatter_InvalidQualityOfService);
+				throw new ProtocolException (Properties.Resources.Formatter_InvalidQualityOfService);
 
 			var qos = (QualityOfService)packetFlags.Bits (6, 2);
 			var duplicated = packetFlags.IsSet (3);
 
 			if (qos == QualityOfService.AtMostOnce && duplicated)
-				throw new ProtocolException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
+				throw new ProtocolException (Properties.Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
 
 			var retainFlag = packetFlags.IsSet (0);
 
@@ -39,7 +37,7 @@ namespace Hermes.Formatters
 			var topic = bytes.GetString (topicStartIndex, out nextIndex);
 
 			if (!this.topicEvaluator.IsValidTopicName (topic)) {
-				var error = string.Format(Resources.PublishFormatter_InvalidTopicName, topic);
+				var error = string.Format(Properties.Resources.PublishFormatter_InvalidTopicName, topic);
 
 				throw new ProtocolException (error);
 			}
@@ -85,7 +83,7 @@ namespace Hermes.Formatters
 		private byte[] GetFixedHeader(Publish packet, byte[] remainingLength)
 		{
 			if (packet.QualityOfService == QualityOfService.AtMostOnce && packet.Duplicated)
-				throw new ProtocolException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
+				throw new ProtocolException (Properties.Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
 
 			var fixedHeader = new List<byte> ();
 
@@ -110,13 +108,13 @@ namespace Hermes.Formatters
 		private byte[] GetVariableHeader(Publish packet)
 		{
 			if (!this.topicEvaluator.IsValidTopicName (packet.Topic))
-				throw new ProtocolException (Resources.PublishFormatter_InvalidTopicName);
+				throw new ProtocolException (Properties.Resources.PublishFormatter_InvalidTopicName);
 
 			if (packet.PacketId.HasValue && packet.QualityOfService == QualityOfService.AtMostOnce)
-					throw new ProtocolException (Resources.PublishFormatter_InvalidPacketId);
+					throw new ProtocolException (Properties.Resources.PublishFormatter_InvalidPacketId);
 
 			if(!packet.PacketId.HasValue && packet.QualityOfService != QualityOfService.AtMostOnce)
-				throw new ProtocolException (Resources.PublishFormatter_PacketIdRequired);
+				throw new ProtocolException (Properties.Resources.PublishFormatter_PacketIdRequired);
 
 			var variableHeader = new List<byte> ();
 

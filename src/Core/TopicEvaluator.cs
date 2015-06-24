@@ -1,9 +1,8 @@
 ﻿using System.Linq;
-using Hermes.Properties;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
-	public class TopicEvaluator : ITopicEvaluator
+	internal class TopicEvaluator : ITopicEvaluator
 	{
 		readonly ProtocolConfiguration configuration;
 
@@ -56,13 +55,13 @@ namespace Hermes
 		public bool Matches (string topicName, string topicFilter)
 		{
 			if (!this.IsValidTopicName (topicName)) { 
-				var message = string.Format(Resources.TopicEvaluator_InvalidTopicName, topicName);
+				var message = string.Format(Properties.Resources.TopicEvaluator_InvalidTopicName, topicName);
 
 				throw new ProtocolException (message);
 			}
 
 			if (!this.IsValidTopicFilter (topicFilter)) { 
-				var message = string.Format(Resources.TopicEvaluator_InvalidTopicFilter, topicFilter);
+				var message = string.Format(Properties.Resources.TopicEvaluator_InvalidTopicFilter, topicFilter);
 
 				throw new ProtocolException (message);
 			}

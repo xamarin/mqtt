@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <package>
     <metadata>
-        <id>$id$</id>
-        <version>$version$</version>
-        <title>Hermes Client: a lightweight C# MQTT messenger</title>
-        <authors>$author$</authors>
+        <id>System.Net.Mqtt</id>
+        <version>0.1.0</version>
+        <title>System.Net.Mqtt: a lightweight C# MQTT messenger</title>
+        <authors>Xamarin</authors>
         <licenseUrl>http://clarius.io/hermes/license</licenseUrl>
         <projectUrl>http://clarius.io/hermes/home</projectUrl>
         <iconUrl>http://clarius.io/hermes/48.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>$description$</description>
+        <description>A lightweight and high-performance MQTT client.</description>
         <releaseNotes />
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
@@ -18,9 +18,9 @@
         </dependencies>
     </metadata>
     <files>
-		<file src="bin\Release\Hermes.Client.dll" target="lib\net45" />
-		<file src="bin\Release\Hermes.Client.pdb" target="lib\net45" />
-		<file src="bin\Release\Hermes.Core.dll" target="lib\net45" />
-		<file src="bin\Release\Hermes.Core.pdb" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.dll" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.pdb" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.Core.dll" target="lib\net45" />
+		<file src="bin\Release\System.Net.Mqtt.Core.pdb" target="lib\net45" />
     </files>
 </package>

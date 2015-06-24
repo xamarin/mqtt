@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
-using Hermes.Storage;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public class PublishSenderFlow : PublishFlow, IPublishSenderFlow
+	internal class PublishSenderFlow : PublishFlow, IPublishSenderFlow
 	{
 		private static readonly ITracer tracer = Tracer.Get<PublishSenderFlow> ();
 
@@ -79,7 +77,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var pendingMessage = session
@@ -98,7 +96,7 @@ namespace Hermes.Flows
 				.Interval (TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
-						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						tracer.Warn (Properties.Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 						var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
 							sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
@@ -149,7 +147,7 @@ namespace Hermes.Flows
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var savedMessage = new PendingMessage {

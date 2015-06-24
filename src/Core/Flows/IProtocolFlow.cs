@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Packets;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public interface IProtocolFlow
+	internal interface IProtocolFlow
 	{
 		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
 		/// <exception cref="ProtocolException">ProtocolException</exception>

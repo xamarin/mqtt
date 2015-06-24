@@ -1,9 +1,8 @@
-﻿using System;
-using Hermes.Packets;
+﻿using System.Net.Mqtt.Packets;
 
-namespace Hermes.Formatters
+namespace System.Net.Mqtt.Formatters
 {
-	public class EmptyPacketFormatter <T> : Formatter<T>
+	internal class EmptyPacketFormatter <T> : Formatter<T>
 		where T : class, IPacket, new()
 	{
 		readonly PacketType packetType;

@@ -1,13 +1,11 @@
-﻿using System;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Packets;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
-	public class PacketChannel : IChannel<IPacket>
+	internal class PacketChannel : IChannel<IPacket>
 	{
 		static readonly ITracer tracer = Tracer.Get<PacketChannel> ();
 
@@ -71,7 +69,7 @@ namespace Hermes
 			if (this.disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
 
 				this.subscription.Dispose ();
 				this.receiver.OnCompleted ();

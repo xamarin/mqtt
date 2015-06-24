@@ -1,14 +1,11 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Hermes.Diagnostics;
-using Hermes.Properties;
+using System.Net.Mqtt.Diagnostics;
 
-namespace Hermes
+namespace System.Net.Mqtt.Server
 {
-	public class TcpChannelProvider : IChannelProvider
+	internal class TcpChannelProvider : IChannelProvider
 	{
 		static readonly ITracer tracer = Tracer.Get<TcpChannelProvider> ();
 
@@ -25,9 +22,9 @@ namespace Hermes
 				try {
 					tcpListener.Start ();
 				} catch (SocketException socketEx) {
-					tracer.Error (socketEx, Resources.TcpChannelProvider_TcpListener_Failed);
+					tracer.Error (socketEx, Properties.Resources.TcpChannelProvider_TcpListener_Failed);
 
-					throw new ProtocolException (Resources.TcpChannelProvider_TcpListener_Failed, socketEx);
+					throw new ProtocolException (Properties.Resources.TcpChannelProvider_TcpListener_Failed, socketEx);
 				}
 
 				return tcpListener;

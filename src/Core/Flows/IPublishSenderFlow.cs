@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Hermes.Packets;
-using Hermes.Storage;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Storage;
 
-namespace Hermes.Flows
+namespace System.Net.Mqtt.Flows
 {
-	public interface IPublishSenderFlow : IPublishFlow
+	internal interface IPublishSenderFlow : IPublishFlow
 	{
 		Task SendPublishAsync (string clientId, Publish message, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend);
 	}

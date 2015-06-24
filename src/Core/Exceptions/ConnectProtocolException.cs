@@ -1,8 +1,7 @@
-﻿using System;
-using System.Runtime.Serialization;
-using Hermes.Packets;
+﻿using System.Runtime.Serialization;
+using System.Net.Mqtt.Packets;
 
-namespace Hermes
+namespace System.Net.Mqtt
 {
 	[Serializable]
 	public class ProtocolConnectionException : ProtocolException
