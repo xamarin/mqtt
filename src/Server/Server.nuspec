@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <package>
     <metadata>
-        <id>$id$</id>
-        <version>$version$</version>
-        <title>System.Net.Mqtt.Server: a lightweight C# MQTT messenger</title>
-        <authors>$author$</authors>
-        <licenseUrl>http://clarius.io/hermes/license</licenseUrl>
+			<id>System.Net.Mqtt.Server</id>
+			<version>0.1.0</version>
+			<title>System.Net.Mqtt.Server: a lightweight C# MQTT messenger server</title>
+			<authors>Xamarin</authors>
+			<licenseUrl>http://clarius.io/hermes/license</licenseUrl>
         <projectUrl>http://clarius.io/hermes/home</projectUrl>
         <iconUrl>http://clarius.io/hermes/48.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>$description$</description>
-        <releaseNotes />
+			<description>A lightweight and high-performance MQTT server.</description>
+			<releaseNotes />
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
         <dependencies>

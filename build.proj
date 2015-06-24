@@ -1,131 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-   Copyright 2014 Daniel Cazzulino
+	The MIT License (MIT)
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+	Copyright (c) 2015 Daniel Cazzulino
 
-       http://www.apache.org/licenses/LICENSE-2.0
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
 -->
-<Project ToolsVersion="4.0"
-		 InitialTargets="CheckPrerequisites"
-         DefaultTargets="Build"
-         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="build.props" Condition="Exists('build.props')" />
-
+	<Import Project="packages\GitInfo\build\GitInfo.targets"/>
+	
 	<PropertyGroup>
 		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
 		<TrackFileAccess>false</TrackFileAccess>
-		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)</SolutionDir>
-		<SolutionDir Condition="!HasTrailingSlash('$(SolutionDir)')">$(SolutionDir)\</SolutionDir>
-		<NuGetExePath Condition="'$(NuGetExePath)' == ''">$(SolutionDir).nuget\nuget.exe</NuGetExePath>
+		<GitInfoReportImportance>high</GitInfoReportImportance>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Solutions at the root directory are all built automatically unless overriden -->
-		<SolutionFile Include="*.sln" Condition="'@(SolutionFile)' == ''" />
-
-		<!-- NuSpec definitions alongside a .csproj cause us to call NuGet Pack on the project instead -->
-		<_PackageProject Include="**\*.csproj">
-			<!-- We must do this metadata annotation here. Inside a target, it doesn't work :( -->
-			<NuSpec>%(RecursiveDir)%(Filename).nuspec</NuSpec>
-		</_PackageProject>
+		<!-- To build a single solution or project, just pass it as a property $(Solution) or $(Project) -->
+		
+		<!-- Solutions at the root of the src directory are all built automatically unless overriden -->
+		<Solution Include="src\*.sln" Condition="'$(Solution)' == ''">
+			<AdditionalProperties>Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)</AdditionalProperties>
+		</Solution>
+		
+		<Solution Include="$(Solution)" Condition="'$(Solution)' != ''">
+			<AdditionalProperties>Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)</AdditionalProperties>
+		</Solution>
+		
+		<NuGet Include="**\*.nuspec" />
 	</ItemGroup>
-
-	<ItemGroup Condition=" '$(PackageSources)' == '' ">
-		<PackageSource Include="https://nuget.org/api/v2/" />
-
-		<!-- Additional package sources to restore from -->
-		<!--
-		<PackageSource Include="http://www.myget.org/F/b4ff5f68eccf4f6bbfed74f055f88d8f/" />
-		-->
-	</ItemGroup>
+	
+	<Import Project="build\build.targets" />
 
 	<PropertyGroup>
-		<BuildDependsOn>
-			BeforeBuild;
-			BuildSources;
-			PackageRestore;
-			CoreBuild;
-			AfterBuild;
-		</BuildDependsOn>
+		<BuildPackagesDependsOn>
+			GitVersion;
+			GitInfoReport;
+			NuGetVersion;
+		</BuildPackagesDependsOn>
 	</PropertyGroup>
-
-	<Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
-	<Target Name="BeforeBuild" />
-	<Target Name="AfterBuild" />
-
-	<Target Name="CoreBuild" DependsOnTargets="CoreBuildNoVersion;CoreBuildVersion" />
-
-	<Target Name="CoreBuildNoVersion" Condition="'$(Version)' == ''">
-
-		<MSBuild
-			Projects="@(SolutionFile)"
-			Targets="Build"
-			Properties="Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)"/>
-
-		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive'
-			  Condition="'%(Identity)' != ''" />
-		<Exec Command='"$(NuGetExePath)" Pack "@(PackageSpec)" -NoPackageAnalysis -NonInteractive'
-			  Condition="'%(Identity)' != ''" />
-
-	</Target>
-
-	<Target Name="CoreBuildVersion" Condition="'$(Version)' != ''">
-
-		<MSBuild
-			Projects="@(SolutionFile)"
-			Targets="Build"
-			Properties="Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess);Version=$(Version)"/>
-
-		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive -Version $(Version)'
-			  Condition="'%(Identity)' != ''" />
-		<Exec Command='"$(NuGetExePath)" Pack "@(PackageSpec)" -NoPackageAnalysis -NonInteractive -Version $(Version)'
-			  Condition="'%(Identity)' != ''" />
-
-	</Target>
-
-	<Target Name="PackageRestore">
-		<Message Text="Restoring NuGet packages..." Importance="normal" />
-		
-		<Exec Command='"$(NuGetExePath)" restore "%(SolutionFile.Identity)" -NonInteractive -Source @(PackageSource) -Verbosity quiet' />
-
-		<!-- 
-		Add GitHubLink OOB?
-		<Exec Command="&quot;$(NuGetExePath)&quot; install githublink -Pre -Source http://www.myget.org/F/b4ff5f68eccf4f6bbfed74f055f88d8f/ -SolutionDir &quot;$(SolutionDir)&quot; -Verbosity quiet -ExcludeVersion" Condition="!Exists('$(SolutionDir)\packages\githublink\')" />
-		-->
-		
-		<!-- Delete all .nupkg files since they aren't needed anymore and may confuse CI servers about what packages were actually generated -->
-		<ItemGroup>
-			<PackageBinaries Include="**\*.nupkg" />	
-		</ItemGroup>
 	
-		<Delete Files="@(PackageBinaries)" />
-	</Target>
-
-	<Target Name="BuildSources">
-		<!-- The conditionals on the item metadata don't work outside a target -->
+	<Target Name="NuGetVersion" DependsOnTargets="GitVersion">
+		<PropertyGroup>
+			<Version>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</Version>
+		</PropertyGroup>
+		
 		<ItemGroup>
-			<!-- We only keep those that do have a nuspec at the .csproj level -->
-			<PackageProject Include="@(_PackageProject)" Condition="Exists('%(NuSpec)')" />
-			<!-- Grab the rest of the spec files. -->
-			<PackageSpec Include="**\*.nuspec" Exclude="@(PackageProject -> '%(NuSpec)')" />
+			<NuGet>
+				<Version>$(Version)</Version>
+			</NuGet>
 		</ItemGroup>
 	</Target>
-
-	<Target Name="CheckPrerequisites">
-		<Error Text=".nuget\NuGet.exe does not exist. Run build.ps1 at least once."
-			   Condition="!Exists('.nuget\NuGet.exe')" />
-	</Target>
-
-	<Import Project="build.targets" Condition="Exists('build.targets')" />
-
+	
 </Project>

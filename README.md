@@ -8,11 +8,11 @@ Minimalist and intuitive asynchronous MQTT messaging broker and client written e
 
 Server (broker) package:
 
-`Install-Package Hermes.Server -Pre`
+`Install-Package System.Net.Mqtt.Server -Pre`
 
 Client package:
 
-`Install-Package Hermes.Client -Pre`
+`Install-Package System.Net.Mqtt -Pre`
 
 To debug with full symbols and sources the above packages, setup SymbolSource in the Visual Studio debugging options as explained in the [SymbolSource site](http://www.symbolsource.org/Public/Home/VisualStudio)
 
