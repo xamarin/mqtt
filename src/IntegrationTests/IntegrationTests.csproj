@@ -59,8 +59,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="xunit">
-      <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -88,15 +89,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Client\Client.csproj">
+    <ProjectReference Include="..\Client\Client.csproj">
       <Project>{d3eb8c4f-6cf4-4eb4-94e3-bca31767ae53}</Project>
       <Name>Client</Name>
     </ProjectReference>
-    <ProjectReference Include="..\src\Core\Core.csproj">
+    <ProjectReference Include="..\Core\Core.csproj">
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\src\Server\Server.csproj">
+    <ProjectReference Include="..\Server\Server.csproj">
       <Project>{1397ec83-6d03-4d81-95d5-5d11c766c43a}</Project>
       <Name>Server</Name>
     </ProjectReference>

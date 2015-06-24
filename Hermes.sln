@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "src\Client\Client
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "src\Tests\Tests.csproj", "{CC70B0BB-EC87-45D0-A4AE-2462F99D7573}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "src\IntegrationTests\IntegrationTests.csproj", "{1A4E01C2-78A6-4E71-A34A-E911F01CE840}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A5ABB89-2797-4946-8D46-F07144F616F3}"
 	ProjectSection(SolutionItems) = preProject
 		src\GlobalAssemblyInfo.cs = src\GlobalAssemblyInfo.cs
@@ -28,8 +30,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{E887D106
 		build.ps1 = build.ps1
 		build.targets = build.targets
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{1A4E01C2-78A6-4E71-A34A-E911F01CE840}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
