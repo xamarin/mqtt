@@ -8,6 +8,7 @@ using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Server
 {
@@ -162,10 +163,10 @@ namespace System.Net.Mqtt.Server
 		{
 			if (exception is TimeoutException) {
 				this.NotifyError (Properties.Resources.ServerPacketListener_NoConnectReceived, exception);
-			} else if (exception is ProtocolConnectionException) {
+			} else if (exception is MqttConnectionException) {
 				tracer.Error (exception, Properties.Resources.Tracer_ServerPacketListener_ConnectionError, this.clientId ?? "N/A");
 
-				var connectEx = exception as ProtocolConnectionException;
+				var connectEx = exception as MqttConnectionException;
 				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
 
 				try {
@@ -185,7 +186,6 @@ namespace System.Net.Mqtt.Server
 
 			var keepAliveSubscription = this.channel.Receiver
 				.Timeout (tolerance)
-				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;
 
@@ -257,12 +257,12 @@ namespace System.Net.Mqtt.Server
 
 		private void NotifyError(string message)
 		{
-			this.NotifyError (new ProtocolException (message));
+			this.NotifyError (new MqttException (message));
 		}
 
 		private void NotifyError(string message, Exception exception)
 		{
-			this.NotifyError (new ProtocolException (message, exception));
+			this.NotifyError (new MqttException (message, exception));
 		}
 
 		private void RemoveClient()

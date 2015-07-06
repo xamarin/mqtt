@@ -5,6 +5,8 @@ using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 using System.Reactive.Disposables;
+using System.Net.Mqtt.Exceptions;
+using System.Reactive.Concurrency;
 
 namespace System.Net.Mqtt.Client
 {
@@ -123,6 +125,7 @@ namespace System.Net.Mqtt.Client
 			return this.channel.Sender
 				.OfType<Connect> ()
 				.FirstAsync ()
+				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (connect => {
 					this.clientId = connect.ClientId;
 
@@ -137,6 +140,7 @@ namespace System.Net.Mqtt.Client
 			return this.channel.Sender
 				.OfType<Disconnect> ()
 				.FirstAsync ()
+				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe (disconnect => {
 					if (this.configuration.KeepAliveSecs > 0) {
 						this.StopKeepAliveMonitor ();
@@ -214,12 +218,12 @@ namespace System.Net.Mqtt.Client
 
 		private void NotifyError(string message)
 		{
-			this.NotifyError (new ProtocolException (message));
+			this.NotifyError (new MqttException (message));
 		}
 
 		private void NotifyError(string message, Exception exception)
 		{
-			this.NotifyError (new ProtocolException (message, exception));
+			this.NotifyError (new MqttException (message, exception));
 		}
 	}
 }
