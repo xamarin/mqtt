@@ -5,8 +5,8 @@ namespace System.Net.Mqtt.Flows
 {
 	internal interface IProtocolFlow
 	{
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Exceptions;
 using Xunit;
 
 namespace Tests
@@ -23,7 +24,7 @@ namespace Tests
 		{
 			var text = this.GetRandomString (size: 65537);
 
-			Assert.Throws<ProtocolException>(() => Protocol.Encoding.EncodeString (text));
+			Assert.Throws<MqttException>(() => Protocol.Encoding.EncodeString (text));
 		}
 
 		[Fact]
@@ -53,7 +54,7 @@ namespace Tests
 		{
 			var number = 310934; //00000000 00000100 10111110 10010110
 			
-			Assert.Throws<ProtocolException>(() => Protocol.Encoding.EncodeInteger (number));
+			Assert.Throws<MqttException>(() => Protocol.Encoding.EncodeInteger (number));
 		}
 
 		[Fact]
@@ -267,7 +268,7 @@ namespace Tests
 
 			var arrayLength = 0;
 
-			Assert.Throws<ProtocolException> (() => Protocol.Encoding.DecodeRemainingLength (bytes.ToArray (), out arrayLength));
+			Assert.Throws<MqttException> (() => Protocol.Encoding.DecodeRemainingLength (bytes.ToArray (), out arrayLength));
 		}
 
 		private string GetRandomString(int size)

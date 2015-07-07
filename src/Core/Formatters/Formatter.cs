@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Formatters
 {
@@ -12,9 +13,9 @@ namespace System.Net.Mqtt.Formatters
 
 		protected abstract byte[] Write (T packet);
 
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<IPacket> FormatAsync (byte[] bytes)
 		{
 			var actualType = (PacketType)bytes.Byte (0).Bits (4);
@@ -22,7 +23,7 @@ namespace System.Net.Mqtt.Formatters
 			if (PacketType != actualType) {
 				var error = string.Format(Properties.Resources.Formatter_InvalidPacket, typeof(T).Name);
 
-				throw new ProtocolException (error);
+				throw new MqttException (error);
 			}
 
 			var packet = await Task.Run(() => this.Read (bytes))
@@ -31,15 +32,15 @@ namespace System.Net.Mqtt.Formatters
 			return packet;
 		}
 
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<byte[]> FormatAsync (IPacket packet)
 		{
 			if (packet.Type != PacketType) {
 				var error = string.Format(Properties.Resources.Formatter_InvalidPacket, typeof(T).Name);
 
-				throw new ProtocolException (error);
+				throw new MqttException (error);
 			}
 
 			var bytes = await Task.Run(() => this.Write (packet as T))
@@ -55,7 +56,7 @@ namespace System.Net.Mqtt.Formatters
 			if (packetTypePredicate(this.PacketType) && headerFlag != expectedFlag) {
 				var error = string.Format (Properties.Resources.Formatter_InvalidHeaderFlag, headerFlag, typeof(T).Name, expectedFlag);
 
-				throw new ProtocolException (error);
+				throw new MqttException (error);
 			}
 		}
 	}

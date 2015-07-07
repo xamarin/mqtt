@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Server
 {
@@ -24,14 +25,14 @@ namespace System.Net.Mqtt.Server
 				} catch (SocketException socketEx) {
 					tracer.Error (socketEx, Properties.Resources.TcpChannelProvider_TcpListener_Failed);
 
-					throw new ProtocolException (Properties.Resources.TcpChannelProvider_TcpListener_Failed, socketEx);
+					throw new MqttException (Properties.Resources.TcpChannelProvider_TcpListener_Failed, socketEx);
 				}
 
 				return tcpListener;
 			});
 		}
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public IObservable<IChannel<byte[]>> GetChannels ()
 		{
 			if (this.disposed) {

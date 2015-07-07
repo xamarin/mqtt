@@ -8,6 +8,7 @@ using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
+using System.Net.Mqtt.Exceptions;
 
 namespace Tests
 {
@@ -217,7 +218,7 @@ namespace Tests
 
 			var errorMessage = "Packet Exception";
 
-			receiver.OnError (new ProtocolException(errorMessage));
+			receiver.OnError (new MqttException(errorMessage));
 
 			var errorReceived = default (Exception);
 
@@ -226,8 +227,8 @@ namespace Tests
 			});
 
 			Assert.NotNull (errorReceived);
-			Assert.True (errorReceived is ProtocolException);
-			Assert.Equal (errorMessage, (errorReceived as ProtocolException).Message);
+			Assert.True (errorReceived is MqttException);
+			Assert.Equal (errorMessage, (errorReceived as MqttException).Message);
 		}
 	}
 }

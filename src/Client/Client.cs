@@ -6,6 +6,7 @@ using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Client
 {
@@ -107,7 +108,7 @@ namespace System.Net.Mqtt.Client
 				}
 
 				if (ack.Status != ConnectionStatus.Accepted) {
-					throw new ProtocolConnectionException (ack.Status);
+					throw new MqttConnectionException (ack.Status);
 				}
 
 				this.Id = credentials.ClientId;
@@ -116,7 +117,7 @@ namespace System.Net.Mqtt.Client
 			} catch(TimeoutException timeEx) {
 				this.Close (timeEx);
 				throw new ClientException (string.Format(Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
-			} catch(ProtocolConnectionException connectionEx) {
+			} catch(MqttConnectionException connectionEx) {
 				this.Close (connectionEx);
 
 				var message = string.Format(Properties.Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);

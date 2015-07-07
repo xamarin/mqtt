@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt
 {
@@ -16,7 +17,7 @@ namespace System.Net.Mqtt
 			this.configuration = configuration;
 		}
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public IChannel<byte[]> Create ()
 		{
 			var tcpClient = new TcpClient ();
@@ -28,7 +29,7 @@ namespace System.Net.Mqtt
 
 				tracer.Error (socketEx, message);
 
-				throw new ProtocolException(message, socketEx);
+				throw new MqttException(message, socketEx);
 			}
 
 			return new TcpChannel(tcpClient, new PacketBuffer(), this.configuration);

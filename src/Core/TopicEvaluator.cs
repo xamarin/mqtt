@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt
 {
@@ -51,19 +52,19 @@ namespace System.Net.Mqtt
 				!topicName.Contains ("+");
 		}
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public bool Matches (string topicName, string topicFilter)
 		{
 			if (!this.IsValidTopicName (topicName)) { 
 				var message = string.Format(Properties.Resources.TopicEvaluator_InvalidTopicName, topicName);
 
-				throw new ProtocolException (message);
+				throw new MqttException (message);
 			}
 
 			if (!this.IsValidTopicFilter (topicFilter)) { 
 				var message = string.Format(Properties.Resources.TopicEvaluator_InvalidTopicFilter, topicFilter);
 
-				throw new ProtocolException (message);
+				throw new MqttException (message);
 			}
 
 			var topicFilterParts = topicFilter.Split ('/');

@@ -8,6 +8,7 @@ using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Exceptions;
 
 namespace Tests.Flows
 {
@@ -259,8 +260,8 @@ namespace Tests.Flows
 			var aggregateEx = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, connect, channel.Object).Wait());
 
 			Assert.NotNull (aggregateEx.InnerException);
-			Assert.True (aggregateEx.InnerException is ProtocolConnectionException);
-			Assert.Equal (ConnectionStatus.BadUserNameOrPassword, ((ProtocolConnectionException)aggregateEx.InnerException).ReturnCode);
+			Assert.True (aggregateEx.InnerException is MqttConnectionException);
+			Assert.Equal (ConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException).ReturnCode);
 		}
 	}
 }

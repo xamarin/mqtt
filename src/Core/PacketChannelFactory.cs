@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Formatters;
 using System.Net.Mqtt.Packets;
 
@@ -25,7 +26,7 @@ namespace System.Net.Mqtt
 		public IChannel<IPacket> Create ()
 		{
 			if (this.innerChannelFactory == null) {
-				throw new ProtocolException (Properties.Resources.PacketChannelFactory_InnerChannelFactoryNotFound);
+				throw new MqttException (Properties.Resources.PacketChannelFactory_InnerChannelFactoryNotFound);
 			}
 
 			var binaryChannel = this.innerChannelFactory.Create ();

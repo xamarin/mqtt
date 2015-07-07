@@ -7,6 +7,7 @@ using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
+using System.Net.Mqtt.Exceptions;
 
 namespace Tests.Formatters
 {
@@ -43,7 +44,7 @@ namespace Tests.Formatters
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
-			Assert.True (ex.InnerException is ProtocolException);
+			Assert.True (ex.InnerException is MqttException);
 		}
 
 		[Theory]
@@ -60,7 +61,7 @@ namespace Tests.Formatters
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
-			Assert.True (ex.InnerException is ProtocolViolationException);
+			Assert.True (ex.InnerException is MqttViolationException);
 		}
 
 		[Theory]
@@ -94,7 +95,7 @@ namespace Tests.Formatters
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (subscribe).Wait());
 
-			Assert.True (ex.InnerException is ProtocolViolationException);
+			Assert.True (ex.InnerException is MqttViolationException);
 		}
 	}
 }

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Net.Mqtt.Exceptions;
 using System.Text;
 
 namespace System.Net.Mqtt
 {
 	public class ProtocolEncoding
 	{
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public byte[] EncodeString (string text)
 		{
 			if (string.IsNullOrEmpty (text)) {
@@ -16,7 +17,7 @@ namespace System.Net.Mqtt
 			var textBytes = Encoding.UTF8.GetBytes (text);
 
 			if(textBytes.Length > Protocol.MaxIntegerLength) {
-				throw new ProtocolException(Properties.Resources.ProtocolEncoding_StringMaxLengthExceeded);
+				throw new MqttException(Properties.Resources.ProtocolEncoding_StringMaxLengthExceeded);
 			}
 
 			var numberBytes = Protocol.Encoding.EncodeInteger (textBytes.Length);
@@ -28,11 +29,11 @@ namespace System.Net.Mqtt
 			return bytes.ToArray();
 		}
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public byte[] EncodeInteger(int number)
 		{
 			if(number > Protocol.MaxIntegerLength){
-				throw new ProtocolException(Properties.Resources.ProtocolEncoding_IntegerMaxValueExceeded);
+				throw new MqttException(Properties.Resources.ProtocolEncoding_IntegerMaxValueExceeded);
 			}
 
 			return this.EncodeInteger ((ushort)number);
@@ -68,7 +69,7 @@ namespace System.Net.Mqtt
 			return bytes.ToArray();
 		}
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public int DecodeRemainingLength(byte[] packet, out int arrayLength)
 		{
 			var multiplier = 1;
@@ -83,7 +84,7 @@ namespace System.Net.Mqtt
 				multiplier *= 128;
 
 				if (multiplier > 128 * 128 * 128 * 128 || index > 4)
-					throw new ProtocolException (Properties.Resources.ProtocolEncoding_MalformedRemainingLength);
+					throw new MqttException (Properties.Resources.ProtocolEncoding_MalformedRemainingLength);
 			} while((encodedByte & 128) != 0);
 
 			arrayLength = index;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Formatters
@@ -21,7 +22,7 @@ namespace System.Net.Mqtt.Formatters
 			var index = 1 + remainingLengthBytesLength + 2;
 
 			if (bytes.Length == index)
-				throw new ProtocolViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+				throw new MqttViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
 			var topics = new List<string> ();
 
@@ -79,7 +80,7 @@ namespace System.Net.Mqtt.Formatters
 		private byte[] GetPayload(Unsubscribe packet)
 		{
 			if(packet.Topics == null || !packet.Topics.Any())
-				throw new ProtocolViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+				throw new MqttViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
 			var payload = new List<byte> ();
 
