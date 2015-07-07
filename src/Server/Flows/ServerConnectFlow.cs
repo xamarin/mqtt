@@ -4,6 +4,7 @@ using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Net.Mqtt.Server;
 using Props = System.Net.Mqtt.Server.Properties;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Flows
 {
@@ -35,7 +36,7 @@ namespace System.Net.Mqtt.Flows
 			var connect = input as Connect;
 
 			if (!this.authenticationProvider.Authenticate (connect.UserName, connect.Password)) {
-				throw new ProtocolConnectionException (ConnectionStatus.BadUserNameOrPassword);
+				throw new MqttConnectionException (ConnectionStatus.BadUserNameOrPassword);
 			}
 
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);

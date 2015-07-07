@@ -11,6 +11,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Exceptions;
 
 namespace IntegrationTests
 {
@@ -32,7 +33,7 @@ namespace IntegrationTests
 
 			Assert.NotNull (ex);
 			Assert.NotNull (ex.InnerException);
-			Assert.True (ex.InnerException is ProtocolException);
+			Assert.True (ex.InnerException is MqttException);
 		}
 
 		[Fact]

@@ -5,14 +5,14 @@ namespace System.Net.Mqtt
 {
 	internal interface IPacketManager
 	{
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		Task<IPacket> GetPacketAsync (byte[] bytes);
 
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		Task<byte[]> GetBytesAsync (IPacket packet);
 	}
 }

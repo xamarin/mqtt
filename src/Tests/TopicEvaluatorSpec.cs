@@ -1,4 +1,5 @@
 ﻿using System.Net.Mqtt;
+using System.Net.Mqtt.Exceptions;
 using Xunit;
 using Xunit.Extensions;
 
@@ -181,7 +182,7 @@ namespace Tests
 		{
 			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
-			Assert.Throws<ProtocolException> (() => topicEvaluator.Matches (topicName, "#"));
+			Assert.Throws<MqttException> (() => topicEvaluator.Matches (topicName, "#"));
 		}
 
 		[Theory]
@@ -194,7 +195,7 @@ namespace Tests
 		{
 			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
 
-			Assert.Throws<ProtocolException> (() => topicEvaluator.Matches ("foo", topicFilter));
+			Assert.Throws<MqttException> (() => topicEvaluator.Matches ("foo", topicFilter));
 		}
 
 		[Theory]

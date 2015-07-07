@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 
@@ -26,13 +27,13 @@ namespace System.Net.Mqtt.Flows
 
 		protected abstract bool IsValidPacketType (PacketType packetType);
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public IProtocolFlow GetFlow (PacketType packetType)
 		{
 			if (!this.IsValidPacketType (packetType)) {
 				var error = string.Format (Properties.Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
 				
-				throw new ProtocolException (error);
+				throw new MqttException (error);
 			}
 
 			var flow = default (IProtocolFlow);
@@ -41,7 +42,7 @@ namespace System.Net.Mqtt.Flows
 			if (!this.GetFlows().TryGetValue (flowType, out flow)) {
 				var error = string.Format (Properties.Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
 				
-				throw new ProtocolException (error);
+				throw new MqttException (error);
 			}
 
 			return flow;

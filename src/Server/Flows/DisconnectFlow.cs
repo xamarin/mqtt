@@ -4,6 +4,7 @@ using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Net.Mqtt.Server;
 using Props = System.Net.Mqtt.Server.Properties;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Flows
 {
@@ -40,7 +41,7 @@ namespace System.Net.Mqtt.Flows
 				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 				if (session == null) {
-					throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+					throw new MqttException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 				}
 
 				if (session.Clean) {

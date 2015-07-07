@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using Xunit;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Exceptions;
 
 namespace IntegrationTests
 {
@@ -30,8 +30,8 @@ namespace IntegrationTests
 			Assert.NotNull (aggregateEx.InnerException);
 			Assert.True (aggregateEx.InnerException is ClientException);
 			Assert.NotNull (aggregateEx.InnerException.InnerException);
-			Assert.True (aggregateEx.InnerException.InnerException is ProtocolConnectionException);
-			Assert.Equal (ConnectionStatus.BadUserNameOrPassword, ((ProtocolConnectionException)aggregateEx.InnerException.InnerException).ReturnCode);
+			Assert.True (aggregateEx.InnerException.InnerException is MqttConnectionException);
+			Assert.Equal (ConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException.InnerException).ReturnCode);
 		}
 
 		[Fact]

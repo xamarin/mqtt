@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt
 {
@@ -31,7 +32,7 @@ namespace System.Net.Mqtt
 							.ConfigureAwait(continueOnCapturedContext: false);
 
 						this.receiver.OnNext (packet);
-					} catch (ProtocolException ex) {
+					} catch (MqttException ex) {
 						this.receiver.OnError (ex);
 					}
 			}, onError: ex => this.receiver.OnError (ex), onCompleted: () => this.receiver.OnCompleted());

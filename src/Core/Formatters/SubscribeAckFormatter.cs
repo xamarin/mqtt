@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Formatters
 {
@@ -22,10 +23,10 @@ namespace System.Net.Mqtt.Formatters
 			var returnCodeBytes = bytes.Bytes(headerLength);
 
 			if(!returnCodeBytes.Any())
-				throw new ProtocolViolationException(Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
+				throw new MqttViolationException(Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			if (returnCodeBytes.Any (b => !Enum.IsDefined (typeof (SubscribeReturnCode), b)))
-				throw new ProtocolViolationException (Properties.Resources.SubscribeAckFormatter_InvalidReturnCodes);
+				throw new MqttViolationException (Properties.Resources.SubscribeAckFormatter_InvalidReturnCodes);
 				
 			var returnCodes = returnCodeBytes.Select(b => (SubscribeReturnCode)b).ToArray();
 
@@ -77,7 +78,7 @@ namespace System.Net.Mqtt.Formatters
 		private byte[] GetPayload(SubscribeAck packet)
 		{
 			if(packet.ReturnCodes == null || !packet.ReturnCodes.Any())
-				throw new ProtocolViolationException(Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
+				throw new MqttViolationException(Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			return packet.ReturnCodes
 				.Select(c => Convert.ToByte(c))

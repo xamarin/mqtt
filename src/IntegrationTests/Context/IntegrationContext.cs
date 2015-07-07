@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Exceptions;
 
 namespace IntegrationTests.Context
 {
@@ -46,7 +47,7 @@ namespace IntegrationTests.Context
 				server.Start ();
 
 				return server;
-			} catch (ProtocolException protocolEx) {
+			} catch (MqttException protocolEx) {
 				if (protocolEx.InnerException is SocketException) {
 					return GetServer ();
 				} else {

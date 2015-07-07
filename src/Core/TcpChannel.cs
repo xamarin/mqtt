@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt
 {
@@ -59,7 +60,7 @@ namespace System.Net.Mqtt
 			}
 
 			if (!this.IsConnected) {
-				throw new ProtocolException (Properties.Resources.TcpChannel_ClientIsNotConnected);
+				throw new MqttException (Properties.Resources.TcpChannel_ClientIsNotConnected);
 			}
 
 			this.sender.OnNext (message);
@@ -71,7 +72,7 @@ namespace System.Net.Mqtt
 					.WriteAsync(message, 0, message.Length)
 					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (ObjectDisposedException disposedEx) {
-				throw new ProtocolException (Properties.Resources.TcpChannel_SocketDisconnected, disposedEx);
+				throw new MqttException (Properties.Resources.TcpChannel_SocketDisconnected, disposedEx);
 			}
 		}
 
@@ -129,7 +130,7 @@ namespace System.Net.Mqtt
 				}
 			}, ex => {
 				if (ex is ObjectDisposedException) {
-					this.receiver.OnError (new ProtocolException (Properties.Resources.TcpChannel_SocketDisconnected, ex));
+					this.receiver.OnError (new MqttException (Properties.Resources.TcpChannel_SocketDisconnected, ex));
 				} else {
 					this.receiver.OnError (ex);
 				}

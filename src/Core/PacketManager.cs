@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Mqtt.Formatters;
 using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt
 {
@@ -20,16 +21,16 @@ namespace System.Net.Mqtt
 			this.formatters = formatters.ToDictionary(f => f.PacketType);
 		}
 
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<IPacket> GetPacketAsync (byte[] bytes)
 		{
 			var packetType = (PacketType)bytes.Byte (0).Bits (4);
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue(packetType, out formatter))
-				throw new ProtocolException (Properties.Resources.PacketManager_PacketUnknown);
+				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var packet = await formatter.FormatAsync (bytes)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -37,15 +38,15 @@ namespace System.Net.Mqtt
 			return packet;
 		}
 
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<byte[]> GetBytesAsync (IPacket packet)
 		{
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue(packet.Type, out formatter))
-				throw new ProtocolException (Properties.Resources.PacketManager_PacketUnknown);
+				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var bytes = await formatter.FormatAsync (packet)
 				.ConfigureAwait(continueOnCapturedContext: false);

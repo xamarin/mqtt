@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Flows
 {
@@ -43,18 +44,18 @@ namespace System.Net.Mqtt.Flows
 		private async Task HandlePublishAsync(string clientId, Publish publish, IChannel<IPacket> channel)
 		{
 			if (publish.QualityOfService != QualityOfService.AtMostOnce && !publish.PacketId.HasValue) {
-				throw new ProtocolException (Properties.Resources.PublishReceiverFlow_PacketIdRequired);
+				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdRequired);
 			}
 
 			if (publish.QualityOfService == QualityOfService.AtMostOnce && publish.PacketId.HasValue) {
-				throw new ProtocolException (Properties.Resources.PublishReceiverFlow_PacketIdNotAllowed);
+				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdNotAllowed);
 			}
 			
 			var qos = configuration.GetSupportedQos(publish.QualityOfService);
 			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new ProtocolException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			if(qos == QualityOfService.ExactlyOnce && session.GetPendingAcknowledgements().Any(ack => ack.Type == PacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {

@@ -8,6 +8,7 @@ using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
+using System.Net.Mqtt.Exceptions;
 
 namespace Tests
 {
@@ -151,7 +152,7 @@ namespace Tests
 
 			var ex = Assert.Throws<AggregateException> (() => packetManager.GetPacketAsync (packet).Wait());
 
-			Assert.True (ex.InnerException is ProtocolException);
+			Assert.True (ex.InnerException is MqttException);
 		}
 
 		[Theory]
@@ -181,7 +182,7 @@ namespace Tests
 
 			var ex = Assert.Throws<AggregateException> (() => packetManager.GetBytesAsync (packet).Wait());
 
-			Assert.True (ex.InnerException is ProtocolException);
+			Assert.True (ex.InnerException is MqttException);
 		}
 	}
 }

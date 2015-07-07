@@ -10,14 +10,14 @@ namespace System.Net.Mqtt.Formatters
 		/// </summary>
 		PacketType PacketType { get; }
 
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		Task<IPacket> FormatAsync (byte[] bytes);
 
-		/// <exception cref="ProtocolConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="ProtocolViolationException">ProtocolViolationException</exception>
-		/// <exception cref="ProtocolException">ProtocolException</exception>
+		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
+		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
+		/// <exception cref="MqttException">ProtocolException</exception>
 		Task<byte[]> FormatAsync (IPacket packet);
 	}
 }

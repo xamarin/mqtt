@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using Xunit;
 using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Exceptions;
 
 namespace IntegrationTests
 {
@@ -19,7 +19,7 @@ namespace IntegrationTests
 			Assert.NotNull (clientException);
 			Assert.NotNull (clientException.InnerException);
 			Assert.NotNull (clientException.InnerException.InnerException);
-			Assert.True (clientException.InnerException is ProtocolException);
+			Assert.True (clientException.InnerException is MqttException);
 			Assert.True (clientException.InnerException.InnerException is SocketException);
 		}
 

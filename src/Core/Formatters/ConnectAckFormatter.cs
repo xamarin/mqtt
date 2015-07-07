@@ -1,4 +1,5 @@
-﻿using System.Net.Mqtt.Packets;
+﻿using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Formatters
 {
@@ -17,13 +18,13 @@ namespace System.Net.Mqtt.Formatters
 			var connectAckFlagsIndex = Protocol.PacketTypeLength + remainingLengthBytesLength;
 
 			if (bytes.Byte (connectAckFlagsIndex).Bits (7) != 0x00)
-				throw new ProtocolException (Properties.Resources.ConnectAckFormatter_InvalidAckFlags);
+				throw new MqttException (Properties.Resources.ConnectAckFormatter_InvalidAckFlags);
 
 			var sessionPresent = bytes.Byte (connectAckFlagsIndex).IsSet(0);
 			var returnCode = (ConnectionStatus)bytes.Byte (connectAckFlagsIndex + 1);
 
 			if (returnCode != ConnectionStatus.Accepted && sessionPresent)
-				throw new ProtocolException (Properties.Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
+				throw new MqttException (Properties.Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
 
 			var connectAck = new ConnectAck(returnCode, sessionPresent);
 
@@ -59,7 +60,7 @@ namespace System.Net.Mqtt.Formatters
 		private byte[] GetVariableHeader(ConnectAck packet)
 		{
 			if (packet.Status != ConnectionStatus.Accepted && packet.SessionPresent)
-				throw new ProtocolException (Properties.Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
+				throw new MqttException (Properties.Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);
 
 			var connectAckFlagsByte = Convert.ToByte(packet.SessionPresent);
 			var returnCodeByte = Convert.ToByte (packet.Status);

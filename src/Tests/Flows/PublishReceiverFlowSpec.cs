@@ -15,6 +15,7 @@ using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Exceptions;
 
 namespace Tests.Flows
 {
@@ -583,7 +584,7 @@ namespace Tests.Flows
 
 			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
-			Assert.True (ex.InnerException is ProtocolException);
+			Assert.True (ex.InnerException is MqttException);
 		}
 
 		[Fact]
