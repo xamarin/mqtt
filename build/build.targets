@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	The MIT License (MIT)
+
+	Copyright (c) 2015 Daniel Cazzulino
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+-->
+<Project ToolsVersion="4.0"
+         DefaultTargets="Build"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!--
+	Customization points:
+	
+	@(Solution): 
+	Solutions to build. Use AdditionalProperties metadata to customize the build process for them.
+	
+	@(Project):
+	Projects to build. Use AdditionalProperties metadata to customize the build process for them.
+	If the project contains a <NuSpec> metadata item, the project itself will be used for building 
+	the nuget package.
+
+		NOTE: 
+		@(Project) is built before @(Solution), just in case specific project dependencies 
+		must be built before a full solution is built.	
+
+	@(NuGet):
+	NuGet packages to build. Can be a .nuspec or a project file that has an associated .nuspec.
+	NuGet.exe Pack is called on these items after the projects and solutions are built. 
+	Optionally, NuGet items can contain a Version metadata that overrides the value calculated 
+	from $(VersionFormat) as explained below.
+
+	$(VersionFormat):
+	Specifies a SemanticGit provided format string to populate the automatic $(Version) property 
+	during build, which is passed to NuGet.exe when packing. Default value: MAJOR.MINOR.PATCH. 
+	If %(NuGet.Version) is provided, it overrides this default value.
+	
+    -->
+
+	<PropertyGroup>
+		<VersionFormat Condition="'$(VersionFormat)' == ''">MAJOR.MINOR.PATCH-PRE</VersionFormat>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<BuildDependsOn>
+			BeforeBuild;
+			RestorePackages;
+			CoreBuild;
+			BuildPackages;
+			AfterBuild
+		</BuildDependsOn>
+	</PropertyGroup>
+
+	<Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
+	<Target Name="BeforeBuild" />
+	<Target Name="AfterBuild" />
+
+	<PropertyGroup>
+		<CleanDependsOn>
+			BeforeClean;
+			CoreClean;
+			AfterClean
+		</CleanDependsOn>
+	</PropertyGroup>
+
+	<Target Name="Clean" DependsOnTargets="$(CleanDependsOn)" />
+	<Target Name="BeforeClean" />
+	<Target Name="AfterClean" />
+
+	<PropertyGroup>
+		<RebuildDependsOn>
+			Clean;
+			Build
+		</RebuildDependsOn>
+	</PropertyGroup>
+
+	<Target Name="Rebuild" DependsOnTargets="$(RebuildDependsOn)" />
+
+	<Import Project="nuget.targets" />
+
+	<Target Name="CoreBuild">
+		<MSBuild Projects="@(Project)" />
+		<MSBuild Projects="@(Solution)" />
+	</Target>
+
+	<PropertyGroup>
+		<BuildPackagesDependsOn>
+			FormatVersion;
+		</BuildPackagesDependsOn>
+	</PropertyGroup>
+	
+	<Target Name="BuildPackages" DependsOnTargets="$(BuildPackagesDependsOn)" Condition="'@(NuGet)' != ''">
+		<ItemGroup>
+			<NuGet Condition="'%(NuGet.Version)' == ''">
+				<Version>$(Version)</Version>
+			</NuGet>
+		</ItemGroup>
+	
+		<Exec Command='"$(NuGetExe)" Pack "@(NuGet)" -NoPackageAnalysis -NonInteractive -Version %(Version) -Properties Configuration=$(Configuration)'
+			  Condition="'%(Identity)' != ''" />
+	</Target>
+
+	<Target Name="FormatVersion">
+		<Exec Command='"$(NuGetExe)" Install "$(MSBuildThisFileDirectory)packages.config" -OutputDirectory "$(MSBuildThisFileDirectory)packages" -ExcludeVersion' />
+
+		<MSBuild Projects="$(MSBuildThisFileDirectory)packages\SemanticGit\build\SemanticGit.targets"
+				 Targets="SemanticGit:FormatVersion"
+				 Properties="VersionFormat=$(VersionFormat);GenerateAssemblyInfo=false">
+			<Output PropertyName="Version" TaskParameter="TargetOutputs"/>
+		</MSBuild>
+	</Target>
+
+	<Target Name="Clean">
+		<MSBuild Projects="@(Solution)" Targets="Clean" Condition="'@(Solution)' != ''" />
+		<MSBuild Projects="@(Project)" Targets="Clean" Condition="'@(Project)' != ''" />
+
+		<!-- Delete all .nupkg files since they aren't needed anymore and may confuse CI servers about what packages were actually generated -->
+		<ItemGroup>
+			<PackageBinaries Include="**\*.nupkg" />
+		</ItemGroup>
+
+		<Delete Files="@(PackageBinaries)" />
+	</Target>
+
+</Project>
