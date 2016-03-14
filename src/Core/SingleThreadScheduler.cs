@@ -9,7 +9,6 @@ namespace System.Net.Mqtt
 	{
 		readonly Thread thread;
 		BlockingCollection<Task> tasks;
-		bool disposed;
 
 		public SingleThreadScheduler (string name = null)
 		{
@@ -60,8 +59,6 @@ namespace System.Net.Mqtt
 					thread.Join ();
 					tasks = null;
 				}
-
-				disposed = true;
 			}
 		}
 	}
