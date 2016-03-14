@@ -297,8 +297,11 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				tasks.Add(client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtMostOnce));
-				tasks.Add (client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtMostOnce));
+				var subscribePublishTask = client
+					.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtMostOnce)
+					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtMostOnce));
+
+				tasks.Add (subscribePublishTask);
 			}
 
 			await Task.WhenAll (tasks);
@@ -314,8 +317,11 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				tasks.Add(client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtLeastOnce));
-				tasks.Add (client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtLeastOnce));
+				var subscribePublishTask = client
+					.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtLeastOnce)
+					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtLeastOnce));
+
+				tasks.Add(subscribePublishTask);
 			}
 
 			await Task.WhenAll (tasks);
@@ -331,8 +337,11 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				tasks.Add(client.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.ExactlyOnce));
-				tasks.Add (client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.ExactlyOnce));
+				var subscribePublishTask = client
+						.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.ExactlyOnce)
+						.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.ExactlyOnce), TaskContinuationOptions.OnlyOnRanToCompletion);
+
+				tasks.Add(subscribePublishTask);
 			}
 
 			await Task.WhenAll (tasks);
