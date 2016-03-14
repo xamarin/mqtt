@@ -72,6 +72,7 @@ namespace System.Net.Mqtt.Server
 
 				this.disposable.Dispose ();
 				this.packets.OnCompleted ();
+				(this.flowRunner as IDisposable)?.Dispose ();
 				this.disposed = true;
 			}
 		}

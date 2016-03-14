@@ -49,10 +49,7 @@ namespace System.Net.Mqtt
 		{ 
 			if (this.tasks != null) { 
 				this.tasks.CompleteAdding (); 
-
-				thread.Join (); 
-
-				this.tasks.Dispose (); 
+				this.thread.Join (); 
 				this.tasks = null; 
 			} 
 		}

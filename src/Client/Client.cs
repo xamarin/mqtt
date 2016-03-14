@@ -298,6 +298,7 @@ namespace System.Net.Mqtt.Client
 				
 				this.packetListener.Dispose ();
 				this.packetChannel.Dispose ();
+				(this.clientSender as IDisposable)?.Dispose ();
 				this.IsConnected = false; 
 				this.Id = null;
 				this.disposed = true;

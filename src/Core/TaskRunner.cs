@@ -3,9 +3,10 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-	internal class TaskRunner
+	internal class TaskRunner : IDisposable
 	{
-		private readonly TaskFactory taskFactory;
+		private TaskFactory taskFactory;
+		private bool disposed;
 
 		private TaskRunner (string name = null)
 		{
@@ -22,22 +23,55 @@ namespace System.Net.Mqtt
 
 		public Task Run(Func<Task> func)
 		{
+			if (this.disposed) {
+				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
+
 			return taskFactory.StartNew(func).Unwrap();
 		}
 
 		public Task<T> Run<T>(Func<Task<T>> func)
 		{
+			if (this.disposed) {
+				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
+
 			return taskFactory.StartNew(func).Unwrap();
 		}
 
 		public Task Run(Action action)
 		{
+			if (this.disposed) {
+				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
+
 			return taskFactory.StartNew(action);
 		}
 
 		public Task<T> Run<T>(Func<T> func)
 		{
+			if (this.disposed) {
+				throw new ObjectDisposedException (this.GetType ().FullName);
+			}
+
 			return taskFactory.StartNew(func);
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (this.disposed)
+				return;
+
+			if (disposing) {
+				(this.taskFactory.Scheduler as IDisposable)?.Dispose();
+				this.taskFactory = null;
+			}
 		}
 	}
 }

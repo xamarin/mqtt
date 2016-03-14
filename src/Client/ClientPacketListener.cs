@@ -67,6 +67,7 @@ namespace System.Net.Mqtt.Client
 				this.disposable.Dispose ();
 				this.StopKeepAliveMonitor ();
 				this.packets.OnCompleted ();
+				(this.flowRunner as IDisposable)?.Dispose ();
 				this.disposed = true;
 			}
 		}
