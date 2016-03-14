@@ -18,7 +18,7 @@ namespace System.Net.Mqtt.Formatters
 
 		protected override Subscribe Read (byte[] bytes)
 		{
-			this.ValidateHeaderFlag (bytes, t => t == PacketType.Subscribe, 0x02);
+			ValidateHeaderFlag (bytes, t => t == PacketType.Subscribe, 0x02);
 
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
@@ -27,28 +27,28 @@ namespace System.Net.Mqtt.Formatters
 			var packetIdentifier = bytes.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
 
 			var headerLength = 1 + remainingLengthBytesLength + 2;
-			var subscriptions = this.GetSubscriptions(bytes, headerLength, remainingLength);
+			var subscriptions = GetSubscriptions(bytes, headerLength, remainingLength);
 
-			return new Subscribe (packetIdentifier, subscriptions.ToArray());
+			return new Subscribe (packetIdentifier, subscriptions.ToArray ());
 		}
 
 		protected override byte[] Write (Subscribe packet)
 		{
 			var bytes = new List<byte> ();
 
-			var variableHeader = this.GetVariableHeader (packet);
-			var payload = this.GetPayload (packet);
+			var variableHeader = GetVariableHeader (packet);
+			var payload = GetPayload (packet);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
-			var fixedHeader = this.GetFixedHeader (remainingLength);
+			var fixedHeader = GetFixedHeader (remainingLength);
 
 			bytes.AddRange (fixedHeader);
 			bytes.AddRange (variableHeader);
 			bytes.AddRange (payload);
 
-			return bytes.ToArray();
+			return bytes.ToArray ();
 		}
 
-		private byte[] GetFixedHeader(byte[] remainingLength)
+		byte[] GetFixedHeader (byte[] remainingLength)
 		{
 			var fixedHeader = new List<byte> ();
 
@@ -60,10 +60,10 @@ namespace System.Net.Mqtt.Formatters
 			fixedHeader.Add (fixedHeaderByte1);
 			fixedHeader.AddRange (remainingLength);
 
-			return fixedHeader.ToArray();
+			return fixedHeader.ToArray ();
 		}
 
-		private byte[] GetVariableHeader(Subscribe packet)
+		byte[] GetVariableHeader (Subscribe packet)
 		{
 			var variableHeader = new List<byte> ();
 
@@ -71,18 +71,18 @@ namespace System.Net.Mqtt.Formatters
 
 			variableHeader.AddRange (packetIdBytes);
 
-			return variableHeader.ToArray();
+			return variableHeader.ToArray ();
 		}
 
-		private byte[] GetPayload(Subscribe packet)
+		byte[] GetPayload (Subscribe packet)
 		{
-			if(packet.Subscriptions == null || !packet.Subscriptions.Any())
+			if (packet.Subscriptions == null || !packet.Subscriptions.Any ())
 				throw new MqttViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var payload = new List<byte> ();
 
 			foreach (var subscription in packet.Subscriptions) {
-				if (!this.topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
+				if (!topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
 					var error = string.Format (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
 
 					throw new MqttException (error);
@@ -98,7 +98,7 @@ namespace System.Net.Mqtt.Formatters
 			return payload.ToArray ();
 		}
 
-		private IEnumerable<Subscription> GetSubscriptions(byte[] bytes, int headerLength, int remainingLength)
+		IEnumerable<Subscription> GetSubscriptions (byte[] bytes, int headerLength, int remainingLength)
 		{
 			if (bytes.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
 				throw new MqttViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
@@ -108,7 +108,7 @@ namespace System.Net.Mqtt.Formatters
 			do {
 				var topicFilter = bytes.GetString (index, out index);
 
-				if (!this.topicEvaluator.IsValidTopicFilter (topicFilter)) {
+				if (!topicEvaluator.IsValidTopicFilter (topicFilter)) {
 					var error = string.Format (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
 
 					throw new MqttException (error);
@@ -118,10 +118,10 @@ namespace System.Net.Mqtt.Formatters
 
 				if (!Enum.IsDefined (typeof (QualityOfService), requestedQosByte))
 					throw new MqttViolationException (Properties.Resources.Formatter_InvalidQualityOfService);
-	
+
 				var requestedQos = (QualityOfService)requestedQosByte;
 
-				yield return new Subscription(topicFilter, requestedQos);
+				yield return new Subscription (topicFilter, requestedQos);
 				index++;
 			} while (bytes.Length - index + 1 >= 2);
 		}

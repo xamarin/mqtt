@@ -19,19 +19,19 @@ namespace IntegrationTests
 		public PublishingSpec () 
 			: base(keepAliveSecs: 1)
 		{
-			this.server = this.GetServer ();
+			server = GetServer ();
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos0_then_succeeds()
 		{
-			var client = this.GetClient ();
+			var client = GetClient ();
 			var topic = Guid.NewGuid ().ToString ();
-			var count = this.GetTestLoad();
+			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = this.GetTestMessage();
+				var testMessage = GetTestMessage();
 				var message = new ApplicationMessage
 				{
 					Topic = topic,
@@ -51,13 +51,13 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_messages_with_qos1_then_succeeds()
 		{
-			var client = this.GetClient ();
+			var client = GetClient ();
 			var topic = Guid.NewGuid ().ToString ();
-			var count = this.GetTestLoad();
+			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = this.GetTestMessage();
+				var testMessage = GetTestMessage();
 				var message = new ApplicationMessage
 				{
 					Topic = topic,
@@ -77,13 +77,13 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_messages_with_qos2_then_succeeds()
 		{
-			var client = this.GetClient ();
+			var client = GetClient ();
 			var topic = Guid.NewGuid ().ToString ();
-			var count = this.GetTestLoad();
+			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = this.GetTestMessage();
+				var testMessage = GetTestMessage();
 				var message = new ApplicationMessage
 				{
 					Topic = topic,
@@ -103,15 +103,15 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_message_to_topic_then_message_is_dispatched_to_subscribers()
 		{
-			var count = this.GetTestLoad();
+			var count = GetTestLoad();
 
 			var guid = Guid.NewGuid ().ToString ();
 			var topicFilter = guid + "/#";
 			var topic = guid;
 
-			var publisher = this.GetClient ();
-			var subscriber1 = this.GetClient ();
-			var subscriber2 = this.GetClient ();
+			var publisher = GetClient ();
+			var subscriber1 = GetClient ();
+			var subscriber2 = GetClient ();
 
 			var subscriber1Done = new ManualResetEventSlim ();
 			var subscriber2Done = new ManualResetEventSlim ();
@@ -146,7 +146,7 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = this.GetTestMessage();
+				var testMessage = GetTestMessage();
 				var message = new ApplicationMessage
 				{ 
 					Topic = topic,
@@ -158,7 +158,7 @@ namespace IntegrationTests
 
 			await Task.WhenAll (tasks);
 
-			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(this.Configuration.WaitingTimeoutSecs));
+			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(Configuration.WaitingTimeoutSecs));
 
 			Assert.Equal (count, subscriber1Received);
 			Assert.Equal (count, subscriber2Received);
@@ -177,10 +177,10 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_message_to_topic_and_there_is_no_subscribers_then_server_notifies()
 		{
-			var count = this.GetTestLoad();
+			var count = GetTestLoad();
 
 			var topic = Guid.NewGuid ().ToString ();
-			var publisher = this.GetClient ();
+			var publisher = GetClient ();
 			var topicsNotSubscribedCount = 0;
 			var topicsNotSubscribedDone = new ManualResetEventSlim ();
 
@@ -195,7 +195,7 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = this.GetTestMessage();
+				var testMessage = GetTestMessage();
 				var message = new ApplicationMessage
 				{ 
 					Topic = topic,
@@ -207,7 +207,7 @@ namespace IntegrationTests
 
 			await Task.WhenAll (tasks);
 
-			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(this.keepAliveSecs * 2));
+			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(keepAliveSecs * 2));
 
 			Assert.Equal (count, topicsNotSubscribedCount);
 			Assert.True (success);
@@ -218,14 +218,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_message_to_topic_and_expect_reponse_to_other_topic_then_succeeds()
 		{
-			var count = this.GetTestLoad();
+			var count = GetTestLoad();
 
 			var guid = Guid.NewGuid ().ToString ();
 			var requestTopic = guid;
 			var responseTopic = guid + "/response";
 
-			var publisher = this.GetClient ();
-			var subscriber = this.GetClient ();
+			var publisher = GetClient ();
+			var subscriber = GetClient ();
 
 			var subscriberDone = new ManualResetEventSlim ();
 			var subscriberReceived = 0;
@@ -239,7 +239,7 @@ namespace IntegrationTests
 				.Subscribe (async m => {
 					if (m.Topic == requestTopic) {
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
-						var response = this.GetResponseMessage (request);
+						var response = GetResponseMessage (request);
 						var message = new ApplicationMessage {
 							Topic = responseTopic,
 							Payload = Serializer.Serialize(response)
@@ -263,7 +263,7 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var request = this.GetRequestMessage ();
+				var request = GetRequestMessage ();
 				var message = new ApplicationMessage
 				{ 
 					Topic = requestTopic,
@@ -275,7 +275,7 @@ namespace IntegrationTests
 
 			await Task.WhenAll (tasks);
 
-			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (this.Configuration.WaitingTimeoutSecs));
+			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (Configuration.WaitingTimeoutSecs));
 
 			Assert.Equal (count, subscriberReceived);
 			Assert.True (completed);
@@ -292,8 +292,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos0_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = this.GetClient ();
-			var count = this.GetTestLoad ();
+			var client = GetClient ();
+			var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
@@ -312,8 +312,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos1_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = this.GetClient ();
-			var count = this.GetTestLoad ();
+			var client = GetClient ();
+			var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
@@ -332,8 +332,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos2_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = this.GetClient ();
-			var count = this.GetTestLoad ();
+			var client = GetClient ();
+			var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
@@ -351,12 +351,12 @@ namespace IntegrationTests
 
 		public void Dispose ()
 		{
-			if (this.server != null) {
-				this.server.Stop ();
+			if (server != null) {
+				server.Stop ();
 			}
 		}
 
-		private TestMessage GetTestMessage()
+		TestMessage GetTestMessage()
 		{
 			return new TestMessage {
 				Name = string.Concat("Message ", Guid.NewGuid().ToString().Substring(0, 4)),
@@ -364,7 +364,7 @@ namespace IntegrationTests
 			};
 		}
 
-		private RequestMessage GetRequestMessage()
+		RequestMessage GetRequestMessage()
 		{
 			return new RequestMessage {
 				Id = Guid.NewGuid(),
@@ -374,7 +374,7 @@ namespace IntegrationTests
 			};
 		}
 
-		private ResponseMessage GetResponseMessage(RequestMessage request)
+		ResponseMessage GetResponseMessage(RequestMessage request)
 		{
 			return new ResponseMessage {
 				Name = request.Name,

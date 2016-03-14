@@ -14,8 +14,8 @@ namespace System.Net.Mqtt.Flows
 
 		IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 
-		protected ProtocolFlowProvider (ITopicEvaluator topicEvaluator, 
-			IRepositoryProvider repositoryProvider, 
+		protected ProtocolFlowProvider (ITopicEvaluator topicEvaluator,
+			IRepositoryProvider repositoryProvider,
 			ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
@@ -30,28 +30,28 @@ namespace System.Net.Mqtt.Flows
 		/// <exception cref="MqttException">ProtocolException</exception>
 		public IProtocolFlow GetFlow (PacketType packetType)
 		{
-			if (!this.IsValidPacketType (packetType)) {
+			if (!IsValidPacketType (packetType)) {
 				var error = string.Format (Properties.Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
-				
+
 				throw new MqttException (error);
 			}
 
 			var flow = default (IProtocolFlow);
 			var flowType = packetType.ToFlowType();
 
-			if (!this.GetFlows().TryGetValue (flowType, out flow)) {
+			if (!GetFlows ().TryGetValue (flowType, out flow)) {
 				var error = string.Format (Properties.Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
-				
+
 				throw new MqttException (error);
 			}
 
 			return flow;
 		}
 
-		public T GetFlow<T> () 
+		public T GetFlow<T> ()
 			where T : class, IProtocolFlow
 		{
-			var pair = this.GetFlows().FirstOrDefault (f => f.Value is T);
+			var pair = GetFlows().FirstOrDefault (f => f.Value is T);
 
 			if (pair.Equals (default (KeyValuePair<ProtocolFlowType, IProtocolFlow>))) {
 				return default (T);
@@ -60,13 +60,13 @@ namespace System.Net.Mqtt.Flows
 			return pair.Value as T;
 		}
 
-		private IDictionary<ProtocolFlowType, IProtocolFlow> GetFlows()
+		IDictionary<ProtocolFlowType, IProtocolFlow> GetFlows ()
 		{
-			if (this.flows == default (IDictionary<ProtocolFlowType, IProtocolFlow>)) {
-				this.flows = this.InitializeFlows ();
+			if (flows == default (IDictionary<ProtocolFlowType, IProtocolFlow>)) {
+				flows = InitializeFlows ();
 			}
 
-			return this.flows;
+			return flows;
 		}
 	}
 }

@@ -25,7 +25,7 @@ namespace System.Net.Mqtt.Client
 				//TODO: The ChannelFactory injection must be handled better. I would not assume Tcp by default. 
 				//Instead I would delegate the implementation to a different NuGet or assembly.
 				//Maybe having one assembly per factory implementation (like TcpChannelFactory, WebSocketChannelFactory, TLSChannelFactory, etc)
-				var channelFactory = new PacketChannelFactory(this.innerChannelFactory ?? new TcpChannelFactory (this.hostAddress, configuration), 
+				var channelFactory = new PacketChannelFactory(innerChannelFactory ?? new TcpChannelFactory (hostAddress, configuration),
 					topicEvaluator, configuration);
 				var packetIdProvider = new PacketIdProvider ();
 				var repositoryProvider = new InMemoryRepositoryProvider();

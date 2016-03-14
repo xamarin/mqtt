@@ -1,18 +1,18 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
 	public class Will : IEquatable<Will>
-    {
-        public Will(string topic, QualityOfService qos, bool retain, string message)
-        {
-            this.Topic = topic;
-            this.QualityOfService = qos;
-            this.Retain = retain;
-			this.Message = message;
-        }
+	{
+		public Will (string topic, QualityOfService qos, bool retain, string message)
+		{
+			Topic = topic;
+			QualityOfService = qos;
+			Retain = retain;
+			Message = message;
+		}
 
-        public string Topic { get; set; }
+		public string Topic { get; set; }
 
-        public QualityOfService QualityOfService { get; set; }
+		public QualityOfService QualityOfService { get; set; }
 
 		public bool Retain { get; set; }
 
@@ -23,10 +23,10 @@
 			if (other == null)
 				return false;
 
-			return this.Topic == other.Topic &&
-				this.QualityOfService == other.QualityOfService &&
-				this.Retain == other.Retain &&
-				this.Message == other.Message;
+			return Topic == other.Topic &&
+				QualityOfService == other.QualityOfService &&
+				Retain == other.Retain &&
+				Message == other.Message;
 		}
 
 		public override bool Equals (object obj)
@@ -39,28 +39,28 @@
 			if (will == null)
 				return false;
 
-			return this.Equals (will);
+			return Equals (will);
 		}
 
 		public static bool operator == (Will will, Will other)
 		{
 			if ((object)will == null || (object)other == null)
-				return Object.Equals(will, other);
+				return Object.Equals (will, other);
 
-			return will.Equals(other);
+			return will.Equals (other);
 		}
 
 		public static bool operator != (Will will, Will other)
 		{
 			if ((object)will == null || (object)other == null)
-				return !Object.Equals(will, other);
+				return !Object.Equals (will, other);
 
-			return !will.Equals(other);
+			return !will.Equals (other);
 		}
 
 		public override int GetHashCode ()
 		{
-			return this.Topic.GetHashCode () + this.Message.GetHashCode ();
+			return Topic.GetHashCode () + Message.GetHashCode ();
 		}
 	}
 }

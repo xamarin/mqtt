@@ -26,9 +26,9 @@
 
 		public static ProtocolEncoding Encoding { get; private set; }
 
-		static Protocol()
+		static Protocol ()
 		{
-			Encoding = new ProtocolEncoding();
+			Encoding = new ProtocolEncoding ();
 		}
 	}
 }

@@ -5,10 +5,10 @@ namespace System.Net.Mqtt.Packets
 {
 	internal class Unsubscribe : IPacket, IEquatable<Unsubscribe>
 	{
-		public Unsubscribe(ushort packetId, params string[] topics)
+		public Unsubscribe (ushort packetId, params string[] topics)
 		{
-			this.PacketId = packetId;
-			this.Topics = topics;
+			PacketId = packetId;
+			Topics = topics;
 		}
 
 		public PacketType Type { get { return PacketType.Unsubscribe; } }
@@ -17,16 +17,16 @@ namespace System.Net.Mqtt.Packets
 
 		public IEnumerable<string> Topics { get; private set; }
 
-		public bool Equals(Unsubscribe other)
+		public bool Equals (Unsubscribe other)
 		{
 			if (other == null)
 				return false;
 
-			return this.PacketId == other.PacketId &&
-				this.Topics.SequenceEqual(other.Topics);
+			return PacketId == other.PacketId &&
+				Topics.SequenceEqual (other.Topics);
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals (object obj)
 		{
 			if (obj == null)
 				return false;
@@ -36,28 +36,28 @@ namespace System.Net.Mqtt.Packets
 			if (unsubscribe == null)
 				return false;
 
-			return this.Equals(unsubscribe);
+			return Equals (unsubscribe);
 		}
 
-		public static bool operator ==(Unsubscribe unsubscribe, Unsubscribe other)
+		public static bool operator == (Unsubscribe unsubscribe, Unsubscribe other)
 		{
 			if ((object)unsubscribe == null || (object)other == null)
-				return Object.Equals(unsubscribe, other);
+				return Object.Equals (unsubscribe, other);
 
-			return unsubscribe.Equals(other);
+			return unsubscribe.Equals (other);
 		}
 
-		public static bool operator !=(Unsubscribe unsubscribe, Unsubscribe other)
+		public static bool operator != (Unsubscribe unsubscribe, Unsubscribe other)
 		{
 			if ((object)unsubscribe == null || (object)other == null)
-				return !Object.Equals(unsubscribe, other);
+				return !Object.Equals (unsubscribe, other);
 
-			return !unsubscribe.Equals(other);
+			return !unsubscribe.Equals (other);
 		}
 
-		public override int GetHashCode()
+		public override int GetHashCode ()
 		{
-			return this.PacketId.GetHashCode() + this.Topics.GetHashCode();
+			return PacketId.GetHashCode () + Topics.GetHashCode ();
 		}
 	}
 }

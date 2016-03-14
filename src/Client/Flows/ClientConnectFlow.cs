@@ -10,7 +10,7 @@ namespace System.Net.Mqtt.Flows
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPublishSenderFlow senderFlow;
 
-		public ClientConnectFlow (IRepository<ClientSession> sessionRepository, 
+		public ClientConnectFlow (IRepository<ClientSession> sessionRepository,
 			IPublishSenderFlow senderFlow)
 		{
 			this.sessionRepository = sessionRepository;
@@ -29,43 +29,43 @@ namespace System.Net.Mqtt.Flows
 				return;
 			}
 
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
-			await this.SendPendingMessagesAsync (session, channel)
-				.ConfigureAwait(continueOnCapturedContext: false);
-			await this.SendPendingAcknowledgementsAsync (session, channel)
-				.ConfigureAwait(continueOnCapturedContext: false);
+			await SendPendingMessagesAsync (session, channel)
+				.ConfigureAwait (continueOnCapturedContext: false);
+			await SendPendingAcknowledgementsAsync (session, channel)
+				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
+		async Task SendPendingMessagesAsync (ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingMessage in session.GetPendingMessages()) {
-				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
+			foreach (var pendingMessage in session.GetPendingMessages ()) {
+				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService,
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
-				await this.senderFlow
+				await senderFlow
 					.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge)
-					.ConfigureAwait(continueOnCapturedContext: false);
+					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}
 
-		private async Task SendPendingAcknowledgementsAsync(ClientSession session, IChannel<IPacket> channel)
+		async Task SendPendingAcknowledgementsAsync (ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingAcknowledgement in session.GetPendingAcknowledgements()) {
+			foreach (var pendingAcknowledgement in session.GetPendingAcknowledgements ()) {
 				var ack = default(IFlowPacket);
 
 				if (pendingAcknowledgement.Type == PacketType.PublishReceived) {
 					ack = new PublishReceived (pendingAcknowledgement.PacketId);
-				} else if(pendingAcknowledgement.Type == PacketType.PublishRelease) {
+				} else if (pendingAcknowledgement.Type == PacketType.PublishRelease) {
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 				}
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await senderFlow.SendAckAsync (session.ClientId, ack, channel)
+					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}
 	}

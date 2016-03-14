@@ -4,14 +4,14 @@
 	{
 		public ClientCredentials (string clientId)
 		{
-			this.ClientId = clientId;
+			ClientId = clientId;
 		}
 
 		public ClientCredentials (string clientId, string userName, string password)
 		{
-			this.ClientId = clientId;
-			this.UserName = userName;
-			this.Password = password;
+			ClientId = clientId;
+			UserName = userName;
+			Password = password;
 		}
 
 		public string ClientId { get; private set; }

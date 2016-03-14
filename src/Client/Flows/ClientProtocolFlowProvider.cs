@@ -7,7 +7,7 @@ namespace System.Net.Mqtt.Flows
 	internal class ClientProtocolFlowProvider : ProtocolFlowProvider
 	{
 		public ClientProtocolFlowProvider (ITopicEvaluator topicEvaluator, IRepositoryProvider repositoryProvider, ProtocolConfiguration configuration)
-			: base(topicEvaluator, repositoryProvider, configuration)
+			: base (topicEvaluator, repositoryProvider, configuration)
 		{
 		}
 
@@ -21,7 +21,7 @@ namespace System.Net.Mqtt.Flows
 
 			flows.Add (ProtocolFlowType.Connect, new ClientConnectFlow (sessionRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
-			flows.Add (ProtocolFlowType.PublishReceiver, new PublishReceiverFlow (topicEvaluator, 
+			flows.Add (ProtocolFlowType.PublishReceiver, new PublishReceiverFlow (topicEvaluator,
 				retainedRepository, sessionRepository, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ClientSubscribeFlow ());
 			flows.Add (ProtocolFlowType.Unsubscribe, new ClientUnsubscribeFlow ());

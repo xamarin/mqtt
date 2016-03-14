@@ -11,7 +11,7 @@ namespace System.Net.Mqtt.Formatters
 
 		protected override SubscribeAck Read (byte[] bytes)
 		{
-			this.ValidateHeaderFlag (bytes, t => t == PacketType.SubscribeAck, 0x00);
+			ValidateHeaderFlag (bytes, t => t == PacketType.SubscribeAck, 0x00);
 
 			var remainingLengthBytesLength = 0;
 			var remainingLength = Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
@@ -22,12 +22,12 @@ namespace System.Net.Mqtt.Formatters
 			var headerLength = 1 + remainingLengthBytesLength + 2;
 			var returnCodeBytes = bytes.Bytes(headerLength);
 
-			if(!returnCodeBytes.Any())
-				throw new MqttViolationException(Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
+			if (!returnCodeBytes.Any ())
+				throw new MqttViolationException (Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			if (returnCodeBytes.Any (b => !Enum.IsDefined (typeof (SubscribeReturnCode), b)))
 				throw new MqttViolationException (Properties.Resources.SubscribeAckFormatter_InvalidReturnCodes);
-				
+
 			var returnCodes = returnCodeBytes.Select(b => (SubscribeReturnCode)b).ToArray();
 
 			return new SubscribeAck (packetIdentifier, returnCodes);
@@ -37,19 +37,19 @@ namespace System.Net.Mqtt.Formatters
 		{
 			var bytes = new List<byte> ();
 
-			var variableHeader = this.GetVariableHeader (packet);
-			var payload = this.GetPayload (packet);
+			var variableHeader = GetVariableHeader (packet);
+			var payload = GetPayload (packet);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
-			var fixedHeader = this.GetFixedHeader (remainingLength);
+			var fixedHeader = GetFixedHeader (remainingLength);
 
 			bytes.AddRange (fixedHeader);
 			bytes.AddRange (variableHeader);
 			bytes.AddRange (payload);
 
-			return bytes.ToArray();
+			return bytes.ToArray ();
 		}
 
-		private byte[] GetFixedHeader(byte[] remainingLength)
+		byte[] GetFixedHeader (byte[] remainingLength)
 		{
 			var fixedHeader = new List<byte> ();
 
@@ -61,10 +61,10 @@ namespace System.Net.Mqtt.Formatters
 			fixedHeader.Add (fixedHeaderByte1);
 			fixedHeader.AddRange (remainingLength);
 
-			return fixedHeader.ToArray();
+			return fixedHeader.ToArray ();
 		}
 
-		private byte[] GetVariableHeader(SubscribeAck packet)
+		byte[] GetVariableHeader (SubscribeAck packet)
 		{
 			var variableHeader = new List<byte> ();
 
@@ -72,17 +72,17 @@ namespace System.Net.Mqtt.Formatters
 
 			variableHeader.AddRange (packetIdBytes);
 
-			return variableHeader.ToArray();
+			return variableHeader.ToArray ();
 		}
 
-		private byte[] GetPayload(SubscribeAck packet)
+		byte[] GetPayload (SubscribeAck packet)
 		{
-			if(packet.ReturnCodes == null || !packet.ReturnCodes.Any())
-				throw new MqttViolationException(Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
+			if (packet.ReturnCodes == null || !packet.ReturnCodes.Any ())
+				throw new MqttViolationException (Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			return packet.ReturnCodes
-				.Select(c => Convert.ToByte(c))
-				.ToArray();
+				.Select (c => Convert.ToByte (c))
+				.ToArray ();
 		}
 	}
 }

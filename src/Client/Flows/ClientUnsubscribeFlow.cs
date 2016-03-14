@@ -7,7 +7,7 @@ namespace System.Net.Mqtt.Flows
 	{
 		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			return Task.Delay(0);
+			return Task.Delay (0);
 		}
 	}
 }

@@ -10,8 +10,8 @@ using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Client
 {
-    public class Client : IClient, IDisposable
-    {
+	public class Client : IClient, IDisposable
+	{
 		static readonly ITracer tracer = Tracer.Get<Client> ();
 
 		bool protocolDisconnected;
@@ -29,24 +29,24 @@ namespace System.Net.Mqtt.Client
 		readonly TaskRunner clientSender;
 		readonly IPacketListener packetListener;
 
-        internal Client(IChannel<IPacket> packetChannel, 
+		internal Client (IChannel<IPacket> packetChannel,
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
 			ProtocolConfiguration configuration)
-        {
-			this.receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
-			this.sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+		{
+			receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 
 			this.packetChannel = packetChannel;
 			this.flowProvider = flowProvider;
-			this.sessionRepository = repositoryProvider.GetRepository<ClientSession>();
+			sessionRepository = repositoryProvider.GetRepository<ClientSession> ();
 			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
-			this.clientSender = TaskRunner.Get("ClientSender");
-			this.packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
+			clientSender = TaskRunner.Get ("ClientSender");
+			packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
 
-			this.packetListener.Listen ();
+			packetListener.Listen ();
 		}
 
 		public event EventHandler<ClosedEventArgs> Closed = (sender, args) => { };
@@ -57,45 +57,45 @@ namespace System.Net.Mqtt.Client
 		{
 			get
 			{
-				this.CheckUnderlyingConnection ();
+				CheckUnderlyingConnection ();
 
-				return this.isConnected && this.packetChannel.IsConnected;
+				return isConnected && packetChannel.IsConnected;
 			}
 			private set
 			{
-				this.isConnected = value;
+				isConnected = value;
 			}
 		}
 
-		public IObservable<ApplicationMessage> Receiver { get { return this.receiver; } }
+		public IObservable<ApplicationMessage> Receiver { get { return receiver; } }
 
-		internal IObservable<IPacket> Sender { get { return this.sender; } }
+		internal IObservable<IPacket> Sender { get { return sender; } }
 
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
 			var ack = default (ConnectAck);
 
 			try {
-				this.OpenClientSession (credentials.ClientId, cleanSession);
+				OpenClientSession (credentials.ClientId, cleanSession);
 
 				var connect = new Connect (credentials.ClientId, cleanSession) {
 					UserName = credentials.UserName,
 					Password = credentials.Password,
 					Will = will,
-					KeepAlive = this.configuration.KeepAliveSecs
+					KeepAlive = configuration.KeepAliveSecs
 				};
 
-				var connectTimeout = TimeSpan.FromSeconds (this.configuration.WaitingTimeoutSecs);
+				var connectTimeout = TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs);
 
-				await this.SendPacketAsync (connect)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await SendPacketAsync (connect)
+					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await this.packetListener.Packets
+				ack = await packetListener.Packets
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<ConnectAck> ()
 					.FirstOrDefaultAsync ()
@@ -111,70 +111,70 @@ namespace System.Net.Mqtt.Client
 					throw new MqttConnectionException (ack.Status);
 				}
 
-				this.Id = credentials.ClientId;
-				this.IsConnected = true;
-				this.ObservePackets ();
-			} catch(TimeoutException timeEx) {
-				this.Close (timeEx);
-				throw new ClientException (string.Format(Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
-			} catch(MqttConnectionException connectionEx) {
-				this.Close (connectionEx);
+				Id = credentials.ClientId;
+				IsConnected = true;
+				ObservePackets ();
+			} catch (TimeoutException timeEx) {
+				Close (timeEx);
+				throw new ClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+			} catch (MqttConnectionException connectionEx) {
+				Close (connectionEx);
 
 				var message = string.Format(Properties.Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
 
 				throw new ClientException (message, connectionEx);
-			} catch(ClientException clientEx) {
-				this.Close (clientEx);
+			} catch (ClientException clientEx) {
+				Close (clientEx);
 				throw;
 			} catch (Exception ex) {
-				this.Close (ex);
-				throw new ClientException (string.Format(Properties.Resources.Client_ConnectionError, credentials.ClientId), ex);
+				Close (ex);
+				throw new ClientException (string.Format (Properties.Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
 		}
 
 		/// <exception cref="ClientException">ClientException</exception>
 		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
 			try {
-				var packetId = this.packetIdProvider.GetPacketId ();
+				var packetId = packetIdProvider.GetPacketId ();
 				var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 				var ack = default (SubscribeAck);
-				var subscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
+				var subscribeTimeout = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
 
-				await this.SendPacketAsync (subscribe)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await SendPacketAsync (subscribe)
+					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await this.packetListener.Packets
+				ack = await packetListener.Packets
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<SubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
 					.Timeout (subscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Properties.Resources.Client_SubscriptionDisconnected, this.Id, topicFilter);
+					var message = string.Format(Properties.Resources.Client_SubscriptionDisconnected, Id, topicFilter);
 
 					tracer.Error (message);
 
 					throw new ClientException (message);
 				}
-			} catch(TimeoutException timeEx) {
-				this.Close (timeEx);
+			} catch (TimeoutException timeEx) {
+				Close (timeEx);
 
-				var message = string.Format (Properties.Resources.Client_SubscribeTimeout, this.Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeTimeout, Id, topicFilter);
 
 				throw new ClientException (message, timeEx);
-			} catch(ClientException clientEx) {
-				this.Close (clientEx);
+			} catch (ClientException clientEx) {
+				Close (clientEx);
 				throw;
 			} catch (Exception ex) {
-				this.Close (ex);
+				Close (ex);
 
-				var message = string.Format (Properties.Resources.Client_SubscribeError, this.Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeError, Id, topicFilter);
 
 				throw new ClientException (message, ex);
 			}
@@ -182,73 +182,73 @@ namespace System.Net.Mqtt.Client
 
 		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
 			try {
-				ushort? packetId = qos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
+				ushort? packetId = qos == QualityOfService.AtMostOnce ? null : (ushort?)packetIdProvider.GetPacketId ();
 				var publish = new Publish (message.Topic, qos, retain, duplicated: false, packetId: packetId)
 				{
 					Payload = message.Payload
 				};
 
-				var senderFlow = this.flowProvider.GetFlow<PublishSenderFlow> ();
+				var senderFlow = flowProvider.GetFlow<PublishSenderFlow> ();
 
-				await this.clientSender.Run (async () => {
-					await senderFlow.SendPublishAsync (this.Id, publish, this.packetChannel)
-						.ConfigureAwait(continueOnCapturedContext: false);
-				}).ConfigureAwait(continueOnCapturedContext: false);
+				await clientSender.Run (async () => {
+					await senderFlow.SendPublishAsync (Id, publish, packetChannel)
+						.ConfigureAwait (continueOnCapturedContext: false);
+				}).ConfigureAwait (continueOnCapturedContext: false);
 			} catch (Exception ex) {
-				this.Close (ex);
+				Close (ex);
 				throw;
 			}
 		}
 
 		public async Task UnsubscribeAsync (params string[] topics)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
 			try {
-				var packetId = this.packetIdProvider.GetPacketId ();
+				var packetId = packetIdProvider.GetPacketId ();
 				var unsubscribe = new Unsubscribe(packetId, topics);
 
 				var ack = default (UnsubscribeAck);
-				var unsubscribeTimeout = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
+				var unsubscribeTimeout = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
 
-				await this.SendPacketAsync (unsubscribe)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await SendPacketAsync (unsubscribe)
+					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await this.packetListener.Packets
+				ack = await packetListener.Packets
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<UnsubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
 					.Timeout (unsubscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Properties.Resources.Client_UnsubscribeDisconnected, this.Id, string.Join(", ", topics));
+					var message = string.Format(Properties.Resources.Client_UnsubscribeDisconnected, Id, string.Join(", ", topics));
 
 					tracer.Error (message);
 
 					throw new ClientException (message);
 				}
-			} catch(TimeoutException timeEx) {
-				this.Close (timeEx);
+			} catch (TimeoutException timeEx) {
+				Close (timeEx);
 
-				var message = string.Format (Properties.Resources.Client_UnsubscribeTimeout, this.Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
 				throw new ClientException (message, timeEx);
-			} catch(ClientException clientEx) {
-				this.Close (clientEx);
+			} catch (ClientException clientEx) {
+				Close (clientEx);
 				throw;
 			} catch (Exception ex) {
-				this.Close (ex);
+				Close (ex);
 
-				var message = string.Format (Properties.Resources.Client_UnsubscribeError, this.Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
@@ -258,75 +258,75 @@ namespace System.Net.Mqtt.Client
 
 		public async Task DisconnectAsync ()
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
 			try {
-				this.CloseClientSession ();
+				CloseClientSession ();
 
-				await this.SendPacketAsync (new Disconnect ())
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await SendPacketAsync (new Disconnect ())
+					.ConfigureAwait (continueOnCapturedContext: false);
 
-				this.protocolDisconnected = true;
+				protocolDisconnected = true;
 			} catch (Exception ex) {
-				this.Close (ex);
+				Close (ex);
 				throw;
 			}
 		}
 
 		public void Close ()
 		{
-			this.Close (ClosedReason.Disposed);
+			Close (ClosedReason.Disposed);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Close ();
+			Close ();
 		}
 
 		protected virtual void Dispose (bool disposing)
 		{
-			if (this.disposed) return;
+			if (disposed) return;
 
 			if (disposing) {
-				this.receiver.OnCompleted ();
+				receiver.OnCompleted ();
 
-				if (this.packetsSubscription != null) {
-					this.packetsSubscription.Dispose ();
+				if (packetsSubscription != null) {
+					packetsSubscription.Dispose ();
 				}
-				
-				this.packetListener.Dispose ();
-				this.packetChannel.Dispose ();
-				(this.clientSender as IDisposable)?.Dispose ();
-				this.IsConnected = false; 
-				this.Id = null;
-				this.disposed = true;
+
+				packetListener.Dispose ();
+				packetChannel.Dispose ();
+				(clientSender as IDisposable)?.Dispose ();
+				IsConnected = false;
+				Id = null;
+				disposed = true;
 			}
 		}
 
-		private void Close(Exception ex)
+		void Close (Exception ex)
 		{
 			tracer.Error (ex);
-			this.receiver.OnError (ex);
-			this.Close (ClosedReason.Error, ex.Message);
+			receiver.OnError (ex);
+			Close (ClosedReason.Error, ex.Message);
 		}
 
-		private void Close (ClosedReason reason, string message = null)
+		void Close (ClosedReason reason, string message = null)
 		{
-			tracer.Info (Properties.Resources.Tracer_Client_Disposing, this.Id, reason);
-			this.Dispose (true);
-			this.Closed (this, new ClosedEventArgs(reason, message));
+			tracer.Info (Properties.Resources.Tracer_Client_Disposing, Id, reason);
+			Dispose (true);
+			Closed (this, new ClosedEventArgs (reason, message));
 			GC.SuppressFinalize (this);
 		}
 
-		private void OpenClientSession(string clientId, bool cleanSession)
+		void OpenClientSession (string clientId, bool cleanSession)
 		{
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Get (s => s.ClientId == clientId);
 			var sessionPresent = cleanSession ? false : session != null;
 
 			if (cleanSession && session != null) {
-				this.sessionRepository.Delete(session);
+				sessionRepository.Delete (session);
 				session = null;
 
 				tracer.Info (Properties.Resources.Tracer_Client_CleanedOldSession, clientId);
@@ -335,18 +335,18 @@ namespace System.Net.Mqtt.Client
 			if (session == null) {
 				session = new ClientSession { ClientId = clientId, Clean = cleanSession };
 
-				this.sessionRepository.Create (session);
+				sessionRepository.Create (session);
 
 				tracer.Info (Properties.Resources.Tracer_Client_CreatedSession, clientId);
 			}
 		}
 
-		private void CloseClientSession()
+		void CloseClientSession ()
 		{
-			var session = this.sessionRepository.Get (s => s.ClientId == this.Id);
+			var session = sessionRepository.Get (s => s.ClientId == Id);
 
 			if (session == null) {
-				var message = string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, this.Id);
+				var message = string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, Id);
 
 				tracer.Error (message);
 
@@ -354,48 +354,48 @@ namespace System.Net.Mqtt.Client
 			}
 
 			if (session.Clean) {
-				this.sessionRepository.Delete (session);
+				sessionRepository.Delete (session);
 
-				tracer.Info (Properties.Resources.Tracer_Client_DeletedSessionOnDisconnect, this.Id);
+				tracer.Info (Properties.Resources.Tracer_Client_DeletedSessionOnDisconnect, Id);
 			}
 		}
 
-		private async Task SendPacketAsync(IPacket packet)
+		async Task SendPacketAsync (IPacket packet)
 		{
-			this.sender.OnNext (packet);
+			sender.OnNext (packet);
 
-			await this.clientSender.Run(async () => await this.packetChannel.SendAsync (packet).ConfigureAwait(continueOnCapturedContext: false))
-				.ConfigureAwait(continueOnCapturedContext: false);
+			await clientSender.Run (async () => await packetChannel.SendAsync (packet).ConfigureAwait (continueOnCapturedContext: false))
+				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		private void CheckUnderlyingConnection ()
+		void CheckUnderlyingConnection ()
 		{
-			if (this.isConnected && !this.packetChannel.IsConnected) {
-				this.Close (ClosedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
+			if (isConnected && !packetChannel.IsConnected) {
+				Close (ClosedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 
-		private void ObservePackets ()
+		void ObservePackets ()
 		{
-			this.packetsSubscription = this.packetListener.Packets
-				.ObserveOn(NewThreadScheduler.Default)
-				.Subscribe (packet => { 
+			packetsSubscription = packetListener.Packets
+				.ObserveOn (NewThreadScheduler.Default)
+				.Subscribe (packet => {
 					if (packet.Type == PacketType.Publish) {
 						var publish = packet as Publish;
 						var message = new ApplicationMessage (publish.Topic, publish.Payload);
 
-						this.receiver.OnNext (message);
+						receiver.OnNext (message);
 
-						tracer.Info (Properties.Resources.Tracer_NewApplicationMessageReceived, this.Id, publish.Topic);
+						tracer.Info (Properties.Resources.Tracer_NewApplicationMessageReceived, Id, publish.Topic);
 					}
 				}, ex => {
-					this.Close (ex);
+					Close (ex);
 				}, () => {
 					tracer.Warn (Properties.Resources.Tracer_Client_PacketsObservableCompleted);
 
-					var reason = this.protocolDisconnected ? ClosedReason.Disposed : ClosedReason.Disconnected;
+					var reason = protocolDisconnected ? ClosedReason.Disposed : ClosedReason.Disconnected;
 
-					this.Close (reason);
+					Close (reason);
 				});
 		}
 	}

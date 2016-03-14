@@ -3,17 +3,17 @@
 namespace System.Net.Mqtt.Packets
 {
 	internal class Publish : IPacket, IEquatable<Publish>
-    {
-        public Publish(string topic, QualityOfService qualityOfService, bool retain, bool duplicated, ushort? packetId = null)
-        {
-            this.QualityOfService = qualityOfService;
-			this.Duplicated = duplicated;
-			this.Retain = retain;
-			this.Topic = topic;
-            this.PacketId = packetId;
-        }
+	{
+		public Publish (string topic, QualityOfService qualityOfService, bool retain, bool duplicated, ushort? packetId = null)
+		{
+			QualityOfService = qualityOfService;
+			Duplicated = duplicated;
+			Retain = retain;
+			Topic = topic;
+			PacketId = packetId;
+		}
 
-		public PacketType Type { get { return PacketType.Publish; }}
+		public PacketType Type { get { return PacketType.Publish; } }
 
 		public QualityOfService QualityOfService { get; private set; }
 
@@ -21,9 +21,9 @@ namespace System.Net.Mqtt.Packets
 
 		public bool Retain { get; private set; }
 
-        public string Topic { get; private set; }
+		public string Topic { get; private set; }
 
-        public ushort? PacketId { get; private set; }
+		public ushort? PacketId { get; private set; }
 
 		public byte[] Payload { get; set; }
 
@@ -32,14 +32,14 @@ namespace System.Net.Mqtt.Packets
 			if (other == null)
 				return false;
 
-			var equals = this.QualityOfService == other.QualityOfService &&
-				this.Duplicated == other.Duplicated &&
-				this.Retain == other.Retain &&
-				this.Topic == other.Topic &&
-				this.PacketId == other.PacketId;
+			var equals = QualityOfService == other.QualityOfService &&
+				Duplicated == other.Duplicated &&
+				Retain == other.Retain &&
+				Topic == other.Topic &&
+				PacketId == other.PacketId;
 
-			if(this.Payload != null) {
-				equals &= this.Payload.ToList().SequenceEqual(other.Payload);
+			if (Payload != null) {
+				equals &= Payload.ToList ().SequenceEqual (other.Payload);
 			}
 
 			return equals;
@@ -55,38 +55,38 @@ namespace System.Net.Mqtt.Packets
 			if (publish == null)
 				return false;
 
-			return this.Equals (publish);
+			return Equals (publish);
 		}
 
 		public static bool operator == (Publish publish, Publish other)
 		{
 			if ((object)publish == null || (object)other == null)
-				return Object.Equals(publish, other);
+				return Object.Equals (publish, other);
 
-			return publish.Equals(other);
+			return publish.Equals (other);
 		}
 
 		public static bool operator != (Publish publish, Publish other)
 		{
 			if ((object)publish == null || (object)other == null)
-				return !Object.Equals(publish, other);
+				return !Object.Equals (publish, other);
 
-			return !publish.Equals(other);
+			return !publish.Equals (other);
 		}
 
 		public override int GetHashCode ()
 		{
-			var hashCode = this.QualityOfService.GetHashCode () +
-				this.Duplicated.GetHashCode () +
-				this.Retain.GetHashCode () +
-				this.Topic.GetHashCode ();
+			var hashCode = QualityOfService.GetHashCode () +
+				Duplicated.GetHashCode () +
+				Retain.GetHashCode () +
+				Topic.GetHashCode ();
 
-			if (this.Payload != null) {
-				hashCode += BitConverter.ToString (this.Payload).GetHashCode ();
+			if (Payload != null) {
+				hashCode += BitConverter.ToString (Payload).GetHashCode ();
 			}
 
-			if (this.PacketId.HasValue) {
-				hashCode += this.PacketId.Value.GetHashCode ();
+			if (PacketId.HasValue) {
+				hashCode += PacketId.Value.GetHashCode ();
 			}
 
 			return hashCode;

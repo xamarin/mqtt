@@ -10,67 +10,68 @@ namespace System.Net.Mqtt
 
 		private TaskRunner (string name = null)
 		{
-			this.taskFactory = new TaskFactory(CancellationToken.None, 
-				TaskCreationOptions.DenyChildAttach, 
-				TaskContinuationOptions.None, 
-				new SingleThreadScheduler(name));
+			taskFactory = new TaskFactory (CancellationToken.None,
+				TaskCreationOptions.DenyChildAttach,
+				TaskContinuationOptions.None,
+				new SingleThreadScheduler (name));
 		}
 
-		public static TaskRunner Get(string name = null)
+		public static TaskRunner Get (string name = null)
 		{
 			return new TaskRunner (name);
 		}
 
-		public Task Run(Func<Task> func)
+		public Task Run (Func<Task> func)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
-			return taskFactory.StartNew(func).Unwrap();
+			return taskFactory.StartNew (func).Unwrap ();
 		}
 
-		public Task<T> Run<T>(Func<Task<T>> func)
+		public Task<T> Run<T> (Func<Task<T>> func)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
-			return taskFactory.StartNew(func).Unwrap();
+			return taskFactory.StartNew (func).Unwrap ();
 		}
 
-		public Task Run(Action action)
+		public Task Run (Action action)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
-			return taskFactory.StartNew(action);
+			return taskFactory.StartNew (action);
 		}
 
-		public Task<T> Run<T>(Func<T> func)
+		public Task<T> Run<T> (Func<T> func)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
-			return taskFactory.StartNew(func);
+			return taskFactory.StartNew (func);
 		}
 
-		public void Dispose()
+		public void Dispose ()
 		{
-			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
+			Dispose (disposing: true);
+			GC.SuppressFinalize (this);
 		}
 
-		protected virtual void Dispose(bool disposing)
+		protected virtual void Dispose (bool disposing)
 		{
-			if (this.disposed)
+			if (disposed)
 				return;
 
 			if (disposing) {
-				(this.taskFactory.Scheduler as IDisposable)?.Dispose();
-				this.taskFactory = null;
+				(taskFactory.Scheduler as IDisposable)?.Dispose ();
+				taskFactory = null;
+				disposed = true;
 			}
 		}
 	}

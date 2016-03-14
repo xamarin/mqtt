@@ -15,7 +15,7 @@ namespace IntegrationTests
 
 		public AuthenticationSpec ()
 		{
-			this.server = this.GetServer (new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: "foo123"));
+			server = GetServer (new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: "foo123"));
 		}
 
 		[Fact]
@@ -23,9 +23,9 @@ namespace IntegrationTests
 		{
 			var username = "foo";
 			var password = "foo123456";
-			var client = this.GetClient ();
+			var client = GetClient ();
 
-			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync (new ClientCredentials (this.GetClientId (), username, password)).Wait());
+			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync (new ClientCredentials (GetClientId (), username, password)).Wait());
 
 			Assert.NotNull (aggregateEx.InnerException);
 			Assert.True (aggregateEx.InnerException is ClientException);
@@ -39,9 +39,9 @@ namespace IntegrationTests
 		{
 			var username = "foo";
 			var password = "foo123";
-			var client = this.GetClient ();
+			var client = GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId (), username, password));
+			await client.ConnectAsync (new ClientCredentials (GetClientId (), username, password));
 
 			Assert.True(client.IsConnected);
 			Assert.False(string.IsNullOrEmpty(client.Id));
@@ -49,8 +49,8 @@ namespace IntegrationTests
 
 		public void Dispose ()
 		{
-			if (this.server != null) {
-				this.server.Stop ();
+			if (server != null) {
+				server.Stop ();
 			}
 		}
 	}

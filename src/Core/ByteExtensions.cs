@@ -5,47 +5,47 @@ namespace System.Net.Mqtt
 {
 	public static class ByteExtensions
 	{
-		public static bool IsSet(this byte @byte, int bit)
-        {
-            if (bit > 7)
-                throw new ArgumentOutOfRangeException("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
+		public static bool IsSet (this byte @byte, int bit)
+		{
+			if (bit > 7)
+				throw new ArgumentOutOfRangeException ("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
 
-            return (@byte & (1 << bit)) != 0;
-        }
+			return (@byte & (1 << bit)) != 0;
+		}
 
-        public static byte Set(this byte @byte, int bit)
-        {
-            if (bit > 7)
-                throw new ArgumentOutOfRangeException("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
+		public static byte Set (this byte @byte, int bit)
+		{
+			if (bit > 7)
+				throw new ArgumentOutOfRangeException ("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
 
-            return Convert.ToByte(@byte | (1 << bit));
-        }
+			return Convert.ToByte (@byte | (1 << bit));
+		}
 
-        public static byte Unset(this byte @byte, int bit)
-        {
-            if (bit > 7)
-                throw new ArgumentOutOfRangeException("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
+		public static byte Unset (this byte @byte, int bit)
+		{
+			if (bit > 7)
+				throw new ArgumentOutOfRangeException ("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
 
-            return Convert.ToByte(@byte & ~(1 << bit));
-        }
+			return Convert.ToByte (@byte & ~(1 << bit));
+		}
 
-        public static byte Toggle(this byte @byte, int bit)
-        {
-            if (bit > 7)
-                throw new ArgumentOutOfRangeException("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
+		public static byte Toggle (this byte @byte, int bit)
+		{
+			if (bit > 7)
+				throw new ArgumentOutOfRangeException ("bit", Properties.Resources.ByteExtensions_InvalidBitPosition);
 
-            return Convert.ToByte(@byte ^ (1 << bit));
-        }
+			return Convert.ToByte (@byte ^ (1 << bit));
+		}
 
-        public static byte Bits(this byte @byte, int count)
-        {
-            return Convert.ToByte(@byte >> 8 - count);
-        }
+		public static byte Bits (this byte @byte, int count)
+		{
+			return Convert.ToByte (@byte >> 8 - count);
+		}
 
-        public static byte Bits(this byte @byte, int index, int count)
-        {
+		public static byte Bits (this byte @byte, int index, int count)
+		{
 			if (index < 1 || index > 8)
-				throw new ArgumentOutOfRangeException("index", Properties.Resources.ByteExtensions_InvalidByteIndex);
+				throw new ArgumentOutOfRangeException ("index", Properties.Resources.ByteExtensions_InvalidByteIndex);
 
 			if (index > 1) {
 				var i = 1;
@@ -56,35 +56,35 @@ namespace System.Net.Mqtt
 				} while (i < index);
 			}
 
-            var to = Convert.ToByte(@byte << index - 1);
-            var from = Convert.ToByte(to >> 8 - count);
+			var to = Convert.ToByte(@byte << index - 1);
+			var from = Convert.ToByte(to >> 8 - count);
 
-            return from;
-        }
-
-		public static byte Byte(this byte[] bytes, int index)
-		{
-			return bytes.Skip (index).Take (1).FirstOrDefault();
+			return from;
 		}
 
-		public static byte[] Bytes(this byte[] bytes, int fromIndex)
+		public static byte Byte (this byte[] bytes, int index)
+		{
+			return bytes.Skip (index).Take (1).FirstOrDefault ();
+		}
+
+		public static byte[] Bytes (this byte[] bytes, int fromIndex)
 		{
 			return bytes.Skip (fromIndex).ToArray ();
 		}
 
-		public static byte[] Bytes(this byte[] bytes, int fromIndex, int count)
+		public static byte[] Bytes (this byte[] bytes, int fromIndex, int count)
 		{
-			return bytes.Skip (fromIndex).Take (count).ToArray();
+			return bytes.Skip (fromIndex).Take (count).ToArray ();
 		}
 
-		public static string GetString(this byte[] bytes, int index)
+		public static string GetString (this byte[] bytes, int index)
 		{
 			var length = bytes.GetStringLenght (index);
-			
+
 			return length == 0 ? string.Empty : Encoding.UTF8.GetString (bytes, index + Protocol.StringPrefixLength, length);
 		}
 
-		public static string GetString(this byte[] bytes, int index, out int nextIndex)
+		public static string GetString (this byte[] bytes, int index, out int nextIndex)
 		{
 			var length = bytes.GetStringLenght (index);
 
@@ -102,7 +102,7 @@ namespace System.Net.Mqtt
 			return BitConverter.ToUInt16 (bytes, 0);
 		}
 
-		private static ushort GetStringLenght(this byte[] bytes, int index)
+		static ushort GetStringLenght (this byte[] bytes, int index)
 		{
 			return bytes.Bytes (index, 2).ToUInt16 ();
 		}

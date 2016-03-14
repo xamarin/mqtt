@@ -28,7 +28,7 @@ namespace System.Net.Mqtt.Server
 		int keepAlive = 0;
 
 		public ServerPacketListener (IChannel<IPacket> channel,
-			IConnectionProvider connectionProvider, 
+			IConnectionProvider connectionProvider,
 			IProtocolFlowProvider flowProvider,
 			ProtocolConfiguration configuration)
 		{
@@ -36,55 +36,55 @@ namespace System.Net.Mqtt.Server
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
-			this.packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
-			this.flowRunner = TaskRunner.Get ("ServerFlowRunner");
+			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			flowRunner = TaskRunner.Get ("ServerFlowRunner");
 		}
 
-		public IObservable<IPacket> Packets { get { return this.packets; } }
+		public IObservable<IPacket> Packets { get { return packets; } }
 
 		public void Listen ()
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
-			this.disposable = new CompositeDisposable (
-				this.ListenFirstPacket (),
-				this.ListenNextPackets (),
-				this.ListenCompletionAndErrors (),
-				this.ListenSentPackets ());
+			disposable = new CompositeDisposable (
+				ListenFirstPacket (),
+				ListenNextPackets (),
+				ListenCompletionAndErrors (),
+				ListenSentPackets ());
 		}
 
 		public void Dispose ()
 		{
-			this.Dispose (disposing: true);
+			Dispose (disposing: true);
 			GC.SuppressFinalize (this);
 		}
 
-		protected virtual void Dispose(bool disposing)
+		protected virtual void Dispose (bool disposing)
 		{
-			if (this.disposed) {
+			if (disposed) {
 				return;
 			}
 
 			if (disposing) {
-				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, GetType ().FullName);
 
-				this.disposable.Dispose ();
-				this.packets.OnCompleted ();
-				(this.flowRunner as IDisposable)?.Dispose ();
-				this.disposed = true;
+				disposable.Dispose ();
+				packets.OnCompleted ();
+				(flowRunner as IDisposable)?.Dispose ();
+				disposed = true;
 			}
 		}
 
-		private IDisposable ListenFirstPacket()
+		IDisposable ListenFirstPacket ()
 		{
-			var packetDueTime = TimeSpan.FromSeconds(this.configuration.WaitingTimeoutSecs);
+			var packetDueTime = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
 
-			return this.channel.Receiver
+			return channel.Receiver
 				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
-				.Subscribe(async packet => {
+				.Subscribe (async packet => {
 					if (packet == default (IPacket)) {
 						return;
 					}
@@ -92,184 +92,184 @@ namespace System.Net.Mqtt.Server
 					var connect = packet as Connect;
 
 					if (connect == null) {
-						this.NotifyError (Properties.Resources.ServerPacketListener_FirstPacketMustBeConnect);
+						NotifyError (Properties.Resources.ServerPacketListener_FirstPacketMustBeConnect);
 						return;
 					}
 
-					this.clientId = connect.ClientId;
-					this.keepAlive = connect.KeepAlive;
-					this.connectionProvider.AddConnection (this.clientId, this.channel);
+					clientId = connect.ClientId;
+					keepAlive = connect.KeepAlive;
+					connectionProvider.AddConnection (clientId, channel);
 
-					tracer.Info (Properties.Resources.Tracer_ServerPacketListener_ConnectPacketReceived, this.clientId);
+					tracer.Info (Properties.Resources.Tracer_ServerPacketListener_ConnectPacketReceived, clientId);
 
-					await this.DispatchPacketAsync (connect)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await DispatchPacketAsync (connect)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				}, async ex => {
-					await this.HandleConnectionExceptionAsync (ex)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await HandleConnectionExceptionAsync (ex)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				});
 		}
 
-		private IDisposable ListenNextPackets()
+		IDisposable ListenNextPackets ()
 		{
-			return this.channel.Receiver
+			return channel.Receiver
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
-						this.NotifyError (Properties.Resources.ServerPacketListener_SecondConnectNotAllowed);
+						NotifyError (Properties.Resources.ServerPacketListener_SecondConnectNotAllowed);
 						return;
 					}
 
-					await this.DispatchPacketAsync (packet)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await DispatchPacketAsync (packet)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				}, ex => {
-					this.NotifyError (ex);
+					NotifyError (ex);
 				});
 		}
 
-		private IDisposable ListenCompletionAndErrors()
+		IDisposable ListenCompletionAndErrors ()
 		{
-			return this.channel.Receiver.Subscribe (_ => { }, 
+			return channel.Receiver.Subscribe (_ => { },
 				ex => {
-					this.NotifyError (ex);
+					NotifyError (ex);
 				}, async () => {
-					tracer.Warn (Properties.Resources.Tracer_PacketChannelCompleted, this.clientId);
+					tracer.Warn (Properties.Resources.Tracer_PacketChannelCompleted, clientId);
 
-					if (!string.IsNullOrEmpty (this.clientId)) {
-						this.RemoveClient ();
+					if (!string.IsNullOrEmpty (clientId)) {
+						RemoveClient ();
 
-						var publishFlow = this.flowProvider.GetFlow<ServerPublishReceiverFlow> ();
+						var publishFlow = flowProvider.GetFlow<ServerPublishReceiverFlow> ();
 
-						await publishFlow.SendWillAsync (this.clientId)
-							.ConfigureAwait(continueOnCapturedContext: false);
+						await publishFlow.SendWillAsync (clientId)
+							.ConfigureAwait (continueOnCapturedContext: false);
 					}
-				
-					this.packets.OnCompleted ();	
+
+					packets.OnCompleted ();
 				});
 		}
 
-		private IDisposable ListenSentPackets()
+		IDisposable ListenSentPackets ()
 		{
-			return this.channel.Sender
+			return channel.Sender
 				.OfType<ConnectAck> ()
 				.FirstAsync ()
 				.Subscribe (connectAck => {
 					if (keepAlive > 0) {
-						this.MonitorKeepAliveAsync ();
+						MonitorKeepAliveAsync ();
 					}
 				});
 		}
 
-		private async Task HandleConnectionExceptionAsync(Exception exception)
+		async Task HandleConnectionExceptionAsync (Exception exception)
 		{
 			if (exception is TimeoutException) {
-				this.NotifyError (Properties.Resources.ServerPacketListener_NoConnectReceived, exception);
+				NotifyError (Properties.Resources.ServerPacketListener_NoConnectReceived, exception);
 			} else if (exception is MqttConnectionException) {
-				tracer.Error (exception, Properties.Resources.Tracer_ServerPacketListener_ConnectionError, this.clientId ?? "N/A");
+				tracer.Error (exception, Properties.Resources.Tracer_ServerPacketListener_ConnectionError, clientId ?? "N/A");
 
 				var connectEx = exception as MqttConnectionException;
 				var errorAck = new ConnectAck (connectEx.ReturnCode, existingSession: false);
 
 				try {
-					await this.channel.SendAsync (errorAck)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await channel.SendAsync (errorAck)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				} catch (Exception ex) {
-					this.NotifyError (ex);
+					NotifyError (ex);
 				}
 			} else {
-				this.NotifyError (exception);
+				NotifyError (exception);
 			}
 		}
 
-		private void MonitorKeepAliveAsync()
+		void MonitorKeepAliveAsync ()
 		{
-			var tolerance = this.GetKeepAliveTolerance ();
+			var tolerance = GetKeepAliveTolerance ();
 
-			var keepAliveSubscription = this.channel.Receiver
+			var keepAliveSubscription = channel.Receiver
 				.Timeout (tolerance)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;
 
 					if (timeEx == null) {
-						this.NotifyError (ex);
+						NotifyError (ex);
 					} else {
-						var message = string.Format (Properties.Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, this.clientId);
+						var message = string.Format (Properties.Resources.ServerPacketListener_KeepAliveTimeExceeded, tolerance, clientId);
 
-						this.NotifyError(message, timeEx);
+						NotifyError(message, timeEx);
 					}
 				});
 
-			this.disposable.Add (keepAliveSubscription);
+			disposable.Add (keepAliveSubscription);
 		}
-		
-		private TimeSpan GetKeepAliveTolerance()
+
+		TimeSpan GetKeepAliveTolerance ()
 		{
-			var tolerance = (int)Math.Round (this.keepAlive * 1.5, MidpointRounding.AwayFromZero);
+			var tolerance = (int)Math.Round (keepAlive * 1.5, MidpointRounding.AwayFromZero);
 
 			return TimeSpan.FromSeconds (tolerance);
 		}
 
-		private async Task DispatchPacketAsync(IPacket packet)
+		async Task DispatchPacketAsync (IPacket packet)
 		{
-			var flow = this.flowProvider.GetFlow (packet.Type);
+			var flow = flowProvider.GetFlow (packet.Type);
 
 			if (flow == null) {
 				return;
 			}
-			
+
 			try {
-				this.packets.OnNext (packet);
+				packets.OnNext (packet);
 
-				await this.flowRunner.Run (async () => {
+				await flowRunner.Run (async () => {
 					if (packet.Type == PacketType.Publish) {
-							var publish = packet as Publish;
+						var publish = packet as Publish;
 
-							tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType().Name, clientId, publish.Topic);
-						} else if (packet.Type == PacketType.Subscribe) {
-							var subscribe = packet as Subscribe;
-							var topics = subscribe.Subscriptions == null ? new List<string> () : subscribe.Subscriptions.Select (s => s.TopicFilter);
+						tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingPublish, flow.GetType ().Name, clientId, publish.Topic);
+					} else if (packet.Type == PacketType.Subscribe) {
+						var subscribe = packet as Subscribe;
+						var topics = subscribe.Subscriptions == null ? new List<string> () : subscribe.Subscriptions.Select (s => s.TopicFilter);
 
-							tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingSubscribe, flow.GetType().Name, clientId, string.Join(", ", topics));
-						} else {
-							tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
-						}
+						tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingSubscribe, flow.GetType ().Name, clientId, string.Join (", ", topics));
+					} else {
+						tracer.Info (Properties.Resources.Tracer_ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType ().Name, clientId);
+					}
 
-					await flow.ExecuteAsync (this.clientId, packet, this.channel)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await flow.ExecuteAsync (clientId, packet, channel)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				})
-				.ConfigureAwait(continueOnCapturedContext: false);
+				.ConfigureAwait (continueOnCapturedContext: false);
 			} catch (Exception ex) {
 				if (flow is ServerConnectFlow) {
-					this.HandleConnectionExceptionAsync (ex).Wait ();
+					HandleConnectionExceptionAsync (ex).Wait ();
 				} else {
-					this.NotifyError (ex);
+					NotifyError (ex);
 				}
 			}
 		}
 
-		private void NotifyError(Exception exception)
+		void NotifyError (Exception exception)
 		{
-			tracer.Error (exception, Properties.Resources.Tracer_ServerPacketListener_Error, this.clientId ?? "N/A");
-			
-			this.RemoveClient ();
-			
-			this.packets.OnError (exception);
+			tracer.Error (exception, Properties.Resources.Tracer_ServerPacketListener_Error, clientId ?? "N/A");
+
+			RemoveClient ();
+
+			packets.OnError (exception);
 		}
 
-		private void NotifyError(string message)
+		void NotifyError (string message)
 		{
-			this.NotifyError (new MqttException (message));
+			NotifyError (new MqttException (message));
 		}
 
-		private void NotifyError(string message, Exception exception)
+		void NotifyError (string message, Exception exception)
 		{
-			this.NotifyError (new MqttException (message, exception));
+			NotifyError (new MqttException (message, exception));
 		}
 
-		private void RemoveClient()
+		void RemoveClient ()
 		{
-			if (!string.IsNullOrEmpty (this.clientId)) {
-				this.connectionProvider.RemoveConnection (this.clientId);
+			if (!string.IsNullOrEmpty (clientId)) {
+				connectionProvider.RemoveConnection (clientId);
 			}
 		}
 	}

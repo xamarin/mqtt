@@ -9,11 +9,11 @@ namespace System.Net.Mqtt.Exceptions
 		{
 		}
 
-		public MqttViolationException (string message) : base(message)
+		public MqttViolationException (string message) : base (message)
 		{
 		}
 
-		public MqttViolationException (string message, Exception innerException) : base(message, innerException)
+		public MqttViolationException (string message, Exception innerException) : base (message, innerException)
 		{
 		}
 

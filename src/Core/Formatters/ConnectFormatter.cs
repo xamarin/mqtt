@@ -11,10 +11,10 @@ namespace System.Net.Mqtt.Formatters
 
 		protected override Connect Read (byte[] bytes)
 		{
-			this.ValidateHeaderFlag (bytes, t => t == PacketType.Connect, 0x00);
+			ValidateHeaderFlag (bytes, t => t == PacketType.Connect, 0x00);
 
 			var remainingLengthBytesLength = 0;
-			
+
 			Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
 
 			var protocolName = bytes.GetString (Protocol.PacketTypeLength + remainingLengthBytesLength);
@@ -52,7 +52,7 @@ namespace System.Net.Mqtt.Formatters
 
 			var userNameFlag = connectFlags.IsSet (7);
 			var passwordFlag = connectFlags.IsSet (6);
-			
+
 			if (!userNameFlag && passwordFlag)
 				throw new MqttException (Properties.Resources.ConnectFormatter_InvalidPasswordFlag);
 
@@ -73,7 +73,7 @@ namespace System.Net.Mqtt.Formatters
 			if (clientId.Length > Protocol.ClientIdMaxLength)
 				throw new MqttConnectionException (ConnectionStatus.IdentifierRejected, Properties.Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
-			if (!this.IsValidClientId (clientId)) {
+			if (!IsValidClientId (clientId)) {
 				var error = string.Format (Properties.Resources.ConnectFormatter_InvalidClientIdFormat, clientId);
 
 				throw new MqttConnectionException (ConnectionStatus.IdentifierRejected, error);
@@ -110,19 +110,19 @@ namespace System.Net.Mqtt.Formatters
 		{
 			var bytes = new List<byte> ();
 
-			var variableHeader = this.GetVariableHeader (packet);
-			var payload = this.GetPayload (packet);
+			var variableHeader = GetVariableHeader (packet);
+			var payload = GetPayload (packet);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
-			var fixedHeader = this.GetFixedHeader (remainingLength);
+			var fixedHeader = GetFixedHeader (remainingLength);
 
 			bytes.AddRange (fixedHeader);
 			bytes.AddRange (variableHeader);
 			bytes.AddRange (payload);
 
-			return bytes.ToArray();
+			return bytes.ToArray ();
 		}
 
-		private byte[] GetFixedHeader(byte[] remainingLength)
+		byte[] GetFixedHeader (byte[] remainingLength)
 		{
 			var fixedHeader = new List<byte> ();
 
@@ -134,10 +134,10 @@ namespace System.Net.Mqtt.Formatters
 			fixedHeader.Add (fixedHeaderByte1);
 			fixedHeader.AddRange (remainingLength);
 
-			return fixedHeader.ToArray();
+			return fixedHeader.ToArray ();
 		}
 
-		private byte[] GetVariableHeader(Connect packet)
+		byte[] GetVariableHeader (Connect packet)
 		{
 			var variableHeader = new List<byte> ();
 
@@ -171,10 +171,10 @@ namespace System.Net.Mqtt.Formatters
 			variableHeader.Add (keepAliveBytes[keepAliveBytes.Length - 2]);
 			variableHeader.Add (keepAliveBytes[keepAliveBytes.Length - 1]);
 
-			return variableHeader.ToArray();
+			return variableHeader.ToArray ();
 		}
 
-		private byte[] GetPayload(Connect packet)
+		byte[] GetPayload (Connect packet)
 		{
 			if (string.IsNullOrEmpty (packet.ClientId))
 				throw new MqttException (Properties.Resources.ConnectFormatter_ClientIdRequired);
@@ -182,7 +182,7 @@ namespace System.Net.Mqtt.Formatters
 			if (packet.ClientId.Length > Protocol.ClientIdMaxLength)
 				throw new MqttException (Properties.Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
-			if (!this.IsValidClientId (packet.ClientId)) {
+			if (!IsValidClientId (packet.ClientId)) {
 				var error = string.Format (Properties.Resources.ConnectFormatter_InvalidClientIdFormat, packet.ClientId);
 
 				throw new MqttException (error);
@@ -192,7 +192,7 @@ namespace System.Net.Mqtt.Formatters
 
 			var clientIdBytes = Protocol.Encoding.EncodeString(packet.ClientId);
 
-			payload.AddRange(clientIdBytes);
+			payload.AddRange (clientIdBytes);
 
 			if (packet.Will != null) {
 				var willTopicBytes = Protocol.Encoding.EncodeString(packet.Will.Topic);
@@ -220,7 +220,7 @@ namespace System.Net.Mqtt.Formatters
 			return payload.ToArray ();
 		}
 
-		private bool IsValidClientId(string clientId)
+		bool IsValidClientId (string clientId)
 		{
 			var regex = new Regex ("^[a-zA-Z0-9]+$");
 

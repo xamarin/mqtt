@@ -22,7 +22,7 @@ namespace Tests
 		[Fact]
 		public void when_encoding_string_with_exceeded_length_then_fails()
 		{
-			var text = this.GetRandomString (size: 65537);
+			var text = GetRandomString (size: 65537);
 
 			Assert.Throws<MqttException>(() => Protocol.Encoding.EncodeString (text));
 		}
@@ -271,7 +271,7 @@ namespace Tests
 			Assert.Throws<MqttException> (() => Protocol.Encoding.DecodeRemainingLength (bytes.ToArray (), out arrayLength));
 		}
 
-		private string GetRandomString(int size)
+		string GetRandomString(int size)
 		{
 			var random = new Random();
 			var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

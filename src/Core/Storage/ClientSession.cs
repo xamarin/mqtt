@@ -6,9 +6,9 @@ namespace System.Net.Mqtt.Storage
 	{
 		public ClientSession ()
 		{
-			this.Subscriptions = new List<ClientSubscription> ();
-			this.PendingMessages = new List<PendingMessage> ();
-			this.PendingAcknowledgements = new List<PendingAcknowledgement> ();
+			Subscriptions = new List<ClientSubscription> ();
+			PendingMessages = new List<PendingMessage> ();
+			PendingAcknowledgements = new List<PendingAcknowledgement> ();
 		}
 
 		public string ClientId { get; set; }
@@ -22,4 +22,3 @@ namespace System.Net.Mqtt.Storage
 		public List<PendingAcknowledgement> PendingAcknowledgements { get; set; }
 	}
 }
- 

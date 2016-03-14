@@ -23,13 +23,13 @@ namespace System.Net.Mqtt.Flows
 		public ServerPublishReceiverFlow (ITopicEvaluator topicEvaluator,
 			IConnectionProvider connectionProvider,
 			IPublishSenderFlow senderFlow,
-			IRepository<RetainedMessage> retainedRepository, 
+			IRepository<RetainedMessage> retainedRepository,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
 			IPacketIdProvider packetIdProvider,
 			IEventStream eventStream,
 			ProtocolConfiguration configuration)
-			: base(topicEvaluator, retainedRepository, sessionRepository, configuration)
+			: base (topicEvaluator, retainedRepository, sessionRepository, configuration)
 		{
 			this.connectionProvider = connectionProvider;
 			this.senderFlow = senderFlow;
@@ -41,10 +41,10 @@ namespace System.Net.Mqtt.Flows
 		protected override async Task ProcessPublishAsync (Publish publish, string clientId)
 		{
 			if (publish.Retain) {
-				var existingRetainedMessage = this.retainedRepository.Get(r => r.Topic == publish.Topic);
+				var existingRetainedMessage = retainedRepository.Get(r => r.Topic == publish.Topic);
 
-				if(existingRetainedMessage != null) {
-					this.retainedRepository.Delete(existingRetainedMessage);
+				if (existingRetainedMessage != null) {
+					retainedRepository.Delete (existingRetainedMessage);
 				}
 
 				if (publish.Payload.Length > 0) {
@@ -54,17 +54,17 @@ namespace System.Net.Mqtt.Flows
 						Payload = publish.Payload
 					};
 
-					this.retainedRepository.Create(retainedMessage);
+					retainedRepository.Create (retainedMessage);
 				}
 			}
 
-			await this.DispatchAsync (publish, clientId)
-				.ConfigureAwait(continueOnCapturedContext: false);
+			await DispatchAsync (publish, clientId)
+				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		internal async Task SendWillAsync(string clientId)
+		internal async Task SendWillAsync (string clientId)
 		{
-			var will = this.willRepository.Get (w => w.ClientId == clientId);
+			var will = willRepository.Get (w => w.ClientId == clientId);
 
 			if (will != null && will.Will != null) {
 				var willPublish = new Publish (will.Will.Topic, will.Will.QualityOfService, will.Will.Retain, duplicated: false) {
@@ -73,43 +73,43 @@ namespace System.Net.Mqtt.Flows
 
 				tracer.Info (Props.Resources.Tracer_ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
 
-				await this.DispatchAsync(willPublish, clientId, isWill: true)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await DispatchAsync (willPublish, clientId, isWill: true)
+					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}
 
-		private async Task DispatchAsync (Publish publish, string clientId, bool isWill = false)
+		async Task DispatchAsync (Publish publish, string clientId, bool isWill = false)
 		{
-			var subscriptions = this.sessionRepository
+			var subscriptions = sessionRepository
 				.GetAll ().ToList ()
 				.SelectMany (s => s.GetSubscriptions ())
-				.Where (x => this.topicEvaluator.Matches (publish.Topic, x.TopicFilter));
+				.Where (x => topicEvaluator.Matches (publish.Topic, x.TopicFilter));
 
 			if (!subscriptions.Any ()) {
 				tracer.Verbose (Props.Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
-				this.eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId, Payload = publish.Payload });
+				eventStream.Push (new TopicNotSubscribed { Topic = publish.Topic, SenderId = clientId, Payload = publish.Payload });
 			} else {
 				foreach (var subscription in subscriptions) {
-					await this.DispatchAsync (publish, subscription, isWill)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await DispatchAsync (publish, subscription, isWill)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				}
 			}
 		}
 
-		private async Task DispatchAsync (Publish publish, ClientSubscription subscription, bool isWill = false)
+		async Task DispatchAsync (Publish publish, ClientSubscription subscription, bool isWill = false)
 		{
 			var requestedQos = isWill ? publish.QualityOfService : subscription.MaximumQualityOfService;
 			var supportedQos = configuration.GetSupportedQos(requestedQos);
 			var retain = isWill ? publish.Retain : false;
-			ushort? packetId = supportedQos == QualityOfService.AtMostOnce ? null : (ushort?)this.packetIdProvider.GetPacketId ();
+			ushort? packetId = supportedQos == QualityOfService.AtMostOnce ? null : (ushort?)packetIdProvider.GetPacketId ();
 			var subscriptionPublish = new Publish (publish.Topic, supportedQos, retain, duplicated: false, packetId: packetId) {
 				Payload = publish.Payload
 			};
-			var clientChannel = this.connectionProvider.GetConnection (subscription.ClientId);
+			var clientChannel = connectionProvider.GetConnection (subscription.ClientId);
 
-			await this.senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, clientChannel)
-				.ConfigureAwait(continueOnCapturedContext: false);
+			await senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, clientChannel)
+				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 	}
 }

@@ -21,15 +21,15 @@ namespace IntegrationTests
 
 		public ConnectionSpec ()
 		{
-			this.server = this.GetServer ();
+			server = GetServer ();
 		}
 
 		[Fact]
 		public void when_stopping_server_then_it_is_not_reachable()
 		{
-			this.server.Stop ();
+			server.Stop ();
 
-			var ex = Assert.Throws<ClientException>(() => this.GetClient ());
+			var ex = Assert.Throws<ClientException>(() => GetClient ());
 
 			Assert.NotNull (ex);
 			Assert.NotNull (ex.InnerException);
@@ -39,11 +39,11 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
 		{
-			var fooClient = this.GetClient ();
-			var barClient = this.GetClient ();
+			var fooClient = GetClient ();
+			var barClient = GetClient ();
 
-			await fooClient.ConnectAsync (new ClientCredentials (this.GetClientId ()));
-			await barClient.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await fooClient.ConnectAsync (new ClientCredentials (GetClientId ()));
+			await barClient.ConnectAsync (new ClientCredentials (GetClientId ()));
 
 			var exceptionThrown = false;
 
@@ -75,14 +75,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_connect_clients_then_succeeds()
 		{
-			var count = this.GetTestLoad ();
+			var count = GetTestLoad ();
 			var clients = new List<IClient> ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var client = this.GetClient ();
+				var client = GetClient ();
 
-				tasks.Add (client.ConnectAsync (new ClientCredentials (this.GetClientId ())));
+				tasks.Add (client.ConnectAsync (new ClientCredentials (GetClientId ())));
 				clients.Add (client);
 			}
 
@@ -100,14 +100,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_disconnect_clients_then_succeeds()
 		{
-			var count = this.GetTestLoad ();
+			var count = GetTestLoad ();
 			var clients = new List<IClient> ();
 			var connectTasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var client = this.GetClient ();
+				var client = GetClient ();
 
-				connectTasks.Add(client.ConnectAsync (new ClientCredentials (this.GetClientId ())));
+				connectTasks.Add(client.ConnectAsync (new ClientCredentials (GetClientId ())));
 				clients.Add (client);
 			}
 
@@ -141,9 +141,9 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_disconnect_client_then_server_decrease_active_client_list()
 		{
-			var client = this.GetClient ();
+			var client = GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+			await client.ConnectAsync (new ClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
@@ -189,9 +189,9 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_client_disconnects_by_protocol_then_will_message_is_not_sent()
 		{
-			var client1 = this.GetClient ();
-			var client2 = this.GetClient ();
-			var client3 = this.GetClient ();
+			var client1 = GetClient ();
+			var client2 = GetClient ();
+			var client3 = GetClient ();
 
 			var topic = Guid.NewGuid ().ToString ();
 			var qos = QualityOfService.ExactlyOnce;
@@ -199,9 +199,9 @@ namespace IntegrationTests
 			var message = "Client 1 has been disconnected unexpectedly";
 			var will = new Will(topic, qos, retain, message);
 
-			await client1.ConnectAsync (new ClientCredentials (this.GetClientId ()), will);
-			await client2.ConnectAsync (new ClientCredentials (this.GetClientId ()));
-			await client3.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await client1.ConnectAsync (new ClientCredentials (GetClientId ()), will);
+			await client2.ConnectAsync (new ClientCredentials (GetClientId ()));
+			await client3.ConnectAsync (new ClientCredentials (GetClientId ()));
 
 			await client2.SubscribeAsync(topic, QualityOfService.AtMostOnce);
 			await client3.SubscribeAsync(topic, QualityOfService.AtLeastOnce);
@@ -233,9 +233,9 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_client_disconnects_unexpectedly_then_will_message_is_sent()
 		{
-			var client1 = this.GetClient ();
-			var client2 = this.GetClient ();
-			var client3 = this.GetClient ();
+			var client1 = GetClient ();
+			var client2 = GetClient ();
+			var client3 = GetClient ();
 
 			var topic = Guid.NewGuid ().ToString ();
 			var qos = QualityOfService.ExactlyOnce;
@@ -243,9 +243,9 @@ namespace IntegrationTests
 			var message = "Client 1 has been disconnected unexpectedly";
 			var will = new Will(topic, qos, retain, message);
 
-			await client1.ConnectAsync (new ClientCredentials (this.GetClientId ()), will);
-			await client2.ConnectAsync (new ClientCredentials (this.GetClientId ()));
-			await client3.ConnectAsync (new ClientCredentials (this.GetClientId ()));
+			await client1.ConnectAsync (new ClientCredentials (GetClientId ()), will);
+			await client2.ConnectAsync (new ClientCredentials (GetClientId ()));
+			await client3.ConnectAsync (new ClientCredentials (GetClientId ()));
 
 			await client2.SubscribeAsync(topic, QualityOfService.AtMostOnce);
 			await client3.SubscribeAsync(topic, QualityOfService.AtLeastOnce);
@@ -282,8 +282,8 @@ namespace IntegrationTests
 
 		public void Dispose ()
 		{
-			if (this.server != null) {
-				this.server.Stop ();
+			if (server != null) {
+				server.Stop ();
 			}
 		}
 	}

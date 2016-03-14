@@ -7,51 +7,62 @@ namespace System.Net.Mqtt
 {
 	internal sealed class SingleThreadScheduler : TaskScheduler, IDisposable
 	{
-		private BlockingCollection<Task> tasks;
-		private readonly Thread thread;
+		readonly Thread thread;
+		BlockingCollection<Task> tasks;
+		bool disposed;
 
 		public SingleThreadScheduler (string name = null)
-		{ 
-			this.tasks = new BlockingCollection<Task> (); 
-			this.thread = new Thread (() => { 
-				foreach (var task in this.tasks.GetConsumingEnumerable()) { 
-					TryExecuteTask (task); 
-				} 
-			}); 
-			this.thread.IsBackground = true; 
-			this.thread.SetApartmentState (ApartmentState.STA);
+		{
+			tasks = new BlockingCollection<Task> ();
+			thread = new Thread (() => {
+				foreach (var task in tasks.GetConsumingEnumerable ()) {
+					TryExecuteTask (task);
+				}
+			});
+			thread.IsBackground = true;
+			thread.SetApartmentState (ApartmentState.STA);
 
-			if (this.thread.Name == null && !string.IsNullOrEmpty (name)) {
-				this.thread.Name = name;
+			if (thread.Name == null && !string.IsNullOrEmpty (name)) {
+				thread.Name = name;
 			}
 
-			this.thread.Start ();
+			thread.Start ();
 		}
 
 		public override int MaximumConcurrencyLevel { get { return 1; } }
 
 		protected override void QueueTask (Task task)
-		{ 
-			this.tasks.Add (task); 
+		{
+			tasks.Add (task);
 		}
 
 		protected override IEnumerable<Task> GetScheduledTasks ()
-		{ 
-			return this.tasks.ToArray (); 
+		{
+			return tasks.ToArray ();
 		}
 
 		protected override bool TryExecuteTaskInline (Task task, bool taskWasPreviouslyQueued)
-		{ 
-			return Thread.CurrentThread.GetApartmentState () == ApartmentState.STA && TryExecuteTask (task); 
+		{
+			return Thread.CurrentThread.GetApartmentState () == ApartmentState.STA && TryExecuteTask (task);
 		}
 
 		public void Dispose ()
-		{ 
-			if (this.tasks != null) { 
-				this.tasks.CompleteAdding (); 
-				this.thread.Join (); 
-				this.tasks = null; 
-			} 
+		{
+			Dispose (disposing: true);
+			GC.SuppressFinalize (this);
+		}
+
+		void Dispose (bool disposing)
+		{
+			if (disposing) {
+				if (tasks != null) {
+					tasks.CompleteAdding ();
+					thread.Join ();
+					tasks = null;
+				}
+
+				disposed = true;
+			}
 		}
 	}
 }
