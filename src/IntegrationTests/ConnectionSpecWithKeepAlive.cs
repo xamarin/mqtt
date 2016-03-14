@@ -17,15 +17,15 @@ namespace IntegrationTests
 		public ConnectionSpecWithKeepAlive () 
 			: base(keepAliveSecs: 1)
 		{
-			this.server = this.GetServer ();
+			server = GetServer ();
 		}
 
 		[Fact]
 		public async Task when_keep_alive_enabled_and_client_is_disposed_then_server_refresh_active_client_list()
 		{
-			var client = this.GetClient ();
+			var client = GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+			await client.ConnectAsync (new ClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
@@ -57,7 +57,7 @@ namespace IntegrationTests
 
 			client.Close ();
 
-			var serverDetectedClientClosed = clientClosed.Wait (TimeSpan.FromSeconds(this.keepAliveSecs * 2));
+			var serverDetectedClientClosed = clientClosed.Wait (TimeSpan.FromSeconds(keepAliveSecs * 2));
 
 			subscription.Dispose ();
 
@@ -69,12 +69,12 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_keep_alive_enabled_and_no_packets_are_sent_then_connection_is_maintained()
 		{
-			var client = this.GetClient ();
+			var client = GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials (this.GetClientId ()))
+			await client.ConnectAsync (new ClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Thread.Sleep (TimeSpan.FromSeconds(this.keepAliveSecs * 5));
+			Thread.Sleep (TimeSpan.FromSeconds(keepAliveSecs * 5));
 
 			Assert.Equal (1, server.ActiveClients.Count ());
 			Assert.True(client.IsConnected);
@@ -85,8 +85,8 @@ namespace IntegrationTests
 
 		public void Dispose ()
 		{
-			if (this.server != null) {
-				this.server.Stop ();
+			if (server != null) {
+				server.Stop ();
 			}
 		}
 	}

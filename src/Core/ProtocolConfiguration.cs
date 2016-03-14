@@ -6,15 +6,15 @@ namespace System.Net.Mqtt
 	{
 		public ProtocolConfiguration ()
 		{
-			this.Port = Protocol.DefaultNonSecurePort;
+			Port = Protocol.DefaultNonSecurePort;
 			// The default receive buffer size of TcpClient according to
 			// http://msdn.microsoft.com/en-us/library/system.net.sockets.tcpclient.receivebuffersize.aspx
 			// is 8192 bytes
-			this.BufferSize = 8192;
-			this.MaximumQualityOfService = QualityOfService.AtMostOnce;
-			this.KeepAliveSecs = 0;
-			this.WaitingTimeoutSecs = 5;
-			this.AllowWildcardsInTopicFilters = true;
+			BufferSize = 8192;
+			MaximumQualityOfService = QualityOfService.AtMostOnce;
+			KeepAliveSecs = 0;
+			WaitingTimeoutSecs = 5;
+			AllowWildcardsInTopicFilters = true;
 		}
 
 		public int Port { get; set; }

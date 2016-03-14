@@ -1,16 +1,16 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
 	internal class ConnectAck : IPacket, IEquatable<ConnectAck>
-    {
-        public ConnectAck(ConnectionStatus status, bool existingSession)
-        {
-            this.Status = status;
-			this.SessionPresent = existingSession;
-        }
+	{
+		public ConnectAck (ConnectionStatus status, bool existingSession)
+		{
+			Status = status;
+			SessionPresent = existingSession;
+		}
 
-		public PacketType Type { get { return PacketType.ConnectAck; }}
+		public PacketType Type { get { return PacketType.ConnectAck; } }
 
-        public ConnectionStatus Status { get; private set; }
+		public ConnectionStatus Status { get; private set; }
 
 		public bool SessionPresent { get; private set; }
 
@@ -19,8 +19,8 @@
 			if (other == null)
 				return false;
 
-			return this.Status == other.Status &&
-				this.SessionPresent == other.SessionPresent;
+			return Status == other.Status &&
+				SessionPresent == other.SessionPresent;
 		}
 
 		public override bool Equals (object obj)
@@ -33,28 +33,28 @@
 			if (connectAck == null)
 				return false;
 
-			return this.Equals (connectAck);
+			return Equals (connectAck);
 		}
 
 		public static bool operator == (ConnectAck connectAck, ConnectAck other)
 		{
 			if ((object)connectAck == null || (object)other == null)
-				return Object.Equals(connectAck, other);
+				return Object.Equals (connectAck, other);
 
-			return connectAck.Equals(other);
+			return connectAck.Equals (other);
 		}
 
 		public static bool operator != (ConnectAck connectAck, ConnectAck other)
 		{
 			if ((object)connectAck == null || (object)other == null)
-				return !Object.Equals(connectAck, other);
+				return !Object.Equals (connectAck, other);
 
-			return !connectAck.Equals(other);
+			return !connectAck.Equals (other);
 		}
 
 		public override int GetHashCode ()
 		{
-			return this.Status.GetHashCode () + this.SessionPresent.GetHashCode ();
+			return Status.GetHashCode () + SessionPresent.GetHashCode ();
 		}
 	}
 }

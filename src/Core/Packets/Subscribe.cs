@@ -4,26 +4,26 @@ using System.Linq;
 namespace System.Net.Mqtt.Packets
 {
 	internal class Subscribe : IFlowPacket, IEquatable<Subscribe>
-    {
-        public Subscribe(ushort packetId, params Subscription[] subscriptions)
-        {
-			this.PacketId = packetId;
-            this.Subscriptions = subscriptions;
-        }
+	{
+		public Subscribe (ushort packetId, params Subscription[] subscriptions)
+		{
+			PacketId = packetId;
+			Subscriptions = subscriptions;
+		}
 
-		public PacketType Type { get { return PacketType.Subscribe; }}
+		public PacketType Type { get { return PacketType.Subscribe; } }
 
-        public ushort PacketId { get; private set; }
+		public ushort PacketId { get; private set; }
 
-        public IEnumerable<Subscription> Subscriptions { get; private set; }
+		public IEnumerable<Subscription> Subscriptions { get; private set; }
 
 		public bool Equals (Subscribe other)
 		{
 			if (other == null)
 				return false;
 
-			return this.PacketId == other.PacketId &&
-				this.Subscriptions.SequenceEqual(other.Subscriptions);
+			return PacketId == other.PacketId &&
+				Subscriptions.SequenceEqual (other.Subscriptions);
 		}
 
 		public override bool Equals (object obj)
@@ -36,28 +36,28 @@ namespace System.Net.Mqtt.Packets
 			if (subscribe == null)
 				return false;
 
-			return this.Equals (subscribe);
+			return Equals (subscribe);
 		}
 
 		public static bool operator == (Subscribe subscribe, Subscribe other)
 		{
 			if ((object)subscribe == null || (object)other == null)
-				return Object.Equals(subscribe, other);
+				return Object.Equals (subscribe, other);
 
-			return subscribe.Equals(other);
+			return subscribe.Equals (other);
 		}
 
 		public static bool operator != (Subscribe subscribe, Subscribe other)
 		{
 			if ((object)subscribe == null || (object)other == null)
-				return !Object.Equals(subscribe, other);
+				return !Object.Equals (subscribe, other);
 
-			return !subscribe.Equals(other);
+			return !subscribe.Equals (other);
 		}
 
 		public override int GetHashCode ()
 		{
-			return this.PacketId.GetHashCode () + this.Subscriptions.GetHashCode ();
+			return PacketId.GetHashCode () + Subscriptions.GetHashCode ();
 		}
 	}
 }

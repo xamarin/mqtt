@@ -14,13 +14,13 @@ namespace IntegrationTests
 
 		public SubscriptionSpec ()
 		{
-			this.server = this.GetServer ();
+			server = GetServer ();
 		}
 
 		[Fact]
 		public async Task when_subscribe_topic_then_succeeds()
 		{
-			var client = this.GetClient ();
+			var client = GetClient ();
 			var topicFilter = Guid.NewGuid ().ToString () + "/#";
 
 			await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
@@ -36,8 +36,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_subscribe_multiple_topics_then_succeeds()
 		{
-			var client = this.GetClient ();
-			var topicsToSubscribe = this.GetTestLoad();
+			var client = GetClient ();
+			var topicsToSubscribe = GetTestLoad();
 			var topics = new List<string> ();
 			var tasks = new List<Task> ();
 
@@ -60,8 +60,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_unsubscribe_topic_then_succeeds()
 		{
-			var client = this.GetClient ();
-			var topicsToSubscribe = this.GetTestLoad();
+			var client = GetClient ();
+			var topicsToSubscribe = GetTestLoad();
 			var topics = new List<string> ();
 			var tasks = new List<Task> ();
 
@@ -83,8 +83,8 @@ namespace IntegrationTests
 
 		public void Dispose ()
 		{
-			if (this.server != null) {
-				this.server.Stop ();
+			if (server != null) {
+				server.Stop ();
 			}
 		}
 	}

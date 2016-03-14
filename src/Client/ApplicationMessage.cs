@@ -9,12 +9,12 @@
 
 		public ApplicationMessage (string topic, byte[] payload)
 		{
-			this.Topic = topic;
-			this.Payload = payload;
+			Topic = topic;
+			Payload = payload;
 		}
 
-        public string Topic { get; set; }
+		public string Topic { get; set; }
 
-        public byte[] Payload { get; set; }
+		public byte[] Payload { get; set; }
 	}
 }

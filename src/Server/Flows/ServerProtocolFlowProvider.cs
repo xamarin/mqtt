@@ -20,7 +20,7 @@ namespace System.Net.Mqtt.Flows
 			IPacketIdProvider packetIdProvider,
 			IEventStream eventStream,
 			ProtocolConfiguration configuration)
-			: base(topicEvaluator, repositoryProvider, configuration)
+			: base (topicEvaluator, repositoryProvider, configuration)
 		{
 			this.authenticationProvider = authenticationProvider;
 			this.connectionProvider = connectionProvider;
@@ -37,15 +37,15 @@ namespace System.Net.Mqtt.Flows
 			var retainedRepository = repositoryProvider.GetRepository<RetainedMessage> ();
 			var senderFlow = new PublishSenderFlow (sessionRepository, configuration);
 
-			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (this.authenticationProvider, sessionRepository, willRepository, senderFlow));
+			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (authenticationProvider, sessionRepository, willRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
 			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (topicEvaluator, connectionProvider,
 				senderFlow, retainedRepository, sessionRepository, willRepository, packetIdProvider, eventStream, configuration));
-			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository, 
+			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository,
 				retainedRepository, packetIdProvider, senderFlow, configuration));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (sessionRepository));
 			flows.Add (ProtocolFlowType.Ping, new PingFlow ());
-			flows.Add (ProtocolFlowType.Disconnect, new DisconnectFlow (this.connectionProvider, sessionRepository, willRepository));
+			flows.Add (ProtocolFlowType.Disconnect, new DisconnectFlow (connectionProvider, sessionRepository, willRepository));
 
 			return flows;
 		}

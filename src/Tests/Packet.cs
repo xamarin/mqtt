@@ -82,12 +82,12 @@ namespace Tests
 			return Deserialize (text, type);
 		}
 
-		private static T Deserialize<T>(string serialized)
+		static T Deserialize<T>(string serialized)
         {
 			return JsonConvert.DeserializeObject<T> (serialized, new StringByteArrayConverter());
         }
 
-		private static object Deserialize(string serialized, Type type)
+		static object Deserialize(string serialized, Type type)
         {
 			return JsonConvert.DeserializeObject (serialized, type, new StringByteArrayConverter());
         }

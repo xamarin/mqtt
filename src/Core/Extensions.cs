@@ -5,7 +5,7 @@ namespace System.Net.Mqtt
 {
 	internal static class Extensions
 	{
-		internal static ProtocolFlowType ToFlowType(this PacketType packetType)
+		internal static ProtocolFlowType ToFlowType (this PacketType packetType)
 		{
 			var flowType = default (ProtocolFlowType);
 
@@ -43,14 +43,14 @@ namespace System.Net.Mqtt
 			return flowType;
 		}
 
-		internal static QualityOfService GetSupportedQos(this ProtocolConfiguration configuration, QualityOfService requestedQos)
+		internal static QualityOfService GetSupportedQos (this ProtocolConfiguration configuration, QualityOfService requestedQos)
 		{
 			return requestedQos > configuration.MaximumQualityOfService ?
-				configuration.MaximumQualityOfService : 
+				configuration.MaximumQualityOfService :
 				requestedQos;
 		}
 
-		internal static SubscribeReturnCode ToReturnCode(this QualityOfService qos)
+		internal static SubscribeReturnCode ToReturnCode (this QualityOfService qos)
 		{
 			var returnCode = default (SubscribeReturnCode);
 

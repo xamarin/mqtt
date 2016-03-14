@@ -12,13 +12,13 @@ namespace System.Net.Mqtt
 		readonly IDictionary<PacketType, IFormatter> formatters;
 
 		public PacketManager (params IFormatter[] formatters)
-			: this((IEnumerable<IFormatter>)formatters)
+			: this ((IEnumerable<IFormatter>)formatters)
 		{
 		}
 
 		public PacketManager (IEnumerable<IFormatter> formatters)
 		{
-			this.formatters = formatters.ToDictionary(f => f.PacketType);
+			this.formatters = formatters.ToDictionary (f => f.PacketType);
 		}
 
 		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
@@ -29,7 +29,7 @@ namespace System.Net.Mqtt
 			var packetType = (PacketType)bytes.Byte (0).Bits (4);
 			var formatter = default (IFormatter);
 
-			if (!formatters.TryGetValue(packetType, out formatter))
+			if (!formatters.TryGetValue (packetType, out formatter))
 				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var packet = await formatter.FormatAsync (bytes)
@@ -45,7 +45,7 @@ namespace System.Net.Mqtt
 		{
 			var formatter = default (IFormatter);
 
-			if (!formatters.TryGetValue(packet.Type, out formatter))
+			if (!formatters.TryGetValue (packet.Type, out formatter))
 				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var bytes = await formatter.FormatAsync (packet)

@@ -22,10 +22,10 @@ namespace System.Net.Mqtt.Flows
 			}
 
 			var unsubscribe = input as Unsubscribe;
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			foreach (var topic in unsubscribe.Topics) {
@@ -36,10 +36,10 @@ namespace System.Net.Mqtt.Flows
 				}
 			}
 
-			this.sessionRepository.Update(session);
+			sessionRepository.Update (session);
 
-			await channel.SendAsync(new UnsubscribeAck (unsubscribe.PacketId))
-				.ConfigureAwait(continueOnCapturedContext: false);
+			await channel.SendAsync (new UnsubscribeAck (unsubscribe.PacketId))
+				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 	}
 }

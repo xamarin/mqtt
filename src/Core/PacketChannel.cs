@@ -23,59 +23,59 @@ namespace System.Net.Mqtt
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 
-			this.receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			this.sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			this.subscription = innerChannel.Receiver
+			receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			subscription = innerChannel.Receiver
 				.Subscribe (async bytes => {
 					try {
 						var packet = await this.manager.GetPacketAsync (bytes)
 							.ConfigureAwait(continueOnCapturedContext: false);
 
-						this.receiver.OnNext (packet);
+						receiver.OnNext (packet);
 					} catch (MqttException ex) {
-						this.receiver.OnError (ex);
+						receiver.OnError (ex);
 					}
-			}, onError: ex => this.receiver.OnError (ex), onCompleted: () => this.receiver.OnCompleted());
+				}, onError: ex => receiver.OnError (ex), onCompleted: () => receiver.OnCompleted ());
 		}
 
 		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }
 
-		public IObservable<IPacket> Receiver { get { return this.receiver; } }
+		public IObservable<IPacket> Receiver { get { return receiver; } }
 
-		public IObservable<IPacket> Sender { get { return this.sender; } }
+		public IObservable<IPacket> Sender { get { return sender; } }
 
 		public async Task SendAsync (IPacket packet)
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
-			var bytes = await this.manager.GetBytesAsync (packet)
+			var bytes = await manager.GetBytesAsync (packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			this.sender.OnNext (packet);
+			sender.OnNext (packet);
 
-			await this.innerChannel.SendAsync (bytes)
-				.ConfigureAwait(continueOnCapturedContext: false);
+			await innerChannel.SendAsync (bytes)
+				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
 		public void Dispose ()
 		{
-			this.Dispose (true);
+			Dispose (true);
 			GC.SuppressFinalize (this);
 		}
 
 		protected virtual void Dispose (bool disposing)
 		{
-			if (this.disposed) return;
+			if (disposed) return;
 
 			if (disposing) {
-				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, GetType ().FullName);
 
-				this.subscription.Dispose ();
-				this.receiver.OnCompleted ();
-				this.innerChannel.Dispose ();
-				this.disposed = true;
+				subscription.Dispose ();
+				receiver.OnCompleted ();
+				innerChannel.Dispose ();
+				disposed = true;
 			}
 		}
 	}

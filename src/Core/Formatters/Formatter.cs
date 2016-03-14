@@ -26,7 +26,7 @@ namespace System.Net.Mqtt.Formatters
 				throw new MqttException (error);
 			}
 
-			var packet = await Task.Run(() => this.Read (bytes))
+			var packet = await Task.Run(() => Read (bytes))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return packet;
@@ -43,7 +43,7 @@ namespace System.Net.Mqtt.Formatters
 				throw new MqttException (error);
 			}
 
-			var bytes = await Task.Run(() => this.Write (packet as T))
+			var bytes = await Task.Run(() => Write (packet as T))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return bytes;
@@ -53,7 +53,7 @@ namespace System.Net.Mqtt.Formatters
 		{
 			var headerFlag = bytes.Byte (0).Bits (5, 4);
 
-			if (packetTypePredicate(this.PacketType) && headerFlag != expectedFlag) {
+			if (packetTypePredicate (PacketType) && headerFlag != expectedFlag) {
 				var error = string.Format (Properties.Resources.Formatter_InvalidHeaderFlag, headerFlag, typeof(T).Name, expectedFlag);
 
 				throw new MqttException (error);

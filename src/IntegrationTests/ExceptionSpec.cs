@@ -14,7 +14,7 @@ namespace IntegrationTests
 		[Fact]
 		public void when_connecting_client_to_non_existing_server_then_fails()
 		{
-			var clientException = Assert.Throws<ClientException>(() => this.GetClient ());
+			var clientException = Assert.Throws<ClientException>(() => GetClient ());
 
 			Assert.NotNull (clientException);
 			Assert.NotNull (clientException.InnerException);
@@ -26,10 +26,10 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_server_is_closed_then_error_occurs_when_client_send_message()
 		{
-			var server = this.GetServer ();
-			var client = this.GetClient ();
+			var server = GetServer ();
+			var client = GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials(this.GetClientId()))
+			await client.ConnectAsync (new ClientCredentials(GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			server.Stop ();

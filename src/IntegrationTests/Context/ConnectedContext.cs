@@ -13,7 +13,7 @@ namespace IntegrationTests.Context
 		{
 			var client = base.GetClient ();
 
-			client.ConnectAsync (new ClientCredentials (this.GetClientId ())).Wait ();
+			client.ConnectAsync (new ClientCredentials (GetClientId ())).Wait ();
 
 			return client;
 		}

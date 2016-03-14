@@ -16,8 +16,8 @@ namespace System.Net.Mqtt.Flows
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 
-		public DisconnectFlow (IConnectionProvider connectionProvider, 
-			IRepository<ClientSession> sessionRepository, 
+		public DisconnectFlow (IConnectionProvider connectionProvider,
+			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository)
 		{
 			this.connectionProvider = connectionProvider;
@@ -36,21 +36,21 @@ namespace System.Net.Mqtt.Flows
 
 				tracer.Info (Props.Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
 
-				this.willRepository.Delete (w => w.ClientId == clientId);
+				willRepository.Delete (w => w.ClientId == clientId);
 
-				var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+				var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 				if (session == null) {
-					throw new MqttException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+					throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 				}
 
 				if (session.Clean) {
-					this.sessionRepository.Delete (session);
+					sessionRepository.Delete (session);
 
 					tracer.Info (Props.Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
 				}
 
-				this.connectionProvider.RemoveConnection (clientId);
+				connectionProvider.RemoveConnection (clientId);
 			});
 		}
 	}

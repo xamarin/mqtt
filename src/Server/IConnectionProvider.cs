@@ -4,7 +4,7 @@ using System.Net.Mqtt.Packets;
 namespace System.Net.Mqtt.Server
 {
 	internal interface IConnectionProvider
-    {
+	{
 		int Connections { get; }
 
 		IEnumerable<string> ActiveClients { get; }
@@ -13,6 +13,6 @@ namespace System.Net.Mqtt.Server
 
 		IChannel<IPacket> GetConnection (string clientId);
 
-		void RemoveConnection(string clientId);
-    }
+		void RemoveConnection (string clientId);
+	}
 }

@@ -4,7 +4,7 @@
 	{
 		public StorageObject ()
 		{
-			this.Id = Guid.NewGuid ().ToString ();
+			Id = Guid.NewGuid ().ToString ();
 		}
 
 		public string Id { get; private set; }

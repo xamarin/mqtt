@@ -1,22 +1,22 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
 	internal class UnsubscribeAck : IFlowPacket, IEquatable<UnsubscribeAck>
-    {
-        public UnsubscribeAck(ushort packetId)
-        {
-            this.PacketId = packetId;
-        }
+	{
+		public UnsubscribeAck (ushort packetId)
+		{
+			PacketId = packetId;
+		}
 
-		public PacketType Type { get { return PacketType.UnsubscribeAck; }}
+		public PacketType Type { get { return PacketType.UnsubscribeAck; } }
 
-        public ushort PacketId { get; private set; }
+		public ushort PacketId { get; private set; }
 
 		public bool Equals (UnsubscribeAck other)
 		{
 			if (other == null)
 				return false;
 
-			return this.PacketId == other.PacketId;
+			return PacketId == other.PacketId;
 		}
 
 		public override bool Equals (object obj)
@@ -29,28 +29,28 @@
 			if (unsubscribeAck == null)
 				return false;
 
-			return this.Equals (unsubscribeAck);
+			return Equals (unsubscribeAck);
 		}
 
 		public static bool operator == (UnsubscribeAck unsubscribeAck, UnsubscribeAck other)
 		{
 			if ((object)unsubscribeAck == null || (object)other == null)
-				return Object.Equals(unsubscribeAck, other);
+				return Object.Equals (unsubscribeAck, other);
 
-			return unsubscribeAck.Equals(other);
+			return unsubscribeAck.Equals (other);
 		}
 
 		public static bool operator != (UnsubscribeAck unsubscribeAck, UnsubscribeAck other)
 		{
 			if ((object)unsubscribeAck == null || (object)other == null)
-				return !Object.Equals(unsubscribeAck, other);
+				return !Object.Equals (unsubscribeAck, other);
 
-			return !unsubscribeAck.Equals(other);
+			return !unsubscribeAck.Equals (other);
 		}
 
 		public override int GetHashCode ()
 		{
-			return this.PacketId.GetHashCode ();
+			return PacketId.GetHashCode ();
 		}
-    }
+	}
 }

@@ -9,19 +9,19 @@ namespace System.Net.Mqtt.Storage
 
 		public InMemoryRepositoryProvider ()
 		{
-			this.repositories = new Dictionary<Type, object> ();
+			repositories = new Dictionary<Type, object> ();
 		}
 
-		public IRepository<T> GetRepository<T> () 
+		public IRepository<T> GetRepository<T> ()
 			where T : StorageObject
 		{
-			if (this.repositories.Any (r => r.Key == typeof (T))) {
-				return this.repositories.FirstOrDefault (r => r.Key == typeof (T)).Value as IRepository<T>;
+			if (repositories.Any (r => r.Key == typeof (T))) {
+				return repositories.FirstOrDefault (r => r.Key == typeof (T)).Value as IRepository<T>;
 			}
 
 			var repository = new InMemoryRepository<T> ();
 
-			this.repositories.Add (typeof (T), repository);
+			repositories.Add (typeof (T), repository);
 
 			return repository;
 		}

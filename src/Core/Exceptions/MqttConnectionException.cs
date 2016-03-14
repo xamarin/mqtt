@@ -8,17 +8,17 @@ namespace System.Net.Mqtt.Exceptions
 	{
 		public MqttConnectionException (ConnectionStatus status)
 		{
-			this.ReturnCode = status;
+			ReturnCode = status;
 		}
 
-		public MqttConnectionException (ConnectionStatus status, string message) : base(message)
+		public MqttConnectionException (ConnectionStatus status, string message) : base (message)
 		{
-			this.ReturnCode = status;
+			ReturnCode = status;
 		}
 
-		public MqttConnectionException (ConnectionStatus status, string message, Exception innerException) : base(message, innerException)
+		public MqttConnectionException (ConnectionStatus status, string message, Exception innerException) : base (message, innerException)
 		{
-			this.ReturnCode = status;
+			ReturnCode = status;
 		}
 
 		protected MqttConnectionException (SerializationInfo info, StreamingContext context)

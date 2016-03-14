@@ -18,7 +18,7 @@ namespace System.Net.Mqtt.Flows
 		readonly IPublishSenderFlow senderFlow;
 
 		public ServerConnectFlow (IAuthenticationProvider authenticationProvider,
-			IRepository<ClientSession> sessionRepository, 
+			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
 			IPublishSenderFlow senderFlow)
 		{
@@ -35,15 +35,15 @@ namespace System.Net.Mqtt.Flows
 
 			var connect = input as Connect;
 
-			if (!this.authenticationProvider.Authenticate (connect.UserName, connect.Password)) {
+			if (!authenticationProvider.Authenticate (connect.UserName, connect.Password)) {
 				throw new MqttConnectionException (ConnectionStatus.BadUserNameOrPassword);
 			}
 
-			var session = this.sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Get (s => s.ClientId == clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 
 			if (connect.CleanSession && session != null) {
-				this.sessionRepository.Delete(session);
+				sessionRepository.Delete (session);
 				session = null;
 
 				tracer.Info (Props.Resources.Tracer_Server_CleanedOldSession, clientId);
@@ -52,57 +52,57 @@ namespace System.Net.Mqtt.Flows
 			if (session == null) {
 				session = new ClientSession { ClientId = clientId, Clean = connect.CleanSession };
 
-				this.sessionRepository.Create (session);
+				sessionRepository.Create (session);
 
 				tracer.Info (Props.Resources.Tracer_Server_CreatedSession, clientId);
 			} else {
-				await this.SendPendingMessagesAsync (session, channel)
-					.ConfigureAwait(continueOnCapturedContext: false);
-				await this.SendPendingAcknowledgementsAsync (session, channel)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await SendPendingMessagesAsync (session, channel)
+					.ConfigureAwait (continueOnCapturedContext: false);
+				await SendPendingAcknowledgementsAsync (session, channel)
+					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 
 			if (connect.Will != null) {
 				var connectionWill = new ConnectionWill { ClientId = clientId, Will = connect.Will };
 
-				this.willRepository.Create (connectionWill);
+				willRepository.Create (connectionWill);
 			}
 
-			await channel.SendAsync(new ConnectAck (ConnectionStatus.Accepted, sessionPresent))
-				.ConfigureAwait(continueOnCapturedContext: false);
+			await channel.SendAsync (new ConnectAck (ConnectionStatus.Accepted, sessionPresent))
+				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		private async Task SendPendingMessagesAsync(ClientSession session, IChannel<IPacket> channel)
+		async Task SendPendingMessagesAsync (ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingMessage in session.GetPendingMessages()) {
-				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService, 
+			foreach (var pendingMessage in session.GetPendingMessages ()) {
+				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService,
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
 				if (pendingMessage.Status == PendingMessageStatus.PendingToSend) {
 					session.RemovePendingMessage (pendingMessage);
-					this.sessionRepository.Update (session);
+					sessionRepository.Update (session);
 
-					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await senderFlow.SendPublishAsync (session.ClientId, publish, channel)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				} else {
-					await this.senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge)
-						.ConfigureAwait(continueOnCapturedContext: false);
+					await senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge)
+						.ConfigureAwait (continueOnCapturedContext: false);
 				}
 			}
 		}
 
-		private async Task SendPendingAcknowledgementsAsync(ClientSession session, IChannel<IPacket> channel)
+		async Task SendPendingAcknowledgementsAsync (ClientSession session, IChannel<IPacket> channel)
 		{
-			foreach (var pendingAcknowledgement in session.GetPendingAcknowledgements()) {
+			foreach (var pendingAcknowledgement in session.GetPendingAcknowledgements ()) {
 				var ack = default(IFlowPacket);
 
 				if (pendingAcknowledgement.Type == PacketType.PublishReceived)
 					ack = new PublishReceived (pendingAcknowledgement.PacketId);
-				else if(pendingAcknowledgement.Type == PacketType.PublishRelease)
+				else if (pendingAcknowledgement.Type == PacketType.PublishRelease)
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 
-				await this.senderFlow.SendAckAsync (session.ClientId, ack, channel, PendingMessageStatus.PendingToAcknowledge)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await senderFlow.SendAckAsync (session.ClientId, ack, channel, PendingMessageStatus.PendingToAcknowledge)
+					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}
 	}

@@ -17,7 +17,7 @@ namespace System.Net.Mqtt.Server
 		public TcpChannelProvider (ProtocolConfiguration configuration)
 		{
 			this.configuration = configuration;
-			this.listener = new Lazy<TcpListener> (() => {
+			listener = new Lazy<TcpListener> (() => {
 				var tcpListener = new TcpListener(IPAddress.Any, this.configuration.Port);
 
 				try {
@@ -35,32 +35,32 @@ namespace System.Net.Mqtt.Server
 		/// <exception cref="MqttException">ProtocolException</exception>
 		public IObservable<IChannel<byte[]>> GetChannels ()
 		{
-			if (this.disposed) {
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed) {
+				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
 			return Observable
 				.FromAsync (() => {
-					return Task.Factory.FromAsync<TcpClient> (this.listener.Value.BeginAcceptTcpClient,
-						this.listener.Value.EndAcceptTcpClient, TaskCreationOptions.AttachedToParent);
+					return Task.Factory.FromAsync<TcpClient> (listener.Value.BeginAcceptTcpClient,
+						listener.Value.EndAcceptTcpClient, TaskCreationOptions.AttachedToParent);
 				})
 				.Repeat ()
-				.Select (client => new TcpChannel (client, new PacketBuffer (), this.configuration));
+				.Select (client => new TcpChannel (client, new PacketBuffer (), configuration));
 		}
 
 		public void Dispose ()
 		{
-			this.Dispose (true);
+			Dispose (true);
 			GC.SuppressFinalize (this);
 		}
 
 		protected virtual void Dispose (bool disposing)
 		{
-			if (this.disposed) return;
+			if (disposed) return;
 
 			if (disposing) {
-				this.listener.Value.Stop ();
-				this.disposed = true;
+				listener.Value.Stop ();
+				disposed = true;
 			}
 		}
 	}

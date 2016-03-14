@@ -4,7 +4,7 @@ namespace System.Net.Mqtt.Diagnostics
 {
 	static partial class Tracer
 	{
-		static Tracer()
+		static Tracer ()
 		{
 			Initialize (new TracerManager ());
 		}
@@ -14,7 +14,7 @@ namespace System.Net.Mqtt.Diagnostics
 			get { return manager; }
 		}
 
-		public static ITracerManager SetManager(ITracerManager manager)
+		public static ITracerManager SetManager (ITracerManager manager)
 		{
 			Initialize (manager);
 
@@ -44,8 +44,11 @@ namespace System.Net.Mqtt.Diagnostics
 	partial interface ITracerManager
 	{
 		void SetTracingLevel (string sourceName, SourceLevels level);
+
 		void AddListener (string sourceName, TraceListener listener);
+
 		void RemoveListener (string sourceName, TraceListener listener);
+
 		void RemoveListener (string sourceName, string listenerName);
 	}
 }

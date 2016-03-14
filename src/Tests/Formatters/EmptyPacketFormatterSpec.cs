@@ -18,8 +18,8 @@ namespace Tests.Formatters
 
 		public EmptyPacketFormatterSpec ()
 		{
-			this.packetChannel = new Mock<IChannel<IPacket>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
+			packetChannel = new Mock<IChannel<IPacket>> ();
+			byteChannel = new Mock<IChannel<byte[]>> ();
 		}
 		
 		[Theory]
@@ -30,7 +30,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = this.GetFormatter (packetType, type);
+			var formatter = GetFormatter (packetType, type);
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			var result = await formatter.FormatAsync (packet)
@@ -47,7 +47,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = this.GetFormatter (packetType, type);
+			var formatter = GetFormatter (packetType, type);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
@@ -64,7 +64,7 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var formatter = this.GetFormatter (packetType, type);
+			var formatter = GetFormatter (packetType, type);
 			var packet = Activator.CreateInstance (type) as IPacket;
 
 			var result = await formatter.FormatAsync (packet)
@@ -73,7 +73,7 @@ namespace Tests.Formatters
 			Assert.Equal (expectedPacket, result);
 		}
 
-		private IFormatter GetFormatter(PacketType packetType, Type type)
+		IFormatter GetFormatter(PacketType packetType, Type type)
 		{
 			var genericType = typeof (EmptyPacketFormatter<>);
 			var formatterType = genericType.MakeGenericType (type);

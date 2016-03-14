@@ -18,8 +18,8 @@ namespace Tests.Formatters
 
 		public PublishFormatterSpec ()
 		{
-			this.packetChannel = new Mock<IChannel<IPacket>> ();
-			this.byteChannel = new Mock<IChannel<byte[]>> ();
+			packetChannel = new Mock<IChannel<IPacket>> ();
+			byteChannel = new Mock<IChannel<byte[]>> ();
 		}
 		
 		[Theory]

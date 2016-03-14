@@ -16,30 +16,30 @@ namespace System.Net.Mqtt.Server
 			connections = new ConcurrentDictionary<string, IChannel<IPacket>> ();
 		}
 
-		public int Connections { get { return connections.Skip(0).Count(); } }
+		public int Connections { get { return connections.Skip (0).Count (); } }
 
-		public IEnumerable<string> ActiveClients 
-		{ 
-			get 
-			{ 
+		public IEnumerable<string> ActiveClients
+		{
+			get
+			{
 				return connections
 					.Where (c => c.Value.IsConnected)
-					.Select (c => c.Key); 
-			} 
+					.Select (c => c.Key);
+			}
 		}
 
-		public void AddConnection(string clientId, IChannel<IPacket> connection)
-        {
+		public void AddConnection (string clientId, IChannel<IPacket> connection)
+		{
 			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
 				tracer.Warn (Properties.Resources.Tracer_ConnectionProvider_ClientIdExists, clientId);
 
-				this.RemoveConnection (clientId);
+				RemoveConnection (clientId);
 			}
 
-			connections.TryAdd(clientId, connection);
-        }
+			connections.TryAdd (clientId, connection);
+		}
 
 		public IChannel<IPacket> GetConnection (string clientId)
 		{
@@ -49,7 +49,7 @@ namespace System.Net.Mqtt.Server
 				if (!existingConnection.IsConnected) {
 					tracer.Warn (Properties.Resources.Tracer_ConnectionProvider_ClientDisconnected, clientId);
 
-					this.RemoveConnection (clientId);
+					RemoveConnection (clientId);
 					existingConnection = default (IChannel<IPacket>);
 				}
 			}
@@ -58,8 +58,8 @@ namespace System.Net.Mqtt.Server
 		}
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
-        public void RemoveConnection(string clientId)
-        {
+		public void RemoveConnection (string clientId)
+		{
 			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryRemove (clientId, out existingConnection)) {
@@ -67,6 +67,6 @@ namespace System.Net.Mqtt.Server
 
 				existingConnection.Dispose ();
 			}
-        }
+		}
 	}
 }

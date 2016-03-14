@@ -23,16 +23,16 @@ namespace System.Net.Mqtt
 			var tcpClient = new TcpClient ();
 
 			try {
-				tcpClient.Connect (this.hostAddress, this.configuration.Port);
+				tcpClient.Connect (hostAddress, configuration.Port);
 			} catch (SocketException socketEx) {
-				var message = string.Format(Properties.Resources.TcpChannelFactory_TcpClient_Failed, this.hostAddress, configuration.Port);
+				var message = string.Format(Properties.Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
 
 				tracer.Error (socketEx, message);
 
-				throw new MqttException(message, socketEx);
+				throw new MqttException (message, socketEx);
 			}
 
-			return new TcpChannel(tcpClient, new PacketBuffer(), this.configuration);
+			return new TcpChannel (tcpClient, new PacketBuffer (), configuration);
 		}
 	}
 }

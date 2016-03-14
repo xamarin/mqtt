@@ -9,10 +9,10 @@ namespace System.Net.Mqtt.Formatters
 
 		protected override ConnectAck Read (byte[] bytes)
 		{
-			this.ValidateHeaderFlag (bytes, t => t == PacketType.ConnectAck, 0x00);
+			ValidateHeaderFlag (bytes, t => t == PacketType.ConnectAck, 0x00);
 
 			var remainingLengthBytesLength = 0;
-			
+
 			Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
 
 			var connectAckFlagsIndex = Protocol.PacketTypeLength + remainingLengthBytesLength;
@@ -33,18 +33,18 @@ namespace System.Net.Mqtt.Formatters
 
 		protected override byte[] Write (ConnectAck packet)
 		{
-			var variableHeader = this.GetVariableHeader (packet);
+			var variableHeader = GetVariableHeader (packet);
 			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length);
-			var fixedHeader = this.GetFixedHeader (remainingLength);
+			var fixedHeader = GetFixedHeader (remainingLength);
 			var bytes = new byte[fixedHeader.Length + variableHeader.Length];
 
-			fixedHeader.CopyTo(bytes, 0);
-			variableHeader.CopyTo(bytes, fixedHeader.Length);
+			fixedHeader.CopyTo (bytes, 0);
+			variableHeader.CopyTo (bytes, fixedHeader.Length);
 
 			return bytes;
 		}
 
-		private byte[] GetFixedHeader(byte[] remainingLength)
+		byte[] GetFixedHeader (byte[] remainingLength)
 		{
 			var flags = 0x00;
 			var type = Convert.ToInt32(PacketType.ConnectAck) << 4;
@@ -52,12 +52,12 @@ namespace System.Net.Mqtt.Formatters
 			var fixedHeader = new byte[remainingLength.Length + 1];
 
 			fixedHeader[0] = fixedHeaderByte1;
-			remainingLength.CopyTo(fixedHeader, 1);
+			remainingLength.CopyTo (fixedHeader, 1);
 
 			return fixedHeader;
 		}
 
-		private byte[] GetVariableHeader(ConnectAck packet)
+		byte[] GetVariableHeader (ConnectAck packet)
 		{
 			if (packet.Status != ConnectionStatus.Accepted && packet.SessionPresent)
 				throw new MqttException (Properties.Resources.ConnectAckFormatter_InvalidSessionPresentForErrorReturnCode);

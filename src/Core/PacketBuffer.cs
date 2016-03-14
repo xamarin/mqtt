@@ -16,8 +16,8 @@ namespace System.Net.Mqtt
 
 		public PacketBuffer ()
 		{
-			this.mainBuffer = new List<byte> ();
-			this.pendingBuffer = new List<byte> ();
+			mainBuffer = new List<byte> ();
+			pendingBuffer = new List<byte> ();
 		}
 
 		public bool TryGetPackets (byte[] sequence, out IEnumerable<byte[]> packets)
@@ -25,81 +25,76 @@ namespace System.Net.Mqtt
 			var result =  new List<byte[]>();
 
 			lock (bufferLock) {
-				this.Buffer (sequence);
+				Buffer (sequence);
 
-				while (this.isPacketReady) {
-					var packet = this.mainBuffer.ToArray ();
+				while (isPacketReady) {
+					var packet = mainBuffer.ToArray ();
 
 					result.Add (packet);
-					this.Reset ();
+					Reset ();
 				}
 
 				packets = result;
 			}
 
-			return result.Any();
+			return result.Any ();
 		}
 
-		private void Buffer(byte[] sequence)
+		void Buffer (byte[] sequence)
 		{
-			foreach(var @byte in sequence) {
-				this.Buffer (@byte);
+			foreach (var @byte in sequence) {
+				Buffer (@byte);
 			}
 		}
 
-		private void Buffer (byte @byte)
+		void Buffer (byte @byte)
 		{
-			if (this.isPacketReady) {
-				this.pendingBuffer.Add (@byte);
+			if (isPacketReady) {
+				pendingBuffer.Add (@byte);
 				return;
 			}
 
-			this.mainBuffer.Add(@byte);
+			mainBuffer.Add (@byte);
 
-			if (!this.packetReadStarted)
-			{
-				this.packetReadStarted = true;
+			if (!packetReadStarted) {
+				packetReadStarted = true;
 				return;
 			}
 
-			if (!this.packetRemainingLengthReadCompleted)
-			{
+			if (!packetRemainingLengthReadCompleted) {
 				if ((@byte & 128) == 0) {
 					var bytesLenght = default (int);
 
-					this.packetRemainingLength = Protocol.Encoding.DecodeRemainingLength(mainBuffer.ToArray(), out bytesLenght);
-					this.packetRemainingLengthReadCompleted = true;
+					packetRemainingLength = Protocol.Encoding.DecodeRemainingLength (mainBuffer.ToArray (), out bytesLenght);
+					packetRemainingLengthReadCompleted = true;
 
 					if (packetRemainingLength == 0)
-						this.isPacketReady = true;
+						isPacketReady = true;
 				}
 
 				return;
 			}
 
-			if (packetRemainingLength == 1)
-			{
-				this.isPacketReady = true;
-			}
-			else
-			{
+			if (packetRemainingLength == 1) {
+				isPacketReady = true;
+			} else {
 				packetRemainingLength--;
 			}
 		}
 
-		private void Reset()
+		void Reset ()
 		{
-			this.mainBuffer.Clear();
-			this.packetReadStarted = false;
-			this.packetRemainingLengthReadCompleted = false;
-			this.packetRemainingLength = 0;
-			this.isPacketReady = false;
+			mainBuffer.Clear ();
+			packetReadStarted = false;
+			packetRemainingLengthReadCompleted = false;
+			packetRemainingLength = 0;
+			isPacketReady = false;
 
-			if (this.pendingBuffer.Any ()) {
-				var pendingSequence = this.pendingBuffer.ToArray ();
+			if (pendingBuffer.Any ()) {
+				var pendingSequence = pendingBuffer.ToArray ();
 
-				this.pendingBuffer.Clear ();
-				this.Buffer (pendingSequence);
+				pendingBuffer.Clear ();
+				Buffer (pendingSequence);
 			}
 		}
 	}

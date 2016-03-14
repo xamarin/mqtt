@@ -4,12 +4,12 @@
 	{
 		private static readonly Lazy<NullAuthenticationProvider> instance;
 
-		static NullAuthenticationProvider()
+		static NullAuthenticationProvider ()
 		{
 			instance = new Lazy<NullAuthenticationProvider> (() => new NullAuthenticationProvider ());
 		}
 
-		private NullAuthenticationProvider()
+		NullAuthenticationProvider ()
 		{
 		}
 

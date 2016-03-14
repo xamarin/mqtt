@@ -24,7 +24,7 @@ namespace System.Net.Mqtt.Server
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		internal Server (IChannelProvider binaryChannelProvider, 
+		internal Server (IChannelProvider binaryChannelProvider,
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
@@ -43,51 +43,51 @@ namespace System.Net.Mqtt.Server
 
 		public event EventHandler<ClosedEventArgs> Stopped = (sender, args) => { };
 
-		public int ActiveChannels { get { return this.channels.Where(c => c.IsConnected).Count(); } }
+		public int ActiveChannels { get { return channels.Where (c => c.IsConnected).Count (); } }
 
-		public IEnumerable<string> ActiveClients { get { return this.connectionProvider.ActiveClients; } }
+		public IEnumerable<string> ActiveClients { get { return connectionProvider.ActiveClients; } }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		/// <exception cref="ObjectDisposedException">ObjectDisposedException</exception>
-		public void Start()
+		public void Start ()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException (this.GetType ().FullName);
+			if (disposed)
+				throw new ObjectDisposedException (GetType ().FullName);
 
-			this.channelSubscription = this.binaryChannelProvider
-				.GetChannels()
+			channelSubscription = binaryChannelProvider
+				.GetChannels ()
 				.Subscribe (
-					binaryChannel => this.ProcessChannel(binaryChannel), 
-					ex => { tracer.Error (ex); }, 
-					() => {}	
+					binaryChannel => ProcessChannel (binaryChannel),
+					ex => { tracer.Error (ex); },
+					() => { }
 				);
 
-			this.streamSubscription = this.eventStream
+			streamSubscription = eventStream
 				.Of<TopicNotSubscribed> ()
 				.Subscribe (e => {
-					this.TopicNotSubscribed (this, e);
+					TopicNotSubscribed (this, e);
 				});
 		}
 
 		public void Stop ()
 		{
-			this.Stop (ClosedReason.Disposed);
+			Stop (ClosedReason.Disposed);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			this.Stop ();
+			Stop ();
 		}
 
 		protected virtual void Dispose (bool disposing)
 		{
-			if (this.disposed) return;
+			if (disposed) return;
 
 			if (disposing) {
-				tracer.Info (Properties.Resources.Tracer_Disposing, this.GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, GetType ().FullName);
 
-				if (this.streamSubscription != null) {
-					this.streamSubscription.Dispose ();
+				if (streamSubscription != null) {
+					streamSubscription.Dispose ();
 				}
 
 				foreach (var channel in channels) {
@@ -95,33 +95,33 @@ namespace System.Net.Mqtt.Server
 				}
 
 				channels.Clear ();
-				
-				if (this.channelSubscription != null) {
-					this.channelSubscription.Dispose ();
+
+				if (channelSubscription != null) {
+					channelSubscription.Dispose ();
 				}
 
-				this.binaryChannelProvider.Dispose ();
+				binaryChannelProvider.Dispose ();
 
-				this.disposed = true;
+				disposed = true;
 			}
 		}
 
-		private void Stop (ClosedReason reason, string message = null)
+		void Stop (ClosedReason reason, string message = null)
 		{
-			this.Dispose (true);
-			this.Stopped (this, new ClosedEventArgs(reason, message));
+			Dispose (true);
+			Stopped (this, new ClosedEventArgs (reason, message));
 			GC.SuppressFinalize (this);
 		}
 
-		private void ProcessChannel(IChannel<byte[]> binaryChannel)
+		void ProcessChannel (IChannel<byte[]> binaryChannel)
 		{
 			tracer.Verbose (Properties.Resources.Tracer_Server_NewSocketAccepted);
 
-			var packetChannel = this.channelFactory.Create (binaryChannel);
-			var packetListener = new ServerPacketListener (packetChannel, this.connectionProvider, this.flowProvider, this.configuration);
+			var packetChannel = channelFactory.Create (binaryChannel);
+			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, configuration);
 
 			packetListener.Listen ();
-			packetListener.Packets.Subscribe (_ => {}, ex => { 
+			packetListener.Packets.Subscribe (_ => { }, ex => {
 				tracer.Error (ex, Properties.Resources.Tracer_Server_PacketsObservableError);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
@@ -131,7 +131,7 @@ namespace System.Net.Mqtt.Server
 				packetListener.Dispose ();
 			});
 
-			this.channels.Add (packetChannel);
+			channels.Add (packetChannel);
 		}
 	}
 }

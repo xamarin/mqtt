@@ -11,8 +11,8 @@
 	{
 		public ClosedEventArgs (ClosedReason reason, string message = null)
 		{
-			this.Reason = reason;
-			this.Message = message;
+			Reason = reason;
+			Message = message;
 		}
 
 		public ClosedReason Reason { get; private set; }

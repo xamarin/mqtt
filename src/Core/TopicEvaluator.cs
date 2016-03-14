@@ -14,7 +14,7 @@ namespace System.Net.Mqtt
 
 		public bool IsValidTopicFilter (string topicFilter)
 		{
-			if (!this.configuration.AllowWildcardsInTopicFilters) {
+			if (!configuration.AllowWildcardsInTopicFilters) {
 				if (topicFilter.Contains (Protocol.SingleLevelTopicWildcard) ||
 					topicFilter.Contains (Protocol.MultiLevelTopicWildcard))
 					return false;
@@ -29,7 +29,7 @@ namespace System.Net.Mqtt
 
 			var topicFilterParts = topicFilter.Split ('/');
 
-			if(topicFilterParts.Count(s => s == "#") > 1)
+			if (topicFilterParts.Count (s => s == "#") > 1)
 				return false;
 
 			if (topicFilterParts.Any (s => s.Length > 1 && s.Contains ("#")))
@@ -38,7 +38,7 @@ namespace System.Net.Mqtt
 			if (topicFilterParts.Any (s => s.Length > 1 && s.Contains ("+")))
 				return false;
 
-			if(topicFilterParts.Any(s => s == "#") && topicFilter.IndexOf("#") < topicFilter.Length - 1)
+			if (topicFilterParts.Any (s => s == "#") && topicFilter.IndexOf ("#") < topicFilter.Length - 1)
 				return false;
 
 			return true;
@@ -55,13 +55,13 @@ namespace System.Net.Mqtt
 		/// <exception cref="MqttException">ProtocolException</exception>
 		public bool Matches (string topicName, string topicFilter)
 		{
-			if (!this.IsValidTopicName (topicName)) { 
+			if (!IsValidTopicName (topicName)) {
 				var message = string.Format(Properties.Resources.TopicEvaluator_InvalidTopicName, topicName);
 
 				throw new MqttException (message);
 			}
 
-			if (!this.IsValidTopicFilter (topicFilter)) { 
+			if (!IsValidTopicFilter (topicFilter)) {
 				var message = string.Format(Properties.Resources.TopicEvaluator_InvalidTopicFilter, topicFilter);
 
 				throw new MqttException (message);
@@ -76,7 +76,7 @@ namespace System.Net.Mqtt
 			if (topicFilterParts.Length - topicNameParts.Length > 1)
 				return false;
 
-			if (topicFilterParts.Length - topicNameParts.Length == 1 && topicFilterParts[topicFilterParts.Length -1] != "#")
+			if (topicFilterParts.Length - topicNameParts.Length == 1 && topicFilterParts[topicFilterParts.Length - 1] != "#")
 				return false;
 
 			if ((topicFilterParts[0] == "#" || topicFilterParts[0] == "+") && topicNameParts[0].StartsWith ("$"))

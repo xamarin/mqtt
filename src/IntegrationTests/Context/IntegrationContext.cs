@@ -16,8 +16,8 @@ namespace IntegrationTests.Context
 {
 	public abstract class IntegrationContext
 	{
-		private static readonly ConcurrentBag<int> usedPorts;
-		private static Random random = new Random ();
+		static readonly ConcurrentBag<int> usedPorts;
+		static Random random = new Random ();
 
 		protected readonly ushort keepAliveSecs;
 		
@@ -39,10 +39,10 @@ namespace IntegrationTests.Context
 		protected Server GetServer(IAuthenticationProvider authenticationProvider = null)
 		{
 			try {
-				this.LoadConfiguration ();
+				LoadConfiguration ();
 
 				var initializer = new ServerInitializer (authenticationProvider);
-				var server = initializer.Initialize (this.Configuration);
+				var server = initializer.Initialize (Configuration);
 
 				server.Start ();
 
@@ -60,11 +60,11 @@ namespace IntegrationTests.Context
 		{
 			var initializer = new ClientInitializer (IPAddress.Loopback.ToString());
 
-			if (this.Configuration == null) {
-				this.LoadConfiguration ();
+			if (Configuration == null) {
+				LoadConfiguration ();
 			}
 
-			return initializer.Initialize (this.Configuration);
+			return initializer.Initialize (Configuration);
 		}
 
 		protected string GetClientId()
@@ -82,18 +82,18 @@ namespace IntegrationTests.Context
 			return testLoad;
 		}
 
-		private void LoadConfiguration()
+		void LoadConfiguration()
 		{
-			this.Configuration = new ProtocolConfiguration {
+			Configuration = new ProtocolConfiguration {
 				BufferSize = 128 * 1024,
 				Port = GetPort(),
-				KeepAliveSecs = this.keepAliveSecs,
+				KeepAliveSecs = keepAliveSecs,
 				WaitingTimeoutSecs = 2,
 				MaximumQualityOfService = QualityOfService.ExactlyOnce
 			};
 		}
 
-		private static int GetPort()
+		static int GetPort()
 		{
 			var port = random.Next (minValue: 40000, maxValue: 65535);
 
