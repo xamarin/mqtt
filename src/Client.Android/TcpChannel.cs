@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Client
 {
 	internal class TcpChannel : IChannel<byte[]>
 	{

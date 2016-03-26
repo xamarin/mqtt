@@ -258,14 +258,8 @@
   <data name="PacketChannelFactory_InnerChannelFactoryNotFound" xml:space="preserve">
     <value>An inner channel factory is required to create a new packet channel</value>
   </data>
-  <data name="TcpChannelFactory_TcpClient_Failed1" xml:space="preserve">
-    <value>An error occurred while connecting via TCP to the endpoint address {0} and port {1}, to establish an MQTT connection</value>
-  </data>
   <data name="TcpChannelProvider_TcpListener_Failed" xml:space="preserve">
     <value>An error occurred while starting to listen incoming TCP connections</value>
-  </data>
-  <data name="TcpChannel_ClientIsNotConnected1" xml:space="preserve">
-    <value>The underlying TCP client is not connected</value>
   </data>
   <data name="TcpChannel_DisposeError" xml:space="preserve">
     <value>An error occurred while closing underlying channel. Error code: {0}</value>
@@ -278,11 +272,5 @@
   </data>
   <data name="TcpChannel_SendingPacket" xml:space="preserve">
     <value>Sending packet of {0} bytes</value>
-  </data>
-  <data name="TcpChannel_SocketDisconnected1" xml:space="preserve">
-    <value>The underlying network stream is not available. The socket could became disconnected</value>
-  </data>
-  <data name="Tracer_Disposing1" xml:space="preserve">
-    <value>Disposing {0}</value>
   </data>
 </root>
