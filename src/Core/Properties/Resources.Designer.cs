@@ -386,15 +386,6 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The underlying TCP client is not connected.
-        /// </summary>
-        internal static string TcpChannel_ClientIsNotConnected1 {
-            get {
-                return ResourceManager.GetString("TcpChannel_ClientIsNotConnected1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to An error occurred while closing underlying channel. Error code: {0}.
         /// </summary>
         internal static string TcpChannel_DisposeError {
@@ -440,29 +431,11 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The underlying network stream is not available. The socket could became disconnected.
-        /// </summary>
-        internal static string TcpChannel_SocketDisconnected1 {
-            get {
-                return ResourceManager.GetString("TcpChannel_SocketDisconnected1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to An error occurred while connecting via TCP to the endpoint address {0} and port {1}, to establish an MQTT connection.
         /// </summary>
         internal static string TcpChannelFactory_TcpClient_Failed {
             get {
                 return ResourceManager.GetString("TcpChannelFactory_TcpClient_Failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while connecting via TCP to the endpoint address {0} and port {1}, to establish an MQTT connection.
-        /// </summary>
-        internal static string TcpChannelFactory_TcpClient_Failed1 {
-            get {
-                return ResourceManager.GetString("TcpChannelFactory_TcpClient_Failed1", resourceCulture);
             }
         }
         
@@ -499,15 +472,6 @@ namespace System.Net.Mqtt.Properties {
         internal static string Tracer_Disposing {
             get {
                 return ResourceManager.GetString("Tracer_Disposing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Disposing {0}.
-        /// </summary>
-        internal static string Tracer_Disposing1 {
-            get {
-                return ResourceManager.GetString("Tracer_Disposing1", resourceCulture);
             }
         }
         

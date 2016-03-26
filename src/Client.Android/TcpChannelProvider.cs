@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
-namespace System.Net.Mqtt
+namespace System.Net.Mqtt.Client
 {
 	internal class TcpChannelProvider : IChannelProvider
 	{
