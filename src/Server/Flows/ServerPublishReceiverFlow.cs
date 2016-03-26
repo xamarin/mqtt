@@ -12,8 +12,7 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
-		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
-
+		readonly ITracer tracer;
 		readonly IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
 		readonly IRepository<ConnectionWill> willRepository;
@@ -28,9 +27,11 @@ namespace System.Net.Mqtt.Flows
 			IRepository<ConnectionWill> willRepository,
 			IPacketIdProvider packetIdProvider,
 			IEventStream eventStream,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
-			: base (topicEvaluator, retainedRepository, sessionRepository, configuration)
+			: base (topicEvaluator, retainedRepository, sessionRepository, tracerManager, configuration)
 		{
+			tracer = tracerManager.Get<ServerPublishReceiverFlow> ();
 			this.connectionProvider = connectionProvider;
 			this.senderFlow = senderFlow;
 			this.willRepository = willRepository;

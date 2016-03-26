@@ -1,21 +1,19 @@
-﻿using System.Reactive.Concurrency;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Flows;
+using System.Net.Mqtt.Packets;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Diagnostics;
-using System.Net.Mqtt.Flows;
-using System.Net.Mqtt.Packets;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt.Server
 {
 	internal class ServerPacketListener : IPacketListener
 	{
-		static readonly ITracer tracer = Tracer.Get<ServerPacketListener> ();
-
+		readonly ITracer tracer;
 		readonly IChannel<IPacket> channel;
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
@@ -30,14 +28,16 @@ namespace System.Net.Mqtt.Server
 		public ServerPacketListener (IChannel<IPacket> channel,
 			IConnectionProvider connectionProvider,
 			IProtocolFlowProvider flowProvider,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
 		{
+			tracer = tracerManager.Get<ServerPacketListener> ();
 			this.channel = channel;
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			flowRunner = TaskRunner.Get ("ServerFlowRunner");
+			flowRunner = TaskRunner.Get ();
 		}
 
 		public IObservable<IPacket> Packets { get { return packets; } }

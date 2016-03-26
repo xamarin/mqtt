@@ -11,11 +11,19 @@ using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Diagnostics;
 
 namespace Tests.Flows
 {
 	public class SubscribeFlowSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public SubscribeFlowSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Fact]
 		public async Task when_subscribing_new_topics_then_subscriptions_are_created_and_ack_is_sent()
 		{
@@ -57,7 +65,7 @@ namespace Tests.Flows
 				.Returns (channel.Object);
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
-				retainedMessageRepository, packetIdProvider, senderFlow, configuration);
+				retainedMessageRepository, packetIdProvider, senderFlow, tracerManager, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -120,7 +128,7 @@ namespace Tests.Flows
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object,  sessionRepository.Object, 
 				retainedMessageRepository, packetIdProvider,
-				senderFlow, configuration);
+				senderFlow, tracerManager, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -176,7 +184,7 @@ namespace Tests.Flows
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				retainedMessageRepository, packetIdProvider,
-				senderFlow, configuration);
+				senderFlow, tracerManager, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -238,7 +246,7 @@ namespace Tests.Flows
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, 
 				sessionRepository.Object, retainedMessageRepository.Object,
-				packetIdProvider, senderFlow.Object, configuration);
+				packetIdProvider, senderFlow.Object, tracerManager, configuration);
 
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);

@@ -9,11 +9,19 @@ using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Diagnostics;
 
 namespace Tests.Flows
 {
 	public class ConnectFlowSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public ConnectFlowSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Fact]
 		public async Task when_sending_connect_then_session_is_created_and_ack_is_sent()
 		{
@@ -37,7 +45,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -85,7 +93,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -131,7 +139,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -176,7 +184,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -215,7 +223,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -255,7 +263,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
 
 			var aggregateEx = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, connect, channel.Object).Wait());
 

@@ -2,8 +2,8 @@
 
 namespace System.Net.Mqtt.Client
 {
-	[Serializable]
-	public class ClientException : ApplicationException
+	[DataContract]
+	public class ClientException : Exception
 	{
 		public ClientException ()
 		{
@@ -16,11 +16,6 @@ namespace System.Net.Mqtt.Client
 
 		public ClientException (string message, Exception innerException)
 			: base (message, innerException)
-		{
-		}
-
-		protected ClientException (SerializationInfo info, StreamingContext context)
-			: base (info, context)
 		{
 		}
 	}

@@ -16,11 +16,19 @@ using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Diagnostics;
 
 namespace Tests.Flows
 {
 	public class PublishReceiverFlowSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public PublishReceiverFlowSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Fact]
 		public async Task when_sending_publish_with_qos0_then_publish_is_sent_to_subscribers_and_no_ack_is_sent()
 		{
@@ -47,7 +55,7 @@ namespace Tests.Flows
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object,
 				publishSenderFlow.Object, retainedRepository.Object, sessionRepository.Object, willRepository.Object, 
-				packetIdProvider, eventStream, configuration);
+				packetIdProvider, eventStream, tracerManager, configuration);
 
 			var subscribedClientId1 = Guid.NewGuid().ToString();
 			var subscribedClientId2 = Guid.NewGuid().ToString();
@@ -140,7 +148,7 @@ namespace Tests.Flows
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
 				retainedRepository.Object, sessionRepository.Object, willRepository.Object,
-				packetIdProvider, eventStream, configuration);
+				packetIdProvider, eventStream, tracerManager, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -216,7 +224,7 @@ namespace Tests.Flows
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -264,7 +272,7 @@ namespace Tests.Flows
 				}
 			});
 
-			flow.ExecuteAsync (clientId, publish, channel);
+			var flowTask = flow.ExecuteAsync (clientId, publish, channel);
 
 			var ackSent = ackSentSignal.Wait (1000);
 
@@ -309,7 +317,7 @@ namespace Tests.Flows
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -358,7 +366,7 @@ namespace Tests.Flows
 				}
 			});
 
-			flow.ExecuteAsync (clientId, publish, channel.Object);
+			var flowTask = flow.ExecuteAsync (clientId, publish, channel.Object);
 
 			var retried = publishReceivedSignal.Wait (2000);
 
@@ -408,7 +416,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -460,7 +468,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -495,7 +503,7 @@ namespace Tests.Flows
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -580,7 +588,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
@@ -615,7 +623,7 @@ namespace Tests.Flows
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.AtLeastOnce;
@@ -695,7 +703,7 @@ namespace Tests.Flows
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = QualityOfService.ExactlyOnce;
@@ -770,7 +778,7 @@ namespace Tests.Flows
 			var eventStream = new EventStream ();
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, tracerManager, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishRelease = new PublishRelease (packetId);

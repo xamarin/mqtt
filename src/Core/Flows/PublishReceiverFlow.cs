@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Diagnostics;
 
 namespace System.Net.Mqtt.Flows
 {
@@ -14,8 +15,9 @@ namespace System.Net.Mqtt.Flows
 		public PublishReceiverFlow (ITopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository,
 			IRepository<ClientSession> sessionRepository,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
-			: base (sessionRepository, configuration)
+			: base (sessionRepository, tracerManager, configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;

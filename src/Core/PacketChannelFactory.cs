@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Formatters;
 using System.Net.Mqtt.Packets;
@@ -9,17 +10,24 @@ namespace System.Net.Mqtt
 	{
 		readonly IChannelFactory innerChannelFactory;
 		readonly ITopicEvaluator topicEvaluator;
+		readonly ITracerManager tracerManager;
 		readonly ProtocolConfiguration configuration;
 
-		public PacketChannelFactory (IChannelFactory innerChannelFactory, ITopicEvaluator topicEvaluator, ProtocolConfiguration configuration)
-			: this (topicEvaluator, configuration)
+		public PacketChannelFactory (IChannelFactory innerChannelFactory, 
+			ITopicEvaluator topicEvaluator, 
+			ITracerManager tracerManager,
+			ProtocolConfiguration configuration)
+			: this (topicEvaluator, tracerManager, configuration)
 		{
 			this.innerChannelFactory = innerChannelFactory;
 		}
 
-		public PacketChannelFactory (ITopicEvaluator topicEvaluator, ProtocolConfiguration configuration)
+		public PacketChannelFactory (ITopicEvaluator topicEvaluator,
+			ITracerManager tracerManager,
+			ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
+			this.tracerManager = tracerManager;
 			this.configuration = configuration;
 		}
 
@@ -37,9 +45,9 @@ namespace System.Net.Mqtt
 		public IChannel<IPacket> Create (IChannel<byte[]> binaryChannel)
 		{
 			var formatters = GetFormatters();
-			var manager = new PacketManager (formatters);
+			var packetManager = new PacketManager (formatters);
 
-			return new PacketChannel (binaryChannel, manager, configuration);
+			return new PacketChannel (binaryChannel, packetManager, tracerManager, configuration);
 		}
 
 		IEnumerable<IFormatter> GetFormatters ()

@@ -12,14 +12,15 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class PublishSenderFlow : PublishFlow, IPublishSenderFlow
 	{
-		static readonly ITracer tracer = Tracer.Get<PublishSenderFlow> ();
-
+		readonly ITracer tracer;
 		IDictionary<PacketType, Func<string, ushort, IFlowPacket>> senderRules;
 
 		public PublishSenderFlow (IRepository<ClientSession> sessionRepository,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
-			: base (sessionRepository, configuration)
+			: base (sessionRepository, tracerManager, configuration)
 		{
+			tracer = tracerManager.Get<PublishSenderFlow> ();
 			DefineSenderRules ();
 		}
 

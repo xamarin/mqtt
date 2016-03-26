@@ -10,8 +10,7 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class ServerConnectFlow : IProtocolFlow
 	{
-		static readonly ITracer tracer = Tracer.Get<ServerConnectFlow> ();
-
+		readonly ITracer tracer;
 		readonly IAuthenticationProvider authenticationProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
@@ -20,8 +19,10 @@ namespace System.Net.Mqtt.Flows
 		public ServerConnectFlow (IAuthenticationProvider authenticationProvider,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
-			IPublishSenderFlow senderFlow)
+			IPublishSenderFlow senderFlow,
+			ITracerManager tracerManager)
 		{
+			tracer = tracerManager.Get<ServerConnectFlow> ();
 			this.authenticationProvider = authenticationProvider;
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;

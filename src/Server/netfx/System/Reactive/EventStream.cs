@@ -35,6 +35,7 @@ namespace System.Reactive
     using System.Collections.Concurrent;
     using System.Linq;
     using System.Reactive.Subjects;
+	using System.Reflection;
 
     /// <summary>
     /// Provides the implementation for a reactive extensions event stream, 
@@ -101,7 +102,7 @@ namespace System.Reactive
             // We will call all subjects that are compatible in 
             // the event type, not just concrete event type subscribers.
             var compatible = subjects.Keys
-                .Where(subjectEventType => subjectEventType.IsAssignableFrom(eventType))
+                .Where(subjectEventType => subjectEventType.GetTypeInfo ().IsAssignableFrom(eventType.GetTypeInfo ()))
                 .Select(subjectEventType => subjects[subjectEventType]);
 
             foreach (dynamic subject in compatible)

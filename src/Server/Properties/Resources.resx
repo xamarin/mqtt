@@ -201,4 +201,7 @@
   <data name="Tracer_Server_PacketsObservableError" xml:space="preserve">
     <value>Server - Packet observable sequence had an error, hence closing the channel</value>
   </data>
+  <data name="Server_InitializeError" xml:space="preserve">
+    <value>An error occurred while initializing the server</value>
+  </data>
 </root>

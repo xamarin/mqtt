@@ -8,10 +8,14 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>System.Net.Mqtt</RootNamespace>
-    <AssemblyName>System.Net.Mqtt.Core</AssemblyName>
+    <AssemblyName>System.Net.Mqtt.Core.Portable</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>392b2e47</NuGetPackageImportStamp>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -24,14 +28,14 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ByteExtensions.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerManagerExtensions.cs" />
+    <Compile Include="External\Diagnostics\Tracer\TraceEventType.cs" />
     <Compile Include="Exceptions\RepositoryException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
     <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
-    <Compile Include="External\Diagnostics\Tracer\SystemDiagnostics\StartActivityExtension.cs" />
-    <Compile Include="External\Diagnostics\Tracer\SystemDiagnostics\TracerManager.cs" />
-    <Compile Include="External\Diagnostics\Tracer\Tracer.cs" />
+    <Compile Include="External\Diagnostics\Tracer\DefaultTracerManager.cs" />
     <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="Flows\IPublishSenderFlow.cs" />
     <Compile Include="Flows\ProtocolFlowProvider.cs" />
@@ -56,15 +60,15 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IChannel.cs" />
     <Compile Include="IChannelFactory.cs" />
-    <Compile Include="IInitalizer.cs" />
+    <Compile Include="IChannelProvider.cs" />
+    <Compile Include="IFactory.cs" />
     <Compile Include="IPacketIdProvider.cs" />
     <Compile Include="IPacketListener.cs" />
     <Compile Include="IPacketChannelFactory.cs" />
     <Compile Include="IPacketManager.cs" />
     <Compile Include="IPacketBuffer.cs" />
+    <Compile Include="IProtocolBinding.cs" />
     <Compile Include="ITopicEvaluator.cs" />
-    <Compile Include="netfx\System\AppDomainData.cs" />
-    <Compile Include="netfx\System\Collections\Generic\DictionaryGetOrAdd.cs" />
     <Compile Include="PacketChannel.cs" />
     <Compile Include="PacketChannelFactory.cs" />
     <Compile Include="PacketIdProvider.cs" />
@@ -103,9 +107,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Storage\StorageExtensions.cs" />
-    <Compile Include="TaskRunner.cs" />
     <Compile Include="SingleThreadScheduler.cs" />
+    <Compile Include="Storage\StorageExtensions.cs" />
     <Compile Include="StoppedEventArgs.cs" />
     <Compile Include="Storage\InMemoryRepositoryProvider.cs" />
     <Compile Include="Storage\IRepositoryProvider.cs" />
@@ -118,10 +121,9 @@
     <Compile Include="Storage\ClientSession.cs" />
     <Compile Include="Storage\PendingAcknowledgement.cs" />
     <Compile Include="Storage\StorageObject.cs" />
-    <Compile Include="TcpChannel.cs" />
-    <Compile Include="TcpChannelFactory.cs" />
+    <Compile Include="TaskRunner.cs" />
+    <Compile Include="Timer.cs" />
     <Compile Include="TopicEvaluator.cs" />
-    <Compile Include="Tracer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">
@@ -134,12 +136,10 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Net" />
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -156,17 +156,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
-    <Reference Include="System.Reflection.Context" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />
-  <Import Project="..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets" Condition="Exists('..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets')" />
+  <Import Project="..\packages\GitInfo.1.0.56-pre\build\GitInfo.targets" Condition="Exists('..\packages\GitInfo.1.0.56-pre\build\GitInfo.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GitInfo.1.0.34-pre\build\GitInfo.targets'))" />
+    <Error Condition="!Exists('..\packages\GitInfo.1.0.56-pre\build\GitInfo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GitInfo.1.0.56-pre\build\GitInfo.targets'))" />
+    <Error Condition="!Exists('..\packages\GitInfo.1.1.5\build\GitInfo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GitInfo.1.1.5\build\GitInfo.targets'))" />
   </Target>
+  <Import Project="..\packages\GitInfo.1.1.5\build\GitInfo.targets" Condition="Exists('..\packages\GitInfo.1.1.5\build\GitInfo.targets')" />
 </Project>

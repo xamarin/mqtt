@@ -8,17 +8,17 @@ namespace System.Net.Mqtt
 		private TaskFactory taskFactory;
 		private bool disposed;
 
-		private TaskRunner (string name = null)
+		private TaskRunner ()
 		{
 			taskFactory = new TaskFactory (CancellationToken.None,
 				TaskCreationOptions.DenyChildAttach,
 				TaskContinuationOptions.None,
-				new SingleThreadScheduler (name));
+				new SingleThreadScheduler ());
 		}
 
-		public static TaskRunner Get (string name = null)
+		public static TaskRunner Get ()
 		{
-			return new TaskRunner (name);
+			return new TaskRunner ();
 		}
 
 		public Task Run (Func<Task> func)

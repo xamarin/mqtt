@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
@@ -10,16 +11,19 @@ namespace System.Net.Mqtt.Flows
 	{
 		protected readonly ITopicEvaluator topicEvaluator;
 		protected readonly IRepositoryProvider repositoryProvider;
+		protected readonly ITracerManager tracerManager;
 		protected readonly ProtocolConfiguration configuration;
 
 		IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 
 		protected ProtocolFlowProvider (ITopicEvaluator topicEvaluator,
 			IRepositoryProvider repositoryProvider,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.repositoryProvider = repositoryProvider;
+			this.tracerManager = tracerManager;
 			this.configuration = configuration;
 		}
 

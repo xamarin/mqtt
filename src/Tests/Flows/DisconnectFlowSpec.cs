@@ -8,11 +8,19 @@ using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Diagnostics;
 
 namespace Tests.Flows
 {
 	public class DisconnectFlowSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public DisconnectFlowSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Fact]
 		public async Task when_sending_disconnect_and_client_session_has_clean_state_then_disconnects_and_delete_will_and_session()
 		{
@@ -20,7 +28,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>>();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
-			var flow = new DisconnectFlow (connectionProvider.Object, sessionRepository.Object, willRepository.Object);
+			var flow = new DisconnectFlow (connectionProvider.Object, sessionRepository.Object, willRepository.Object, tracerManager);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var channel = new Mock<IChannel<IPacket>> ();
@@ -52,7 +60,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>>();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
-			var flow = new DisconnectFlow (connectionProvider.Object, sessionRepository.Object, willRepository.Object);
+			var flow = new DisconnectFlow (connectionProvider.Object, sessionRepository.Object, willRepository.Object, tracerManager);
 
 			var clientId = Guid.NewGuid ().ToString ();
 			var channel = new Mock<IChannel<IPacket>> ();
