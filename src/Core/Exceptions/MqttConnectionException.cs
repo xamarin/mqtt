@@ -1,9 +1,9 @@
-﻿using System.Runtime.Serialization;
-using System.Net.Mqtt.Packets;
+﻿using System.Net.Mqtt.Packets;
+using System.Runtime.Serialization;
 
 namespace System.Net.Mqtt.Exceptions
 {
-	[Serializable]
+	[DataContract]
 	public class MqttConnectionException : MqttException
 	{
 		public MqttConnectionException (ConnectionStatus status)
@@ -19,11 +19,6 @@ namespace System.Net.Mqtt.Exceptions
 		public MqttConnectionException (ConnectionStatus status, string message, Exception innerException) : base (message, innerException)
 		{
 			ReturnCode = status;
-		}
-
-		protected MqttConnectionException (SerializationInfo info, StreamingContext context)
-			: base (info, context)
-		{
 		}
 
 		public ConnectionStatus ReturnCode { get; set; }

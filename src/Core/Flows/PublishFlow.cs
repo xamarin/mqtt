@@ -11,14 +11,15 @@ namespace System.Net.Mqtt.Flows
 {
 	internal abstract class PublishFlow : IPublishFlow
 	{
-		static readonly ITracer tracer = Tracer.Get<PublishFlow> ();
-
+		readonly ITracer tracer;
 		protected readonly IRepository<ClientSession> sessionRepository;
 		protected readonly ProtocolConfiguration configuration;
 
 		protected PublishFlow (IRepository<ClientSession> sessionRepository,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
 		{
+			tracer = tracerManager.Get<PublishFlow> ();
 			this.sessionRepository = sessionRepository;
 			this.configuration = configuration;
 		}

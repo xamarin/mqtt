@@ -8,18 +8,20 @@ namespace System.Net.Mqtt
 {
 	internal class PacketChannel : IChannel<IPacket>
 	{
-		static readonly ITracer tracer = Tracer.Get<PacketChannel> ();
-
 		bool disposed;
-
+		readonly ITracer tracer;
 		readonly IChannel<byte[]> innerChannel;
 		readonly IPacketManager manager;
 		readonly ReplaySubject<IPacket> receiver;
 		readonly ReplaySubject<IPacket> sender;
 		readonly IDisposable subscription;
 
-		public PacketChannel (IChannel<byte[]> innerChannel, IPacketManager manager, ProtocolConfiguration configuration)
+		public PacketChannel (IChannel<byte[]> innerChannel, 
+			IPacketManager manager, 
+			ITracerManager tracerManager,
+			ProtocolConfiguration configuration)
 		{
+			tracer = tracerManager.Get<PacketChannel> ();
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 

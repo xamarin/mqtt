@@ -12,8 +12,7 @@ namespace System.Net.Mqtt.Client
 {
 	internal class ClientPacketListener : IPacketListener
 	{
-		static readonly ITracer tracer = Tracer.Get<ClientPacketListener> ();
-
+		readonly ITracer tracer;
 		readonly IChannel<IPacket> channel;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly ProtocolConfiguration configuration;
@@ -22,15 +21,19 @@ namespace System.Net.Mqtt.Client
 		IDisposable disposable;
 		bool disposed;
 		string clientId = string.Empty;
-		Timers.Timer keepAliveTimer;
+		Timer keepAliveTimer;
 
-		public ClientPacketListener (IChannel<IPacket> channel, IProtocolFlowProvider flowProvider, ProtocolConfiguration configuration)
+		public ClientPacketListener (IChannel<IPacket> channel, 
+			IProtocolFlowProvider flowProvider, 
+			ITracerManager tracerManager,
+			ProtocolConfiguration configuration)
 		{
+			tracer = tracerManager.Get<ClientPacketListener> ();
 			this.channel = channel;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			flowRunner = TaskRunner.Get ("ClientFlowRunner");
+			flowRunner = TaskRunner.Get ();
 		}
 
 		public IObservable<IPacket> Packets { get { return packets; } }
@@ -153,10 +156,10 @@ namespace System.Net.Mqtt.Client
 		{
 			var interval = configuration.KeepAliveSecs * 1000;
 
-			keepAliveTimer = new Timers.Timer ();
+			keepAliveTimer = new Timer ();
 
 			keepAliveTimer.AutoReset = true;
-			keepAliveTimer.Interval = interval;
+			keepAliveTimer.IntervalMillisecs = interval;
 			keepAliveTimer.Elapsed += async (sender, e) => {
 				try {
 					tracer.Warn (Properties.Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, configuration.KeepAliveSecs);
@@ -172,14 +175,14 @@ namespace System.Net.Mqtt.Client
 			keepAliveTimer.Start ();
 
 			channel.Sender.Subscribe (p => {
-				keepAliveTimer.Interval = interval;
+				keepAliveTimer.IntervalMillisecs = interval;
 			});
 		}
 
 		void StopKeepAliveMonitor ()
 		{
 			if (keepAliveTimer != null) {
-				keepAliveTimer.Dispose ();
+				keepAliveTimer.Stop ();
 			}
 		}
 

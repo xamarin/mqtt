@@ -9,17 +9,17 @@ namespace System.Net.Mqtt.Server
 {
 	public class Server : IDisposable
 	{
-		static readonly ITracer tracer = Tracer.Get<Server> ();
-
 		bool disposed;
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
+		readonly ITracer tracer;
 		readonly IChannelProvider binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
 		readonly IEventStream eventStream;
+		readonly ITracerManager tracerManager;
 		readonly ProtocolConfiguration configuration;
 
 		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
@@ -29,13 +29,16 @@ namespace System.Net.Mqtt.Server
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
 			IEventStream eventStream,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
 		{
+			tracer = tracerManager.Get<Server> ();
 			this.binaryChannelProvider = binaryChannelProvider;
 			this.channelFactory = channelFactory;
 			this.flowProvider = flowProvider;
 			this.connectionProvider = connectionProvider;
 			this.eventStream = eventStream;
+			this.tracerManager = tracerManager;
 			this.configuration = configuration;
 		}
 
@@ -118,7 +121,7 @@ namespace System.Net.Mqtt.Server
 			tracer.Verbose (Properties.Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = channelFactory.Create (binaryChannel);
-			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, configuration);
+			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, tracerManager, configuration);
 
 			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => { }, ex => {

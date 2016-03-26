@@ -16,15 +16,19 @@ namespace IntegrationTests.Context
 {
 	public abstract class IntegrationContext
 	{
+		static readonly DiagnosticsTracerManager tracerManager;
 		static readonly ConcurrentBag<int> usedPorts;
-		static Random random = new Random ();
+		static readonly Random random = new Random ();
+		static readonly object lockObject = new object ();
 
 		protected readonly ushort keepAliveSecs;
-		
+
 		static IntegrationContext()
 		{
-			Tracer.Manager.AddListener ("System.Net.Mqtt", new TestTracerListener ());
-			Tracer.Manager.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
+			tracerManager = new DiagnosticsTracerManager ();
+
+			tracerManager.AddListener ("System.Net.Mqtt", new TestTracerListener ());
+			tracerManager.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
 
 			usedPorts = new ConcurrentBag<int> ();
 		}
@@ -41,8 +45,9 @@ namespace IntegrationTests.Context
 			try {
 				LoadConfiguration ();
 
-				var initializer = new ServerInitializer (authenticationProvider);
-				var server = initializer.Initialize (Configuration);
+				var binding = new TcpBinding ();
+				var initializer = new ServerFactory (binding, authenticationProvider);
+				var server = initializer.Create (Configuration);
 
 				server.Start ();
 
@@ -58,13 +63,14 @@ namespace IntegrationTests.Context
 
 		protected virtual Client GetClient()
 		{
-			var initializer = new ClientInitializer (IPAddress.Loopback.ToString());
+			var binding = new TcpBinding ();
+			var initializer = new ClientFactory (IPAddress.Loopback.ToString(), binding);
 
 			if (Configuration == null) {
 				LoadConfiguration ();
 			}
 
-			return initializer.Initialize (Configuration);
+			return initializer.Create (Configuration);
 		}
 
 		protected string GetClientId()
@@ -84,13 +90,15 @@ namespace IntegrationTests.Context
 
 		void LoadConfiguration()
 		{
-			Configuration = new ProtocolConfiguration {
-				BufferSize = 128 * 1024,
-				Port = GetPort(),
-				KeepAliveSecs = keepAliveSecs,
-				WaitingTimeoutSecs = 2,
-				MaximumQualityOfService = QualityOfService.ExactlyOnce
-			};
+			lock (lockObject) {
+				Configuration = new ProtocolConfiguration {
+					BufferSize = 128 * 1024,
+					Port = GetPort (),
+					KeepAliveSecs = keepAliveSecs,
+					WaitingTimeoutSecs = 2,
+					MaximumQualityOfService = QualityOfService.ExactlyOnce
+				};
+			}
 		}
 
 		static int GetPort()
@@ -99,6 +107,8 @@ namespace IntegrationTests.Context
 
 			if(usedPorts.Any(p => p == port)) {
 				port = GetPort ();
+			} else {
+				usedPorts.Add (port);
 			}
 
 			return port;

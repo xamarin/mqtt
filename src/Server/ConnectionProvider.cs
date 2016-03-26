@@ -8,12 +8,18 @@ namespace System.Net.Mqtt.Server
 {
 	internal class ConnectionProvider : IConnectionProvider
 	{
-		static readonly ITracer tracer = Tracer.Get<ConnectionProvider> ();
 		static readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;
+
+		readonly ITracer tracer;
 
 		static ConnectionProvider ()
 		{
 			connections = new ConcurrentDictionary<string, IChannel<IPacket>> ();
+		}
+
+		public ConnectionProvider (ITracerManager tracerManager)
+		{
+			tracer = tracerManager.Get<ConnectionProvider> ();
 		}
 
 		public int Connections { get { return connections.Skip (0).Count (); } }

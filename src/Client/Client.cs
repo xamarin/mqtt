@@ -12,13 +12,12 @@ namespace System.Net.Mqtt.Client
 {
 	public class Client : IClient, IDisposable
 	{
-		static readonly ITracer tracer = Tracer.Get<Client> ();
-
 		bool protocolDisconnected;
 		bool disposed;
 		bool isConnected;
 		IDisposable packetsSubscription;
 
+		readonly ITracer tracer;
 		readonly ReplaySubject<ApplicationMessage> receiver;
 		readonly ReplaySubject<IPacket> sender;
 		readonly IChannel<IPacket> packetChannel;
@@ -33,8 +32,11 @@ namespace System.Net.Mqtt.Client
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
 		{
+			tracer = tracerManager.Get<Client> ();
+
 			receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 
@@ -43,8 +45,8 @@ namespace System.Net.Mqtt.Client
 			sessionRepository = repositoryProvider.GetRepository<ClientSession> ();
 			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
-			clientSender = TaskRunner.Get ("ClientSender");
-			packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
+			clientSender = TaskRunner.Get ();
+			packetListener = new ClientPacketListener (packetChannel, flowProvider, tracerManager, configuration);
 
 			packetListener.Listen ();
 		}
