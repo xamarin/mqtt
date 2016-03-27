@@ -1,6 +1,0 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-
-[assembly: AssemblyTitle ("System.Net.Mqtt.Core.Android")]
-[assembly: AssemblyDescription ("Shared components for Anroid.")]
-[assembly: InternalsVisibleTo ("System.Net.Mqtt.Android,PublicKey=0024000004800000940000000602000000240000525341310004000001000100c1b9fe1b28008accb2dde038a3dba64f56d08f2169fb8aa41bfc4dab6ec6bc25ca3162875e4ffb7501c27f7048bae46ac836c323cd2fba90b173dadf8e6d731f88eaf008e6041649aa51023869df68b24b5e72576b2ffd52f875160c300d5c84547364d893ca2923bf0325edccac901b60e14d85de0a0d5d3a20d284fafbdfa0")]
