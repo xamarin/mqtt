@@ -5,8 +5,8 @@ namespace System.Net.Mqtt
 {
 	internal class TaskRunner : IDisposable
 	{
-		private TaskFactory taskFactory;
-		private bool disposed;
+		TaskFactory taskFactory;
+		bool disposed;
 
 		private TaskRunner ()
 		{

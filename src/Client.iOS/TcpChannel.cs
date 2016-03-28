@@ -108,7 +108,7 @@ namespace System.Net.Mqtt.Client
 			}
 		}
 
-		private IDisposable SubscribeStream ()
+		IDisposable SubscribeStream ()
 		{
 			return Observable.Defer (() => {
 				var buffer = new byte[client.ReceiveBufferSize];

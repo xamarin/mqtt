@@ -11,24 +11,29 @@ namespace System.Net.Mqtt.Client
 		readonly string hostAddress;
 		readonly IProtocolBinding binding;
 
-		public ClientFactory (string hostAddress, IProtocolBinding binding)
-		{
-			tracerManager = new DefaultTracerManager ();
-			tracer = tracerManager.Get<ClientFactory> ();
-			this.hostAddress = hostAddress;
-			this.binding = binding;
-		}
+        public ClientFactory (string hostAddress, IProtocolBinding binding)
+            : this (hostAddress, binding, new DefaultTracerManager ())
+        {
+        }
 
-		/// <exception cref="ClientException">ClientException</exception>
-		public Client Create (ProtocolConfiguration configuration)
+        public ClientFactory (string hostAddress, IProtocolBinding binding, ITracerManager tracerManager)
+        {
+            tracer = tracerManager.Get<ClientFactory> ();
+            this.tracerManager = tracerManager;
+            this.hostAddress = hostAddress;
+            this.binding = binding;
+        }
+
+        /// <exception cref="ClientException">ClientException</exception>
+        public Client Create (ProtocolConfiguration configuration)
 		{
 			try {
-				var topicEvaluator = new TopicEvaluator(configuration);
+				var topicEvaluator = new TopicEvaluator (configuration);
 				var innerChannelFactory = binding.GetChannelFactory (hostAddress, tracerManager, configuration);
-				var channelFactory = new PacketChannelFactory(innerChannelFactory, topicEvaluator, tracerManager, configuration);
+				var channelFactory = new PacketChannelFactory (innerChannelFactory, topicEvaluator, tracerManager, configuration);
 				var packetIdProvider = new PacketIdProvider ();
-				var repositoryProvider = new InMemoryRepositoryProvider();
-				var flowProvider = new ClientProtocolFlowProvider(topicEvaluator, repositoryProvider, tracerManager, configuration);
+				var repositoryProvider = new InMemoryRepositoryProvider ();
+				var flowProvider = new ClientProtocolFlowProvider (topicEvaluator, repositoryProvider, tracerManager, configuration);
 				var packetChannel = channelFactory.Create ();
 
 				return new Client (packetChannel, flowProvider, repositoryProvider, packetIdProvider, tracerManager, configuration);
