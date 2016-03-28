@@ -12,9 +12,14 @@ namespace System.Net.Mqtt.Client
         readonly IProtocolBinding binding;
 
         public ClientFactory (string hostAddress, IProtocolBinding binding)
+            : this (hostAddress, binding, new DefaultTracerManager ())
         {
-            tracerManager = new DefaultTracerManager ();
+        }
+
+        public ClientFactory (string hostAddress, IProtocolBinding binding, ITracerManager tracerManager)
+        {
             tracer = tracerManager.Get<ClientFactory> ();
+            this.tracerManager = tracerManager;
             this.hostAddress = hostAddress;
             this.binding = binding;
         }
