@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E1EE11FF-BA01-4919-8984-C61CCF8CAFAB}</ProjectGuid>
+    <ProjectGuid>{D92D7642-43D3-47F9-B5E5-9D8F5944AC84}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>System.Net.Mqtt.Client</RootNamespace>
+    <RootNamespace>System.Net.Mqtt.Server</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>System.Net.Mqtt.iOS</AssemblyName>
+    <AssemblyName>System.Net.Mqtt.Server.iOS</AssemblyName>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -40,6 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="Hermes.snk" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -51,14 +52,10 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerFactory.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Client\Client.csproj">
-      <Project>{d3eb8c4f-6cf4-4eb4-94e3-bca31767ae53}</Project>
-      <Name>Client</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Core.iOS\Core.iOS.csproj">
       <Project>{e6678fd3-f321-410a-9858-f542e87c1cf7}</Project>
       <Name>Core.iOS</Name>
@@ -69,9 +66,10 @@
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Server\Server.csproj">
+      <Project>{1397ec83-6d03-4d81-95d5-5d11c766c43a}</Project>
+      <Name>Server</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\GitInfo.1.1.5\build\GitInfo.targets" Condition="Exists('..\packages\GitInfo.1.1.5\build\GitInfo.targets')" />

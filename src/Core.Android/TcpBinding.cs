@@ -1,6 +1,6 @@
 ﻿using System.Net.Mqtt.Diagnostics;
 
-namespace System.Net.Mqtt.Client
+namespace System.Net.Mqtt
 {
 	public class TcpBinding : IProtocolBinding
 	{
