@@ -19,7 +19,7 @@ namespace System.Net.Mqtt.Diagnostics
 	/// All tracing is performed asynchronously transparently for faster speed.
 	/// </remarks>
 	///	<nuget id="Tracer.SystemDiagnostics" />
-	partial class DiagnosticsTracerManager : ITracerManager, IDisposable
+	public class DiagnosticsTracerManager : ITracerManager, IDisposable
     {
         /// <summary>
         /// Implicit default trace source name which can be used to setup 
