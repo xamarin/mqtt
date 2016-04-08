@@ -2,7 +2,7 @@
 using System.Net.Mqtt.Exceptions;
 using System.Net.Sockets;
 
-namespace System.Net.Mqtt.Client
+namespace System.Net.Mqtt
 {
 	internal class TcpChannelFactory : IChannelFactory
 	{
