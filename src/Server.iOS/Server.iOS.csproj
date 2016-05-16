@@ -26,12 +26,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core.iOS\Core.iOS.csproj">
-      <Project>{e6678fd3-f321-410a-9858-f542e87c1cf7}</Project>
-      <Name>Core.iOS</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
-    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Core</Name>
