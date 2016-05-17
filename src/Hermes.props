@@ -33,6 +33,7 @@
 		<WarningLevel>4</WarningLevel>
 		<SchemaVersion>2.0</SchemaVersion>
 		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<UseVSHostingProcess>false</UseVSHostingProcess>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
