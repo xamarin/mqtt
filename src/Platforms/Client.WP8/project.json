@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "GitInfo": "1.1.12",
+    "Rx-Main": "2.2.5"
+  },
+  "frameworks": {
+    "WindowsPhone,Version=v8.0": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}
