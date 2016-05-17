@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\..\Hermes.props" />
+  <PropertyGroup>
+    <ProjectGuid>{A09B1D2D-2DC3-46BB-8E85-19C1D3FC54E8}</ProjectGuid>
+    <RootNamespace>System.Net.Mqtt.Client</RootNamespace>
+    <AssemblyName>System.Net.Mqtt</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Client\Client.csproj">
+      <Project>{d3eb8c4f-6cf4-4eb4-94e3-bca31767ae53}</Project>
+      <Name>Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core.Desktop\Core.Desktop.csproj">
+      <Project>{fda37b7e-32e7-45c8-9d09-7d34dab2cc28}</Project>
+      <Name>Core.Desktop</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Core.csproj">
+      <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\AssemblyInfo.Client.cs">
+      <Link>Properties\AssemblyInfo.Client.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="..\..\Client.Shared\Client.Shared.projitems" Label="Shared" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\Hermes.targets" />
+  <Import Project="..\..\packages\GitInfo.1.1.12\build\GitInfo.targets" Condition="Exists('..\..\packages\GitInfo.1.1.12\build\GitInfo.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\GitInfo.1.1.12\build\GitInfo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\GitInfo.1.1.12\build\GitInfo.targets'))" />
+  </Target>
+</Project>
