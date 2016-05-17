@@ -18,12 +18,14 @@
         </dependencies>
     </metadata>
     <files>
+		<!--
 		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
 		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
 		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
 		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
 		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
 		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		-->
 
 		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\net45" />
 		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\net45" />
