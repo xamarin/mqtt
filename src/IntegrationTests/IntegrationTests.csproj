@@ -64,25 +64,25 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Client.Library\Client.Library.csproj">
+    <ProjectReference Include="..\Client.Desktop\Client.Desktop.csproj">
       <Project>{a09b1d2d-2dc3-46bb-8e85-19c1d3fc54e8}</Project>
-      <Name>Client.Library</Name>
+      <Name>Client.Desktop</Name>
     </ProjectReference>
     <ProjectReference Include="..\Client\Client.csproj">
       <Project>{d3eb8c4f-6cf4-4eb4-94e3-bca31767ae53}</Project>
       <Name>Client</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Core.Library\Core.Library.csproj">
+    <ProjectReference Include="..\Core.Desktop\Core.Desktop.csproj">
       <Project>{fda37b7e-32e7-45c8-9d09-7d34dab2cc28}</Project>
-      <Name>Core.Library</Name>
+      <Name>Core.Desktop</Name>
     </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Server.Library\Server.Library.csproj">
+    <ProjectReference Include="..\Server.Desktop\Server.Desktop.csproj">
       <Project>{bb1f9777-4230-4fe2-8eb0-8bd0a13b4408}</Project>
-      <Name>Server.Library</Name>
+      <Name>Server.Desktop</Name>
     </ProjectReference>
     <ProjectReference Include="..\Server\Server.csproj">
       <Project>{1397ec83-6d03-4d81-95d5-5d11c766c43a}</Project>

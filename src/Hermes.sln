@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{6481B999-0479-4162-AC53-5936CE5FD8BF}"
 EndProject
@@ -32,11 +32,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{E887D106
 		..\packages.config = ..\packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Library", "Core.Library\Core.Library.csproj", "{FDA37B7E-32E7-45C8-9D09-7D34DAB2CC28}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Desktop", "Core.Desktop\Core.Desktop.csproj", "{FDA37B7E-32E7-45C8-9D09-7D34DAB2CC28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.Library", "Client.Library\Client.Library.csproj", "{A09B1D2D-2DC3-46BB-8E85-19C1D3FC54E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.Desktop", "Client.Desktop\Client.Desktop.csproj", "{A09B1D2D-2DC3-46BB-8E85-19C1D3FC54E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.Library", "Server.Library\Server.Library.csproj", "{BB1F9777-4230-4FE2-8EB0-8BD0A13B4408}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.Desktop", "Server.Desktop\Server.Desktop.csproj", "{BB1F9777-4230-4FE2-8EB0-8BD0A13B4408}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.iOS", "Client.iOS\Client.iOS.csproj", "{E1EE11FF-BA01-4919-8984-C61CCF8CAFAB}"
 EndProject
