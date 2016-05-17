@@ -9,6 +9,7 @@ using Xunit;
 using Xunit.Extensions;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Diagnostics;
+using Merq;
 
 namespace Tests
 {

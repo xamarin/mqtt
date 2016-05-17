@@ -7,6 +7,7 @@ using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Net.Mqtt.Server;
 using Props = System.Net.Mqtt.Server.Properties;
+using Merq;
 
 namespace System.Net.Mqtt.Flows
 {

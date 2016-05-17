@@ -1,0 +1,13 @@
+﻿{
+  "dependencies": {
+    "GitInfo": "1.1.12",
+    "Merq.Events": "0.3.19-pre",
+    "Rx-Main": "2.2.5"
+  },
+  "frameworks": {
+    "MonoAndroid,Version=v5.1": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}
