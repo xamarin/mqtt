@@ -31,6 +31,9 @@
   <ItemGroup>
     <None Include="project.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="TcpBinding.cs" />
+  </ItemGroup>
   <Import Project="..\..\Client.Shared\Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\Hermes.targets" />

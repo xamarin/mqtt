@@ -61,8 +61,8 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Client.Shared\Client.Shared.projitems*{a09b1d2d-2dc3-46bb-8e85-19c1d3fc54e8}*SharedItemsImports = 4
-		Client.Shared\Client.Shared.projitems*{e1ee11ff-ba01-4919-8984-c61ccf8cafab}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{e1ee11ff-ba01-4919-8984-c61ccf8cafab}*SharedItemsImports = 4
+		Client.Shared\Client.Shared.projitems*{e1ee11ff-ba01-4919-8984-c61ccf8cafab}*SharedItemsImports = 4
 		Client.Shared\Client.Shared.projitems*{9c9aa9c9-09c7-48dc-8d9c-311e8eb91e65}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{fda37b7e-32e7-45c8-9d09-7d34dab2cc28}*SharedItemsImports = 4
 		Server.Shared\Server.Shared.projitems*{c8d56b2d-5828-4d8f-a3de-5458c31d714a}*SharedItemsImports = 4
@@ -71,8 +71,8 @@ Global
 		Client.Shared\Client.Shared.projitems*{e314b453-080d-481c-8fb1-356f78da72fc}*SharedItemsImports = 13
 		Core.Shared\Core.Shared.projitems*{9124efd9-4676-4a79-aff9-265107dc1d64}*SharedItemsImports = 13
 		Server.Shared\Server.Shared.projitems*{d92d7642-43d3-47f9-b5e5-9d8f5944ac84}*SharedItemsImports = 4
-		Client.Shared\Client.Shared.projitems*{c2dcd7cf-3780-4003-b4be-dba8da5c6178}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{c2dcd7cf-3780-4003-b4be-dba8da5c6178}*SharedItemsImports = 4
+		Client.Shared\Client.Shared.projitems*{c2dcd7cf-3780-4003-b4be-dba8da5c6178}*SharedItemsImports = 4
 		Server.Shared\Server.Shared.projitems*{bb1f9777-4230-4fe2-8eb0-8bd0a13b4408}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
