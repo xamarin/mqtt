@@ -14,13 +14,43 @@
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
         <dependencies>
-			<dependency id="Rx-Main" version="2.2.5" />
-        </dependencies>
+			<group>
+				<dependency id="Rx-Main" version="2.2.5" />
+			</group>
+			<group targetFramework="net45">
+				<dependency id="Merq.Events" />
+			</group>
+		</dependencies>
     </metadata>
     <files>
-		<file src="bin\Release\System.Net.Mqtt.Server.dll" target="lib\net45" />
-		<file src="bin\Release\System.Net.Mqtt.Server.pdb" target="lib\net45" />
-		<file src="bin\Release\System.Net.Mqtt.Core.dll" target="lib\net45" />
-		<file src="bin\Release\System.Net.Mqtt.Core.pdb" target="lib\net45" />
-    </files>
+		<file src="..\Platforms\Server.Portable\bin\$Configuration$\System.Net.Mqtt.Server.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Server.Portable\bin\$Configuration$\System.Net.Mqtt.Server.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Server.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Server.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Server.Portable\bin\$Configuration$\System.Net.Mqtt.Server.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Server.Portable\bin\$Configuration$\System.Net.Mqtt.Server.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Server.dll" target="lib\net45" />
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Server.pdb" target="lib\net45" />
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.dll" target="lib\net45" />
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.pdb" target="lib\net45" />
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\net45" />
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\net45" />
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Server.Portable.dll" target="lib\net45" />
+		<file src="..\Platforms\Server.Desktop\bin\$Configuration$\System.Net.Mqtt.Server.Portable.pdb" target="lib\net45" />
+
+		<file src="..\Platforms\Server.Android\bin\$Configuration$\System.Net.Mqtt.Server.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Server.Android\bin\$Configuration$\System.Net.Mqtt.Server.pdb" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Server.Android\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Server.Android\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Server.Android\bin\$Configuration$\System.Net.Mqtt.Server.Portable.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Server.Android\bin\$Configuration$\System.Net.Mqtt.Server.Portable.pdb" target="lib\MonoAndroid10" />
+
+		<file src="..\Platforms\Server.iOS\bin\$Configuration$\System.Net.Mqtt.Server.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Server.iOS\bin\$Configuration$\System.Net.Mqtt.Server.pdb" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Server.iOS\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Server.iOS\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Server.iOS\bin\$Configuration$\System.Net.Mqtt.Server.Portable.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Server.iOS\bin\$Configuration$\System.Net.Mqtt.Server.Portable.pdb" target="lib\Xamarin.iOS" />
+	</files>
 </package>

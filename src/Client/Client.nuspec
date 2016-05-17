@@ -18,16 +18,34 @@
         </dependencies>
     </metadata>
     <files>
-		<!--
-		portable-net45%2Bwin%2Bwpa81%2BMonoAndroid10%2Bxamarinios10%2BMonoTouch10
-		portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10
-		
-		portable-win+net45+win81+wpa81++MonoAndroid10+MonoTouch10+Xamarin.iOS10
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
 
-		-->
-		<file src="bin\Release\System.Net.Mqtt.dll" target="lib\net45" />
-		<file src="bin\Release\System.Net.Mqtt.pdb" target="lib\net45" />
-		<file src="bin\Release\System.Net.Mqtt.Core.dll" target="lib\net45" />
-		<file src="bin\Release\System.Net.Mqtt.Core.pdb" target="lib\net45" />
-    </files>
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.pdb" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\net45" />
+ 
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\MonoAndroid10" />
+
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\Xamarin.iOS" />
+	</files>
 </package>

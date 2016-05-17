@@ -30,6 +30,8 @@
 		<PackagesPath>$(IntermediateOutputPath)packages</PackagesPath>
 		<Out Condition=" '$(Out)' == '' ">out</Out>
 		<GitInfoReportImportance>high</GitInfoReportImportance>
+		<GitIgnoreTagVersion>true</GitIgnoreTagVersion>
+		<GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
 		<CommonBuildProperties>TrackFileAccess=false;WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration)</CommonBuildProperties>
 	</PropertyGroup>
 
