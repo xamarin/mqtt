@@ -30,16 +30,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="project.json" />
   </ItemGroup>
   <Import Project="..\..\Server.Shared\Server.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <Import Project="..\..\Hermes.targets" />
-  <Import Project="..\..\packages\GitInfo.1.1.12\build\GitInfo.targets" Condition="Exists('..\..\packages\GitInfo.1.1.12\build\GitInfo.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\GitInfo.1.1.12\build\GitInfo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\GitInfo.1.1.12\build\GitInfo.targets'))" />
-  </Target>
 </Project>
