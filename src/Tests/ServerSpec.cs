@@ -9,6 +9,7 @@ using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Diagnostics;
+using Merq;
 
 namespace Tests
 {

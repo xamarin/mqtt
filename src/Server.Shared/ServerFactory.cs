@@ -2,6 +2,7 @@
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Storage;
 using System.Net.Mqtt.Diagnostics;
+using Merq;
 
 namespace System.Net.Mqtt.Server
 {

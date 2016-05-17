@@ -4,6 +4,7 @@ using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Diagnostics;
+using Merq;
 
 namespace System.Net.Mqtt.Flows
 {

@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\Hermes.props" />
   <PropertyGroup>
-    <ProjectGuid>{02BA79E3-EB68-403A-B541-196102F70E4D}</ProjectGuid>
+    <ProjectGuid>{9C9AA9C9-09C7-48DC-8D9C-311E8EB91E65}</ProjectGuid>
     <RootNamespace>System.Net.Mqtt.Client</RootNamespace>
     <AssemblyName>System.Net.Mqtt</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -12,17 +12,26 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Client\Client.csproj">
+      <Project>{d3eb8c4f-6cf4-4eb4-94e3-bca31767ae53}</Project>
+      <Name>Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\Core.csproj">
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="project.json" />
+  </ItemGroup>
+  <Import Project="..\..\Client.Shared\Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\Hermes.targets" />
 </Project>

@@ -17,6 +17,7 @@ using Xunit;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Diagnostics;
+using Merq;
 
 namespace Tests.Flows
 {
