@@ -9,7 +9,6 @@
     <Import_RootNamespace>Core.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)TcpBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TcpChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TcpChannelFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TcpChannelProvider.cs" />
