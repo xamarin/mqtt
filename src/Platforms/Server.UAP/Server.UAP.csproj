@@ -25,6 +25,9 @@
     <Compile Include="..\AssemblyInfo.Server.cs">
       <Link>Properties\AssemblyInfo.Server.cs</Link>
     </Compile>
+    <Compile Include="..\Server.Desktop\TcpBinding.cs">
+      <Link>TcpBinding.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core.csproj">
@@ -40,6 +43,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <Import Project="..\..\Server.Shared\Server.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Core.Shared\Core.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <Import Project="..\..\Hermes.targets" />
 </Project>

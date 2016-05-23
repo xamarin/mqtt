@@ -34,11 +34,13 @@
     <Compile Include="..\AssemblyInfo.Client.cs">
       <Link>Properties\AssemblyInfo.Client.cs</Link>
     </Compile>
+    <Compile Include="TcpBinding.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
   </ItemGroup>
   <Import Project="..\..\Client.Shared\Client.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Core.Shared\Core.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\Hermes.targets" />
 </Project>
