@@ -1,7 +1,9 @@
-﻿namespace System.Net.Mqtt
+﻿using System.Threading.Tasks;
+
+namespace System.Net.Mqtt
 {
 	public interface IChannelFactory
 	{
-		IChannel<byte[]> Create ();
+		Task<IChannel<byte[]>> CreateAsync ();
 	}
 }

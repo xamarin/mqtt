@@ -1,7 +1,7 @@
-﻿using System.Reactive;
+﻿using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Storage;
-using System.Net.Mqtt.Diagnostics;
+using System.Threading.Tasks;
 using Merq;
 
 namespace System.Net.Mqtt.Server
@@ -28,7 +28,7 @@ namespace System.Net.Mqtt.Server
         }
 
         /// <exception cref="ServerException">ServerException</exception>
-        public Server Create (ProtocolConfiguration configuration)
+        public Task<Server> CreateAsync (ProtocolConfiguration configuration)
         {
             try {
                 var topicEvaluator = new TopicEvaluator (configuration);
@@ -38,11 +38,26 @@ namespace System.Net.Mqtt.Server
                 var connectionProvider = new ConnectionProvider (tracerManager);
                 var packetIdProvider = new PacketIdProvider ();
                 var eventStream = new EventStream ();
-                var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, connectionProvider, topicEvaluator,
-                repositoryProvider, packetIdProvider, eventStream, tracerManager, configuration);
+                var flowProvider = new ServerProtocolFlowProvider (
+                    authenticationProvider, 
+                    connectionProvider, 
+                    topicEvaluator,
+                    repositoryProvider, 
+                    packetIdProvider, 
+                    eventStream, 
+                    tracerManager, 
+                    configuration);
 
-                return new Server (channelProvider, channelFactory,
-                    flowProvider, connectionProvider, eventStream, tracerManager, configuration);
+                var server = new Server (
+                    channelProvider, 
+                    channelFactory,
+                    flowProvider, 
+                    connectionProvider, 
+                    eventStream, 
+                    tracerManager, 
+                    configuration);
+
+                return Task.FromResult (server);
             } catch (Exception ex) {
                 tracer.Error (ex, Properties.Resources.Server_InitializeError);
 

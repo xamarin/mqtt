@@ -1,7 +1,9 @@
-﻿namespace System.Net.Mqtt
+﻿using System.Threading.Tasks;
+
+namespace System.Net.Mqtt
 {
-	public interface IFactory<T> where T : class
-	{
-		T Create (ProtocolConfiguration configuration);
-	}
+    public interface IFactory<T> where T : class
+    {
+        Task<T> CreateAsync (ProtocolConfiguration configuration);
+    }
 }
