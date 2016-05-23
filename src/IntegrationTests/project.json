@@ -1,7 +1,7 @@
 ﻿{
   "dependencies": {
     "GitInfo": "1.1.12",
-    "Merq.Events": "0.3.19-pre",
+    "Merq.Events": "0.3.26-pre",
     "Moq": "4.2.1510.2205",
     "Newtonsoft.Json": "8.0.3",
     "Rx-Main": "2.2.5",
