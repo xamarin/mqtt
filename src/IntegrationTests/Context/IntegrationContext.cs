@@ -2,19 +2,20 @@
 using System.Collections.Concurrent;
 using System.Configuration;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Diagnostics;
-using System.Net.Mqtt.Packets;
-using System.Linq;
-using System.Net.Sockets;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using Server = System.Net.Mqtt.Server;
 
 namespace IntegrationTests.Context
 {
-	public abstract class IntegrationContext
+    public abstract class IntegrationContext
 	{
 		static readonly DiagnosticsTracerManager tracerManager;
 		static readonly ConcurrentBag<int> usedPorts;
@@ -40,28 +41,28 @@ namespace IntegrationTests.Context
 
 		protected ProtocolConfiguration Configuration { get; private set; }
 
-		protected Server GetServer(IAuthenticationProvider authenticationProvider = null)
+		protected async Task<Server.Server> GetServerAsync (Server.IAuthenticationProvider authenticationProvider = null)
 		{
 			try {
 				LoadConfiguration ();
 
 				var binding = new TcpBinding ();
-				var initializer = new ServerFactory (binding, authenticationProvider);
-				var server = initializer.Create (Configuration);
+				var initializer = new Server.ServerFactory (binding, authenticationProvider);
+				var server = await initializer.CreateAsync (Configuration);
 
 				server.Start ();
 
 				return server;
 			} catch (MqttException protocolEx) {
 				if (protocolEx.InnerException is SocketException) {
-					return GetServer ();
+					return await GetServerAsync ();
 				} else {
 					throw;
 				}
 			}
 		}
 
-		protected virtual Client GetClient()
+		protected virtual Task<Client> GetClientAsync ()
 		{
 			var binding = new TcpBinding ();
 			var initializer = new ClientFactory (IPAddress.Loopback.ToString(), binding);
@@ -70,7 +71,7 @@ namespace IntegrationTests.Context
 				LoadConfiguration ();
 			}
 
-			return initializer.Create (Configuration);
+			return initializer.CreateAsync (Configuration);
 		}
 
 		protected string GetClientId()

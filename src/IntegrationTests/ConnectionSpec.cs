@@ -1,27 +1,26 @@
-﻿using System.Threading.Tasks;
-using System.Net.Mqtt;
-using IntegrationTests.Context;
-using Xunit;
-using System.Linq;
-using System.Threading;
-using System;
-using System.Reactive.Linq;
-using System.Net.Mqtt.Packets;
-using System.Text;
+﻿using System;
 using System.Collections.Generic;
-using System.Net.Mqtt.Server;
+using System.Linq;
 using System.Net.Mqtt.Client;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Server;
+using System.Reactive.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using IntegrationTests.Context;
+using Xunit;
 
 namespace IntegrationTests
 {
-	public class ConnectionSpec : IntegrationContext, IDisposable
+    public class ConnectionSpec : IntegrationContext, IDisposable
 	{
 		readonly Server server;
 
 		public ConnectionSpec ()
 		{
-			server = GetServer ();
+			server = GetServerAsync ().Result;
 		}
 
 		[Fact]
@@ -29,7 +28,7 @@ namespace IntegrationTests
 		{
 			server.Stop ();
 
-			var ex = Assert.Throws<ClientException>(() => GetClient ());
+			var ex = Assert.Throws<ClientException>(async () => await GetClientAsync ());
 
 			Assert.NotNull (ex);
 			Assert.NotNull (ex.InnerException);
@@ -39,8 +38,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
 		{
-			var fooClient = GetClient ();
-			var barClient = GetClient ();
+			var fooClient = await GetClientAsync ();
+			var barClient = await GetClientAsync ();
 
 			await fooClient.ConnectAsync (new ClientCredentials (GetClientId ()));
 			await barClient.ConnectAsync (new ClientCredentials (GetClientId ()));
@@ -80,7 +79,7 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var client = GetClient ();
+				var client = await GetClientAsync ();
 
 				tasks.Add (client.ConnectAsync (new ClientCredentials (GetClientId ())));
 				clients.Add (client);
@@ -105,7 +104,7 @@ namespace IntegrationTests
 			var connectTasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var client = GetClient ();
+				var client = await GetClientAsync ();
 
 				connectTasks.Add(client.ConnectAsync (new ClientCredentials (GetClientId ())));
 				clients.Add (client);
@@ -141,7 +140,7 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_disconnect_client_then_server_decrease_active_client_list()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 
 			await client.ConnectAsync (new ClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -189,9 +188,9 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_client_disconnects_by_protocol_then_will_message_is_not_sent()
 		{
-			var client1 = GetClient ();
-			var client2 = GetClient ();
-			var client3 = GetClient ();
+			var client1 = await GetClientAsync ();
+			var client2 = await GetClientAsync ();
+			var client3 = await GetClientAsync ();
 
 			var topic = Guid.NewGuid ().ToString ();
 			var qos = QualityOfService.ExactlyOnce;
@@ -233,11 +232,11 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_client_disconnects_unexpectedly_then_will_message_is_sent()
 		{
-			var client1 = GetClient ();
-			var client2 = GetClient ();
-			var client3 = GetClient ();
+            var client1 = await GetClientAsync ();
+            var client2 = await GetClientAsync ();
+            var client3 = await GetClientAsync ();
 
-			var topic = Guid.NewGuid ().ToString ();
+            var topic = Guid.NewGuid ().ToString ();
 			var qos = QualityOfService.ExactlyOnce;
 			var retain = true;
 			var message = "Client 1 has been disconnected unexpectedly";

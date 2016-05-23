@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Net;
-using System.Net.Sockets;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Packets;
-using Xunit;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Packets;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using Xunit;
+using Server = System.Net.Mqtt.Server;
 
 namespace Tests
 {
-	public class InitializerSpec
+    public class InitializerSpec
 	{
 		[Fact]
 		public void when_creating_protocol_configuration_then_default_values_are_set()
@@ -25,15 +26,15 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_initializing_server_then_succeeds()
+		public async Task when_initializing_server_then_succeeds()
 		{
 			var configuration = new ProtocolConfiguration {
 				BufferSize = 131072,
 				Port = Protocol.DefaultNonSecurePort
 			};
 			var binding = new TcpBinding ();
-			var initializer = new ServerFactory (binding);
-			var server = initializer.Create (configuration);
+			var initializer = new Server.ServerFactory (binding);
+			var server = await initializer.CreateAsync (configuration);
 
 			Assert.NotNull (server);
 
@@ -41,7 +42,7 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_initializing_client_then_succeeds()
+		public async Task when_initializing_client_then_succeeds()
 		{
 			var port = new Random().Next(IPEndPoint.MinPort, IPEndPoint.MaxPort);
 			var listener = new TcpListener(IPAddress.Loopback, port);
@@ -54,7 +55,7 @@ namespace Tests
 			};
 			var binding = new TcpBinding ();
 			var initializer = new ClientFactory (IPAddress.Loopback.ToString(), binding);
-			var client = initializer.Create (configuration);
+			var client = await initializer.CreateAsync (configuration);
 
 			Assert.NotNull (client);
 

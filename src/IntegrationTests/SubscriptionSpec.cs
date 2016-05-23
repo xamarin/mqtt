@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Server;
+using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
-using System.Net.Mqtt.Server;
 
 namespace IntegrationTests
 {
-	public class SubscriptionSpec : ConnectedContext
+    public class SubscriptionSpec : ConnectedContext
 	{
 		readonly Server server;
 
 		public SubscriptionSpec ()
 		{
-			server = GetServer ();
+			server = GetServerAsync ().Result;
 		}
 
 		[Fact]
 		public async Task when_subscribe_topic_then_succeeds()
 		{
-			var client = GetClient ();
-			var topicFilter = Guid.NewGuid ().ToString () + "/#";
+			var client = await GetClientAsync ();
+            var topicFilter = Guid.NewGuid ().ToString () + "/#";
 
 			await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -36,8 +36,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_subscribe_multiple_topics_then_succeeds()
 		{
-			var client = GetClient ();
-			var topicsToSubscribe = GetTestLoad();
+			var client = await GetClientAsync ();
+            var topicsToSubscribe = GetTestLoad();
 			var topics = new List<string> ();
 			var tasks = new List<Task> ();
 
@@ -60,8 +60,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_unsubscribe_topic_then_succeeds()
 		{
-			var client = GetClient ();
-			var topicsToSubscribe = GetTestLoad();
+			var client = await GetClientAsync ();
+            var topicsToSubscribe = GetTestLoad();
 			var topics = new List<string> ();
 			var tasks = new List<Task> ();
 

@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-using System.Net.Mqtt.Packets;
-using IntegrationTests.Context;
-using Xunit;
 using System.Net.Mqtt.Client;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using IntegrationTests.Context;
+using Xunit;
 
 namespace IntegrationTests
 {
-	public class ExceptionSpec : IntegrationContext
+    public class ExceptionSpec : IntegrationContext
 	{
 		[Fact]
 		public void when_connecting_client_to_non_existing_server_then_fails()
 		{
-			var clientException = Assert.Throws<ClientException>(() => GetClient ());
+			var clientException = Assert.Throws<ClientException>(async () => await GetClientAsync ());
 
 			Assert.NotNull (clientException);
 			Assert.NotNull (clientException.InnerException);
@@ -26,8 +26,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_server_is_closed_then_error_occurs_when_client_send_message()
 		{
-			var server = GetServer ();
-			var client = GetClient ();
+			var server = await GetServerAsync ();
+			var client = await GetClientAsync ();
 
 			await client.ConnectAsync (new ClientCredentials(GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);

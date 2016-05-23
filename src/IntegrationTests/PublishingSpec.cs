@@ -1,31 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Server;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using Xunit;
-using System.Text;
-using System.Collections.Generic;
-using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Client;
 
 namespace IntegrationTests
 {
-	public class PublishingSpec : ConnectedContext, IDisposable
+    public class PublishingSpec : ConnectedContext, IDisposable
 	{
 		readonly Server server;
 
 		public PublishingSpec () 
 			: base(keepAliveSecs: 1)
 		{
-			server = GetServer ();
+			server = GetServerAsync ().Result;
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos0_then_succeeds()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 			var topic = Guid.NewGuid ().ToString ();
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
@@ -51,8 +51,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_messages_with_qos1_then_succeeds()
 		{
-			var client = GetClient ();
-			var topic = Guid.NewGuid ().ToString ();
+			var client = await GetClientAsync ();
+            var topic = Guid.NewGuid ().ToString ();
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
@@ -77,8 +77,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_messages_with_qos2_then_succeeds()
 		{
-			var client = GetClient ();
-			var topic = Guid.NewGuid ().ToString ();
+			var client = await GetClientAsync ();
+            var topic = Guid.NewGuid ().ToString ();
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
@@ -109,11 +109,11 @@ namespace IntegrationTests
 			var topicFilter = guid + "/#";
 			var topic = guid;
 
-			var publisher = GetClient ();
-			var subscriber1 = GetClient ();
-			var subscriber2 = GetClient ();
+			var publisher = await GetClientAsync ();
+            var subscriber1 = await GetClientAsync ();
+            var subscriber2 = await GetClientAsync ();
 
-			var subscriber1Done = new ManualResetEventSlim ();
+            var subscriber1Done = new ManualResetEventSlim ();
 			var subscriber2Done = new ManualResetEventSlim ();
 			var subscriber1Received = 0;
 			var subscriber2Received = 0;
@@ -180,8 +180,8 @@ namespace IntegrationTests
 			var count = GetTestLoad();
 
 			var topic = Guid.NewGuid ().ToString ();
-			var publisher = GetClient ();
-			var topicsNotSubscribedCount = 0;
+			var publisher = await GetClientAsync ();
+            var topicsNotSubscribedCount = 0;
 			var topicsNotSubscribedDone = new ManualResetEventSlim ();
 
 			server.TopicNotSubscribed += (sender, e) => {
@@ -224,10 +224,10 @@ namespace IntegrationTests
 			var requestTopic = guid;
 			var responseTopic = guid + "/response";
 
-			var publisher = GetClient ();
-			var subscriber = GetClient ();
+			var publisher = await GetClientAsync ();
+            var subscriber = await GetClientAsync ();
 
-			var subscriberDone = new ManualResetEventSlim ();
+            var subscriberDone = new ManualResetEventSlim ();
 			var subscriberReceived = 0;
 
 			await subscriber.SubscribeAsync (requestTopic, QualityOfService.AtMostOnce)
@@ -292,8 +292,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos0_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = GetClient ();
-			var count = GetTestLoad ();
+			var client = await GetClientAsync ();
+            var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
@@ -312,8 +312,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos1_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = GetClient ();
-			var count = GetTestLoad ();
+			var client = await GetClientAsync ();
+            var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
@@ -332,8 +332,8 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos2_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = GetClient ();
-			var count = GetTestLoad ();
+			var client = await GetClientAsync ();
+            var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
