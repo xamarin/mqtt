@@ -6,15 +6,23 @@ using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Diagnostics;
 
 namespace Tests
 {
 	public class ConnectionProviderSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public ConnectionProviderSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Fact]
 		public void when_adding_new_client_then_connection_list_increases()
 		{
-			var provider = new ConnectionProvider ();
+			var provider = new ConnectionProvider (tracerManager);
 
 			var existingClients = provider.Connections;
 			var clientId = Guid.NewGuid ().ToString ();
@@ -27,7 +35,7 @@ namespace Tests
 		[Fact]
 		public void when_adding_disconnected_client_then_active_clients_list_does_not_increase()
 		{
-			var provider = new ConnectionProvider ();
+			var provider = new ConnectionProvider (tracerManager);
 
 			var existingClients = provider.ActiveClients.Count();
 			var clientId = Guid.NewGuid ().ToString ();
@@ -40,7 +48,7 @@ namespace Tests
 		[Fact]
 		public void when_adding_new_client_and_disconnect_it_then_active_clients_list_decreases()
 		{
-			var provider = new ConnectionProvider ();
+			var provider = new ConnectionProvider (tracerManager);
 
 			var existingClients = provider.ActiveClients.Count();
 			var clientId = Guid.NewGuid ().ToString ();
@@ -64,7 +72,7 @@ namespace Tests
 		[Fact]
 		public void when_removing_clients_then_connection_list_decreases()
 		{
-			var provider = new ConnectionProvider ();
+			var provider = new ConnectionProvider (tracerManager);
 
 			var initialClients = provider.Connections;
 
@@ -84,7 +92,7 @@ namespace Tests
 		[Fact]
 		public void when_adding_existing_client_id_then_existing_client_is_disconnected()
 		{
-			var provider = new ConnectionProvider ();
+			var provider = new ConnectionProvider (tracerManager);
 
 			var receiver1 = new Subject<IPacket> ();
 			var channel1 = new Mock<IChannel<IPacket>> ();
@@ -110,7 +118,7 @@ namespace Tests
 		[Fact]
 		public void when_getting_connection_from_client_then_succeeds()
 		{
-			var provider = new ConnectionProvider ();
+			var provider = new ConnectionProvider (tracerManager);
 			var clientId = Guid.NewGuid ().ToString ();
 
 			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == true));
@@ -123,7 +131,7 @@ namespace Tests
 		[Fact]
 		public void when_getting_connection_from_disconnected_client_then_no_connection_is_returned()
 		{
-			var provider = new ConnectionProvider ();
+			var provider = new ConnectionProvider (tracerManager);
 			var clientId = Guid.NewGuid ().ToString ();
 
 			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == false));

@@ -1,9 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
-  
-  <PropertyGroup>
-    <RestoreDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), NuGet.Restore.targets).TrimEnd("\").TrimEnd("/"))</RestoreDir>
-  </PropertyGroup>
-
-  <Import Project="$(RestoreDir)\NuGet.Restore.targets" />
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">  
+  <Import Project="NuGet.Restore.targets" />
 </Project>

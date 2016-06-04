@@ -8,11 +8,20 @@ using Moq;
 using Xunit;
 using Xunit.Extensions;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Diagnostics;
+using Merq;
 
 namespace Tests
 {
 	public class ProtocolFlowProviderSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public ProtocolFlowProviderSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Theory]
 		[InlineData(PacketType.ConnectAck, typeof(ClientConnectFlow))]
 		[InlineData(PacketType.PingResponse, typeof(PingFlow))]
@@ -25,7 +34,7 @@ namespace Tests
 		[InlineData(PacketType.UnsubscribeAck, typeof(ClientUnsubscribeFlow))]
 		public void when_getting_client_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
 		{
-			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryProvider>(), new ProtocolConfiguration ());
+			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryProvider>(), tracerManager, new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 
@@ -47,7 +56,7 @@ namespace Tests
 		{
 			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new ProtocolConfiguration ());
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), tracerManager, new ProtocolConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 
@@ -59,7 +68,7 @@ namespace Tests
 		{
 			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new ProtocolConfiguration ());
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), tracerManager, new ProtocolConfiguration ());
 
 			var connectFlow = flowProvider.GetFlow<ServerConnectFlow> ();
 			var senderFlow = flowProvider.GetFlow<PublishSenderFlow> ();
@@ -79,7 +88,7 @@ namespace Tests
 		[Fact]
 		public void when_getting_explicit_client_flow_from_type_then_succeeds()
 		{
-			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryProvider>(), new ProtocolConfiguration ());
+			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryProvider>(), tracerManager, new ProtocolConfiguration ());
 
 			var connectFlow = flowProvider.GetFlow<ClientConnectFlow> ();
 			var senderFlow = flowProvider.GetFlow<PublishSenderFlow> ();

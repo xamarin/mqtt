@@ -1,1 +1,0 @@
-﻿Both interfaces and implementation of the Event Stream are included in your project when using netfx-System.Reactive.EventStream package.

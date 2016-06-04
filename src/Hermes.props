@@ -3,9 +3,12 @@
 
 	<!-- Our own new custom properties -->
 	<PropertyGroup>
-		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
 		<SolutionDir>..\</SolutionDir>
 		<ThisAssemblyNamespace>System.Net.Mqtt</ThisAssemblyNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(VisualStudioVersion)' == ''">
+		<VisualStudioVersion>11.0</VisualStudioVersion>
 	</PropertyGroup>
 
 	<!-- Enable opening the solution in VS2012 and 2013 -->
@@ -18,17 +21,19 @@
 		<OldToolsVersion>4.0</OldToolsVersion>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(VisualStudioVersion)' == ''">
-		<VisualStudioVersion>10.0</VisualStudioVersion>
-	</PropertyGroup>
-
 	<!-- Common CSharp properties -->
 	<PropertyGroup>
+		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+		<OutputType>Library</OutputType>
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 		<DebugSymbols>true</DebugSymbols>
 		<DebugType>full</DebugType>
 		<ErrorReport>prompt</ErrorReport>
 		<WarningLevel>4</WarningLevel>
+		<SchemaVersion>2.0</SchemaVersion>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<UseVSHostingProcess>false</UseVSHostingProcess>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -41,6 +46,15 @@
 		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
 		<Optimize>true</Optimize>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Hermes.snk</AssemblyOriginatorKeyFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="$(MSBuildThisFileDirectory)GlobalAssemblyInfo.cs" />
+	</ItemGroup>
 
 	<ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
 		<!-- If we don't make these invisible, they show up in VS as missing files :S -->

@@ -8,11 +8,20 @@ using System.Net.Mqtt.Packets;
 using Moq;
 using Xunit;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Diagnostics;
+using Merq;
 
 namespace Tests
 {
 	public class ServerSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public ServerSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Fact]
 		public void when_server_does_not_start_then_connections_are_ignored ()
 		{
@@ -43,7 +52,7 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var eventStream = new EventStream ();
 
-			var server = new Server (channelProvider.Object, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
+			var server = new Server (channelProvider.Object, factory, flowProvider, connectionProvider.Object, eventStream, tracerManager, configuration);
 
 			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
 			sockets.OnNext (Mock.Of<IChannel<byte[]>> (x => x.Receiver == new Subject<byte[]> ()));
@@ -82,7 +91,7 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var eventStream = new EventStream ();
 
-			var server = new Server (channelProvider.Object, factory, flowProvider, connectionProvider.Object, eventStream, configuration);
+			var server = new Server (channelProvider.Object, factory, flowProvider, connectionProvider.Object, eventStream, tracerManager, configuration);
 
 			server.Start ();
 
@@ -122,7 +131,7 @@ namespace Tests
 			var eventStream = new EventStream ();
 
 			var server = new Server (channelProvider.Object, Mock.Of<IPacketChannelFactory> (x => x.Create (It.IsAny<IChannel<byte[]>> ()) == packetChannel.Object), 
-				flowProvider, connectionProvider.Object, eventStream, configuration);
+				flowProvider, connectionProvider.Object, eventStream, tracerManager, configuration);
 
 			server.Start ();
 
@@ -169,7 +178,7 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var eventStream = new EventStream ();
 
-			var server = new Server (channelProvider.Object, factory.Object, flowProvider, connectionProvider.Object, eventStream, configuration);
+			var server = new Server (channelProvider.Object, factory.Object, flowProvider, connectionProvider.Object, eventStream, tracerManager, configuration);
 			var receiver = new Subject<byte[]> ();
 			var socket = new Mock<IChannel<byte[]>> ();
 

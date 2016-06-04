@@ -258,4 +258,19 @@
   <data name="PacketChannelFactory_InnerChannelFactoryNotFound" xml:space="preserve">
     <value>An inner channel factory is required to create a new packet channel</value>
   </data>
+  <data name="TcpChannelProvider_TcpListener_Failed" xml:space="preserve">
+    <value>An error occurred while starting to listen incoming TCP connections</value>
+  </data>
+  <data name="TcpChannel_DisposeError" xml:space="preserve">
+    <value>An error occurred while closing underlying channel. Error code: {0}</value>
+  </data>
+  <data name="TcpChannel_NetworkStreamCompleted" xml:space="preserve">
+    <value>The TCP Network Stream has completed sending bytes. The observable sequence will be completed and the channel will be disposed</value>
+  </data>
+  <data name="TcpChannel_ReceivedPacket" xml:space="preserve">
+    <value>Received packet of {0} bytes</value>
+  </data>
+  <data name="TcpChannel_SendingPacket" xml:space="preserve">
+    <value>Sending packet of {0} bytes</value>
+  </data>
 </root>

@@ -31,8 +31,9 @@ namespace Tests
 				BufferSize = 131072,
 				Port = Protocol.DefaultNonSecurePort
 			};
-			var initializer = new ServerInitializer ();
-			var server = initializer.Initialize (configuration);
+			var binding = new TcpBinding ();
+			var initializer = new ServerFactory (binding);
+			var server = initializer.Create (configuration);
 
 			Assert.NotNull (server);
 
@@ -51,8 +52,9 @@ namespace Tests
 				BufferSize = 131072,
 				Port = port
 			};
-			var initializer = new ClientInitializer (IPAddress.Loopback.ToString());
-			var client = initializer.Initialize (configuration);
+			var binding = new TcpBinding ();
+			var initializer = new ClientFactory (IPAddress.Loopback.ToString(), binding);
+			var client = initializer.Create (configuration);
 
 			Assert.NotNull (client);
 

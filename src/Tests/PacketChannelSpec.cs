@@ -9,11 +9,19 @@ using Moq;
 using Xunit;
 using Xunit.Extensions;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Diagnostics;
 
 namespace Tests
 {
 	public class PacketChannelSpec
 	{
+		readonly ITracerManager tracerManager;
+
+		public PacketChannelSpec ()
+		{
+			tracerManager = new DefaultTracerManager ();
+		}
+
 		[Fact]
 		public void when_creating_packet_channel_then_succeeds()
 		{
@@ -24,7 +32,7 @@ namespace Tests
 			bufferedChannel.Setup (x => x.Receiver).Returns (receiver);
 
 			var topicEvaluator = Mock.Of<ITopicEvaluator> ();
-			var factory = new PacketChannelFactory (topicEvaluator, configuration);
+			var factory = new PacketChannelFactory (topicEvaluator, tracerManager, configuration);
 			var channel = factory.Create (bufferedChannel.Object);
 
 			Assert.NotNull (channel);
@@ -64,7 +72,7 @@ namespace Tests
 			manager.Setup(x => x.GetPacketAsync(It.IsAny<byte[]>()))
 				.Returns(Task.FromResult<IPacket>(expectedPacket));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, tracerManager, configuration);
 
 			var receivedPacket = default (IPacket);
 
@@ -100,7 +108,7 @@ namespace Tests
 			manager.Setup(x => x.GetPacketAsync(It.IsAny<byte[]>()))
 				.Returns(Task.FromResult<IPacket>((IPacket)expectedPacket));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, tracerManager, configuration);
 
 			var receivedPacket = default (IPacket);
 
@@ -159,7 +167,7 @@ namespace Tests
 			manager.Setup(x => x.GetBytesAsync(It.IsAny<IPacket>()))
 				.Returns(Task.FromResult(bytes));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, tracerManager, configuration);
 
 			await channel.SendAsync (packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -194,7 +202,7 @@ namespace Tests
 			manager.Setup(x => x.GetBytesAsync(It.IsAny<IPacket>()))
 				.Returns(Task.FromResult(bytes));
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, tracerManager, configuration);
 
 			await channel.SendAsync (packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -214,7 +222,7 @@ namespace Tests
 
 			var manager = new Mock<IPacketManager> ();
 
-			var channel = new PacketChannel (innerChannel.Object, manager.Object, configuration);
+			var channel = new PacketChannel (innerChannel.Object, manager.Object, tracerManager, configuration);
 
 			var errorMessage = "Packet Exception";
 

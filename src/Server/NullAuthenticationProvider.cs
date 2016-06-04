@@ -2,7 +2,7 @@
 {
 	internal class NullAuthenticationProvider : IAuthenticationProvider
 	{
-		private static readonly Lazy<NullAuthenticationProvider> instance;
+		static readonly Lazy<NullAuthenticationProvider> instance;
 
 		static NullAuthenticationProvider ()
 		{

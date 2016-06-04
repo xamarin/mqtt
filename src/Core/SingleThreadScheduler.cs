@@ -1,31 +1,28 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
 	internal sealed class SingleThreadScheduler : TaskScheduler, IDisposable
 	{
-		readonly Thread thread;
 		BlockingCollection<Task> tasks;
+		readonly Task runner;
 
-		public SingleThreadScheduler (string name = null)
+		public SingleThreadScheduler ()
 		{
 			tasks = new BlockingCollection<Task> ();
-			thread = new Thread (() => {
+			runner = new Task (() => {
+				if (tasks == null) {
+					return;
+				}
+
 				foreach (var task in tasks.GetConsumingEnumerable ()) {
 					TryExecuteTask (task);
 				}
-			});
-			thread.IsBackground = true;
-			thread.SetApartmentState (ApartmentState.STA);
+			}, TaskCreationOptions.LongRunning);
 
-			if (thread.Name == null && !string.IsNullOrEmpty (name)) {
-				thread.Name = name;
-			}
-
-			thread.Start ();
+			runner.Start (TaskScheduler.Default);
 		}
 
 		public override int MaximumConcurrencyLevel { get { return 1; } }
@@ -42,7 +39,7 @@ namespace System.Net.Mqtt
 
 		protected override bool TryExecuteTaskInline (Task task, bool taskWasPreviouslyQueued)
 		{
-			return Thread.CurrentThread.GetApartmentState () == ApartmentState.STA && TryExecuteTask (task);
+			return TryExecuteTask (task);
 		}
 
 		public void Dispose ()
@@ -56,7 +53,6 @@ namespace System.Net.Mqtt
 			if (disposing) {
 				if (tasks != null) {
 					tasks.CompleteAdding ();
-					thread.Join ();
 					tasks = null;
 				}
 			}

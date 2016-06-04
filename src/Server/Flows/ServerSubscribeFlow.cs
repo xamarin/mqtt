@@ -11,8 +11,7 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class ServerSubscribeFlow : IProtocolFlow
 	{
-		static readonly ITracer tracer = Tracer.Get<ServerSubscribeFlow> ();
-
+		readonly ITracer tracer;
 		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
@@ -25,8 +24,10 @@ namespace System.Net.Mqtt.Flows
 			IRepository<RetainedMessage> retainedRepository,
 			IPacketIdProvider packetIdProvider,
 			IPublishSenderFlow senderFlow,
+			ITracerManager tracerManager,
 			ProtocolConfiguration configuration)
 		{
+			tracer = tracerManager.Get<ServerSubscribeFlow> ();
 			this.topicEvaluator = topicEvaluator;
 			this.sessionRepository = sessionRepository;
 			this.retainedRepository = retainedRepository;

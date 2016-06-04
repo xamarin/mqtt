@@ -2,7 +2,7 @@
 
 namespace System.Net.Mqtt.Exceptions
 {
-	[Serializable]
+	[DataContract]
 	public class MqttException : Exception
 	{
 		public MqttException ()
@@ -14,11 +14,6 @@ namespace System.Net.Mqtt.Exceptions
 		}
 
 		public MqttException (string message, Exception innerException) : base (message, innerException)
-		{
-		}
-
-		protected MqttException (SerializationInfo info, StreamingContext context)
-			: base (info, context)
 		{
 		}
 	}

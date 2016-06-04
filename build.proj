@@ -22,51 +22,80 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 -->
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="Configure" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="packages\GitInfo\build\GitInfo.targets"/>
-	
 	<PropertyGroup>
-		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-		<TrackFileAccess>false</TrackFileAccess>
+		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+		<IntermediateOutputPath>.nuget\</IntermediateOutputPath>
+		<PackagesPath>$(IntermediateOutputPath)packages</PackagesPath>
+		<Out Condition=" '$(Out)' == '' ">out</Out>
 		<GitInfoReportImportance>high</GitInfoReportImportance>
+		<GitIgnoreTagVersion>true</GitIgnoreTagVersion>
+		<GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
+		<CommonBuildProperties>TrackFileAccess=false;WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration)</CommonBuildProperties>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- To build a single solution or project, just pass it as a property $(Solution) or $(Project) -->
-		
 		<!-- Solutions at the root of the src directory are all built automatically unless overriden -->
-		<Solution Include="src\*.sln" Condition="'$(Solution)' == ''">
-			<AdditionalProperties>Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)</AdditionalProperties>
-		</Solution>
-		
-		<Solution Include="$(Solution)" Condition="'$(Solution)' != ''">
-			<AdditionalProperties>Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)</AdditionalProperties>
-		</Solution>
-		
-		<NuGet Include="**\*.nuspec" />
+		<Solution Include="src\*.sln" Condition="'$(Solution)' == ''" />		
+		<Solution Include="$(Solution)" Condition="'$(Solution)' != ''" />
+		<NuSpec Include="src\**\*.nuspec" />
 	</ItemGroup>
-	
-	<Import Project="build\build.targets" />
 
+	<Target Name="Clean">
+		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" Targets="Clean" />
+		<Exec Command="rmdir $(Out) /S /Q" ContinueOnError="true" />
+		<Exec Command="rmdir $(PackagesPath) /S /Q" ContinueOnError="true" />
+		<Exec Command="rmdir src\packages /S /Q" ContinueOnError="true" />
+	</Target>
+
+	<Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+
+	<Target Name="Build" DependsOnTargets="GitVersion">
+		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" />
+	</Target>
+
+	<Target Name="Package" DependsOnTargets="Build">
+		<MakeDir Directories="$(Out)" Condition=" !Exists('$(Out)') " />
+		<Exec Command='"$(NuGet)" Pack "%(NuSpec.Identity)" $(Args) -Properties Id=%(NuSpec.Filename);Configuration=$(Configuration) -Version $(Version) -OutputDirectory $(Out)' />
+	</Target>
+
+	<Target Name="Publish" DependsOnTargets="Package">
+		<Exec Command='$(NuGet) Push "$(Out)\%(NuSpec.Filename).$(Version).nupkg" $(NuGetPushArgs)'
+						StandardErrorImportance="high"
+						StandardOutputImportance="normal" />
+
+		<Message Text="Published new package: Id=%(NuSpec.Filename), Version=$(Version)"
+				 Importance="high" />
+	</Target>
+
+	<!-- Configure and restore initial targets and packages -->
+	<Import Project="src\NuGet.Restore.targets" />
 	<PropertyGroup>
-		<BuildPackagesDependsOn>
-			GitVersion;
-			GitInfoReport;
-			NuGetVersion;
-		</BuildPackagesDependsOn>
+		<GitInfoTargets>$(PackagesPath)\GitInfo\build\GitInfo.targets</GitInfoTargets>
+		<PendingRestore Condition=" !Exists('$(GitInfoTargets)') ">true</PendingRestore>
 	</PropertyGroup>
-	
-	<Target Name="NuGetVersion" DependsOnTargets="GitVersion">
+
+	<Target Name="GitVersion" />
+	<!-- Gets overriden by the $(GitInfoTargets) if it exists -->
+	<Import Project="$(GitInfoTargets)" Condition=" Exists('$(GitInfoTargets)') " />
+
+	<Target Name="Configure" DependsOnTargets="_GetNuGet;GitVersion">
+		<!-- We always run NuGet Install since it already checks for already-installed packages and skips them -->
+		<Exec Command='"$(NuGet)" Install "$(MSBuildThisFileDirectory)packages.config" -OutputDirectory "$(PackagesPath)" -ExcludeVersion' />
+
+		<!-- Errors if nuget packages were restored during the build -->
+		<Error Text="Required build-time NuGet packages were missing and were just restored. Please run the build again."
+			   Condition=" '$(PendingRestore)' == 'true' And '$(target)' != 'configure' "/>
+
 		<PropertyGroup>
 			<Version>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</Version>
 		</PropertyGroup>
-		
-		<ItemGroup>
-			<NuGet>
-				<Version>$(Version)</Version>
-			</NuGet>
-		</ItemGroup>
+
+		<!-- Update AppVeyor build # to match the actual one being used -->
+		<Exec Command="appveyor UpdateBuild -Version $(Version)" Condition=" '$(APPVEYOR)' == 'true' "
+              ConsoleToMSBuild="true"
+              ContinueOnError="ErrorAndContinue" />
 	</Target>
-	
+
 </Project>

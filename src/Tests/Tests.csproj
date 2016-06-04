@@ -1,53 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\Hermes.props" />
   <PropertyGroup>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{CC70B0BB-EC87-45D0-A4AE-2462F99D7573}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Tests</RootNamespace>
     <AssemblyName>Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Hermes.snk</AssemblyOriginatorKeyFile>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Moq">
-      <HintPath>$(SolutionDir)packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Reactive.Core">
-      <HintPath>$(SolutionDir)packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces">
-      <HintPath>$(SolutionDir)packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq">
-      <HintPath>$(SolutionDir)packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices">
-      <HintPath>$(SolutionDir)packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="xunit">
-      <HintPath>$(SolutionDir)packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
-    </Reference>
-    <Reference Include="xunit.extensions">
-      <HintPath>$(SolutionDir)packages\xunit.extensions.1.9.2\lib\net20\xunit.extensions.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PacketIdProviderSpec.cs" />
@@ -79,8 +46,6 @@
     <Compile Include="ProtocolFlowProviderSpec.cs" />
     <Compile Include="InitializerSpec.cs" />
     <Compile Include="ServerSpec.cs" />
-    <Compile Include="netfx\System\Collections\Generic\DictionaryFind.cs" />
-    <Compile Include="netfx\System\Guard.cs" />
     <Compile Include="PacketManagerSpec.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -90,13 +55,25 @@
     <Compile Include="VersionInfoSpec.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Platforms\Client.Desktop\Client.Desktop.csproj">
+      <Project>{a09b1d2d-2dc3-46bb-8e85-19c1d3fc54e8}</Project>
+      <Name>Client.Desktop</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Client\Client.csproj">
       <Project>{d3eb8c4f-6cf4-4eb4-94e3-bca31767ae53}</Project>
       <Name>Client</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Platforms\Core.Desktop\Core.Desktop.csproj">
+      <Project>{fda37b7e-32e7-45c8-9d09-7d34dab2cc28}</Project>
+      <Name>Core.Desktop</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Platforms\Server.Desktop\Server.Desktop.csproj">
+      <Project>{bb1f9777-4230-4fe2-8eb0-8bd0a13b4408}</Project>
+      <Name>Server.Desktop</Name>
     </ProjectReference>
     <ProjectReference Include="..\Server\Server.csproj">
       <Project>{1397ec83-6d03-4d81-95d5-5d11c766c43a}</Project>
@@ -107,7 +84,6 @@
     <None Include="..\Hermes.licenseheader">
       <Link>Hermes.licenseheader</Link>
     </None>
-    <None Include="app.config" />
     <None Include="Files\Binaries\Connect_Invalid_ProtocolLevel.packet">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -345,8 +321,7 @@
     <None Include="Files\Binaries\Connect_Full.packet">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Hermes.snk" />
-    <None Include="packages.config" />
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
