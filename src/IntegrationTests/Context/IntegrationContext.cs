@@ -8,7 +8,7 @@ using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 using System.Linq;
 using System.Net.Sockets;
-using System.Net.Mqtt.Server;
+using Server = System.Net.Mqtt.Server;
 using System.Net.Mqtt.Client;
 using System.Net.Mqtt.Exceptions;
 
@@ -40,13 +40,13 @@ namespace IntegrationTests.Context
 
 		protected ProtocolConfiguration Configuration { get; private set; }
 
-		protected Server GetServer(IAuthenticationProvider authenticationProvider = null)
+		protected Server.Server GetServer(Server.IAuthenticationProvider authenticationProvider = null)
 		{
 			try {
 				LoadConfiguration ();
 
-				var binding = new TcpBinding ();
-				var initializer = new ServerFactory (binding, authenticationProvider);
+				var binding = new Server.TcpBinding ();
+				var initializer = new Server.ServerFactory (binding, authenticationProvider);
 				var server = initializer.Create (Configuration);
 
 				server.Start ();
