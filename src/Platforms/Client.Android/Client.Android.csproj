@@ -36,6 +36,9 @@
     <Compile Include="..\AssemblyInfo.Client.cs">
       <Link>Properties\AssemblyInfo.Client.cs</Link>
     </Compile>
+    <Compile Include="..\Client.Desktop\TcpBinding.cs">
+      <Link>TcpBinding.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

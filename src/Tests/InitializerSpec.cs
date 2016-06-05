@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
 using Xunit;
-using System.Net.Mqtt.Server;
+using Server = System.Net.Mqtt.Server;
 using System.Net.Mqtt.Client;
 
 namespace Tests
@@ -31,8 +31,8 @@ namespace Tests
 				BufferSize = 131072,
 				Port = Protocol.DefaultNonSecurePort
 			};
-			var binding = new TcpBinding ();
-			var initializer = new ServerFactory (binding);
+			var binding = new Server.TcpBinding ();
+			var initializer = new Server.ServerFactory (binding);
 			var server = initializer.Create (configuration);
 
 			Assert.NotNull (server);
