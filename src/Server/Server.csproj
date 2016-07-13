@@ -31,6 +31,7 @@
     <Compile Include="IAuthenticationProvider.cs" />
     <Compile Include="IConnectionProvider.cs" />
     <Compile Include="NullAuthenticationProvider.cs" />
+    <Compile Include="ServerFactory.cs" />
     <Compile Include="ServerPacketListener.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

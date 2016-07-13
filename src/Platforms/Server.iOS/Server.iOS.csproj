@@ -39,7 +39,6 @@
       <Name>Server</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\..\Server.Shared\Server.Shared.projitems" Label="Shared" />
   <Import Project="..\..\Core.Shared\Core.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\Hermes.targets" />

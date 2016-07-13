@@ -34,10 +34,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{E887D106
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core.Shared", "Core.Shared\Core.Shared.shproj", "{9124EFD9-4676-4A79-AFF9-265107DC1D64}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Server.Shared", "Server.Shared\Server.Shared.shproj", "{4E908EDC-CC81-4F9E-BA2F-48416C4A8FFB}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Client.Shared", "Client.Shared\Client.Shared.shproj", "{E314B453-080D-481C-8FB1-356F78DA72FC}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{59231552-9EA8-48E4-BEBB-A964666F36D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Desktop", "Platforms\Core.Desktop\Core.Desktop.csproj", "{FDA37B7E-32E7-45C8-9D09-7D34DAB2CC28}"
@@ -57,19 +53,11 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Core.Shared\Core.Shared.projitems*{a09b1d2d-2dc3-46bb-8e85-19c1d3fc54e8}*SharedItemsImports = 4
-		Client.Shared\Client.Shared.projitems*{a09b1d2d-2dc3-46bb-8e85-19c1d3fc54e8}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{e1ee11ff-ba01-4919-8984-c61ccf8cafab}*SharedItemsImports = 4
-		Client.Shared\Client.Shared.projitems*{e1ee11ff-ba01-4919-8984-c61ccf8cafab}*SharedItemsImports = 4
-		Server.Shared\Server.Shared.projitems*{4e908edc-cc81-4f9e-ba2f-48416c4a8ffb}*SharedItemsImports = 13
-		Server.Shared\Server.Shared.projitems*{92a500b2-6ac1-4e57-9028-210a1e1b3bbf}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{92a500b2-6ac1-4e57-9028-210a1e1b3bbf}*SharedItemsImports = 4
-		Client.Shared\Client.Shared.projitems*{e314b453-080d-481c-8fb1-356f78da72fc}*SharedItemsImports = 13
 		Core.Shared\Core.Shared.projitems*{9124efd9-4676-4a79-aff9-265107dc1d64}*SharedItemsImports = 13
-		Server.Shared\Server.Shared.projitems*{d92d7642-43d3-47f9-b5e5-9d8f5944ac84}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{d92d7642-43d3-47f9-b5e5-9d8f5944ac84}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{c2dcd7cf-3780-4003-b4be-dba8da5c6178}*SharedItemsImports = 4
-		Client.Shared\Client.Shared.projitems*{c2dcd7cf-3780-4003-b4be-dba8da5c6178}*SharedItemsImports = 4
-		Server.Shared\Server.Shared.projitems*{bb1f9777-4230-4fe2-8eb0-8bd0a13b4408}*SharedItemsImports = 4
 		Core.Shared\Core.Shared.projitems*{bb1f9777-4230-4fe2-8eb0-8bd0a13b4408}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

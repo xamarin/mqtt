@@ -38,7 +38,6 @@
   <ItemGroup>
     <None Include="project.json" />
   </ItemGroup>
-  <Import Project="..\..\Server.Shared\Server.Shared.projitems" Label="Shared" />
   <Import Project="..\..\Core.Shared\Core.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\Hermes.targets" />
