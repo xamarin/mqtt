@@ -18,6 +18,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="ClientCredentials.cs" />
     <Compile Include="ClientException.cs" />
+    <Compile Include="ClientFactory.cs" />
     <Compile Include="ClientPacketListener.cs" />
     <Compile Include="Flows\ClientConnectFlow.cs" />
     <Compile Include="Flows\ClientProtocolFlowProvider.cs" />
