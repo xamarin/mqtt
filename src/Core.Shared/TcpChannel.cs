@@ -95,16 +95,13 @@ namespace System.Net.Mqtt
 				streamSubscription.Dispose ();
 				receiver.OnCompleted ();
 
-				if (IsConnected) {
-					try {
-						client.Client.Shutdown (SocketShutdown.Both);
-						client.Close ();
-					} catch (SocketException socketEx) {
-						tracer.Error (socketEx, Properties.Resources.TcpChannel_DisposeError, socketEx.ErrorCode);
-					}
-				}
+                try {
+                    client?.Close ();
+                } catch (SocketException socketEx) {
+                    tracer.Error (socketEx, Properties.Resources.Tracer_TcpChannel_DisposeError, socketEx.ErrorCode);
+                }
 
-				disposed = true;
+                disposed = true;
 			}
 		}
 

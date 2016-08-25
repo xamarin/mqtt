@@ -42,10 +42,7 @@ namespace System.Net.Mqtt
 			}
 
 			return Observable
-				.FromAsync (() => {
-					return Task.Factory.FromAsync<TcpClient> (listener.Value.BeginAcceptTcpClient,
-						listener.Value.EndAcceptTcpClient, TaskCreationOptions.AttachedToParent);
-				})
+				.FromAsync (listener.Value.AcceptTcpClientAsync)
 				.Repeat ()
 				.Select (client => new TcpChannel (client, new PacketBuffer (), tracerManager, configuration));
 		}
