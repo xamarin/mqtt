@@ -1,21 +1,20 @@
-﻿using System.Threading.Tasks;
-using System.Net.Mqtt.Diagnostics;
+﻿using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
-using System.Net.Mqtt.Server;
-using Props = System.Net.Mqtt.Server.Properties;
-using System.Net.Mqtt.Exceptions;
+using System.Threading.Tasks;
+using Server = System.Net.Mqtt.Server;
 
 namespace System.Net.Mqtt.Flows
 {
 	internal class DisconnectFlow : IProtocolFlow
 	{
 		readonly ITracer tracer;
-		readonly IConnectionProvider connectionProvider;
+		readonly Server.IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 
-		public DisconnectFlow (IConnectionProvider connectionProvider,
+		public DisconnectFlow (Server.IConnectionProvider connectionProvider,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
 			ITracerManager tracerManager)
@@ -26,29 +25,29 @@ namespace System.Net.Mqtt.Flows
 			this.willRepository = willRepository;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.Disconnect) {
+			if (input.Type != MqttPacketType.Disconnect) {
 				return;
 			}
 
 			await Task.Run (() => {
 				var disconnect = input as Disconnect;
 
-				tracer.Info (Props.Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
+				tracer.Info (Server.Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
 
 				willRepository.Delete (w => w.ClientId == clientId);
 
 				var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 				if (session == null) {
-					throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+					throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 				}
 
 				if (session.Clean) {
 					sessionRepository.Delete (session);
 
-					tracer.Info (Props.Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
+					tracer.Info (Server.Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
 				}
 
 				connectionProvider.RemoveConnection (clientId);

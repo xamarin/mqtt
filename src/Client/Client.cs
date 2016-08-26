@@ -8,9 +8,9 @@ using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Net.Mqtt.Exceptions;
 
-namespace System.Net.Mqtt.Client
+namespace System.Net.Mqtt
 {
-	public class Client : IClient, IDisposable
+	internal class Client : IMqttClient
 	{
 		bool protocolDisconnected;
 		bool disposed;
@@ -18,26 +18,26 @@ namespace System.Net.Mqtt.Client
 		IDisposable packetsSubscription;
 
 		readonly ITracer tracer;
-		readonly ReplaySubject<ApplicationMessage> receiver;
+		readonly ReplaySubject<MqttApplicationMessage> receiver;
 		readonly ReplaySubject<IPacket> sender;
-		readonly IChannel<IPacket> packetChannel;
+		readonly IMqttChannel<IPacket> packetChannel;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPacketIdProvider packetIdProvider;
-		readonly ProtocolConfiguration configuration;
+		readonly MqttConfiguration configuration;
 		readonly TaskRunner clientSender;
 		readonly IPacketListener packetListener;
 
-		internal Client (IChannel<IPacket> packetChannel,
+		internal Client (IMqttChannel<IPacket> packetChannel,
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 		{
 			tracer = tracerManager.Get<Client> ();
 
-			receiver = new ReplaySubject<ApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			receiver = new ReplaySubject<MqttApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 
 			this.packetChannel = packetChannel;
@@ -51,7 +51,7 @@ namespace System.Net.Mqtt.Client
 			packetListener.Listen ();
 		}
 
-		public event EventHandler<ClosedEventArgs> Closed = (sender, args) => { };
+		public event EventHandler<MqttServerStopped> Closed = (sender, args) => { };
 
 		public string Id { get; private set; }
 
@@ -69,12 +69,12 @@ namespace System.Net.Mqtt.Client
 			}
 		}
 
-		public IObservable<ApplicationMessage> Receiver { get { return receiver; } }
+		public IObservable<MqttApplicationMessage> Receiver { get { return receiver; } }
 
 		internal IObservable<IPacket> Sender { get { return sender; } }
 
-		/// <exception cref="ClientException">ClientException</exception>
-		public async Task ConnectAsync (ClientCredentials credentials, Will will = null, bool cleanSession = false)
+		/// <exception cref="MqttClientException">ClientException</exception>
+		public async Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false)
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
@@ -104,12 +104,12 @@ namespace System.Net.Mqtt.Client
 					.Timeout (connectTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Properties.Resources.Client_ConnectionDisconnected, credentials.ClientId);
+					var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
 
-					throw new ClientException (message);
+					throw new MqttClientException (message);
 				}
 
-				if (ack.Status != ConnectionStatus.Accepted) {
+				if (ack.Status != MqttConnectionStatus.Accepted) {
 					throw new MqttConnectionException (ack.Status);
 				}
 
@@ -118,24 +118,24 @@ namespace System.Net.Mqtt.Client
 				ObservePackets ();
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
-				throw new ClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+				throw new MqttClientException (string.Format (Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
 			} catch (MqttConnectionException connectionEx) {
 				Close (connectionEx);
 
-				var message = string.Format(Properties.Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
+				var message = string.Format(Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
 
-				throw new ClientException (message, connectionEx);
-			} catch (ClientException clientEx) {
+				throw new MqttClientException (message, connectionEx);
+			} catch (MqttClientException clientEx) {
 				Close (clientEx);
 				throw;
 			} catch (Exception ex) {
 				Close (ex);
-				throw new ClientException (string.Format (Properties.Resources.Client_ConnectionError, credentials.ClientId), ex);
+				throw new MqttClientException (string.Format (Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
 		}
 
-		/// <exception cref="ClientException">ClientException</exception>
-		public async Task SubscribeAsync (string topicFilter, QualityOfService qos)
+		/// <exception cref="MqttClientException">ClientException</exception>
+		public async Task SubscribeAsync (string topicFilter, MqttQualityOfService qos)
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
@@ -158,38 +158,38 @@ namespace System.Net.Mqtt.Client
 					.Timeout (subscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Properties.Resources.Client_SubscriptionDisconnected, Id, topicFilter);
+					var message = string.Format(Resources.Client_SubscriptionDisconnected, Id, topicFilter);
 
 					tracer.Error (message);
 
-					throw new ClientException (message);
+					throw new MqttClientException (message);
 				}
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
-				var message = string.Format (Properties.Resources.Client_SubscribeTimeout, Id, topicFilter);
+				var message = string.Format (Resources.Client_SubscribeTimeout, Id, topicFilter);
 
-				throw new ClientException (message, timeEx);
-			} catch (ClientException clientEx) {
+				throw new MqttClientException (message, timeEx);
+			} catch (MqttClientException clientEx) {
 				Close (clientEx);
 				throw;
 			} catch (Exception ex) {
 				Close (ex);
 
-				var message = string.Format (Properties.Resources.Client_SubscribeError, Id, topicFilter);
+				var message = string.Format (Resources.Client_SubscribeError, Id, topicFilter);
 
-				throw new ClientException (message, ex);
+				throw new MqttClientException (message, ex);
 			}
 		}
 
-		public async Task PublishAsync (ApplicationMessage message, QualityOfService qos, bool retain = false)
+		public async Task PublishAsync (MqttApplicationMessage message, MqttQualityOfService qos, bool retain = false)
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
 			try {
-				ushort? packetId = qos == QualityOfService.AtMostOnce ? null : (ushort?)packetIdProvider.GetPacketId ();
+				ushort? packetId = qos == MqttQualityOfService.AtMostOnce ? null : (ushort?)packetIdProvider.GetPacketId ();
 				var publish = new Publish (message.Topic, qos, retain, duplicated: false, packetId: packetId)
 				{
 					Payload = message.Payload
@@ -230,31 +230,31 @@ namespace System.Net.Mqtt.Client
 					.Timeout (unsubscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Properties.Resources.Client_UnsubscribeDisconnected, Id, string.Join(", ", topics));
+					var message = string.Format(Resources.Client_UnsubscribeDisconnected, Id, string.Join(", ", topics));
 
 					tracer.Error (message);
 
-					throw new ClientException (message);
+					throw new MqttClientException (message);
 				}
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
-				var message = string.Format (Properties.Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
+				var message = string.Format (Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
-				throw new ClientException (message, timeEx);
-			} catch (ClientException clientEx) {
+				throw new MqttClientException (message, timeEx);
+			} catch (MqttClientException clientEx) {
 				Close (clientEx);
 				throw;
 			} catch (Exception ex) {
 				Close (ex);
 
-				var message = string.Format (Properties.Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
+				var message = string.Format (Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
-				throw new ClientException (message, ex);
+				throw new MqttClientException (message, ex);
 			}
 		}
 
@@ -279,7 +279,7 @@ namespace System.Net.Mqtt.Client
 
 		public void Close ()
 		{
-			Close (ClosedReason.Disposed);
+			Close (StoppedReason.Disposed);
 		}
 
 		void IDisposable.Dispose ()
@@ -311,14 +311,14 @@ namespace System.Net.Mqtt.Client
 		{
 			tracer.Error (ex);
 			receiver.OnError (ex);
-			Close (ClosedReason.Error, ex.Message);
+			Close (StoppedReason.Error, ex.Message);
 		}
 
-		void Close (ClosedReason reason, string message = null)
+		void Close (StoppedReason reason, string message = null)
 		{
-			tracer.Info (Properties.Resources.Tracer_Client_Disposing, Id, reason);
+			tracer.Info (Resources.Tracer_Client_Disposing, Id, reason);
 			Dispose (true);
-			Closed (this, new ClosedEventArgs (reason, message));
+			Closed (this, new MqttServerStopped (reason, message));
 			GC.SuppressFinalize (this);
 		}
 
@@ -331,7 +331,7 @@ namespace System.Net.Mqtt.Client
 				sessionRepository.Delete (session);
 				session = null;
 
-				tracer.Info (Properties.Resources.Tracer_Client_CleanedOldSession, clientId);
+				tracer.Info (Resources.Tracer_Client_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -339,7 +339,7 @@ namespace System.Net.Mqtt.Client
 
 				sessionRepository.Create (session);
 
-				tracer.Info (Properties.Resources.Tracer_Client_CreatedSession, clientId);
+				tracer.Info (Resources.Tracer_Client_CreatedSession, clientId);
 			}
 		}
 
@@ -348,17 +348,17 @@ namespace System.Net.Mqtt.Client
 			var session = sessionRepository.Get (s => s.ClientId == Id);
 
 			if (session == null) {
-				var message = string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, Id);
+				var message = string.Format (Resources.SessionRepository_ClientSessionNotFound, Id);
 
 				tracer.Error (message);
 
-				throw new ClientException (message);
+				throw new MqttClientException (message);
 			}
 
 			if (session.Clean) {
 				sessionRepository.Delete (session);
 
-				tracer.Info (Properties.Resources.Tracer_Client_DeletedSessionOnDisconnect, Id);
+				tracer.Info (Resources.Tracer_Client_DeletedSessionOnDisconnect, Id);
 			}
 		}
 
@@ -373,7 +373,7 @@ namespace System.Net.Mqtt.Client
 		void CheckUnderlyingConnection ()
 		{
 			if (isConnected && !packetChannel.IsConnected) {
-				Close (ClosedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
+				Close (StoppedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 
@@ -382,20 +382,20 @@ namespace System.Net.Mqtt.Client
 			packetsSubscription = packetListener.Packets
 				.ObserveOn (NewThreadScheduler.Default)
 				.Subscribe (packet => {
-					if (packet.Type == PacketType.Publish) {
+					if (packet.Type == MqttPacketType.Publish) {
 						var publish = packet as Publish;
-						var message = new ApplicationMessage (publish.Topic, publish.Payload);
+						var message = new MqttApplicationMessage (publish.Topic, publish.Payload);
 
 						receiver.OnNext (message);
 
-						tracer.Info (Properties.Resources.Tracer_NewApplicationMessageReceived, Id, publish.Topic);
+						tracer.Info (Resources.Tracer_NewApplicationMessageReceived, Id, publish.Topic);
 					}
 				}, ex => {
 					Close (ex);
 				}, () => {
-					tracer.Warn (Properties.Resources.Tracer_Client_PacketsObservableCompleted);
+					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
 
-					var reason = protocolDisconnected ? ClosedReason.Disposed : ClosedReason.Disconnected;
+					var reason = protocolDisconnected ? StoppedReason.Disposed : StoppedReason.Disconnected;
 
 					Close (reason);
 				});

@@ -1,10 +1,9 @@
 ﻿{
   "dependencies": {
     "GitInfo": "1.1.12",
-    "Merq.Events": "0.3.30-pre",
     "Moq": "4.2.1510.2205",
     "Newtonsoft.Json": "8.0.3",
-    "Rx-Main": "2.2.5",
+    "System.Reactive": "3.0.0",
     "xunit": "1.9.2",
     "xunit.extensions": "1.9.2"
   },

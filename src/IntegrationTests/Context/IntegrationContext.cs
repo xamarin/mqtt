@@ -4,19 +4,19 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 using System.Linq;
 using System.Net.Sockets;
-using Server = System.Net.Mqtt.Server;
-using System.Net.Mqtt.Client;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Server.Bindings;
+using System.Threading.Tasks;
 
 namespace IntegrationTests.Context
 {
 	public abstract class IntegrationContext
 	{
-		static readonly DiagnosticsTracerManager tracerManager;
+		//static readonly DiagnosticsTracerManager tracerManager;
 		static readonly ConcurrentBag<int> usedPorts;
 		static readonly Random random = new Random ();
 		static readonly object lockObject = new object ();
@@ -25,10 +25,10 @@ namespace IntegrationTests.Context
 
 		static IntegrationContext()
 		{
-			tracerManager = new DiagnosticsTracerManager ();
+			//tracerManager = new DiagnosticsTracerManager ();
 
-			tracerManager.AddListener ("System.Net.Mqtt", new TestTracerListener ());
-			tracerManager.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
+			//tracerManager.AddListener ("System.Net.Mqtt", new TestTracerListener ());
+			//tracerManager.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
 
 			usedPorts = new ConcurrentBag<int> ();
 		}
@@ -38,39 +38,39 @@ namespace IntegrationTests.Context
 			this.keepAliveSecs = keepAliveSecs;
 		}
 
-		protected ProtocolConfiguration Configuration { get; private set; }
+		protected MqttConfiguration Configuration { get; private set; }
 
-		protected Server.Server GetServer(Server.IAuthenticationProvider authenticationProvider = null)
+		protected async Task<IMqttServer> GetServerAsync (IMqttAuthenticationProvider authenticationProvider = null)
 		{
 			try {
 				LoadConfiguration ();
 
-				var binding = new Server.TcpBinding ();
-				var initializer = new Server.ServerFactory (binding, authenticationProvider);
-				var server = initializer.Create (Configuration);
+				var binding = new TcpBinding ();
+				var initializer = new MqttServerFactory (binding, authenticationProvider);
+				var server = await initializer.CreateAsync (Configuration);
 
 				server.Start ();
 
 				return server;
 			} catch (MqttException protocolEx) {
 				if (protocolEx.InnerException is SocketException) {
-					return GetServer ();
+					return await GetServerAsync ();
 				} else {
 					throw;
 				}
 			}
 		}
 
-		protected virtual Client GetClient()
+		protected virtual async Task<IMqttClient> GetClientAsync ()
 		{
 			var binding = new TcpBinding ();
-			var initializer = new ClientFactory (IPAddress.Loopback.ToString(), binding);
+			var initializer = new MqttClientFactory (IPAddress.Loopback.ToString(), binding);
 
 			if (Configuration == null) {
 				LoadConfiguration ();
 			}
 
-			return initializer.Create (Configuration);
+			return await initializer.CreateAsync (Configuration);
 		}
 
 		protected string GetClientId()
@@ -91,12 +91,12 @@ namespace IntegrationTests.Context
 		void LoadConfiguration()
 		{
 			lock (lockObject) {
-				Configuration = new ProtocolConfiguration {
+				Configuration = new MqttConfiguration {
 					BufferSize = 128 * 1024,
 					Port = GetPort (),
 					KeepAliveSecs = keepAliveSecs,
 					WaitingTimeoutSecs = 2,
-					MaximumQualityOfService = QualityOfService.ExactlyOnce
+					MaximumQualityOfService = MqttQualityOfService.ExactlyOnce
 				};
 			}
 		}

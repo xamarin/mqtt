@@ -22,7 +22,7 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedSubscribe = Packet.ReadPacket<Subscribe> (jsonPath);
-			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
 			var formatter = new SubscribeFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 
@@ -38,7 +38,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
 			var formatter = new SubscribeFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
@@ -55,7 +55,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
 			var formatter = new SubscribeFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
@@ -73,7 +73,7 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
 			var formatter = new SubscribeFormatter (topicEvaluator);
 			var subscribe = Packet.ReadPacket<Subscribe> (jsonPath);
 
@@ -89,7 +89,7 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
+			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> (e => e.IsValidTopicFilter(It.IsAny<string>()) == true);
 			var formatter = new SubscribeFormatter (topicEvaluator);
 			var subscribe = Packet.ReadPacket<Subscribe> (jsonPath);
 

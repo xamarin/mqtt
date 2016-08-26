@@ -13,13 +13,13 @@ namespace Tests.Formatters
 {
 	public class PublishFormatterSpec
 	{
-		readonly Mock<IChannel<IPacket>> packetChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
+		readonly Mock<IMqttChannel<IPacket>> packetChannel;
+		readonly Mock<IMqttChannel<byte[]>> byteChannel;
 
 		public PublishFormatterSpec ()
 		{
-			packetChannel = new Mock<IChannel<IPacket>> ();
-			byteChannel = new Mock<IChannel<byte[]>> ();
+			packetChannel = new Mock<IMqttChannel<IPacket>> ();
+			byteChannel = new Mock<IMqttChannel<byte[]>> ();
 		}
 		
 		[Theory]
@@ -31,7 +31,7 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedPublish = Packet.ReadPacket<Publish> (jsonPath);
-			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicName(It.IsAny<string>()) == true);
+			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> (e => e.IsValidTopicName(It.IsAny<string>()) == true);
 			var formatter = new PublishFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 
@@ -49,7 +49,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
+			var topicEvaluator = new MqttTopicEvaluator (new MqttConfiguration());
 			var formatter = new PublishFormatter (topicEvaluator);
 			var packet = Packet.ReadAllBytes (packetPath);
 			
@@ -67,7 +67,7 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var topicEvaluator = Mock.Of<ITopicEvaluator> (e => e.IsValidTopicName(It.IsAny<string>()) == true);
+			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> (e => e.IsValidTopicName(It.IsAny<string>()) == true);
 			var formatter = new PublishFormatter (topicEvaluator);
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 
@@ -85,7 +85,7 @@ namespace Tests.Formatters
 		{
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
-			var topicEvaluator = new TopicEvaluator (new ProtocolConfiguration());
+			var topicEvaluator = new MqttTopicEvaluator (new MqttConfiguration());
 			var formatter = new PublishFormatter (topicEvaluator);
 			var publish = Packet.ReadPacket<Publish> (jsonPath);
 

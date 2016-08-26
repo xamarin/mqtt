@@ -7,10 +7,10 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class ClientProtocolFlowProvider : ProtocolFlowProvider
 	{
-		public ClientProtocolFlowProvider (ITopicEvaluator topicEvaluator, 
+		public ClientProtocolFlowProvider (IMqttTopicEvaluator topicEvaluator, 
 			IRepositoryProvider repositoryProvider, 
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 			: base (topicEvaluator, repositoryProvider, tracerManager, configuration)
 		{
 		}
@@ -34,17 +34,17 @@ namespace System.Net.Mqtt.Flows
 			return flows;
 		}
 
-		protected override bool IsValidPacketType (PacketType packetType)
+		protected override bool IsValidPacketType (MqttPacketType packetType)
 		{
-			return packetType == PacketType.ConnectAck ||
-				packetType == PacketType.SubscribeAck ||
-				packetType == PacketType.UnsubscribeAck ||
-				packetType == PacketType.Publish ||
-				packetType == PacketType.PublishAck ||
-				packetType == PacketType.PublishComplete ||
-				packetType == PacketType.PublishReceived ||
-				packetType == PacketType.PublishRelease ||
-				packetType == PacketType.PingResponse;
+			return packetType == MqttPacketType.ConnectAck ||
+				packetType == MqttPacketType.SubscribeAck ||
+				packetType == MqttPacketType.UnsubscribeAck ||
+				packetType == MqttPacketType.Publish ||
+				packetType == MqttPacketType.PublishAck ||
+				packetType == MqttPacketType.PublishComplete ||
+				packetType == MqttPacketType.PublishReceived ||
+				packetType == MqttPacketType.PublishRelease ||
+				packetType == MqttPacketType.PingResponse;
 		}
 	}
 }

@@ -1,20 +1,20 @@
 ﻿using System;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using Xunit;
-using System.Net.Mqtt.Client;
-using System.Net.Mqtt.Exceptions;
 
 namespace IntegrationTests
 {
-	public class ExceptionSpec : IntegrationContext
+    public class ExceptionSpec : IntegrationContext
 	{
 		[Fact]
 		public void when_connecting_client_to_non_existing_server_then_fails()
 		{
-			var clientException = Assert.Throws<ClientException>(() => GetClient ());
+			var clientException = Assert.Throws<MqttClientException>(() => GetClient ());
 
 			Assert.NotNull (clientException);
 			Assert.NotNull (clientException.InnerException);
@@ -29,16 +29,16 @@ namespace IntegrationTests
 			var server = GetServer ();
 			var client = GetClient ();
 
-			await client.ConnectAsync (new ClientCredentials(GetClientId ()))
+			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			server.Stop ();
 
-			var aggregateException = Assert.Throws<AggregateException>(() => client.SubscribeAsync ("test\foo", QualityOfService.AtLeastOnce).Wait());
+			var aggregateException = Assert.Throws<AggregateException>(() => client.SubscribeAsync ("test\foo", MqttQualityOfService.AtLeastOnce).Wait());
 
 			Assert.NotNull (aggregateException);
 			Assert.NotNull (aggregateException.InnerException);
-			Assert.True (aggregateException.InnerException is ClientException || aggregateException.InnerException is ObjectDisposedException);
+			Assert.True (aggregateException.InnerException is MqttClientException || aggregateException.InnerException is ObjectDisposedException);
 		}
 	}
 }

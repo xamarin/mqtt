@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
 using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Client;
 
 namespace IntegrationTests
 {
 	public class ConnectionSpecWithKeepAlive : IntegrationContext, IDisposable
 	{
-		readonly Server server;
+		readonly IMqttServer server;
 
 		public ConnectionSpecWithKeepAlive () 
 			: base(keepAliveSecs: 1)
@@ -23,9 +22,9 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_keep_alive_enabled_and_client_is_disposed_then_server_refresh_active_client_list()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 
-			await client.ConnectAsync (new ClientCredentials (GetClientId ()))
+			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;

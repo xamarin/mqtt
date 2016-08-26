@@ -8,14 +8,14 @@ using System.Reactive.Disposables;
 using System.Net.Mqtt.Exceptions;
 using System.Reactive.Concurrency;
 
-namespace System.Net.Mqtt.Client
+namespace System.Net.Mqtt
 {
 	internal class ClientPacketListener : IPacketListener
 	{
 		readonly ITracer tracer;
-		readonly IChannel<IPacket> channel;
+		readonly IMqttChannel<IPacket> channel;
 		readonly IProtocolFlowProvider flowProvider;
-		readonly ProtocolConfiguration configuration;
+		readonly MqttConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
 		readonly TaskRunner flowRunner;
 		IDisposable disposable;
@@ -23,10 +23,10 @@ namespace System.Net.Mqtt.Client
 		string clientId = string.Empty;
 		Timer keepAliveTimer;
 
-		public ClientPacketListener (IChannel<IPacket> channel, 
+		public ClientPacketListener (IMqttChannel<IPacket> channel, 
 			IProtocolFlowProvider flowProvider, 
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 		{
 			tracer = tracerManager.Get<ClientPacketListener> ();
 			this.channel = channel;
@@ -65,7 +65,7 @@ namespace System.Net.Mqtt.Client
 			}
 
 			if (disposing) {
-				tracer.Info (Properties.Resources.Tracer_Disposing, GetType ().FullName);
+				tracer.Info (Resources.Tracer_Disposing, GetType ().FullName);
 
 				disposable.Dispose ();
 				StopKeepAliveMonitor ();
@@ -84,12 +84,12 @@ namespace System.Net.Mqtt.Client
 						return;
 					}
 
-					tracer.Info (Properties.Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, packet.Type);
+					tracer.Info (Resources.Tracer_ClientPacketListener_FirstPacketReceived, clientId, packet.Type);
 
 					var connectAck = packet as ConnectAck;
 
 					if (connectAck == null) {
-						NotifyError (Properties.Resources.ClientPacketListener_FirstReceivedPacketMustBeConnectAck);
+						NotifyError (Resources.ClientPacketListener_FirstReceivedPacketMustBeConnectAck);
 						return;
 					}
 
@@ -118,7 +118,7 @@ namespace System.Net.Mqtt.Client
 				ex => {
 					NotifyError (ex);
 				}, () => {
-					tracer.Warn (Properties.Resources.Tracer_PacketChannelCompleted, clientId);
+					tracer.Warn (Resources.Tracer_PacketChannelCompleted, clientId);
 
 					packets.OnCompleted ();
 				});
@@ -162,7 +162,7 @@ namespace System.Net.Mqtt.Client
 			keepAliveTimer.IntervalMillisecs = interval;
 			keepAliveTimer.Elapsed += async (sender, e) => {
 				try {
-					tracer.Warn (Properties.Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, configuration.KeepAliveSecs);
+					tracer.Warn (Resources.Tracer_ClientPacketListener_SendingKeepAlive, clientId, configuration.KeepAliveSecs);
 
 					var ping = new PingRequest ();
 
@@ -198,9 +198,9 @@ namespace System.Net.Mqtt.Client
 						var publish = packet as Publish;
 
 						if (publish == null) {
-							tracer.Info (Properties.Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType ().Name);
+							tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType ().Name);
 						} else {
-							tracer.Info (Properties.Resources.Tracer_ClientPacketListener_DispatchingPublish, clientId, flow.GetType ().Name, publish.Topic);
+							tracer.Info (Resources.Tracer_ClientPacketListener_DispatchingPublish, clientId, flow.GetType ().Name, publish.Topic);
 						}
 
 						await flow.ExecuteAsync (clientId, packet, channel)
@@ -215,7 +215,7 @@ namespace System.Net.Mqtt.Client
 
 		void NotifyError (Exception exception)
 		{
-			tracer.Error (exception, Properties.Resources.Tracer_ClientPacketListener_Error);
+			tracer.Error (exception, Resources.Tracer_ClientPacketListener_Error);
 
 			packets.OnError (exception);
 		}

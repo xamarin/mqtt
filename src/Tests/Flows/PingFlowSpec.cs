@@ -14,7 +14,7 @@ namespace Tests.Flows
 		public async Task when_sending_ping_request_then_ping_response_is_sent()
 		{
 			var clientId = Guid.NewGuid ().ToString ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 			var sentPacket = default(IPacket);
 
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
@@ -29,7 +29,7 @@ namespace Tests.Flows
 			var pingResponse = sentPacket as PingResponse;
 
 			Assert.NotNull (pingResponse);
-			Assert.Equal (PacketType.PingResponse, pingResponse.Type);
+			Assert.Equal (MqttPacketType.PingResponse, pingResponse.Type);
 		}
 	}
 }

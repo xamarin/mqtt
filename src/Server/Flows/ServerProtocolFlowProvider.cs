@@ -1,28 +1,26 @@
 ﻿using System.Collections.Generic;
-using System.Reactive;
-using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Storage;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Diagnostics;
-using Merq;
+using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal class ServerProtocolFlowProvider : ProtocolFlowProvider
+    internal class ServerProtocolFlowProvider : ProtocolFlowProvider
 	{
-		readonly IAuthenticationProvider authenticationProvider;
+		readonly IMqttAuthenticationProvider authenticationProvider;
 		readonly IConnectionProvider connectionProvider;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly IEventStream eventStream;
 
-		public ServerProtocolFlowProvider (IAuthenticationProvider authenticationProvider,
+		public ServerProtocolFlowProvider (IMqttAuthenticationProvider authenticationProvider,
 			IConnectionProvider connectionProvider,
-			ITopicEvaluator topicEvaluator,
+			IMqttTopicEvaluator topicEvaluator,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
 			IEventStream eventStream,
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 			: base (topicEvaluator, repositoryProvider, tracerManager, configuration)
 		{
 			this.authenticationProvider = authenticationProvider;
@@ -53,18 +51,18 @@ namespace System.Net.Mqtt.Flows
 			return flows;
 		}
 
-		protected override bool IsValidPacketType (PacketType packetType)
+		protected override bool IsValidPacketType (MqttPacketType packetType)
 		{
-			return packetType == PacketType.Connect ||
-				packetType == PacketType.Subscribe ||
-				packetType == PacketType.Unsubscribe ||
-				packetType == PacketType.Publish ||
-				packetType == PacketType.PublishAck ||
-				packetType == PacketType.PublishComplete ||
-				packetType == PacketType.PublishReceived ||
-				packetType == PacketType.PublishRelease ||
-				packetType == PacketType.PingRequest ||
-				packetType == PacketType.Disconnect;
+			return packetType == MqttPacketType.Connect ||
+				packetType == MqttPacketType.Subscribe ||
+				packetType == MqttPacketType.Unsubscribe ||
+				packetType == MqttPacketType.Publish ||
+				packetType == MqttPacketType.PublishAck ||
+				packetType == MqttPacketType.PublishComplete ||
+				packetType == MqttPacketType.PublishReceived ||
+				packetType == MqttPacketType.PublishRelease ||
+				packetType == MqttPacketType.PingRequest ||
+				packetType == MqttPacketType.Disconnect;
 		}
 	}
 }
