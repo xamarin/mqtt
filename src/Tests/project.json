@@ -3,12 +3,12 @@
     "GitInfo": "1.1.12",
     "Moq": "4.2.1510.2205",
     "Newtonsoft.Json": "8.0.3",
-    "System.Reactive": "3.0.0",
+    "Rx-Main": "2.2.5",
     "xunit": "1.9.2",
     "xunit.extensions": "1.9.2"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win": {}

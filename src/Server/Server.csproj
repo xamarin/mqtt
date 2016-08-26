@@ -45,7 +45,7 @@
     <None Include="Server.nuspec" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\Client.csproj">
+    <ProjectReference Include="..\Client\Client.csproj">
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Client</Name>
     </ProjectReference>
