@@ -7,7 +7,7 @@
 			PacketId = packetId;
 		}
 
-		public PacketType Type { get { return PacketType.UnsubscribeAck; } }
+		public MqttPacketType Type { get { return MqttPacketType.UnsubscribeAck; } }
 
 		public ushort PacketId { get; private set; }
 

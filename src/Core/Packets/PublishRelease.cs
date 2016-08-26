@@ -7,7 +7,7 @@
 			PacketId = packetId;
 		}
 
-		public PacketType Type { get { return PacketType.PublishRelease; } }
+		public MqttPacketType Type { get { return MqttPacketType.PublishRelease; } }
 
 		public ushort PacketId { get; private set; }
 

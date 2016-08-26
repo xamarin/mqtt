@@ -8,7 +8,7 @@ namespace System.Net.Mqtt.Formatters
 		/// <summary>
 		/// Gets the type of packet that this formatter support.
 		/// </summary>
-		PacketType PacketType { get; }
+		MqttPacketType PacketType { get; }
 
 		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
 		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>

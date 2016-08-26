@@ -9,28 +9,28 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class PublishReceiverFlow : PublishFlow
 	{
-		protected readonly ITopicEvaluator topicEvaluator;
+		protected readonly IMqttTopicEvaluator topicEvaluator;
 		protected readonly IRepository<RetainedMessage> retainedRepository;
 
-		public PublishReceiverFlow (ITopicEvaluator topicEvaluator,
+		public PublishReceiverFlow (IMqttTopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository,
 			IRepository<ClientSession> sessionRepository,
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 			: base (sessionRepository, tracerManager, configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;
 		}
 
-		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public override async Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
 		{
-			if (input.Type == PacketType.Publish) {
+			if (input.Type == MqttPacketType.Publish) {
 				var publish = input as Publish;
 
 				await HandlePublishAsync (clientId, publish, channel)
 					.ConfigureAwait (continueOnCapturedContext: false);
-			} else if (input.Type == PacketType.PublishRelease) {
+			} else if (input.Type == MqttPacketType.PublishRelease) {
 				var publishRelease = input as PublishRelease;
 
 				await HandlePublishReleaseAsync (clientId, publishRelease, channel)
@@ -43,24 +43,24 @@ namespace System.Net.Mqtt.Flows
 			return Task.Delay (0);
 		}
 
-		async Task HandlePublishAsync (string clientId, Publish publish, IChannel<IPacket> channel)
+		async Task HandlePublishAsync (string clientId, Publish publish, IMqttChannel<IPacket> channel)
 		{
-			if (publish.QualityOfService != QualityOfService.AtMostOnce && !publish.PacketId.HasValue) {
-				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdRequired);
+			if (publish.QualityOfService != MqttQualityOfService.AtMostOnce && !publish.PacketId.HasValue) {
+				throw new MqttException (Resources.PublishReceiverFlow_PacketIdRequired);
 			}
 
-			if (publish.QualityOfService == QualityOfService.AtMostOnce && publish.PacketId.HasValue) {
-				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdNotAllowed);
+			if (publish.QualityOfService == MqttQualityOfService.AtMostOnce && publish.PacketId.HasValue) {
+				throw new MqttException (Resources.PublishReceiverFlow_PacketIdNotAllowed);
 			}
 
 			var qos = configuration.GetSupportedQos(publish.QualityOfService);
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
-			if (qos == QualityOfService.ExactlyOnce && session.GetPendingAcknowledgements ().Any (ack => ack.Type == PacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {
+			if (qos == MqttQualityOfService.ExactlyOnce && session.GetPendingAcknowledgements ().Any (ack => ack.Type == MqttPacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {
 				await SendQosAck (clientId, qos, publish, channel)
 					.ConfigureAwait (continueOnCapturedContext: false);
 
@@ -73,19 +73,19 @@ namespace System.Net.Mqtt.Flows
 				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		async Task HandlePublishReleaseAsync (string clientId, PublishRelease publishRelease, IChannel<IPacket> channel)
+		async Task HandlePublishReleaseAsync (string clientId, PublishRelease publishRelease, IMqttChannel<IPacket> channel)
 		{
-			RemovePendingAcknowledgement (clientId, publishRelease.PacketId, PacketType.PublishReceived);
+			RemovePendingAcknowledgement (clientId, publishRelease.PacketId, MqttPacketType.PublishReceived);
 
 			await SendAckAsync (clientId, new PublishComplete (publishRelease.PacketId), channel)
 				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		async Task SendQosAck (string clientId, QualityOfService qos, Publish publish, IChannel<IPacket> channel)
+		async Task SendQosAck (string clientId, MqttQualityOfService qos, Publish publish, IMqttChannel<IPacket> channel)
 		{
-			if (qos == QualityOfService.AtMostOnce) {
+			if (qos == MqttQualityOfService.AtMostOnce) {
 				return;
-			} else if (qos == QualityOfService.AtLeastOnce) {
+			} else if (qos == MqttQualityOfService.AtLeastOnce) {
 				await SendAckAsync (clientId, new PublishAck (publish.PacketId.Value), channel)
 					.ConfigureAwait (continueOnCapturedContext: false);
 			} else {

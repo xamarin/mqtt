@@ -21,7 +21,7 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var topic = "foo/bar/test";
-			var qos = QualityOfService.AtLeastOnce;
+			var qos = MqttQualityOfService.AtLeastOnce;
 			var session = new ClientSession { 
 				ClientId = clientId,
 				Clean = false, 
@@ -36,7 +36,7 @@ namespace Tests.Flows
 			
 			var unsubscribe = new Unsubscribe (packetId, topic);
 
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
@@ -79,7 +79,7 @@ namespace Tests.Flows
 
 			var unsubscribe = new Unsubscribe (packetId, "foo/bar");
 
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			var response = default(IPacket);
 

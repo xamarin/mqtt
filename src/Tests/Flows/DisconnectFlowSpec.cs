@@ -31,7 +31,7 @@ namespace Tests.Flows
 			var flow = new DisconnectFlow (connectionProvider.Object, sessionRepository.Object, willRepository.Object, tracerManager);
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 			var disconnect = new Disconnect ();
 
 			var session = new ClientSession
@@ -63,7 +63,7 @@ namespace Tests.Flows
 			var flow = new DisconnectFlow (connectionProvider.Object, sessionRepository.Object, willRepository.Object, tracerManager);
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 			var disconnect = new Disconnect ();
 
 			var session = new ClientSession

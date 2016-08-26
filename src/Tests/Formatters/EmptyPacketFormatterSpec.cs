@@ -13,20 +13,20 @@ namespace Tests.Formatters
 {
 	public class EmptyPacketFormatterSpec
 	{
-		readonly Mock<IChannel<IPacket>> packetChannel;
-		readonly Mock<IChannel<byte[]>> byteChannel;
+		readonly Mock<IMqttChannel<IPacket>> packetChannel;
+		readonly Mock<IMqttChannel<byte[]>> byteChannel;
 
 		public EmptyPacketFormatterSpec ()
 		{
-			packetChannel = new Mock<IChannel<IPacket>> ();
-			byteChannel = new Mock<IChannel<byte[]>> ();
+			packetChannel = new Mock<IMqttChannel<IPacket>> ();
+			byteChannel = new Mock<IMqttChannel<byte[]>> ();
 		}
 		
 		[Theory]
-		[InlineData("Files/Binaries/PingResponse.packet", PacketType.PingResponse, typeof(PingResponse))]
-		[InlineData("Files/Binaries/PingRequest.packet", PacketType.PingRequest, typeof(PingRequest))]
-		[InlineData("Files/Binaries/Disconnect.packet", PacketType.Disconnect, typeof(Disconnect))]
-		public async Task when_reading_empty_packet_then_succeeds(string packetPath, PacketType packetType, Type type)
+		[InlineData("Files/Binaries/PingResponse.packet", MqttPacketType.PingResponse, typeof(PingResponse))]
+		[InlineData("Files/Binaries/PingRequest.packet", MqttPacketType.PingRequest, typeof(PingRequest))]
+		[InlineData("Files/Binaries/Disconnect.packet", MqttPacketType.Disconnect, typeof(Disconnect))]
+		public async Task when_reading_empty_packet_then_succeeds(string packetPath, MqttPacketType packetType, Type type)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
@@ -40,10 +40,10 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Binaries/PingResponse_Invalid_HeaderFlag.packet", PacketType.PingResponse, typeof(PingResponse))]
-		[InlineData("Files/Binaries/PingRequest_Invalid_HeaderFlag.packet", PacketType.PingRequest, typeof(PingRequest))]
-		[InlineData("Files/Binaries/Disconnect_Invalid_HeaderFlag.packet", PacketType.Disconnect, typeof(Disconnect))]
-		public void when_reading_invalid_empty_packet_then_fails(string packetPath, PacketType packetType, Type type)
+		[InlineData("Files/Binaries/PingResponse_Invalid_HeaderFlag.packet", MqttPacketType.PingResponse, typeof(PingResponse))]
+		[InlineData("Files/Binaries/PingRequest_Invalid_HeaderFlag.packet", MqttPacketType.PingRequest, typeof(PingRequest))]
+		[InlineData("Files/Binaries/Disconnect_Invalid_HeaderFlag.packet", MqttPacketType.Disconnect, typeof(Disconnect))]
+		public void when_reading_invalid_empty_packet_then_fails(string packetPath, MqttPacketType packetType, Type type)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
@@ -56,10 +56,10 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Binaries/PingResponse.packet", PacketType.PingResponse, typeof(PingResponse))]
-		[InlineData("Files/Binaries/PingRequest.packet", PacketType.PingRequest, typeof(PingRequest))]
-		[InlineData("Files/Binaries/Disconnect.packet", PacketType.Disconnect, typeof(Disconnect))]
-		public async Task when_writing_empty_packet_then_succeeds(string packetPath, PacketType packetType, Type type)
+		[InlineData("Files/Binaries/PingResponse.packet", MqttPacketType.PingResponse, typeof(PingResponse))]
+		[InlineData("Files/Binaries/PingRequest.packet", MqttPacketType.PingRequest, typeof(PingRequest))]
+		[InlineData("Files/Binaries/Disconnect.packet", MqttPacketType.Disconnect, typeof(Disconnect))]
+		public async Task when_writing_empty_packet_then_succeeds(string packetPath, MqttPacketType packetType, Type type)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
@@ -73,7 +73,7 @@ namespace Tests.Formatters
 			Assert.Equal (expectedPacket, result);
 		}
 
-		IFormatter GetFormatter(PacketType packetType, Type type)
+		IFormatter GetFormatter(MqttPacketType packetType, Type type)
 		{
 			var genericType = typeof (EmptyPacketFormatter<>);
 			var formatterType = genericType.MakeGenericType (type);

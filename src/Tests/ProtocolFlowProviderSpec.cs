@@ -23,18 +23,18 @@ namespace Tests
 		}
 
 		[Theory]
-		[InlineData(PacketType.ConnectAck, typeof(ClientConnectFlow))]
-		[InlineData(PacketType.PingResponse, typeof(PingFlow))]
-		[InlineData(PacketType.Publish, typeof(PublishReceiverFlow))]
-		[InlineData(PacketType.PublishAck, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.PublishReceived, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.PublishRelease, typeof(PublishReceiverFlow))]
-		[InlineData(PacketType.PublishComplete, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.SubscribeAck, typeof(ClientSubscribeFlow))]
-		[InlineData(PacketType.UnsubscribeAck, typeof(ClientUnsubscribeFlow))]
-		public void when_getting_client_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
+		[InlineData(MqttPacketType.ConnectAck, typeof(ClientConnectFlow))]
+		[InlineData(MqttPacketType.PingResponse, typeof(PingFlow))]
+		[InlineData(MqttPacketType.Publish, typeof(PublishReceiverFlow))]
+		[InlineData(MqttPacketType.PublishAck, typeof(PublishSenderFlow))]
+		[InlineData(MqttPacketType.PublishReceived, typeof(PublishSenderFlow))]
+		[InlineData(MqttPacketType.PublishRelease, typeof(PublishReceiverFlow))]
+		[InlineData(MqttPacketType.PublishComplete, typeof(PublishSenderFlow))]
+		[InlineData(MqttPacketType.SubscribeAck, typeof(ClientSubscribeFlow))]
+		[InlineData(MqttPacketType.UnsubscribeAck, typeof(ClientUnsubscribeFlow))]
+		public void when_getting_client_flow_from_valid_packet_type_then_succeeds(MqttPacketType packetType, Type flowType)
 		{
-			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryProvider>(), tracerManager, new ProtocolConfiguration ());
+			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<IMqttTopicEvaluator> (), Mock.Of<IRepositoryProvider>(), tracerManager, new MqttConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 
@@ -42,21 +42,21 @@ namespace Tests
 		}
 
 		[Theory]
-		[InlineData(PacketType.Connect, typeof(ServerConnectFlow))]
-		[InlineData(PacketType.Disconnect, typeof(DisconnectFlow))]
-		[InlineData(PacketType.PingRequest, typeof(PingFlow))]
-		[InlineData(PacketType.Publish, typeof(ServerPublishReceiverFlow))]
-		[InlineData(PacketType.PublishAck, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.PublishReceived, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.PublishRelease, typeof(ServerPublishReceiverFlow))]
-		[InlineData(PacketType.PublishComplete, typeof(PublishSenderFlow))]
-		[InlineData(PacketType.Subscribe, typeof(ServerSubscribeFlow))]
-		[InlineData(PacketType.Unsubscribe, typeof(ServerUnsubscribeFlow))]
-		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(PacketType packetType, Type flowType)
+		[InlineData(MqttPacketType.Connect, typeof(ServerConnectFlow))]
+		[InlineData(MqttPacketType.Disconnect, typeof(DisconnectFlow))]
+		[InlineData(MqttPacketType.PingRequest, typeof(PingFlow))]
+		[InlineData(MqttPacketType.Publish, typeof(ServerPublishReceiverFlow))]
+		[InlineData(MqttPacketType.PublishAck, typeof(PublishSenderFlow))]
+		[InlineData(MqttPacketType.PublishReceived, typeof(PublishSenderFlow))]
+		[InlineData(MqttPacketType.PublishRelease, typeof(ServerPublishReceiverFlow))]
+		[InlineData(MqttPacketType.PublishComplete, typeof(PublishSenderFlow))]
+		[InlineData(MqttPacketType.Subscribe, typeof(ServerSubscribeFlow))]
+		[InlineData(MqttPacketType.Unsubscribe, typeof(ServerUnsubscribeFlow))]
+		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(MqttPacketType packetType, Type flowType)
 		{
-			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
-			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), tracerManager, new ProtocolConfiguration ());
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<IMqttTopicEvaluator> (), 
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), tracerManager, new MqttConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 
@@ -66,9 +66,9 @@ namespace Tests
 		[Fact]
 		public void when_getting_explicit_server_flow_from_type_then_succeeds()
 		{
-			var authenticationProvider = Mock.Of<IAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
-			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<ITopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), tracerManager, new ProtocolConfiguration ());
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<IMqttTopicEvaluator> (), 
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), tracerManager, new MqttConfiguration ());
 
 			var connectFlow = flowProvider.GetFlow<ServerConnectFlow> ();
 			var senderFlow = flowProvider.GetFlow<PublishSenderFlow> ();
@@ -88,7 +88,7 @@ namespace Tests
 		[Fact]
 		public void when_getting_explicit_client_flow_from_type_then_succeeds()
 		{
-			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<ITopicEvaluator> (), Mock.Of<IRepositoryProvider>(), tracerManager, new ProtocolConfiguration ());
+			var flowProvider = new ClientProtocolFlowProvider (Mock.Of<IMqttTopicEvaluator> (), Mock.Of<IRepositoryProvider>(), tracerManager, new MqttConfiguration ());
 
 			var connectFlow = flowProvider.GetFlow<ClientConnectFlow> ();
 			var senderFlow = flowProvider.GetFlow<PublishSenderFlow> ();

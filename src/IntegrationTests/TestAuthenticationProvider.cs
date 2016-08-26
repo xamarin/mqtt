@@ -2,7 +2,7 @@
 
 namespace IntegrationTests
 {
-	public class TestAuthenticationProvider : IAuthenticationProvider
+	public class TestAuthenticationProvider : IMqttAuthenticationProvider
 	{
 		readonly string expectedUsername;
 		readonly string expectedPassword;

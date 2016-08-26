@@ -4,7 +4,7 @@ namespace System.Net.Mqtt.Storage
 {
 	internal class PendingAcknowledgement
 	{
-		public PacketType Type { get; set; }
+		public MqttPacketType Type { get; set; }
 
 		public ushort PacketId { get; set; }
 	}

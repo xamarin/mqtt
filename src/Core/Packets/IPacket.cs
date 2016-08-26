@@ -2,6 +2,6 @@
 {
 	internal interface IPacket
     {
-        PacketType Type { get; }
+        MqttPacketType Type { get; }
     }
 }

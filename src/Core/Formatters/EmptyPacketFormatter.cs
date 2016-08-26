@@ -5,14 +5,14 @@ namespace System.Net.Mqtt.Formatters
 	internal class EmptyPacketFormatter<T> : Formatter<T>
 		where T : class, IPacket, new()
 	{
-		readonly PacketType packetType;
+		readonly MqttPacketType packetType;
 
-		public EmptyPacketFormatter (PacketType packetType)
+		public EmptyPacketFormatter (MqttPacketType packetType)
 		{
 			this.packetType = packetType;
 		}
 
-		public override PacketType PacketType { get { return packetType; } }
+		public override MqttPacketType PacketType { get { return packetType; } }
 
 		protected override T Read (byte[] bytes)
 		{

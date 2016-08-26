@@ -2,15 +2,15 @@
 {
 	internal class ConnectAck : IPacket, IEquatable<ConnectAck>
 	{
-		public ConnectAck (ConnectionStatus status, bool existingSession)
+		public ConnectAck (MqttConnectionStatus status, bool existingSession)
 		{
 			Status = status;
 			SessionPresent = existingSession;
 		}
 
-		public PacketType Type { get { return PacketType.ConnectAck; } }
+		public MqttPacketType Type { get { return MqttPacketType.ConnectAck; } }
 
-		public ConnectionStatus Status { get; private set; }
+		public MqttConnectionStatus Status { get; private set; }
 
 		public bool SessionPresent { get; private set; }
 

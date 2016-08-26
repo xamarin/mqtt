@@ -13,18 +13,18 @@ namespace System.Net.Mqtt.Flows
 	internal class PublishSenderFlow : PublishFlow, IPublishSenderFlow
 	{
 		readonly ITracer tracer;
-		IDictionary<PacketType, Func<string, ushort, IFlowPacket>> senderRules;
+		IDictionary<MqttPacketType, Func<string, ushort, IFlowPacket>> senderRules;
 
 		public PublishSenderFlow (IRepository<ClientSession> sessionRepository,
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 			: base (sessionRepository, tracerManager, configuration)
 		{
 			tracer = tracerManager.Get<PublishSenderFlow> ();
 			DefineSenderRules ();
 		}
 
-		public override async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public override async Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
 		{
 			var senderRule = default (Func<string, ushort, IFlowPacket>);
 
@@ -46,7 +46,7 @@ namespace System.Net.Mqtt.Flows
 			}
 		}
 
-		public async Task SendPublishAsync (string clientId, Publish message, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
+		public async Task SendPublishAsync (string clientId, Publish message, IMqttChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
 			if (channel == null || !channel.IsConnected) {
 				SaveMessage (message, clientId, PendingMessageStatus.PendingToSend);
@@ -55,17 +55,17 @@ namespace System.Net.Mqtt.Flows
 
 			var qos = configuration.GetSupportedQos(message.QualityOfService);
 
-			if (qos != QualityOfService.AtMostOnce && status == PendingMessageStatus.PendingToSend) {
+			if (qos != MqttQualityOfService.AtMostOnce && status == PendingMessageStatus.PendingToSend) {
 				SaveMessage (message, clientId, PendingMessageStatus.PendingToAcknowledge);
 			}
 
 			await channel.SendAsync (message)
 				.ConfigureAwait (continueOnCapturedContext: false);
 
-			if (qos == QualityOfService.AtLeastOnce) {
+			if (qos == MqttQualityOfService.AtLeastOnce) {
 				await MonitorAckAsync<PublishAck> (message, clientId, channel)
 					.ConfigureAwait (continueOnCapturedContext: false);
-			} else if (qos == QualityOfService.ExactlyOnce) {
+			} else if (qos == MqttQualityOfService.ExactlyOnce) {
 				await MonitorAckAsync<PublishReceived> (message, clientId, channel).ConfigureAwait (continueOnCapturedContext: false);
 				await channel.Receiver
 					.ObserveOn (NewThreadScheduler.Default)
@@ -79,7 +79,7 @@ namespace System.Net.Mqtt.Flows
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var pendingMessage = session
@@ -91,14 +91,14 @@ namespace System.Net.Mqtt.Flows
 			sessionRepository.Update (session);
 		}
 
-		protected async Task MonitorAckAsync<T> (Publish sentMessage, string clientId, IChannel<IPacket> channel)
+		protected async Task MonitorAckAsync<T> (Publish sentMessage, string clientId, IMqttChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
 			var intervalSubscription = Observable
 				.Interval (TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
-						tracer.Warn (Properties.Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 						var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
 							sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
@@ -119,22 +119,22 @@ namespace System.Net.Mqtt.Flows
 
 		void DefineSenderRules ()
 		{
-			senderRules = new Dictionary<PacketType, Func<string, ushort, IFlowPacket>> ();
+			senderRules = new Dictionary<MqttPacketType, Func<string, ushort, IFlowPacket>> ();
 
-			senderRules.Add (PacketType.PublishAck, (clientId, packetId) => {
+			senderRules.Add (MqttPacketType.PublishAck, (clientId, packetId) => {
 				RemovePendingMessage (clientId, packetId);
 
 				return default (IFlowPacket);
 			});
 
-			senderRules.Add (PacketType.PublishReceived, (clientId, packetId) => {
+			senderRules.Add (MqttPacketType.PublishReceived, (clientId, packetId) => {
 				RemovePendingMessage (clientId, packetId);
 
 				return new PublishRelease (packetId);
 			});
 
-			senderRules.Add (PacketType.PublishComplete, (clientId, packetId) => {
-				RemovePendingAcknowledgement (clientId, packetId, PacketType.PublishRelease);
+			senderRules.Add (MqttPacketType.PublishComplete, (clientId, packetId) => {
+				RemovePendingAcknowledgement (clientId, packetId, MqttPacketType.PublishRelease);
 
 				return default (IFlowPacket);
 			});
@@ -142,14 +142,14 @@ namespace System.Net.Mqtt.Flows
 
 		void SaveMessage (Publish message, string clientId, PendingMessageStatus status)
 		{
-			if (message.QualityOfService == QualityOfService.AtMostOnce) {
+			if (message.QualityOfService == MqttQualityOfService.AtMostOnce) {
 				return;
 			}
 
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var savedMessage = new PendingMessage {

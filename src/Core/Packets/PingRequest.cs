@@ -2,6 +2,6 @@
 {
 	internal class PingRequest : IPacket
 	{
-		public PacketType Type { get { return PacketType.PingRequest; } }
+		public MqttPacketType Type { get { return MqttPacketType.PingRequest; } }
 	}
 }

@@ -2,14 +2,14 @@
 
 namespace System.Net.Mqtt.Server
 {
-	public class TcpBinding : IProtocolBinding
+	public class TcpBinding : IMqttBinding
 	{
-		public IChannelFactory GetChannelFactory (string hostAddress, ITracerManager tracerManager, ProtocolConfiguration configuration)
+		public IMqttChannelFactory GetChannelFactory (string hostAddress, ITracerManager tracerManager, MqttConfiguration configuration)
 		{
 			return new TcpChannelFactory (hostAddress, tracerManager, configuration);
 		}
 
-		public IChannelProvider GetChannelProvider (ITracerManager tracerManager, ProtocolConfiguration configuration)
+		public IMqttChannelProvider GetChannelProvider (ITracerManager tracerManager, MqttConfiguration configuration)
 		{
 			return new TcpChannelProvider (tracerManager, configuration);
 		}

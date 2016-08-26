@@ -8,6 +8,6 @@ namespace System.Net.Mqtt.Storage
 
 		public string TopicFilter { get; set; }
 
-		public QualityOfService MaximumQualityOfService { get; set; }
+		public MqttQualityOfService MaximumQualityOfService { get; set; }
 	}
 }
