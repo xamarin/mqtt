@@ -6,21 +6,21 @@ namespace System.Net.Mqtt.Exceptions
 	[DataContract]
 	public class MqttConnectionException : MqttException
 	{
-		public MqttConnectionException (ConnectionStatus status)
+		public MqttConnectionException (MqttConnectionStatus status)
 		{
 			ReturnCode = status;
 		}
 
-		public MqttConnectionException (ConnectionStatus status, string message) : base (message)
+		public MqttConnectionException (MqttConnectionStatus status, string message) : base (message)
 		{
 			ReturnCode = status;
 		}
 
-		public MqttConnectionException (ConnectionStatus status, string message, Exception innerException) : base (message, innerException)
+		public MqttConnectionException (MqttConnectionStatus status, string message, Exception innerException) : base (message, innerException)
 		{
 			ReturnCode = status;
 		}
 
-		public ConnectionStatus ReturnCode { get; set; }
+		public MqttConnectionStatus ReturnCode { get; set; }
 	}
 }

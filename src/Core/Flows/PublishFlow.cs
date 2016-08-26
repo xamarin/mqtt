@@ -13,22 +13,22 @@ namespace System.Net.Mqtt.Flows
 	{
 		readonly ITracer tracer;
 		protected readonly IRepository<ClientSession> sessionRepository;
-		protected readonly ProtocolConfiguration configuration;
+		protected readonly MqttConfiguration configuration;
 
 		protected PublishFlow (IRepository<ClientSession> sessionRepository,
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 		{
 			tracer = tracerManager.Get<PublishFlow> ();
 			this.sessionRepository = sessionRepository;
 			this.configuration = configuration;
 		}
 
-		public abstract Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
+		public abstract Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel);
 
-		public async Task SendAckAsync (string clientId, IFlowPacket ack, IChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
+		public async Task SendAckAsync (string clientId, IFlowPacket ack, IMqttChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend)
 		{
-			if ((ack.Type == PacketType.PublishReceived || ack.Type == PacketType.PublishRelease) &&
+			if ((ack.Type == MqttPacketType.PublishReceived || ack.Type == MqttPacketType.PublishRelease) &&
 				status == PendingMessageStatus.PendingToSend) {
 				SavePendingAcknowledgement (ack, clientId);
 			}
@@ -40,21 +40,21 @@ namespace System.Net.Mqtt.Flows
 			await channel.SendAsync (ack)
 				.ConfigureAwait (continueOnCapturedContext: false);
 
-			if (ack.Type == PacketType.PublishReceived) {
+			if (ack.Type == MqttPacketType.PublishReceived) {
 				await MonitorAckAsync<PublishRelease> (ack, clientId, channel)
 					.ConfigureAwait (continueOnCapturedContext: false);
-			} else if (ack.Type == PacketType.PublishRelease) {
+			} else if (ack.Type == MqttPacketType.PublishRelease) {
 				await MonitorAckAsync<PublishComplete> (ack, clientId, channel)
 					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}
 
-		protected void RemovePendingAcknowledgement (string clientId, ushort packetId, PacketType type)
+		protected void RemovePendingAcknowledgement (string clientId, ushort packetId, MqttPacketType type)
 		{
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var pendingAcknowledgement = session
@@ -66,14 +66,14 @@ namespace System.Net.Mqtt.Flows
 			sessionRepository.Update (session);
 		}
 
-		protected async Task MonitorAckAsync<T> (IFlowPacket sentMessage, string clientId, IChannel<IPacket> channel)
+		protected async Task MonitorAckAsync<T> (IFlowPacket sentMessage, string clientId, IMqttChannel<IPacket> channel)
 			where T : IFlowPacket
 		{
 			var intervalSubscription = Observable
 				.Interval (TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
-						tracer.Warn (Properties.Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 						await channel.SendAsync (sentMessage);
 					}
@@ -89,7 +89,7 @@ namespace System.Net.Mqtt.Flows
 
 		void SavePendingAcknowledgement (IFlowPacket ack, string clientId)
 		{
-			if (ack.Type != PacketType.PublishReceived && ack.Type != PacketType.PublishRelease) {
+			if (ack.Type != MqttPacketType.PublishReceived && ack.Type != MqttPacketType.PublishRelease) {
 				return;
 			}
 
@@ -101,7 +101,7 @@ namespace System.Net.Mqtt.Flows
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			session.AddPendingAcknowledgement (unacknowledgeMessage);

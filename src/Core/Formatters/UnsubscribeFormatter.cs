@@ -7,14 +7,14 @@ namespace System.Net.Mqtt.Formatters
 {
 	internal class UnsubscribeFormatter : Formatter<Unsubscribe>
 	{
-		public override PacketType PacketType { get { return Packets.PacketType.Unsubscribe; } }
+		public override MqttPacketType PacketType { get { return Packets.MqttPacketType.Unsubscribe; } }
 
 		protected override Unsubscribe Read (byte[] bytes)
 		{
-			ValidateHeaderFlag (bytes, t => t == PacketType.Unsubscribe, 0x02);
+			ValidateHeaderFlag (bytes, t => t == MqttPacketType.Unsubscribe, 0x02);
 
 			var remainingLengthBytesLength = 0;
-			var remainingLength = Protocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
+			var remainingLength = MqttProtocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
 
 			var packetIdentifierStartIndex = remainingLengthBytesLength + 1;
 			var packetIdentifier = bytes.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
@@ -22,7 +22,7 @@ namespace System.Net.Mqtt.Formatters
 			var index = 1 + remainingLengthBytesLength + 2;
 
 			if (bytes.Length == index)
-				throw new MqttViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+				throw new MqttViolationException (Resources.UnsubscribeFormatter_MissingTopics);
 
 			var topics = new List<string> ();
 
@@ -41,7 +41,7 @@ namespace System.Net.Mqtt.Formatters
 
 			var variableHeader = GetVariableHeader (packet);
 			var payload = GetPayload (packet);
-			var remainingLength = Protocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
+			var remainingLength = MqttProtocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
 			var fixedHeader = GetFixedHeader (remainingLength);
 
 			bytes.AddRange (fixedHeader);
@@ -56,7 +56,7 @@ namespace System.Net.Mqtt.Formatters
 			var fixedHeader = new List<byte> ();
 
 			var flags = 0x02;
-			var type = Convert.ToInt32(PacketType.Unsubscribe) << 4;
+			var type = Convert.ToInt32(MqttPacketType.Unsubscribe) << 4;
 
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 
@@ -70,7 +70,7 @@ namespace System.Net.Mqtt.Formatters
 		{
 			var variableHeader = new List<byte> ();
 
-			var packetIdBytes = Protocol.Encoding.EncodeInteger(packet.PacketId);
+			var packetIdBytes = MqttProtocol.Encoding.EncodeInteger(packet.PacketId);
 
 			variableHeader.AddRange (packetIdBytes);
 
@@ -80,12 +80,12 @@ namespace System.Net.Mqtt.Formatters
 		byte[] GetPayload (Unsubscribe packet)
 		{
 			if (packet.Topics == null || !packet.Topics.Any ())
-				throw new MqttViolationException (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+				throw new MqttViolationException (Resources.UnsubscribeFormatter_MissingTopics);
 
 			var payload = new List<byte> ();
 
 			foreach (var topic in packet.Topics) {
-				var topicBytes = Protocol.Encoding.EncodeString (topic);
+				var topicBytes = MqttProtocol.Encoding.EncodeString (topic);
 
 				payload.AddRange (topicBytes);
 			}

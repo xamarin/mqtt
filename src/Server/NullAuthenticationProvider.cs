@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Server
 {
-	internal class NullAuthenticationProvider : IAuthenticationProvider
+	internal class NullAuthenticationProvider : IMqttAuthenticationProvider
 	{
 		static readonly Lazy<NullAuthenticationProvider> instance;
 
@@ -13,7 +13,7 @@
 		{
 		}
 
-		public static IAuthenticationProvider Instance { get { return instance.Value; } }
+		public static IMqttAuthenticationProvider Instance { get { return instance.Value; } }
 
 		public bool Authenticate (string username, string password)
 		{

@@ -5,9 +5,9 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class PingFlow : IProtocolFlow
 	{
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.PingRequest) {
+			if (input.Type != MqttPacketType.PingRequest) {
 				return;
 			}
 

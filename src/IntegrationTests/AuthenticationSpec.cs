@@ -1,17 +1,14 @@
 ﻿using System;
+using System.Net.Mqtt.Server;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Packets;
 using IntegrationTests.Context;
 using Xunit;
-using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Client;
-using System.Net.Mqtt.Exceptions;
 
 namespace IntegrationTests
 {
-	public class AuthenticationSpec : IntegrationContext, IDisposable
+    public class AuthenticationSpec : IntegrationContext, IDisposable
 	{
-		readonly Server server;
+		readonly IMqttServer server;
 
 		public AuthenticationSpec ()
 		{
@@ -28,10 +25,10 @@ namespace IntegrationTests
 			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync (new ClientCredentials (GetClientId (), username, password)).Wait());
 
 			Assert.NotNull (aggregateEx.InnerException);
-			Assert.True (aggregateEx.InnerException is ClientException);
+			Assert.True (aggregateEx.InnerException is MqttClientException);
 			Assert.NotNull (aggregateEx.InnerException.InnerException);
 			Assert.True (aggregateEx.InnerException.InnerException is MqttConnectionException);
-			Assert.Equal (ConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException.InnerException).ReturnCode);
+			Assert.Equal (MqttConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException.InnerException).ReturnCode);
 		}
 
 		[Fact]

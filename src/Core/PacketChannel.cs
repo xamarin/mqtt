@@ -6,20 +6,20 @@ using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt
 {
-	internal class PacketChannel : IChannel<IPacket>
+	internal class PacketChannel : IMqttChannel<IPacket>
 	{
 		bool disposed;
 		readonly ITracer tracer;
-		readonly IChannel<byte[]> innerChannel;
+		readonly IMqttChannel<byte[]> innerChannel;
 		readonly IPacketManager manager;
 		readonly ReplaySubject<IPacket> receiver;
 		readonly ReplaySubject<IPacket> sender;
 		readonly IDisposable subscription;
 
-		public PacketChannel (IChannel<byte[]> innerChannel, 
+		public PacketChannel (IMqttChannel<byte[]> innerChannel, 
 			IPacketManager manager, 
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 		{
 			tracer = tracerManager.Get<PacketChannel> ();
 			this.innerChannel = innerChannel;
@@ -72,7 +72,7 @@ namespace System.Net.Mqtt
 			if (disposed) return;
 
 			if (disposing) {
-				tracer.Info (Properties.Resources.Tracer_Disposing, GetType ().FullName);
+				tracer.Info (Resources.Tracer_Disposing, GetType ().FullName);
 
 				subscription.Dispose ();
 				receiver.OnCompleted ();

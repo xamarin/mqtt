@@ -10,7 +10,7 @@ namespace IntegrationTests
 {
 	public class SubscriptionSpec : ConnectedContext
 	{
-		readonly Server server;
+		readonly MqttServer server;
 
 		public SubscriptionSpec ()
 		{
@@ -23,7 +23,7 @@ namespace IntegrationTests
 			var client = GetClient ();
 			var topicFilter = Guid.NewGuid ().ToString () + "/#";
 
-			await client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
+			await client.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.True (client.IsConnected);
@@ -44,7 +44,7 @@ namespace IntegrationTests
 			for (var i = 1; i <= topicsToSubscribe; i++) {
 				var topicFilter = Guid.NewGuid ().ToString ();
 
-				tasks.Add (client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce));
+				tasks.Add (client.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce));
 				topics.Add (topicFilter);
 			}
 
@@ -68,7 +68,7 @@ namespace IntegrationTests
 			for (var i = 1; i <= topicsToSubscribe; i++) {
 				var topicFilter = Guid.NewGuid ().ToString ();
 
-				tasks.Add (client.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce));
+				tasks.Add (client.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce));
 				topics.Add (topicFilter);
 			}
 

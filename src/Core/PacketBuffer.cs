@@ -65,7 +65,7 @@ namespace System.Net.Mqtt
 				if ((@byte & 128) == 0) {
 					var bytesLenght = default (int);
 
-					packetRemainingLength = Protocol.Encoding.DecodeRemainingLength (mainBuffer.ToArray (), out bytesLenght);
+					packetRemainingLength = MqttProtocol.Encoding.DecodeRemainingLength (mainBuffer.ToArray (), out bytesLenght);
 					packetRemainingLengthReadCompleted = true;
 
 					if (packetRemainingLength == 0)

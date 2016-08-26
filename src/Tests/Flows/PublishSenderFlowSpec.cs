@@ -30,7 +30,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == QualityOfService.AtLeastOnce);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == MqttQualityOfService.AtLeastOnce);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
@@ -44,13 +44,13 @@ namespace Tests.Flows
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
-			var publish = new Publish (topic, QualityOfService.AtLeastOnce, retain: false, duplicated: false, packetId: packetId);
+			var publish = new Publish (topic, MqttQualityOfService.AtLeastOnce, retain: false, duplicated: false, packetId: packetId);
 
 			publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
 
 			var receiver = new Subject<IPacket> ();
 			var sender = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
@@ -81,7 +81,7 @@ namespace Tests.Flows
 			Assert.True (retried);
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish  && 
 				((Publish)p).Topic == topic && 
-				((Publish)p).QualityOfService == QualityOfService.AtLeastOnce &&
+				((Publish)p).QualityOfService == MqttQualityOfService.AtLeastOnce &&
 				((Publish)p).PacketId == packetId)), Times.AtLeast(2));
 		}
 
@@ -90,7 +90,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == QualityOfService.ExactlyOnce);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == MqttQualityOfService.ExactlyOnce);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
@@ -104,13 +104,13 @@ namespace Tests.Flows
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
-			var publish = new Publish (topic, QualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
+			var publish = new Publish (topic, MqttQualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
 
 			publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
 
 			var receiver = new Subject<IPacket> ();
 			var sender = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
@@ -141,7 +141,7 @@ namespace Tests.Flows
 			Assert.True (retried);
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is Publish  && 
 				((Publish)p).Topic == topic && 
-				((Publish)p).QualityOfService == QualityOfService.ExactlyOnce &&
+				((Publish)p).QualityOfService == MqttQualityOfService.ExactlyOnce &&
 				((Publish)p).PacketId == packetId)), Times.AtLeast(2));
 		}
 
@@ -150,7 +150,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 10);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 10);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
@@ -166,7 +166,7 @@ namespace Tests.Flows
 			var publishReceived = new PublishReceived (packetId);
 			var receiver = new Subject<IPacket> ();
 			var sender = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);
@@ -199,7 +199,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<ProtocolConfiguration> (c => c.WaitingTimeoutSecs == 1);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 1);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
@@ -215,7 +215,7 @@ namespace Tests.Flows
 			var publishReceived = new PublishReceived (packetId);
 			var receiver = new Subject<IPacket> ();
 			var sender = new Subject<IPacket> ();
-			var channel = new Mock<IChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
 			channel.Setup (c => c.Receiver).Returns (receiver);

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>System.Net.Mqtt</id>
+        <version>0.1.0</version>
+        <title>System.Net.Mqtt: a lightweight C# MQTT messenger</title>
+        <authors>Xamarin</authors>
+        <licenseUrl>http://clarius.io/hermes/license</licenseUrl>
+        <projectUrl>http://clarius.io/hermes/home</projectUrl>
+        <iconUrl>http://clarius.io/hermes/48.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>A lightweight and high-performance MQTT client.</description>
+        <releaseNotes />
+        <copyright>Copyright 2012</copyright>
+        <tags>m2m iot sockets mqtt</tags>
+        <dependencies>
+			<dependency id="Rx-Main" version="2.2.5" />
+        </dependencies>
+    </metadata>
+    <files>
+		<!--
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		<file src="..\Platforms\Client.Portable\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\portable-win+net45+MonoAndroid10+Xamarin.iOS10" />
+		-->
+
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.pdb" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\net45" />
+		<file src="..\Platforms\Client.Desktop\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\net45" />
+ 
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\MonoAndroid10" />
+		<file src="..\Platforms\Client.Android\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\MonoAndroid10" />
+
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Core.Portable.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Core.Portable.pdb" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Portable.dll" target="lib\Xamarin.iOS" />
+		<file src="..\Platforms\Client.iOS\bin\$Configuration$\System.Net.Mqtt.Portable.pdb" target="lib\Xamarin.iOS" />
+	</files>
+</package>

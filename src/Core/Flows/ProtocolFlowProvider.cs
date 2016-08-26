@@ -9,17 +9,17 @@ namespace System.Net.Mqtt.Flows
 {
 	internal abstract class ProtocolFlowProvider : IProtocolFlowProvider
 	{
-		protected readonly ITopicEvaluator topicEvaluator;
+		protected readonly IMqttTopicEvaluator topicEvaluator;
 		protected readonly IRepositoryProvider repositoryProvider;
 		protected readonly ITracerManager tracerManager;
-		protected readonly ProtocolConfiguration configuration;
+		protected readonly MqttConfiguration configuration;
 
 		IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 
-		protected ProtocolFlowProvider (ITopicEvaluator topicEvaluator,
+		protected ProtocolFlowProvider (IMqttTopicEvaluator topicEvaluator,
 			IRepositoryProvider repositoryProvider,
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.repositoryProvider = repositoryProvider;
@@ -29,13 +29,13 @@ namespace System.Net.Mqtt.Flows
 
 		protected abstract IDictionary<ProtocolFlowType, IProtocolFlow> InitializeFlows ();
 
-		protected abstract bool IsValidPacketType (PacketType packetType);
+		protected abstract bool IsValidPacketType (MqttPacketType packetType);
 
 		/// <exception cref="MqttException">ProtocolException</exception>
-		public IProtocolFlow GetFlow (PacketType packetType)
+		public IProtocolFlow GetFlow (MqttPacketType packetType)
 		{
 			if (!IsValidPacketType (packetType)) {
-				var error = string.Format (Properties.Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
+				var error = string.Format (Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
 
 				throw new MqttException (error);
 			}
@@ -44,7 +44,7 @@ namespace System.Net.Mqtt.Flows
 			var flowType = packetType.ToFlowType();
 
 			if (!GetFlows ().TryGetValue (flowType, out flow)) {
-				var error = string.Format (Properties.Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
+				var error = string.Format (Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
 
 				throw new MqttException (error);
 			}

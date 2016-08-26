@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\Hermes.props" />
+  <PropertyGroup>
+    <ProjectGuid>{6481B999-0479-4162-AC53-5936CE5FD8BF}</ProjectGuid>
+    <RootNamespace>System.Net.Mqtt</RootNamespace>
+    <AssemblyName>System.Net.Mqtt</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="MqttApplicationMessage.cs" />
+    <Compile Include="ByteExtensions.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="MqttClientCredentials.cs" />
+    <Compile Include="Exceptions\MqttClientException.cs" />
+    <Compile Include="MqttClientFactory.cs" />
+    <Compile Include="ClientPacketListener.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerManagerExtensions.cs" />
+    <Compile Include="External\Diagnostics\Tracer\TraceEventType.cs" />
+    <Compile Include="Exceptions\MqttRepositoryException.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
+    <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
+    <Compile Include="External\Diagnostics\Tracer\DefaultTracerManager.cs" />
+    <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
+    <Compile Include="Flows\ClientConnectFlow.cs" />
+    <Compile Include="Flows\ClientProtocolFlowProvider.cs" />
+    <Compile Include="Flows\ClientSubscribeFlow.cs" />
+    <Compile Include="Flows\ClientUnsubscribeFlow.cs" />
+    <Compile Include="Flows\IPublishSenderFlow.cs" />
+    <Compile Include="Flows\ProtocolFlowProvider.cs" />
+    <Compile Include="Flows\IProtocolFlowProvider.cs" />
+    <Compile Include="Flows\IPublishFlow.cs" />
+    <Compile Include="Flows\PingFlow.cs" />
+    <Compile Include="Flows\PublishFlow.cs" />
+    <Compile Include="Flows\PublishReceiverFlow.cs" />
+    <Compile Include="Flows\PublishSenderFlow.cs" />
+    <Compile Include="Exceptions\MqttConnectionException.cs" />
+    <Compile Include="Flows\IProtocolFlow.cs" />
+    <Compile Include="Flows\ProtocolFlowType.cs" />
+    <Compile Include="Formatters\ConnectAckFormatter.cs" />
+    <Compile Include="Formatters\ConnectFormatter.cs" />
+    <Compile Include="Formatters\Formatter.cs" />
+    <Compile Include="Formatters\IFormatter.cs" />
+    <Compile Include="Formatters\EmptyPacketFormatter.cs" />
+    <Compile Include="Formatters\FlowPacketFormatter.cs" />
+    <Compile Include="Formatters\PublishFormatter.cs" />
+    <Compile Include="Formatters\SubscribeAckFormatter.cs" />
+    <Compile Include="Formatters\UnsubscribeFormatter.cs" />
+    <Compile Include="Formatters\SubscribeFormatter.cs" />
+    <Compile Include="IMqttChannel.cs" />
+    <Compile Include="IMqttChannelFactory.cs" />
+    <Compile Include="IMqttChannelProvider.cs" />
+    <Compile Include="IMqttClient.cs" />
+    <Compile Include="IMqttEndpointFactory.cs" />
+    <Compile Include="IPacketIdProvider.cs" />
+    <Compile Include="IPacketListener.cs" />
+    <Compile Include="IPacketChannelFactory.cs" />
+    <Compile Include="IPacketManager.cs" />
+    <Compile Include="IPacketBuffer.cs" />
+    <Compile Include="Bindings\IMqttBinding.cs" />
+    <Compile Include="IMqttTopicEvaluator.cs" />
+    <Compile Include="PacketChannel.cs" />
+    <Compile Include="PacketChannelFactory.cs" />
+    <Compile Include="PacketIdProvider.cs" />
+    <Compile Include="PacketManager.cs" />
+    <Compile Include="PacketBuffer.cs" />
+    <Compile Include="Packets\Connect.cs" />
+    <Compile Include="Packets\ConnectAck.cs" />
+    <Compile Include="Packets\MqttConnectionStatus.cs" />
+    <Compile Include="Packets\Disconnect.cs" />
+    <Compile Include="Packets\IFlowPacket.cs" />
+    <Compile Include="Packets\IPacket.cs" />
+    <Compile Include="Packets\MqttPacketType.cs" />
+    <Compile Include="Packets\PingRequest.cs" />
+    <Compile Include="Packets\PingResponse.cs" />
+    <Compile Include="Packets\Publish.cs" />
+    <Compile Include="Packets\PublishAck.cs" />
+    <Compile Include="Packets\PublishComplete.cs" />
+    <Compile Include="Packets\PublishReceived.cs" />
+    <Compile Include="Packets\PublishRelease.cs" />
+    <Compile Include="Packets\MqttQualityOfService.cs" />
+    <Compile Include="Packets\Subscribe.cs" />
+    <Compile Include="Packets\SubscribeAck.cs" />
+    <Compile Include="Packets\SubscribeReturnCode.cs" />
+    <Compile Include="Packets\Subscription.cs" />
+    <Compile Include="Packets\UnsubscribeAck.cs" />
+    <Compile Include="Packets\Unsubscribe.cs" />
+    <Compile Include="Packets\MqttLastWill.cs" />
+    <Compile Include="MqttProtocol.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MqttConfiguration.cs" />
+    <Compile Include="MqttEncoder.cs" />
+    <Compile Include="Exceptions\MqttViolationException.cs" />
+    <Compile Include="Exceptions\MqttException.cs" />
+    <Compile Include="Resources.cs" />
+    <Compile Include="SingleThreadScheduler.cs" />
+    <Compile Include="Storage\StorageExtensions.cs" />
+    <Compile Include="MqttServerStopped.cs" />
+    <Compile Include="Storage\InMemoryRepositoryProvider.cs" />
+    <Compile Include="Storage\IRepositoryProvider.cs" />
+    <Compile Include="Storage\PendingMessage.cs" />
+    <Compile Include="Storage\RetainedMessage.cs" />
+    <Compile Include="Storage\ClientSubscription.cs" />
+    <Compile Include="Storage\ConnectionWill.cs" />
+    <Compile Include="Storage\InMemoryRepository.cs" />
+    <Compile Include="Storage\IRepository.cs" />
+    <Compile Include="Storage\ClientSession.cs" />
+    <Compile Include="Storage\PendingAcknowledgement.cs" />
+    <Compile Include="Storage\StorageObject.cs" />
+    <Compile Include="TaskRunner.cs" />
+    <Compile Include="Bindings\TcpBinding.cs" />
+    <Compile Include="Bindings\TcpChannel.cs" />
+    <Compile Include="Bindings\TcpChannelFactory.cs" />
+    <Compile Include="Timer.cs" />
+    <Compile Include="MqttTopicEvaluator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Hermes.licenseheader">
+      <Link>Hermes.licenseheader</Link>
+    </None>
+    <None Include="Client.nuspec" />
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Runtime.Serialization.Primitives">
+      <HintPath>..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETPortable\v4.5\Profile\Profile111\System.Runtime.Serialization.Primitives.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <Import Project="..\Hermes.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties project_1json__JSONSchema="&quot;System.Reactive&quot;: &quot;3.0.0&quot;," />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
