@@ -9,7 +9,7 @@
     "xunit.extensions": "1.9.2"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win": {}
