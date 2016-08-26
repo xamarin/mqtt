@@ -1,22 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Threading.Tasks;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
+using System.Linq;
+using System.Threading;
+using System;
+using System.Reactive.Linq;
+using System.Net.Mqtt.Packets;
+using System.Text;
+using System.Collections.Generic;
+using System.Net.Mqtt.Server;
+using System.Net.Mqtt.Client;
+using System.Net.Mqtt.Exceptions;
 
 namespace IntegrationTests
 {
-    public class ConnectionSpec : IntegrationContext, IDisposable
+	public class ConnectionSpec : IntegrationContext, IDisposable
 	{
-		readonly IMqttServer server;
+		readonly Server server;
 
 		public ConnectionSpec ()
 		{
@@ -28,7 +29,7 @@ namespace IntegrationTests
 		{
 			server.Stop ();
 
-			var ex = Assert.Throws<MqttClientException>(() => GetClient ());
+			var ex = Assert.Throws<ClientException>(() => GetClient ());
 
 			Assert.NotNull (ex);
 			Assert.NotNull (ex.InnerException);
@@ -41,14 +42,14 @@ namespace IntegrationTests
 			var fooClient = GetClient ();
 			var barClient = GetClient ();
 
-			await fooClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-			await barClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
+			await fooClient.ConnectAsync (new ClientCredentials (GetClientId ()));
+			await barClient.ConnectAsync (new ClientCredentials (GetClientId ()));
 
 			var exceptionThrown = false;
 
 			try {
 				//Force an exception to be thrown by publishing null message
-				await fooClient.PublishAsync (message: null, qos: MqttQualityOfService.AtMostOnce);
+				await fooClient.PublishAsync (message: null, qos: QualityOfService.AtMostOnce);
 			} catch {
 				exceptionThrown = true;
 			}
@@ -75,13 +76,13 @@ namespace IntegrationTests
 		public async Task when_connect_clients_then_succeeds()
 		{
 			var count = GetTestLoad ();
-			var clients = new List<IMqttClient> ();
+			var clients = new List<IClient> ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var client = GetClient ();
 
-				tasks.Add (client.ConnectAsync (new MqttClientCredentials (GetClientId ())));
+				tasks.Add (client.ConnectAsync (new ClientCredentials (GetClientId ())));
 				clients.Add (client);
 			}
 
@@ -100,13 +101,13 @@ namespace IntegrationTests
 		public async Task when_disconnect_clients_then_succeeds()
 		{
 			var count = GetTestLoad ();
-			var clients = new List<IMqttClient> ();
+			var clients = new List<IClient> ();
 			var connectTasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var client = GetClient ();
 
-				connectTasks.Add(client.ConnectAsync (new MqttClientCredentials (GetClientId ())));
+				connectTasks.Add(client.ConnectAsync (new ClientCredentials (GetClientId ())));
 				clients.Add (client);
 			}
 
@@ -142,7 +143,7 @@ namespace IntegrationTests
 		{
 			var client = GetClient ();
 
-			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()))
+			await client.ConnectAsync (new ClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
@@ -193,17 +194,17 @@ namespace IntegrationTests
 			var client3 = GetClient ();
 
 			var topic = Guid.NewGuid ().ToString ();
-			var qos = MqttQualityOfService.ExactlyOnce;
+			var qos = QualityOfService.ExactlyOnce;
 			var retain = true;
 			var message = "Client 1 has been disconnected unexpectedly";
-			var will = new MqttLastWill(topic, qos, retain, message);
+			var will = new Will(topic, qos, retain, message);
 
-			await client1.ConnectAsync (new MqttClientCredentials (GetClientId ()), will);
-			await client2.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-			await client3.ConnectAsync (new MqttClientCredentials (GetClientId ()));
+			await client1.ConnectAsync (new ClientCredentials (GetClientId ()), will);
+			await client2.ConnectAsync (new ClientCredentials (GetClientId ()));
+			await client3.ConnectAsync (new ClientCredentials (GetClientId ()));
 
-			await client2.SubscribeAsync(topic, MqttQualityOfService.AtMostOnce);
-			await client3.SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce);
+			await client2.SubscribeAsync(topic, QualityOfService.AtMostOnce);
+			await client3.SubscribeAsync(topic, QualityOfService.AtLeastOnce);
 
 			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
 
@@ -237,20 +238,20 @@ namespace IntegrationTests
 			var client3 = GetClient ();
 
 			var topic = Guid.NewGuid ().ToString ();
-			var qos = MqttQualityOfService.ExactlyOnce;
+			var qos = QualityOfService.ExactlyOnce;
 			var retain = true;
 			var message = "Client 1 has been disconnected unexpectedly";
-			var will = new MqttLastWill(topic, qos, retain, message);
+			var will = new Will(topic, qos, retain, message);
 
-			await client1.ConnectAsync (new MqttClientCredentials (GetClientId ()), will);
-			await client2.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-			await client3.ConnectAsync (new MqttClientCredentials (GetClientId ()));
+			await client1.ConnectAsync (new ClientCredentials (GetClientId ()), will);
+			await client2.ConnectAsync (new ClientCredentials (GetClientId ()));
+			await client3.ConnectAsync (new ClientCredentials (GetClientId ()));
 
-			await client2.SubscribeAsync(topic, MqttQualityOfService.AtMostOnce);
-			await client3.SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce);
+			await client2.SubscribeAsync(topic, QualityOfService.AtMostOnce);
+			await client3.SubscribeAsync(topic, QualityOfService.AtLeastOnce);
 
 			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
-			var willMessage = default (MqttApplicationMessage);
+			var willMessage = default (ApplicationMessage);
 
 			client2.Receiver.Subscribe (m => {
 				if (m.Topic == topic) {

@@ -1,35 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using Merq;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
+using System.Reactive;
 
 namespace System.Net.Mqtt.Server
 {
-    internal class Server : IMqttServer
+	public class Server : IDisposable
 	{
 		bool disposed;
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
 		readonly ITracer tracer;
-		readonly IMqttChannelProvider binaryChannelProvider;
+		readonly IChannelProvider binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
 		readonly IEventStream eventStream;
 		readonly ITracerManager tracerManager;
-		readonly MqttConfiguration configuration;
+		readonly ProtocolConfiguration configuration;
 
-		readonly IList<IMqttChannel<IPacket>> channels = new List<IMqttChannel<IPacket>> ();
+		readonly IList<IChannel<IPacket>> channels = new List<IChannel<IPacket>> ();
 
-		internal Server (IMqttChannelProvider binaryChannelProvider,
+		internal Server (IChannelProvider binaryChannelProvider,
 			IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
 			IEventStream eventStream,
 			ITracerManager tracerManager,
-			MqttConfiguration configuration)
+			ProtocolConfiguration configuration)
 		{
 			tracer = tracerManager.Get<Server> ();
 			this.binaryChannelProvider = binaryChannelProvider;
@@ -41,9 +43,9 @@ namespace System.Net.Mqtt.Server
 			this.configuration = configuration;
 		}
 
-		public event EventHandler<MqttUndeliveredMessage> MessageUndelivered = (sender, args) => { };
+		public event EventHandler<TopicNotSubscribed> TopicNotSubscribed = (sender, args) => { };
 
-		public event EventHandler<MqttServerStopped> Stopped = (sender, args) => { };
+		public event EventHandler<ClosedEventArgs> Stopped = (sender, args) => { };
 
 		public int ActiveChannels { get { return channels.Where (c => c.IsConnected).Count (); } }
 
@@ -65,15 +67,15 @@ namespace System.Net.Mqtt.Server
 				);
 
 			streamSubscription = eventStream
-				.Of<MqttUndeliveredMessage> ()
+				.Of<TopicNotSubscribed> ()
 				.Subscribe (e => {
-					MessageUndelivered (this, e);
+					TopicNotSubscribed (this, e);
 				});
 		}
 
 		public void Stop ()
 		{
-			Stop (StoppedReason.Disposed);
+			Stop (ClosedReason.Disposed);
 		}
 
 		void IDisposable.Dispose ()
@@ -86,7 +88,7 @@ namespace System.Net.Mqtt.Server
 			if (disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, GetType ().FullName);
+				tracer.Info (Properties.Resources.Tracer_Disposing, GetType ().FullName);
 
 				if (streamSubscription != null) {
 					streamSubscription.Dispose ();
@@ -108,27 +110,27 @@ namespace System.Net.Mqtt.Server
 			}
 		}
 
-		void Stop (StoppedReason reason, string message = null)
+		void Stop (ClosedReason reason, string message = null)
 		{
 			Dispose (true);
-			Stopped (this, new MqttServerStopped (reason, message));
+			Stopped (this, new ClosedEventArgs (reason, message));
 			GC.SuppressFinalize (this);
 		}
 
-		void ProcessChannel (IMqttChannel<byte[]> binaryChannel)
+		void ProcessChannel (IChannel<byte[]> binaryChannel)
 		{
-			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
+			tracer.Verbose (Properties.Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, tracerManager, configuration);
 
 			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => { }, ex => {
-				tracer.Error (ex, Resources.Tracer_Server_PacketsObservableError);
+				tracer.Error (ex, Properties.Resources.Tracer_Server_PacketsObservableError);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			}, () => {
-				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
+				tracer.Warn (Properties.Resources.Tracer_Server_PacketsObservableCompleted);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			});

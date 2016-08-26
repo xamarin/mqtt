@@ -4,7 +4,7 @@ namespace System.Net.Mqtt.Storage
 {
 	internal class RetainedMessage : StorageObject
 	{
-		public MqttQualityOfService QualityOfService { get; set; }
+		public QualityOfService QualityOfService { get; set; }
 
 		public string Topic { get; set; }
 

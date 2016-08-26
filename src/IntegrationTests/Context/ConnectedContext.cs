@@ -1,5 +1,4 @@
-﻿using System.Net.Mqtt;
-using System.Threading.Tasks;
+﻿using System.Net.Mqtt.Client;
 
 namespace IntegrationTests.Context
 {
@@ -10,11 +9,11 @@ namespace IntegrationTests.Context
 		{
 		}
 
-		protected override async Task<IMqttClient> GetClientAsync ()
+		protected override Client GetClient ()
 		{
-			var client = await base.GetClientAsync ();
+			var client = base.GetClient ();
 
-			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()));
+			client.ConnectAsync (new ClientCredentials (GetClientId ())).Wait ();
 
 			return client;
 		}

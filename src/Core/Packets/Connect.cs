@@ -19,7 +19,7 @@
 			KeepAlive = 0;
 		}
 
-		public MqttPacketType Type { get { return MqttPacketType.Connect; } }
+		public PacketType Type { get { return PacketType.Connect; } }
 
 		public string ClientId { get; set; }
 
@@ -27,7 +27,7 @@
 
 		public ushort KeepAlive { get; set; }
 
-		public MqttLastWill Will { get; set; }
+		public Will Will { get; set; }
 
 		public string UserName { get; set; }
 

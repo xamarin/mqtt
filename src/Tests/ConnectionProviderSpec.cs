@@ -27,7 +27,7 @@ namespace Tests
 			var existingClients = provider.Connections;
 			var clientId = Guid.NewGuid ().ToString ();
 
-			provider.AddConnection (clientId, Mock.Of<IMqttChannel<IPacket>> (c => c.IsConnected == true));
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == true));
 
 			Assert.Equal (existingClients + 1, provider.Connections);
 		}
@@ -40,7 +40,7 @@ namespace Tests
 			var existingClients = provider.ActiveClients.Count();
 			var clientId = Guid.NewGuid ().ToString ();
 
-			provider.AddConnection (clientId, Mock.Of<IMqttChannel<IPacket>> (c => c.IsConnected == false));
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == false));
 
 			Assert.Equal (existingClients, provider.ActiveClients.Count());
 		}
@@ -53,7 +53,7 @@ namespace Tests
 			var existingClients = provider.ActiveClients.Count();
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var connection = new Mock<IMqttChannel<IPacket>> ();
+			var connection = new Mock<IChannel<IPacket>> ();
 
 			connection.Setup(c => c.IsConnected).Returns(true);
 
@@ -78,7 +78,7 @@ namespace Tests
 
 			var clientId = Guid.NewGuid ().ToString ();
 
-			provider.AddConnection (clientId, Mock.Of<IMqttChannel<IPacket>> (c => c.IsConnected == true));
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == true));
 
 			var newClients = provider.Connections;
 
@@ -95,13 +95,13 @@ namespace Tests
 			var provider = new ConnectionProvider (tracerManager);
 
 			var receiver1 = new Subject<IPacket> ();
-			var channel1 = new Mock<IMqttChannel<IPacket>> ();
+			var channel1 = new Mock<IChannel<IPacket>> ();
 
 			channel1.Setup (c => c.Receiver).Returns (receiver1);
 			channel1.Setup (c => c.IsConnected).Returns (true);
 
 			var receiver2 = new Subject<IPacket> ();
-			var channel2 = new Mock<IMqttChannel<IPacket>> ();
+			var channel2 = new Mock<IChannel<IPacket>> ();
 
 			channel2.Setup (c => c.Receiver).Returns (receiver2);
 			channel2.Setup (c => c.IsConnected).Returns (true);
@@ -121,7 +121,7 @@ namespace Tests
 			var provider = new ConnectionProvider (tracerManager);
 			var clientId = Guid.NewGuid ().ToString ();
 
-			provider.AddConnection (clientId, Mock.Of<IMqttChannel<IPacket>> (c => c.IsConnected == true));
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == true));
 
 			var connection = provider.GetConnection (clientId);
 
@@ -134,7 +134,7 @@ namespace Tests
 			var provider = new ConnectionProvider (tracerManager);
 			var clientId = Guid.NewGuid ().ToString ();
 
-			provider.AddConnection (clientId, Mock.Of<IMqttChannel<IPacket>> (c => c.IsConnected == false));
+			provider.AddConnection (clientId, Mock.Of<IChannel<IPacket>> (c => c.IsConnected == false));
 
 			var connection = provider.GetConnection (clientId);
 

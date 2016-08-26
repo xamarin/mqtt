@@ -104,7 +104,7 @@ namespace System.Net.Mqtt.Client
 					.Timeout (connectTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
+					var message = string.Format(Properties.Resources.Client_ConnectionDisconnected, credentials.ClientId);
 
 					throw new ClientException (message);
 				}
@@ -118,11 +118,11 @@ namespace System.Net.Mqtt.Client
 				ObservePackets ();
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
-				throw new ClientException (string.Format (Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+				throw new ClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
 			} catch (MqttConnectionException connectionEx) {
 				Close (connectionEx);
 
-				var message = string.Format(Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
+				var message = string.Format(Properties.Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
 
 				throw new ClientException (message, connectionEx);
 			} catch (ClientException clientEx) {
@@ -130,7 +130,7 @@ namespace System.Net.Mqtt.Client
 				throw;
 			} catch (Exception ex) {
 				Close (ex);
-				throw new ClientException (string.Format (Resources.Client_ConnectionError, credentials.ClientId), ex);
+				throw new ClientException (string.Format (Properties.Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
 		}
 
@@ -158,7 +158,7 @@ namespace System.Net.Mqtt.Client
 					.Timeout (subscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_SubscriptionDisconnected, Id, topicFilter);
+					var message = string.Format(Properties.Resources.Client_SubscriptionDisconnected, Id, topicFilter);
 
 					tracer.Error (message);
 
@@ -167,7 +167,7 @@ namespace System.Net.Mqtt.Client
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
-				var message = string.Format (Resources.Client_SubscribeTimeout, Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeTimeout, Id, topicFilter);
 
 				throw new ClientException (message, timeEx);
 			} catch (ClientException clientEx) {
@@ -176,7 +176,7 @@ namespace System.Net.Mqtt.Client
 			} catch (Exception ex) {
 				Close (ex);
 
-				var message = string.Format (Resources.Client_SubscribeError, Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeError, Id, topicFilter);
 
 				throw new ClientException (message, ex);
 			}
@@ -230,7 +230,7 @@ namespace System.Net.Mqtt.Client
 					.Timeout (unsubscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_UnsubscribeDisconnected, Id, string.Join(", ", topics));
+					var message = string.Format(Properties.Resources.Client_UnsubscribeDisconnected, Id, string.Join(", ", topics));
 
 					tracer.Error (message);
 
@@ -239,7 +239,7 @@ namespace System.Net.Mqtt.Client
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
-				var message = string.Format (Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
@@ -250,7 +250,7 @@ namespace System.Net.Mqtt.Client
 			} catch (Exception ex) {
 				Close (ex);
 
-				var message = string.Format (Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
@@ -316,7 +316,7 @@ namespace System.Net.Mqtt.Client
 
 		void Close (ClosedReason reason, string message = null)
 		{
-			tracer.Info (Resources.Tracer_Client_Disposing, Id, reason);
+			tracer.Info (Properties.Resources.Tracer_Client_Disposing, Id, reason);
 			Dispose (true);
 			Closed (this, new ClosedEventArgs (reason, message));
 			GC.SuppressFinalize (this);
@@ -331,7 +331,7 @@ namespace System.Net.Mqtt.Client
 				sessionRepository.Delete (session);
 				session = null;
 
-				tracer.Info (Resources.Tracer_Client_CleanedOldSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Client_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -339,7 +339,7 @@ namespace System.Net.Mqtt.Client
 
 				sessionRepository.Create (session);
 
-				tracer.Info (Resources.Tracer_Client_CreatedSession, clientId);
+				tracer.Info (Properties.Resources.Tracer_Client_CreatedSession, clientId);
 			}
 		}
 
@@ -348,7 +348,7 @@ namespace System.Net.Mqtt.Client
 			var session = sessionRepository.Get (s => s.ClientId == Id);
 
 			if (session == null) {
-				var message = string.Format (Resources.SessionRepository_ClientSessionNotFound, Id);
+				var message = string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, Id);
 
 				tracer.Error (message);
 
@@ -358,7 +358,7 @@ namespace System.Net.Mqtt.Client
 			if (session.Clean) {
 				sessionRepository.Delete (session);
 
-				tracer.Info (Resources.Tracer_Client_DeletedSessionOnDisconnect, Id);
+				tracer.Info (Properties.Resources.Tracer_Client_DeletedSessionOnDisconnect, Id);
 			}
 		}
 
@@ -373,7 +373,7 @@ namespace System.Net.Mqtt.Client
 		void CheckUnderlyingConnection ()
 		{
 			if (isConnected && !packetChannel.IsConnected) {
-				Close (ClosedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
+				Close (ClosedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 
@@ -388,12 +388,12 @@ namespace System.Net.Mqtt.Client
 
 						receiver.OnNext (message);
 
-						tracer.Info (Resources.Tracer_NewApplicationMessageReceived, Id, publish.Topic);
+						tracer.Info (Properties.Resources.Tracer_NewApplicationMessageReceived, Id, publish.Topic);
 					}
 				}, ex => {
 					Close (ex);
 				}, () => {
-					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
+					tracer.Warn (Properties.Resources.Tracer_Client_PacketsObservableCompleted);
 
 					var reason = protocolDisconnected ? ClosedReason.Disposed : ClosedReason.Disconnected;
 

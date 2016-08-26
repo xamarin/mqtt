@@ -11,7 +11,7 @@ namespace System.Net.Mqtt.Packets
 			ReturnCodes = returnCodes;
 		}
 
-		public MqttPacketType Type { get { return MqttPacketType.SubscribeAck; } }
+		public PacketType Type { get { return PacketType.SubscribeAck; } }
 
 		public ushort PacketId { get; private set; }
 

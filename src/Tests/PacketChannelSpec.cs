@@ -25,13 +25,13 @@ namespace Tests
 		[Fact]
 		public void when_creating_packet_channel_then_succeeds()
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]>();
-			var bufferedChannel = new Mock<IMqttChannel<byte[]>> ();
+			var bufferedChannel = new Mock<IChannel<byte[]>> ();
 
 			bufferedChannel.Setup (x => x.Receiver).Returns (receiver);
 
-			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> ();
+			var topicEvaluator = Mock.Of<ITopicEvaluator> ();
 			var factory = new PacketChannelFactory (topicEvaluator, tracerManager, configuration);
 			var channel = factory.Create (bufferedChannel.Object);
 
@@ -57,9 +57,9 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck))]
 		public void when_reading_bytes_from_source_then_notifies_packet(string packetPath, string jsonPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
-			var innerChannel = new Mock<IMqttChannel<byte[]>>();
+			var innerChannel = new Mock<IChannel<byte[]>>();
 
 			innerChannel.Setup (x => x.Receiver).Returns (receiver);
 
@@ -96,9 +96,9 @@ namespace Tests
 		[InlineData("Files/Binaries/PingResponse.packet", typeof(PingResponse))]
 		public void when_reading_bytes_then_notifies_packet(string packetPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
-			var innerChannel = new Mock<IMqttChannel<byte[]>>();
+			var innerChannel = new Mock<IChannel<byte[]>>();
 
 			innerChannel.Setup (x => x.Receiver).Returns (receiver);
 
@@ -145,14 +145,14 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck))]
 		public async Task when_writing_packet_from_source_then_inner_channel_is_notified(string packetPath, string jsonPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			
 			var bytes = Packet.ReadAllBytes (packetPath);
 
 			var receiver = new Subject<byte[]> ();
-			var innerChannel = new Mock<IMqttChannel<byte[]>>();
+			var innerChannel = new Mock<IChannel<byte[]>>();
 
 			innerChannel.Setup (x => x.Receiver).Returns (receiver);
 			innerChannel.Setup (x => x.SendAsync (It.IsAny<byte[]> ()))
@@ -182,14 +182,14 @@ namespace Tests
 		[InlineData("Files/Binaries/PingResponse.packet", typeof(PingResponse))]
 		public async Task when_writing_packet_then_inner_channel_is_notified(string packetPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			
 			var bytes = Packet.ReadAllBytes (packetPath);
 
 			var receiver = new Subject<byte[]> ();
-			var innerChannel = new Mock<IMqttChannel<byte[]>>();
+			var innerChannel = new Mock<IChannel<byte[]>>();
 
 			innerChannel.Setup (x => x.Receiver).Returns (receiver);
 			innerChannel.Setup (x => x.SendAsync (It.IsAny<byte[]> ()))
@@ -214,9 +214,9 @@ namespace Tests
 		[Fact]
 		public void when_packet_channel_error_then_notifies()
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new ProtocolConfiguration { WaitingTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
-			var innerChannel = new Mock<IMqttChannel<byte[]>>();
+			var innerChannel = new Mock<IChannel<byte[]>>();
 
 			innerChannel.Setup (x => x.Receiver).Returns (receiver);
 

@@ -19,7 +19,7 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedPublishRelease = Packet.ReadPacket<PublishRelease> (jsonPath);
-			var formatter = new FlowPacketFormatter<PublishRelease>(MqttPacketType.PublishRelease, id => new PublishRelease(id));
+			var formatter = new FlowPacketFormatter<PublishRelease>(PacketType.PublishRelease, id => new PublishRelease(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			var result = await formatter.FormatAsync (packet)
@@ -34,7 +34,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new FlowPacketFormatter<PublishRelease> (MqttPacketType.PublishRelease, id => new PublishRelease(id));
+			var formatter = new FlowPacketFormatter<PublishRelease> (PacketType.PublishRelease, id => new PublishRelease(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
@@ -50,7 +50,7 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var formatter = new FlowPacketFormatter<PublishRelease>(MqttPacketType.PublishRelease, id => new PublishRelease(id));
+			var formatter = new FlowPacketFormatter<PublishRelease>(PacketType.PublishRelease, id => new PublishRelease(id));
 			var publishRelease = Packet.ReadPacket<PublishRelease> (jsonPath);
 
 			var result = await formatter.FormatAsync (publishRelease)

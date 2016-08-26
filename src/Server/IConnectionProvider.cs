@@ -9,9 +9,9 @@ namespace System.Net.Mqtt.Server
 
 		IEnumerable<string> ActiveClients { get; }
 
-		void AddConnection (string clientId, IMqttChannel<IPacket> connection);
+		void AddConnection (string clientId, IChannel<IPacket> connection);
 
-		IMqttChannel<IPacket> GetConnection (string clientId);
+		IChannel<IPacket> GetConnection (string clientId);
 
 		void RemoveConnection (string clientId);
 	}

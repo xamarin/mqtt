@@ -12,7 +12,7 @@ namespace System.Net.Mqtt.Storage
 	{
 		public PendingMessageStatus Status { get; set; }
 
-		public MqttQualityOfService QualityOfService { get; set; }
+		public QualityOfService QualityOfService { get; set; }
 
 		public bool Duplicated { get; set; }
 

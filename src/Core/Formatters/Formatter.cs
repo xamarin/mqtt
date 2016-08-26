@@ -7,7 +7,7 @@ namespace System.Net.Mqtt.Formatters
 	internal abstract class Formatter<T> : IFormatter
 		where T : class, IPacket
 	{
-		public abstract MqttPacketType PacketType { get; }
+		public abstract PacketType PacketType { get; }
 
 		protected abstract T Read (byte[] bytes);
 
@@ -18,10 +18,10 @@ namespace System.Net.Mqtt.Formatters
 		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<IPacket> FormatAsync (byte[] bytes)
 		{
-			var actualType = (MqttPacketType)bytes.Byte (0).Bits (4);
+			var actualType = (PacketType)bytes.Byte (0).Bits (4);
 
 			if (PacketType != actualType) {
-				var error = string.Format(Resources.Formatter_InvalidPacket, typeof(T).Name);
+				var error = string.Format(Properties.Resources.Formatter_InvalidPacket, typeof(T).Name);
 
 				throw new MqttException (error);
 			}
@@ -38,7 +38,7 @@ namespace System.Net.Mqtt.Formatters
 		public async Task<byte[]> FormatAsync (IPacket packet)
 		{
 			if (packet.Type != PacketType) {
-				var error = string.Format(Resources.Formatter_InvalidPacket, typeof(T).Name);
+				var error = string.Format(Properties.Resources.Formatter_InvalidPacket, typeof(T).Name);
 
 				throw new MqttException (error);
 			}
@@ -49,12 +49,12 @@ namespace System.Net.Mqtt.Formatters
 			return bytes;
 		}
 
-		protected void ValidateHeaderFlag (byte[] bytes, Func<MqttPacketType, bool> packetTypePredicate, int expectedFlag)
+		protected void ValidateHeaderFlag (byte[] bytes, Func<PacketType, bool> packetTypePredicate, int expectedFlag)
 		{
 			var headerFlag = bytes.Byte (0).Bits (5, 4);
 
 			if (packetTypePredicate (PacketType) && headerFlag != expectedFlag) {
-				var error = string.Format (Resources.Formatter_InvalidHeaderFlag, headerFlag, typeof(T).Name, expectedFlag);
+				var error = string.Format (Properties.Resources.Formatter_InvalidHeaderFlag, headerFlag, typeof(T).Name, expectedFlag);
 
 				throw new MqttException (error);
 			}

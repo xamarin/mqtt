@@ -19,7 +19,7 @@ namespace Tests.Formatters
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
 			var expectedUnsubscribeAck = Packet.ReadPacket<UnsubscribeAck> (jsonPath);
-			var formatter = new FlowPacketFormatter<UnsubscribeAck>(MqttPacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
+			var formatter = new FlowPacketFormatter<UnsubscribeAck>(PacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 
 			var result = await formatter.FormatAsync (packet)
@@ -34,7 +34,7 @@ namespace Tests.Formatters
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
-			var formatter = new FlowPacketFormatter<UnsubscribeAck> (MqttPacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
+			var formatter = new FlowPacketFormatter<UnsubscribeAck> (PacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
 			var packet = Packet.ReadAllBytes (packetPath);
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
@@ -50,7 +50,7 @@ namespace Tests.Formatters
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
 			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var formatter = new FlowPacketFormatter<UnsubscribeAck>(MqttPacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
+			var formatter = new FlowPacketFormatter<UnsubscribeAck>(PacketType.UnsubscribeAck, id => new UnsubscribeAck(id));
 			var unsubscribeAck = Packet.ReadPacket<UnsubscribeAck> (jsonPath);
 
 			var result = await formatter.FormatAsync (unsubscribeAck)

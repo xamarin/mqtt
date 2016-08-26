@@ -2,7 +2,7 @@
 {
 	internal class Subscription : IEquatable<Subscription>
 	{
-		public Subscription (string topicFilter, MqttQualityOfService requestedQos)
+		public Subscription (string topicFilter, QualityOfService requestedQos)
 		{
 			TopicFilter = topicFilter;
 			MaximumQualityOfService = requestedQos;
@@ -10,7 +10,7 @@
 
 		public string TopicFilter { get; set; }
 
-		public MqttQualityOfService MaximumQualityOfService { get; set; }
+		public QualityOfService MaximumQualityOfService { get; set; }
 
 		public bool Equals (Subscription other)
 		{

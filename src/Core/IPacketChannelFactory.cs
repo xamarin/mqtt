@@ -1,12 +1,11 @@
 ﻿using System.Net.Mqtt.Packets;
-using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
 	internal interface IPacketChannelFactory
 	{
-		Task<IMqttChannel<IPacket>> CreateAsync ();
+		IChannel<IPacket> Create ();
 
-		IMqttChannel<IPacket> Create (IMqttChannel<byte[]> binaryChannel);
+		IChannel<IPacket> Create (IChannel<byte[]> binaryChannel);
 	}
 }

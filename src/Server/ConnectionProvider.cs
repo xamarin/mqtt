@@ -8,13 +8,13 @@ namespace System.Net.Mqtt.Server
 {
 	internal class ConnectionProvider : IConnectionProvider
 	{
-		static readonly ConcurrentDictionary<string, IMqttChannel<IPacket>> connections;
+		static readonly ConcurrentDictionary<string, IChannel<IPacket>> connections;
 
 		readonly ITracer tracer;
 
 		static ConnectionProvider ()
 		{
-			connections = new ConcurrentDictionary<string, IMqttChannel<IPacket>> ();
+			connections = new ConcurrentDictionary<string, IChannel<IPacket>> ();
 		}
 
 		public ConnectionProvider (ITracerManager tracerManager)
@@ -34,12 +34,12 @@ namespace System.Net.Mqtt.Server
 			}
 		}
 
-		public void AddConnection (string clientId, IMqttChannel<IPacket> connection)
+		public void AddConnection (string clientId, IChannel<IPacket> connection)
 		{
-			var existingConnection = default (IMqttChannel<IPacket>);
+			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
-				tracer.Warn (Resources.Tracer_ConnectionProvider_ClientIdExists, clientId);
+				tracer.Warn (Properties.Resources.Tracer_ConnectionProvider_ClientIdExists, clientId);
 
 				RemoveConnection (clientId);
 			}
@@ -47,16 +47,16 @@ namespace System.Net.Mqtt.Server
 			connections.TryAdd (clientId, connection);
 		}
 
-		public IMqttChannel<IPacket> GetConnection (string clientId)
+		public IChannel<IPacket> GetConnection (string clientId)
 		{
-			var existingConnection = default(IMqttChannel<IPacket>);
+			var existingConnection = default(IChannel<IPacket>);
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
 				if (!existingConnection.IsConnected) {
-					tracer.Warn (Resources.Tracer_ConnectionProvider_ClientDisconnected, clientId);
+					tracer.Warn (Properties.Resources.Tracer_ConnectionProvider_ClientDisconnected, clientId);
 
 					RemoveConnection (clientId);
-					existingConnection = default (IMqttChannel<IPacket>);
+					existingConnection = default (IChannel<IPacket>);
 				}
 			}
 
@@ -66,10 +66,10 @@ namespace System.Net.Mqtt.Server
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public void RemoveConnection (string clientId)
 		{
-			var existingConnection = default (IMqttChannel<IPacket>);
+			var existingConnection = default (IChannel<IPacket>);
 
 			if (connections.TryRemove (clientId, out existingConnection)) {
-				tracer.Info (Resources.Tracer_ConnectionProvider_RemovingClient, clientId);
+				tracer.Info (Properties.Resources.Tracer_ConnectionProvider_RemovingClient, clientId);
 
 				existingConnection.Dispose ();
 			}

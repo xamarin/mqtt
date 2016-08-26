@@ -27,8 +27,8 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_subscribing_new_topics_then_subscriptions_are_created_and_ack_is_sent()
 		{
-			var configuration = new MqttConfiguration { MaximumQualityOfService = MqttQualityOfService.AtLeastOnce };
-			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
+			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
+			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
@@ -40,17 +40,17 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var fooQoS = MqttQualityOfService.AtLeastOnce;
+			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
 			var fooSubscription = new Subscription (fooTopic, fooQoS);
-			var barQoS = MqttQualityOfService.AtMostOnce;
+			var barQoS = QualityOfService.AtMostOnce;
 			var barTopic = "test/bar/1";
 			var barSubscription = new Subscription (barTopic, barQoS);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription, barSubscription);
 			
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
@@ -86,15 +86,15 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_subscribing_existing_topics_then_subscriptions_are_updated_and_ack_is_sent()
 		{
-			var configuration = new MqttConfiguration { MaximumQualityOfService = MqttQualityOfService.AtLeastOnce };
-			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
+			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
+			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
 			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
-			var fooQoS = MqttQualityOfService.AtLeastOnce;
+			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
 			var fooSubscription = new Subscription (fooTopic, fooQoS);
 
@@ -102,7 +102,7 @@ namespace Tests.Flows
 				ClientId = clientId,
 				Clean = false, 
 				Subscriptions = new List<ClientSubscription> { 
-					new ClientSubscription { ClientId = clientId, MaximumQualityOfService = MqttQualityOfService.ExactlyOnce, TopicFilter = fooTopic } 
+					new ClientSubscription { ClientId = clientId, MaximumQualityOfService = QualityOfService.ExactlyOnce, TopicFilter = fooTopic } 
 				} 
 			};
 
@@ -112,7 +112,7 @@ namespace Tests.Flows
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
 			
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
@@ -148,8 +148,8 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_subscribing_invalid_topic_then_failure_is_sent_in_ack()
 		{
-			var configuration = new MqttConfiguration { MaximumQualityOfService = MqttQualityOfService.AtLeastOnce };
-			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
+			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
+			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = Mock.Of<IRepository<RetainedMessage>> ();
@@ -161,14 +161,14 @@ namespace Tests.Flows
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (false);
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var fooQoS = MqttQualityOfService.AtLeastOnce;
+			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
 			var fooSubscription = new Subscription (fooTopic, fooQoS);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
 			
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var response = default(IPacket);
 
@@ -202,8 +202,8 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_subscribing_topic_with_retain_message_then_retained_is_sent()
 		{
-			var configuration = new MqttConfiguration { MaximumQualityOfService = MqttQualityOfService.AtLeastOnce };
-			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
+			var configuration = new ProtocolConfiguration { MaximumQualityOfService = QualityOfService.AtLeastOnce };
+			var topicEvaluator = new Mock<ITopicEvaluator> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
 			var retainedMessageRepository = new Mock<IRepository<RetainedMessage>> ();
@@ -214,12 +214,12 @@ namespace Tests.Flows
 
 			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
 
-			var fooQoS = MqttQualityOfService.AtLeastOnce;
+			var fooQoS = QualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/#";
 			var fooSubscription = new Subscription (fooTopic, fooQoS);
 
 			var retainedTopic = "test/foo/bar";
-			var retainedQoS =  MqttQualityOfService.ExactlyOnce;
+			var retainedQoS =  QualityOfService.ExactlyOnce;
 			var retainedPayload = Encoding.UTF8.GetBytes ("Retained Message Test");
 			var retainedMessages = new List<RetainedMessage> {
 				new RetainedMessage { 
@@ -236,7 +236,7 @@ namespace Tests.Flows
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
 			
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var channel = new Mock<IChannel<IPacket>> ();
 
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
@@ -257,7 +257,7 @@ namespace Tests.Flows
 					p.Payload.ToList().SequenceEqual(retainedPayload) && 
 					p.PacketId.HasValue && 
 					p.Retain), 
-				It.Is<IMqttChannel<IPacket>>(c => c == channel.Object),
+				It.Is<IChannel<IPacket>>(c => c == channel.Object),
 				It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToSend)));
 		}
 	}

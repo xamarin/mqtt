@@ -1,31 +1,31 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
-using System.Threading.Tasks;
-using Server = System.Net.Mqtt.Server;
+using Props = System.Net.Mqtt.Server.Properties;
 
 namespace System.Net.Mqtt.Flows
 {
 	internal class ServerSubscribeFlow : IProtocolFlow
 	{
 		readonly ITracer tracer;
-		readonly IMqttTopicEvaluator topicEvaluator;
+		readonly ITopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly IPublishSenderFlow senderFlow;
-		readonly MqttConfiguration configuration;
+		readonly ProtocolConfiguration configuration;
 
-		public ServerSubscribeFlow (IMqttTopicEvaluator topicEvaluator,
+		public ServerSubscribeFlow (ITopicEvaluator topicEvaluator,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<RetainedMessage> retainedRepository,
 			IPacketIdProvider packetIdProvider,
 			IPublishSenderFlow senderFlow,
 			ITracerManager tracerManager,
-			MqttConfiguration configuration)
+			ProtocolConfiguration configuration)
 		{
 			tracer = tracerManager.Get<ServerSubscribeFlow> ();
 			this.topicEvaluator = topicEvaluator;
@@ -36,9 +36,9 @@ namespace System.Net.Mqtt.Flows
 			this.configuration = configuration;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != MqttPacketType.Subscribe) {
+			if (input.Type != PacketType.Subscribe) {
 				return;
 			}
 
@@ -46,7 +46,7 @@ namespace System.Net.Mqtt.Flows
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var returnCodes = new List<SubscribeReturnCode> ();
@@ -54,7 +54,7 @@ namespace System.Net.Mqtt.Flows
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
 					if (!topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-						tracer.Error (Server.Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
+						tracer.Error (Props.Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
 
 						returnCodes.Add (SubscribeReturnCode.Failure);
 						continue;
@@ -83,8 +83,8 @@ namespace System.Net.Mqtt.Flows
 					var returnCode = supportedQos.ToReturnCode ();
 
 					returnCodes.Add (returnCode);
-				} catch (MqttRepositoryException repoEx) {
-					tracer.Error (repoEx, Server.Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
+				} catch (RepositoryException repoEx) {
+					tracer.Error (repoEx, Props.Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
 
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}
@@ -96,14 +96,14 @@ namespace System.Net.Mqtt.Flows
 				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		async Task SendRetainedMessagesAsync (ClientSubscription subscription, IMqttChannel<IPacket> channel)
+		async Task SendRetainedMessagesAsync (ClientSubscription subscription, IChannel<IPacket> channel)
 		{
 			var retainedMessages = retainedRepository.GetAll ()
 				.Where(r => topicEvaluator.Matches(r.Topic, subscription.TopicFilter));
 
 			if (retainedMessages != null) {
 				foreach (var retainedMessage in retainedMessages) {
-					ushort? packetId = subscription.MaximumQualityOfService == MqttQualityOfService.AtMostOnce ?
+					ushort? packetId = subscription.MaximumQualityOfService == QualityOfService.AtMostOnce ?
 						null : (ushort?)packetIdProvider.GetPacketId ();
 					var publish = new Publish (retainedMessage.Topic, subscription.MaximumQualityOfService,
 						retain: true, duplicated: false, packetId: packetId) {

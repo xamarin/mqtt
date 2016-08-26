@@ -14,7 +14,7 @@ namespace IntegrationTests
 {
 	public class PublishingSpec : ConnectedContext, IDisposable
 	{
-		readonly IMqttServer server;
+		readonly Server server;
 
 		public PublishingSpec () 
 			: base(keepAliveSecs: 1)
@@ -38,7 +38,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add (client.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
@@ -64,7 +64,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtLeastOnce));
+				tasks.Add (client.PublishAsync (message, QualityOfService.AtLeastOnce));
 			}
 
 			await Task.WhenAll (tasks);
@@ -90,7 +90,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				tasks.Add (client.PublishAsync (message, MqttQualityOfService.ExactlyOnce));
+				tasks.Add (client.PublishAsync (message, QualityOfService.ExactlyOnce));
 			}
 
 			await Task.WhenAll (tasks);
@@ -118,9 +118,9 @@ namespace IntegrationTests
 			var subscriber1Received = 0;
 			var subscriber2Received = 0;
 
-			await subscriber1.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
+			await subscriber1.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
-			await subscriber2.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
+			await subscriber2.SubscribeAsync (topicFilter, QualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber1.Receiver
@@ -153,7 +153,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add (publisher.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
@@ -184,7 +184,7 @@ namespace IntegrationTests
 			var topicsNotSubscribedCount = 0;
 			var topicsNotSubscribedDone = new ManualResetEventSlim ();
 
-			server.MessageUndelivered += (sender, e) => {
+			server.TopicNotSubscribed += (sender, e) => {
 				topicsNotSubscribedCount++;
 
 				if (topicsNotSubscribedCount == count) {
@@ -202,7 +202,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(testMessage)
 				};
 
-				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add (publisher.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
@@ -230,9 +230,9 @@ namespace IntegrationTests
 			var subscriberDone = new ManualResetEventSlim ();
 			var subscriberReceived = 0;
 
-			await subscriber.SubscribeAsync (requestTopic, MqttQualityOfService.AtMostOnce)
+			await subscriber.SubscribeAsync (requestTopic, QualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
-			await publisher.SubscribeAsync (responseTopic, MqttQualityOfService.AtMostOnce)
+			await publisher.SubscribeAsync (responseTopic, QualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber.Receiver
@@ -245,7 +245,7 @@ namespace IntegrationTests
 							Payload = Serializer.Serialize(response)
 						};
 
-						await subscriber.PublishAsync (message, MqttQualityOfService.AtMostOnce)
+						await subscriber.PublishAsync (message, QualityOfService.AtMostOnce)
 							.ConfigureAwait(continueOnCapturedContext: false);
 					}
 				});
@@ -270,7 +270,7 @@ namespace IntegrationTests
 					Payload = Serializer.Serialize(request)
 				};
 
-				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add (publisher.PublishAsync (message, QualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
@@ -298,8 +298,8 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var subscribePublishTask = client
-					.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.AtMostOnce)
-					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtMostOnce));
+					.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtMostOnce)
+					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtMostOnce));
 
 				tasks.Add (subscribePublishTask);
 			}
@@ -318,8 +318,8 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var subscribePublishTask = client
-					.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.AtLeastOnce)
-					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtLeastOnce));
+					.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.AtLeastOnce)
+					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.AtLeastOnce));
 
 				tasks.Add(subscribePublishTask);
 			}
@@ -338,8 +338,8 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var subscribePublishTask = client
-						.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.ExactlyOnce)
-						.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.ExactlyOnce), TaskContinuationOptions.OnlyOnRanToCompletion);
+						.SubscribeAsync (Guid.NewGuid ().ToString (), QualityOfService.ExactlyOnce)
+						.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), QualityOfService.ExactlyOnce), TaskContinuationOptions.OnlyOnRanToCompletion);
 
 				tasks.Add(subscribePublishTask);
 			}

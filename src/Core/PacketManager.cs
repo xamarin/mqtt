@@ -9,7 +9,7 @@ namespace System.Net.Mqtt
 {
 	internal class PacketManager : IPacketManager
 	{
-		readonly IDictionary<MqttPacketType, IFormatter> formatters;
+		readonly IDictionary<PacketType, IFormatter> formatters;
 
 		public PacketManager (params IFormatter[] formatters)
 			: this ((IEnumerable<IFormatter>)formatters)
@@ -26,11 +26,11 @@ namespace System.Net.Mqtt
 		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<IPacket> GetPacketAsync (byte[] bytes)
 		{
-			var packetType = (MqttPacketType)bytes.Byte (0).Bits (4);
+			var packetType = (PacketType)bytes.Byte (0).Bits (4);
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue (packetType, out formatter))
-				throw new MqttException (Resources.PacketManager_PacketUnknown);
+				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var packet = await formatter.FormatAsync (bytes)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -46,7 +46,7 @@ namespace System.Net.Mqtt
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue (packet.Type, out formatter))
-				throw new MqttException (Resources.PacketManager_PacketUnknown);
+				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var bytes = await formatter.FormatAsync (packet)
 				.ConfigureAwait(continueOnCapturedContext: false);

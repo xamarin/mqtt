@@ -2,7 +2,7 @@
 {
 	/// <summary>
 	/// Protocol flow packets implement the various quality of service levels, 
-	/// and are simple packets with a <see cref="MqttPacketType"/> and a 
+	/// and are simple packets with a <see cref="PacketType"/> and a 
 	/// <see cref="PacketId"/>.
 	/// </summary>
 	internal interface IFlowPacket : IPacket

@@ -5,37 +5,37 @@ namespace System.Net.Mqtt
 {
 	internal static class Extensions
 	{
-		internal static ProtocolFlowType ToFlowType (this MqttPacketType packetType)
+		internal static ProtocolFlowType ToFlowType (this PacketType packetType)
 		{
 			var flowType = default (ProtocolFlowType);
 
 			switch (packetType) {
-				case MqttPacketType.Connect:
-				case MqttPacketType.ConnectAck:
+				case PacketType.Connect:
+				case PacketType.ConnectAck:
 					flowType = ProtocolFlowType.Connect;
 					break;
-				case MqttPacketType.Publish:
-				case MqttPacketType.PublishRelease:
+				case PacketType.Publish:
+				case PacketType.PublishRelease:
 					flowType = ProtocolFlowType.PublishReceiver;
 					break;
-				case MqttPacketType.PublishAck:
-				case MqttPacketType.PublishReceived:
-				case MqttPacketType.PublishComplete:
+				case PacketType.PublishAck:
+				case PacketType.PublishReceived:
+				case PacketType.PublishComplete:
 					flowType = ProtocolFlowType.PublishSender;
 					break;
-				case MqttPacketType.Subscribe:
-				case MqttPacketType.SubscribeAck:
+				case PacketType.Subscribe:
+				case PacketType.SubscribeAck:
 					flowType = ProtocolFlowType.Subscribe;
 					break;
-				case MqttPacketType.Unsubscribe:
-				case MqttPacketType.UnsubscribeAck:
+				case PacketType.Unsubscribe:
+				case PacketType.UnsubscribeAck:
 					flowType = ProtocolFlowType.Unsubscribe;
 					break;
-				case MqttPacketType.PingRequest:
-				case MqttPacketType.PingResponse:
+				case PacketType.PingRequest:
+				case PacketType.PingResponse:
 					flowType = ProtocolFlowType.Ping;
 					break;
-				case MqttPacketType.Disconnect:
+				case PacketType.Disconnect:
 					flowType = ProtocolFlowType.Disconnect;
 					break;
 			}
@@ -43,25 +43,25 @@ namespace System.Net.Mqtt
 			return flowType;
 		}
 
-		internal static MqttQualityOfService GetSupportedQos (this MqttConfiguration configuration, MqttQualityOfService requestedQos)
+		internal static QualityOfService GetSupportedQos (this ProtocolConfiguration configuration, QualityOfService requestedQos)
 		{
 			return requestedQos > configuration.MaximumQualityOfService ?
 				configuration.MaximumQualityOfService :
 				requestedQos;
 		}
 
-		internal static SubscribeReturnCode ToReturnCode (this MqttQualityOfService qos)
+		internal static SubscribeReturnCode ToReturnCode (this QualityOfService qos)
 		{
 			var returnCode = default (SubscribeReturnCode);
 
 			switch (qos) {
-				case MqttQualityOfService.AtMostOnce:
+				case QualityOfService.AtMostOnce:
 					returnCode = SubscribeReturnCode.MaximumQoS0;
 					break;
-				case MqttQualityOfService.AtLeastOnce:
+				case QualityOfService.AtLeastOnce:
 					returnCode = SubscribeReturnCode.MaximumQoS1;
 					break;
-				case MqttQualityOfService.ExactlyOnce:
+				case QualityOfService.ExactlyOnce:
 					returnCode = SubscribeReturnCode.MaximumQoS2;
 					break;
 			}

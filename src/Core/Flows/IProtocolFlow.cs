@@ -7,6 +7,6 @@ namespace System.Net.Mqtt.Flows
 	{
 		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
 		/// <exception cref="MqttException">ProtocolException</exception>
-		Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel);
+		Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel);
 	}
 }

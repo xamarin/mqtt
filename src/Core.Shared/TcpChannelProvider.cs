@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-	internal class TcpChannelProvider : IMqttChannelProvider
+	internal class TcpChannelProvider : IChannelProvider
 	{
 		readonly ITracer tracer;
 		readonly ITracerManager tracerManager;
-		readonly MqttConfiguration configuration;
+		readonly ProtocolConfiguration configuration;
 		readonly Lazy<TcpListener> listener;
 		bool disposed;
 
-		public TcpChannelProvider (ITracerManager tracerManager, MqttConfiguration configuration)
+		public TcpChannelProvider (ITracerManager tracerManager, ProtocolConfiguration configuration)
 		{
 			tracer = tracerManager.Get<TcpChannelProvider> ();
 			this.tracerManager = tracerManager;
@@ -35,7 +35,7 @@ namespace System.Net.Mqtt
 		}
 
 		/// <exception cref="MqttException">ProtocolException</exception>
-		public IObservable<IMqttChannel<byte[]>> GetChannels ()
+		public IObservable<IChannel<byte[]>> GetChannels ()
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);

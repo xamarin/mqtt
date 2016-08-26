@@ -6,6 +6,6 @@ namespace System.Net.Mqtt.Storage
 	{
 		public string ClientId { get; set; }
 
-		public MqttLastWill Will { get; set; }
+		public Will Will { get; set; }
 	}
 }

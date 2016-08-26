@@ -15,9 +15,9 @@ namespace System.Net.Mqtt.Flows
 			this.sessionRepository = sessionRepository;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
 		{
-			if (input.Type != MqttPacketType.Unsubscribe) {
+			if (input.Type != PacketType.Unsubscribe) {
 				return;
 			}
 
@@ -25,7 +25,7 @@ namespace System.Net.Mqtt.Flows
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			foreach (var topic in unsubscribe.Topics) {

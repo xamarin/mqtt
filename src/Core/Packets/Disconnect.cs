@@ -2,6 +2,6 @@
 {
 	internal class Disconnect : IPacket
 	{
-		public MqttPacketType Type { get { return MqttPacketType.Disconnect; } }
+		public PacketType Type { get { return PacketType.Disconnect; } }
 	}
 }

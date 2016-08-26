@@ -4,7 +4,7 @@ namespace System.Net.Mqtt.Packets
 {
 	internal class Publish : IPacket, IEquatable<Publish>
 	{
-		public Publish (string topic, MqttQualityOfService qualityOfService, bool retain, bool duplicated, ushort? packetId = null)
+		public Publish (string topic, QualityOfService qualityOfService, bool retain, bool duplicated, ushort? packetId = null)
 		{
 			QualityOfService = qualityOfService;
 			Duplicated = duplicated;
@@ -13,9 +13,9 @@ namespace System.Net.Mqtt.Packets
 			PacketId = packetId;
 		}
 
-		public MqttPacketType Type { get { return MqttPacketType.Publish; } }
+		public PacketType Type { get { return PacketType.Publish; } }
 
-		public MqttQualityOfService QualityOfService { get; private set; }
+		public QualityOfService QualityOfService { get; private set; }
 
 		public bool Duplicated { get; private set; }
 
