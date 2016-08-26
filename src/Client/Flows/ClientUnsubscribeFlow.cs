@@ -5,7 +5,7 @@ namespace System.Net.Mqtt.Flows
 {
 	internal class ClientUnsubscribeFlow : IProtocolFlow
 	{
-		public Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
 		{
 			return Task.Delay (0);
 		}

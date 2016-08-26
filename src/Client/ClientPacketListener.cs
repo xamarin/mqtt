@@ -8,14 +8,14 @@ using System.Reactive.Disposables;
 using System.Net.Mqtt.Exceptions;
 using System.Reactive.Concurrency;
 
-namespace System.Net.Mqtt.Client
+namespace System.Net.Mqtt
 {
 	internal class ClientPacketListener : IPacketListener
 	{
 		readonly ITracer tracer;
-		readonly IChannel<IPacket> channel;
+		readonly IMqttChannel<IPacket> channel;
 		readonly IProtocolFlowProvider flowProvider;
-		readonly ProtocolConfiguration configuration;
+		readonly MqttConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
 		readonly TaskRunner flowRunner;
 		IDisposable disposable;
@@ -23,10 +23,10 @@ namespace System.Net.Mqtt.Client
 		string clientId = string.Empty;
 		Timer keepAliveTimer;
 
-		public ClientPacketListener (IChannel<IPacket> channel, 
+		public ClientPacketListener (IMqttChannel<IPacket> channel, 
 			IProtocolFlowProvider flowProvider, 
 			ITracerManager tracerManager,
-			ProtocolConfiguration configuration)
+			MqttConfiguration configuration)
 		{
 			tracer = tracerManager.Get<ClientPacketListener> ();
 			this.channel = channel;

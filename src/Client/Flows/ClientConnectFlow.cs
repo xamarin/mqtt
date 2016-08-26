@@ -17,15 +17,15 @@ namespace System.Net.Mqtt.Flows
 			this.senderFlow = senderFlow;
 		}
 
-		public async Task ExecuteAsync (string clientId, IPacket input, IChannel<IPacket> channel)
+		public async Task ExecuteAsync (string clientId, IPacket input, IMqttChannel<IPacket> channel)
 		{
-			if (input.Type != PacketType.ConnectAck) {
+			if (input.Type != MqttPacketType.ConnectAck) {
 				return;
 			}
 
 			var ack = input as ConnectAck;
 
-			if (ack.Status != ConnectionStatus.Accepted) {
+			if (ack.Status != MqttConnectionStatus.Accepted) {
 				return;
 			}
 
@@ -41,7 +41,7 @@ namespace System.Net.Mqtt.Flows
 				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		async Task SendPendingMessagesAsync (ClientSession session, IChannel<IPacket> channel)
+		async Task SendPendingMessagesAsync (ClientSession session, IMqttChannel<IPacket> channel)
 		{
 			foreach (var pendingMessage in session.GetPendingMessages ()) {
 				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService,
@@ -53,14 +53,14 @@ namespace System.Net.Mqtt.Flows
 			}
 		}
 
-		async Task SendPendingAcknowledgementsAsync (ClientSession session, IChannel<IPacket> channel)
+		async Task SendPendingAcknowledgementsAsync (ClientSession session, IMqttChannel<IPacket> channel)
 		{
 			foreach (var pendingAcknowledgement in session.GetPendingAcknowledgements ()) {
 				var ack = default(IFlowPacket);
 
-				if (pendingAcknowledgement.Type == PacketType.PublishReceived) {
+				if (pendingAcknowledgement.Type == MqttPacketType.PublishReceived) {
 					ack = new PublishReceived (pendingAcknowledgement.PacketId);
-				} else if (pendingAcknowledgement.Type == PacketType.PublishRelease) {
+				} else if (pendingAcknowledgement.Type == MqttPacketType.PublishRelease) {
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 				}
 
