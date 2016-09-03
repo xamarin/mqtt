@@ -1,13 +1,12 @@
-﻿using System.Net.Mqtt.Diagnostics;
-using Client = System.Net.Mqtt.Bindings;
+﻿using MqttClient = System.Net.Mqtt.Bindings;
 
 namespace System.Net.Mqtt.Server.Bindings
 {
-    public class TcpBinding : Mqtt.Bindings.TcpBinding, IMqttServerBinding
+    public class TcpBinding : MqttClient.TcpBinding, IMqttServerBinding
     {
-        public IMqttChannelProvider GetChannelProvider (ITracerManager tracerManager, MqttConfiguration configuration)
+        public IMqttChannelProvider GetChannelProvider (MqttConfiguration configuration)
         {
-            return new TcpChannelProvider (tracerManager, configuration);
+            return new TcpChannelProvider (configuration);
         }
     }
 }

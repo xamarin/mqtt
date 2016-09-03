@@ -16,7 +16,6 @@ namespace IntegrationTests.Context
 {
 	public abstract class IntegrationContext
 	{
-		//static readonly DiagnosticsTracerManager tracerManager;
 		static readonly ConcurrentBag<int> usedPorts;
 		static readonly Random random = new Random ();
 		static readonly object lockObject = new object ();
@@ -25,12 +24,10 @@ namespace IntegrationTests.Context
 
 		static IntegrationContext()
 		{
-			//tracerManager = new DiagnosticsTracerManager ();
+            Tracer.Configuration.AddListener("System.Net.Mqtt", new TestTracerListener());
+            Tracer.Configuration.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
 
-			//tracerManager.AddListener ("System.Net.Mqtt", new TestTracerListener ());
-			//tracerManager.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
-
-			usedPorts = new ConcurrentBag<int> ();
+            usedPorts = new ConcurrentBag<int> ();
 		}
 
 		public IntegrationContext (ushort keepAliveSecs = 0)

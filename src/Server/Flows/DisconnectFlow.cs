@@ -1,25 +1,23 @@
-﻿using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Threading.Tasks;
-using Server = System.Net.Mqtt.Server;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal class DisconnectFlow : IProtocolFlow
+    internal class DisconnectFlow : IProtocolFlow
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<DisconnectFlow> ();
+
 		readonly Server.IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 
 		public DisconnectFlow (Server.IConnectionProvider connectionProvider,
 			IRepository<ClientSession> sessionRepository,
-			IRepository<ConnectionWill> willRepository,
-			ITracerManager tracerManager)
+			IRepository<ConnectionWill> willRepository)
 		{
-			tracer = tracerManager.Get<DisconnectFlow> ();
 			this.connectionProvider = connectionProvider;
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;

@@ -1,15 +1,15 @@
-﻿using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Threading.Tasks;
-using Server = System.Net.Mqtt.Server;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal class ServerConnectFlow : IProtocolFlow
+    internal class ServerConnectFlow : IProtocolFlow
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<ServerConnectFlow> ();
+
 		readonly Server.IMqttAuthenticationProvider authenticationProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
@@ -18,10 +18,8 @@ namespace System.Net.Mqtt.Flows
 		public ServerConnectFlow (Server.IMqttAuthenticationProvider authenticationProvider,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
-			IPublishSenderFlow senderFlow,
-			ITracerManager tracerManager)
+			IPublishSenderFlow senderFlow)
 		{
-			tracer = tracerManager.Get<ServerConnectFlow> ();
 			this.authenticationProvider = authenticationProvider;
 			this.sessionRepository = sessionRepository;
 			this.willRepository = willRepository;

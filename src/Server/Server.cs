@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 
@@ -8,17 +8,17 @@ namespace System.Net.Mqtt.Server
 {
     internal class Server : IMqttServer
 	{
-		bool disposed;
+        static readonly ITracer tracer = Tracer.Get<Server>();
+
+        bool disposed;
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
-		readonly ITracer tracer;
 		readonly IMqttChannelProvider binaryChannelProvider;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
 		readonly IEventStream eventStream;
-		readonly ITracerManager tracerManager;
 		readonly MqttConfiguration configuration;
 
 		readonly IList<IMqttChannel<IPacket>> channels = new List<IMqttChannel<IPacket>> ();
@@ -28,16 +28,13 @@ namespace System.Net.Mqtt.Server
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
 			IEventStream eventStream,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<Server> ();
 			this.binaryChannelProvider = binaryChannelProvider;
 			this.channelFactory = channelFactory;
 			this.flowProvider = flowProvider;
 			this.connectionProvider = connectionProvider;
 			this.eventStream = eventStream;
-			this.tracerManager = tracerManager;
 			this.configuration = configuration;
 		}
 
@@ -120,7 +117,7 @@ namespace System.Net.Mqtt.Server
 			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
 
 			var packetChannel = channelFactory.Create (binaryChannel);
-			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, tracerManager, configuration);
+			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, configuration);
 
 			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => { }, ex => {

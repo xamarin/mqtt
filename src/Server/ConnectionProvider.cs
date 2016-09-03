@@ -1,25 +1,19 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 
 namespace System.Net.Mqtt.Server
 {
-	internal class ConnectionProvider : IConnectionProvider
+    internal class ConnectionProvider : IConnectionProvider
 	{
-		static readonly ConcurrentDictionary<string, IMqttChannel<IPacket>> connections;
-
-		readonly ITracer tracer;
+        static readonly ITracer tracer = Tracer.Get<ConnectionProvider>();
+        static readonly ConcurrentDictionary<string, IMqttChannel<IPacket>> connections;
 
 		static ConnectionProvider ()
 		{
 			connections = new ConcurrentDictionary<string, IMqttChannel<IPacket>> ();
-		}
-
-		public ConnectionProvider (ITracerManager tracerManager)
-		{
-			tracer = tracerManager.Get<ConnectionProvider> ();
 		}
 
 		public int Connections { get { return connections.Skip (0).Count (); } }

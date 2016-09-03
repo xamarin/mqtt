@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Sockets;
 using System.Reactive.Concurrency;
@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Bindings
 {
-	internal class TcpChannel : IMqttChannel<byte[]>
+    internal class TcpChannel : IMqttChannel<byte[]>
 	{
-		bool disposed;
+        static readonly ITracer tracer = Tracer.Get<TcpChannel> ();
 
-		readonly ITracer tracer;
+        bool disposed;
+
 		readonly TcpClient client;
 		readonly IPacketBuffer buffer;
 		readonly ReplaySubject<byte[]> receiver;
@@ -23,10 +24,8 @@ namespace System.Net.Mqtt.Bindings
 
 		public TcpChannel (TcpClient client, 
 			IPacketBuffer buffer,
-			ITracerManager tracerManager, 
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<TcpChannel> ();
 			this.client = client;
 			this.client.ReceiveBufferSize = configuration.BufferSize;
 			this.client.SendBufferSize = configuration.BufferSize;

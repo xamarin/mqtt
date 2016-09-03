@@ -1,15 +1,17 @@
-﻿using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using System.Net.Mqtt.Diagnostics;
-using System.Net.Mqtt.Packets;
+﻿using System.Diagnostics;
 using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
+using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-	internal class PacketChannel : IMqttChannel<IPacket>
+    internal class PacketChannel : IMqttChannel<IPacket>
 	{
-		bool disposed;
-		readonly ITracer tracer;
+        static readonly ITracer tracer = Tracer.Get<PacketChannel> ();
+
+        bool disposed;
+		
 		readonly IMqttChannel<byte[]> innerChannel;
 		readonly IPacketManager manager;
 		readonly ReplaySubject<IPacket> receiver;
@@ -18,10 +20,8 @@ namespace System.Net.Mqtt
 
 		public PacketChannel (IMqttChannel<byte[]> innerChannel, 
 			IPacketManager manager, 
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<PacketChannel> ();
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 

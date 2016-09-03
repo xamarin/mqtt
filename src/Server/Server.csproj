@@ -6,7 +6,6 @@
     <ProjectGuid>{1397EC83-6D03-4D81-95D5-5D11C766C43A}</ProjectGuid>
     <RootNamespace>System.Net.Mqtt.Server</RootNamespace>
     <AssemblyName>System.Net.Mqtt.Server</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
   </PropertyGroup>

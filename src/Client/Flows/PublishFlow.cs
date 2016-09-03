@@ -1,25 +1,24 @@
-﻿using System.Linq;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
+using System.Linq;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Concurrency;
-using System.Net.Mqtt.Exceptions;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal abstract class PublishFlow : IPublishFlow
+    internal abstract class PublishFlow : IPublishFlow
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<PublishFlow> ();
+
 		protected readonly IRepository<ClientSession> sessionRepository;
 		protected readonly MqttConfiguration configuration;
 
 		protected PublishFlow (IRepository<ClientSession> sessionRepository,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<PublishFlow> ();
 			this.sessionRepository = sessionRepository;
 			this.configuration = configuration;
 		}

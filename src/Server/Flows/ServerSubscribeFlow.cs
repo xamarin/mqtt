@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Threading.Tasks;
-using Server = System.Net.Mqtt.Server;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal class ServerSubscribeFlow : IProtocolFlow
+    internal class ServerSubscribeFlow : IProtocolFlow
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<ServerSubscribeFlow> ();
+
 		readonly IMqttTopicEvaluator topicEvaluator;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<RetainedMessage> retainedRepository;
@@ -24,10 +24,8 @@ namespace System.Net.Mqtt.Flows
 			IRepository<RetainedMessage> retainedRepository,
 			IPacketIdProvider packetIdProvider,
 			IPublishSenderFlow senderFlow,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<ServerSubscribeFlow> ();
 			this.topicEvaluator = topicEvaluator;
 			this.sessionRepository = sessionRepository;
 			this.retainedRepository = retainedRepository;

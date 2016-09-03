@@ -12,19 +12,11 @@ using Moq;
 using Xunit;
 using System.Threading.Tasks;
 using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Diagnostics;
 
 namespace Tests.Flows
 {
 	public class PublishSenderFlowSpec
 	{
-		readonly ITracerManager tracerManager;
-
-		public PublishSenderFlowSpec ()
-		{
-			tracerManager = new DefaultTracerManager ();
-		}
-
 		[Fact]
 		public void when_sending_publish_with_qos1_and_publish_ack_is_not_received_then_publish_is_re_transmitted()
 		{
@@ -40,7 +32,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var flow = new PublishSenderFlow (sessionRepository.Object, tracerManager, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -100,7 +92,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var flow = new PublishSenderFlow (sessionRepository.Object, tracerManager, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var topic = "foo/bar";
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
@@ -160,7 +152,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var flow = new PublishSenderFlow (sessionRepository.Object, tracerManager, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);
@@ -209,7 +201,7 @@ namespace Tests.Flows
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
-			var flow = new PublishSenderFlow (sessionRepository.Object, tracerManager, configuration);
+			var flow = new PublishSenderFlow (sessionRepository.Object, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishReceived = new PublishReceived (packetId);

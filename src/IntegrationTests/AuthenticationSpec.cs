@@ -3,6 +3,9 @@ using System.Net.Mqtt.Server;
 using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
+using System.Net.Mqtt;
+using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Packets;
 
 namespace IntegrationTests
 {
@@ -12,17 +15,17 @@ namespace IntegrationTests
 
 		public AuthenticationSpec ()
 		{
-			server = GetServer (new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: "foo123"));
+			server = GetServerAsync (new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: "foo123")).Result;
 		}
 
 		[Fact]
-		public void when_client_connects_with_invalid_credentials_and_authentication_is_supported_then_connection_is_closed()
+		public async Task when_client_connects_with_invalid_credentials_and_authentication_is_supported_then_connection_is_closed()
 		{
 			var username = "foo";
 			var password = "foo123456";
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 
-			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync (new ClientCredentials (GetClientId (), username, password)).Wait());
+			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync (new MqttClientCredentials (GetClientId (), username, password)).Wait());
 
 			Assert.NotNull (aggregateEx.InnerException);
 			Assert.True (aggregateEx.InnerException is MqttClientException);
@@ -36,9 +39,9 @@ namespace IntegrationTests
 		{
 			var username = "foo";
 			var password = "foo123";
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 
-			await client.ConnectAsync (new ClientCredentials (GetClientId (), username, password));
+			await client.ConnectAsync (new MqttClientCredentials (GetClientId (), username, password));
 
 			Assert.True(client.IsConnected);
 			Assert.False(string.IsNullOrEmpty(client.Id));

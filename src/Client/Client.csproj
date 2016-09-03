@@ -6,7 +6,6 @@
     <ProjectGuid>{6481B999-0479-4162-AC53-5936CE5FD8BF}</ProjectGuid>
     <RootNamespace>System.Net.Mqtt</RootNamespace>
     <AssemblyName>System.Net.Mqtt</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
   </PropertyGroup>
@@ -18,15 +17,8 @@
     <Compile Include="Exceptions\MqttClientException.cs" />
     <Compile Include="MqttClientFactory.cs" />
     <Compile Include="ClientPacketListener.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracerManagerExtensions.cs" />
-    <Compile Include="External\Diagnostics\Tracer\TraceEventType.cs" />
     <Compile Include="Exceptions\MqttRepositoryException.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracer.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracerExtensions.cs" />
-    <Compile Include="External\Diagnostics\Tracer\ITracerManager.cs" />
-    <Compile Include="External\Diagnostics\Tracer\DefaultTracerManager.cs" />
-    <Compile Include="External\Diagnostics\Tracer\Visibility.cs" />
     <Compile Include="Flows\ClientConnectFlow.cs" />
     <Compile Include="Flows\ClientProtocolFlowProvider.cs" />
     <Compile Include="Flows\ClientSubscribeFlow.cs" />

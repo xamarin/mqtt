@@ -1,13 +1,12 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Diagnostics;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal class PublishReceiverFlow : PublishFlow
+    internal class PublishReceiverFlow : PublishFlow
 	{
 		protected readonly IMqttTopicEvaluator topicEvaluator;
 		protected readonly IRepository<RetainedMessage> retainedRepository;
@@ -15,9 +14,8 @@ namespace System.Net.Mqtt.Flows
 		public PublishReceiverFlow (IMqttTopicEvaluator topicEvaluator,
 			IRepository<RetainedMessage> retainedRepository,
 			IRepository<ClientSession> sessionRepository,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
-			: base (sessionRepository, tracerManager, configuration)
+			: base (sessionRepository, configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.retainedRepository = retainedRepository;
