@@ -115,8 +115,8 @@
     <None Include="..\Hermes.licenseheader">
       <Link>Hermes.licenseheader</Link>
     </None>
-    <None Include="Client.nuspec" />
     <None Include="project.json" />
+    <None Include="System.Net.Mqtt.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />

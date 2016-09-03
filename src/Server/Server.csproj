@@ -41,7 +41,7 @@
     </None>
     <None Include="app.config" />
     <None Include="project.json" />
-    <None Include="Server.nuspec" />
+    <None Include="System.Net.Mqtt.Server.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Client\Client.csproj">
