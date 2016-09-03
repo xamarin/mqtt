@@ -81,11 +81,12 @@ namespace System.Net.Mqtt
 				index++;
 				encodedByte = packet[index];
 				value += (encodedByte & 127) * multiplier;
-				multiplier *= 128;
 
-				if (multiplier > 128 * 128 * 128 * 128 || index > 4)
+				if (multiplier > 128 * 128 * 128 || index > 4)
 					throw new MqttException (Resources.ProtocolEncoding_MalformedRemainingLength);
-			} while ((encodedByte & 128) != 0);
+
+                multiplier *= 128;
+            } while ((encodedByte & 128) != 0);
 
 			arrayLength = index;
 
