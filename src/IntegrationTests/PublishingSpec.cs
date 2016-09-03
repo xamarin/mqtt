@@ -8,7 +8,7 @@ using Xunit;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Client;
+using System.Net.Mqtt;
 
 namespace IntegrationTests
 {
@@ -19,20 +19,20 @@ namespace IntegrationTests
 		public PublishingSpec () 
 			: base(keepAliveSecs: 1)
 		{
-			server = GetServer ();
+			server = GetServerAsync ().Result;
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos0_then_succeeds()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 			var topic = Guid.NewGuid ().ToString ();
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new ApplicationMessage
+				var message = new MqttApplicationMessage
 				{
 					Topic = topic,
 					Payload = Serializer.Serialize(testMessage)
@@ -51,14 +51,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_messages_with_qos1_then_succeeds()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 			var topic = Guid.NewGuid ().ToString ();
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new ApplicationMessage
+				var message = new MqttApplicationMessage
 				{
 					Topic = topic,
 					Payload = Serializer.Serialize(testMessage)
@@ -77,14 +77,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_messages_with_qos2_then_succeeds()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 			var topic = Guid.NewGuid ().ToString ();
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new ApplicationMessage
+				var message = new MqttApplicationMessage
 				{
 					Topic = topic,
 					Payload = Serializer.Serialize(testMessage)
@@ -109,9 +109,9 @@ namespace IntegrationTests
 			var topicFilter = guid + "/#";
 			var topic = guid;
 
-			var publisher = GetClient ();
-			var subscriber1 = GetClient ();
-			var subscriber2 = GetClient ();
+			var publisher = await GetClientAsync ();
+			var subscriber1 = await GetClientAsync ();
+			var subscriber2 = await GetClientAsync ();
 
 			var subscriber1Done = new ManualResetEventSlim ();
 			var subscriber2Done = new ManualResetEventSlim ();
@@ -147,7 +147,7 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new ApplicationMessage
+				var message = new MqttApplicationMessage
 				{ 
 					Topic = topic,
 					Payload = Serializer.Serialize(testMessage)
@@ -180,7 +180,7 @@ namespace IntegrationTests
 			var count = GetTestLoad();
 
 			var topic = Guid.NewGuid ().ToString ();
-			var publisher = GetClient ();
+			var publisher = await GetClientAsync ();
 			var topicsNotSubscribedCount = 0;
 			var topicsNotSubscribedDone = new ManualResetEventSlim ();
 
@@ -196,7 +196,7 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new ApplicationMessage
+				var message = new MqttApplicationMessage
 				{ 
 					Topic = topic,
 					Payload = Serializer.Serialize(testMessage)
@@ -224,8 +224,8 @@ namespace IntegrationTests
 			var requestTopic = guid;
 			var responseTopic = guid + "/response";
 
-			var publisher = GetClient ();
-			var subscriber = GetClient ();
+			var publisher = await GetClientAsync ();
+			var subscriber = await GetClientAsync ();
 
 			var subscriberDone = new ManualResetEventSlim ();
 			var subscriberReceived = 0;
@@ -240,7 +240,7 @@ namespace IntegrationTests
 					if (m.Topic == requestTopic) {
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
 						var response = GetResponseMessage (request);
-						var message = new ApplicationMessage {
+						var message = new MqttApplicationMessage {
 							Topic = responseTopic,
 							Payload = Serializer.Serialize(response)
 						};
@@ -264,7 +264,7 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var request = GetRequestMessage ();
-				var message = new ApplicationMessage
+				var message = new MqttApplicationMessage
 				{ 
 					Topic = requestTopic,
 					Payload = Serializer.Serialize(request)
@@ -292,14 +292,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos0_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 			var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var subscribePublishTask = client
 					.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.AtMostOnce)
-					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtMostOnce));
+					.ContinueWith(t => client.PublishAsync (new MqttApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtMostOnce));
 
 				tasks.Add (subscribePublishTask);
 			}
@@ -312,14 +312,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos1_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 			var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var subscribePublishTask = client
 					.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.AtLeastOnce)
-					.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtLeastOnce));
+					.ContinueWith(t => client.PublishAsync (new MqttApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtLeastOnce));
 
 				tasks.Add(subscribePublishTask);
 			}
@@ -332,14 +332,14 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_publish_with_qos2_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 			var count = GetTestLoad ();
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
 				var subscribePublishTask = client
 						.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.ExactlyOnce)
-						.ContinueWith(t => client.PublishAsync (new ApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.ExactlyOnce), TaskContinuationOptions.OnlyOnRanToCompletion);
+						.ContinueWith(t => client.PublishAsync (new MqttApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.ExactlyOnce), TaskContinuationOptions.OnlyOnRanToCompletion);
 
 				tasks.Add(subscribePublishTask);
 			}

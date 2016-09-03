@@ -1,26 +1,18 @@
-﻿using System;
-using System.Reactive.Subjects;
-using System.Threading;
+﻿using Moq;
+using System;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Storage;
-using Moq;
-using Xunit;
 using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Storage;
+using System.Reactive.Subjects;
+using System.Threading;
+using Xunit;
 
 namespace Tests
 {
-	public class PacketListenerSpec
+    public class PacketListenerSpec
 	{
-		readonly ITracerManager tracerManager;
-
-		public PacketListenerSpec ()
-		{
-			tracerManager = new DefaultTracerManager ();
-		}
-
 		[Fact]
 		public void when_packet_is_received_then_it_is_dispatched_to_proper_flow()
 		{
@@ -39,7 +31,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
 
 			listener.Listen ();
 
@@ -88,7 +80,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
 			listener.Listen ();
 
@@ -114,7 +106,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
 			listener.Listen ();
 
@@ -143,7 +135,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
 			listener.Listen ();
 			
@@ -174,7 +166,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
 			listener.Listen ();
 			
@@ -204,7 +196,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
 			listener.Listen ();
 			
@@ -245,7 +237,7 @@ namespace Tests
 
 			var packetChannel = packetChannelMock.Object;
 
-			var listener = new ServerPacketListener (packetChannel, connectionProvider.Object, flowProvider.Object, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel, connectionProvider.Object, flowProvider.Object, configuration);
 
 			listener.Listen ();
 
@@ -287,7 +279,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
 
 			listener.Listen ();
 			
@@ -325,7 +317,7 @@ namespace Tests
 			packetChannel.Setup (c => c.Receiver).Returns (receiver);
 			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, tracerManager, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
 
 			listener.Listen ();
 

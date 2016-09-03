@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
 using System.Net.Mqtt.Server;
+using System.Net.Mqtt;
 
 namespace IntegrationTests
 {
@@ -16,7 +17,7 @@ namespace IntegrationTests
 		public ConnectionSpecWithKeepAlive () 
 			: base(keepAliveSecs: 1)
 		{
-			server = GetServer ();
+			server = GetServerAsync ().Result;
 		}
 
 		[Fact]
@@ -68,9 +69,9 @@ namespace IntegrationTests
 		[Fact]
 		public async Task when_keep_alive_enabled_and_no_packets_are_sent_then_connection_is_maintained()
 		{
-			var client = GetClient ();
+			var client = await GetClientAsync ();
 
-			await client.ConnectAsync (new ClientCredentials (GetClientId ()))
+			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Thread.Sleep (TimeSpan.FromSeconds(keepAliveSecs * 5));

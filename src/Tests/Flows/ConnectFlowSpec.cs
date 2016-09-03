@@ -1,27 +1,19 @@
-﻿using System;
+﻿using Moq;
+using System;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Storage;
-using Moq;
-using Xunit;
 using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Diagnostics;
+using System.Net.Mqtt.Storage;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace Tests.Flows
 {
-	public class ConnectFlowSpec
+    public class ConnectFlowSpec
 	{
-		readonly ITracerManager tracerManager;
-
-		public ConnectFlowSpec ()
-		{
-			tracerManager = new DefaultTracerManager ();
-		}
-
 		[Fact]
 		public async Task when_sending_connect_then_session_is_created_and_ack_is_sent()
 		{
@@ -45,7 +37,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -93,7 +85,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -139,7 +131,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -184,7 +176,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -223,7 +215,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -263,7 +255,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object, tracerManager);
+			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
 			var aggregateEx = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, connect, channel.Object).Wait());
 

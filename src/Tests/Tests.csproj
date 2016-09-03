@@ -6,7 +6,7 @@
     <ProjectGuid>{CC70B0BB-EC87-45D0-A4AE-2462F99D7573}</ProjectGuid>
     <RootNamespace>Tests</RootNamespace>
     <AssemblyName>Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <ItemGroup>
