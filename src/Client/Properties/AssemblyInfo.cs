@@ -3,12 +3,8 @@ using System.Net.Mqtt;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle ("System.Net.Mqtt.Core")]
-[assembly: AssemblyDescription ("Shared components between Mqtt Broker and Client.")]
-[assembly: InternalsVisibleTo ("System.Net.Mqtt.Portable, PublicKey=" + ThisAssembly.PublicKey)]
-[assembly: InternalsVisibleTo ("System.Net.Mqtt, PublicKey=" + ThisAssembly.PublicKey)]
-[assembly: InternalsVisibleTo ("System.Net.Mqtt.Core, PublicKey=" + ThisAssembly.PublicKey)]
-[assembly: InternalsVisibleTo ("System.Net.Mqtt.Server.Portable, PublicKey=" + ThisAssembly.PublicKey)]
+[assembly: AssemblyTitle ("System.Net.Mqtt")]
+[assembly: AssemblyDescription ("Mqtt Client and Core API")]
 [assembly: InternalsVisibleTo ("System.Net.Mqtt.Server, PublicKey=" + ThisAssembly.PublicKey)]
 [assembly: InternalsVisibleTo("IntegrationTests, PublicKey=" + ThisAssembly.PublicKey)]
 [assembly: InternalsVisibleTo("Tests, PublicKey=" + ThisAssembly.PublicKey)]
