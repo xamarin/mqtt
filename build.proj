@@ -39,6 +39,8 @@
 		<!-- Solutions at the root of the src directory are all built automatically unless overriden -->
 		<Solution Include="src\*.sln" Condition="'$(Solution)' == ''" />		
 		<Solution Include="$(Solution)" Condition="'$(Solution)' != ''" />
+		<!-- TODO: include IntegrationTests -->
+		<TestProject Include="src\**\Tests.csproj" />
 		<NuSpec Include="src\**\*.nuspec" />
 	</ItemGroup>
 
@@ -53,6 +55,30 @@
 
 	<Target Name="Build" DependsOnTargets="GitVersion">
 		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" />
+	</Target>
+	
+	<Target Name="Test"><!--  DependsOnTargets="Build" -->
+		<MSBuild Projects="@(TestProject)" BuildInParallel="true" Targets="GetTargetPath" Properties="$(CommonBuildProperties)">
+			<Output TaskParameter="TargetOutputs" ItemName="_TestAssembly" />
+		</MSBuild>
+
+		<ItemGroup>
+			<TestAssembly Include="@(_TestAssembly)" Condition=" Exists('%(_TestAssembly.FullPath)') " />
+		</ItemGroup>
+
+		<MakeDir Directories="$(Out)" Condition="!Exists('$(Out)')" />
+
+		<PropertyGroup>
+			<XunitConsole>$(PackagesPath)\xunit.runner.console\tools\xunit.console.x86.exe</XunitConsole>
+			<XunitOptions>$(XunitOptions) -html $(Out)\test.html -xml $(Out)\test.xml -parallel all -noshadow</XunitOptions>
+
+			<CoverageConsole>$(PackagesPath)\OpenCover\tools\OpenCover.Console.exe</CoverageConsole>
+			<CoverageOptions>$(CoverageOptions) -output:$(Out)\coverage.xml -nodefaultfilters -returntargetcode -register:user -filter:"+[System.Net.Mqtt*]* -[System.Runtime*]* -[System.Core*]* -[System.Linq*]* -[System.Configuration*]* -[System.Web*]* -[System]* -[xunit*]* -[Tests]* -[IntegrationTests]* -[*]*ThisAssembly* -[*]*IFluentInterface*" -excludebyattribute:*ExcludeFromCodeCoverage*;*CompilerGenerated* -skipautoprops -showunvisited -mergebyhash</CoverageOptions>
+			<CoverageCommand>$(CoverageConsole) $(CoverageOptions) -target:$(XunitConsole) -targetargs:"@(TestAssembly, ' ') $(XunitOptions)"</CoverageCommand>
+		</PropertyGroup>
+
+		<Message Importance="high" Text="Executing: $(CoverageCommand)" />
+		<Exec Command="$(CoverageCommand)" ContinueOnError="ErrorAndContinue" />
 	</Target>
 
 	<Target Name="Package" DependsOnTargets="Build">
