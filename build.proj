@@ -57,7 +57,7 @@
 
 	<Target Name="Package" DependsOnTargets="Build">
 		<MakeDir Directories="$(Out)" Condition=" !Exists('$(Out)') " />
-		<Exec Command='"$(NuGet)" Pack "%(NuSpec.Identity)" $(Args) -Properties Id=%(NuSpec.Filename);Configuration=$(Configuration) -Version $(Version) -OutputDirectory $(Out)' />
+		<Exec Command='"$(NuGet)" Pack "%(NuSpec.Identity)" $(Args) -Properties Id=%(NuSpec.Filename);Configuration=$(Configuration);Version=$(Version) -Version $(Version) -OutputDirectory $(Out)' />
 	</Target>
 
 	<Target Name="Publish" DependsOnTargets="Package">
