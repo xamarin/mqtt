@@ -48,7 +48,7 @@ namespace System.Net.Mqtt
 			packetListener.Listen ();
 		}
 
-		public event EventHandler<MqttServerStopped> Closed = (sender, args) => { };
+		public event EventHandler<MqttEndpointDisconnected> Disconnected = (sender, args) => { };
 
 		public string Id { get; private set; }
 
@@ -284,7 +284,7 @@ namespace System.Net.Mqtt
                         .Packets
                         .LastOrDefaultAsync ();
 
-                    Close (StoppedReason.Disposed);
+                    Close (DisconnectedReason.Disposed);
                 } catch (Exception ex) {
                     Close (ex);
                 } finally {
@@ -297,10 +297,10 @@ namespace System.Net.Mqtt
 		{
 			tracer.Error (ex);
 			receiver.OnError (ex);
-			Close (StoppedReason.Error, ex.Message);
+			Close (DisconnectedReason.Error, ex.Message);
 		}
 
-		void Close (StoppedReason reason, string message = null)
+		void Close (DisconnectedReason reason, string message = null)
 		{
 			tracer.Info (Resources.Tracer_Client_Disposing, Id, reason);
 
@@ -312,7 +312,7 @@ namespace System.Net.Mqtt
             IsConnected = false;
             Id = null;
 
-            Closed (this, new MqttServerStopped (reason, message));
+            Disconnected (this, new MqttEndpointDisconnected (reason, message));
 		}
 
 		void OpenClientSession (string clientId, bool cleanSession)
@@ -366,7 +366,7 @@ namespace System.Net.Mqtt
 		void CheckUnderlyingConnection ()
 		{
 			if (isConnected && !packetChannel.IsConnected) {
-				Close (StoppedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
+				Close (DisconnectedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 
@@ -387,7 +387,7 @@ namespace System.Net.Mqtt
 					Close (ex);
 				}, () => {
 					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
-					Close (StoppedReason.Disconnected);
+					Close (DisconnectedReason.RemoteDisconnected);
 				});
 		}
 	}

@@ -40,7 +40,7 @@ namespace System.Net.Mqtt.Server
 
 		public event EventHandler<MqttUndeliveredMessage> MessageUndelivered = (sender, args) => { };
 
-		public event EventHandler<MqttServerStopped> Stopped = (sender, args) => { };
+		public event EventHandler<MqttEndpointDisconnected> Stopped = (sender, args) => { };
 
 		public int ActiveChannels { get { return channels.Where (c => c.IsConnected).Count (); } }
 
@@ -70,8 +70,9 @@ namespace System.Net.Mqtt.Server
 
 		public void Stop ()
 		{
-			Stop (StoppedReason.Disposed);
-		}
+            Dispose (disposing: true);
+            GC.SuppressFinalize (this);
+        }
 
 		void IDisposable.Dispose ()
 		{
@@ -83,33 +84,30 @@ namespace System.Net.Mqtt.Server
 			if (disposed) return;
 
 			if (disposing) {
-				tracer.Info (Resources.Tracer_Disposing, GetType ().FullName);
+                try
+                {
+                    tracer.Info (Resources.Tracer_Disposing, GetType ().FullName);
 
-				if (streamSubscription != null) {
-					streamSubscription.Dispose ();
-				}
+                    streamSubscription?.Dispose ();
 
-				foreach (var channel in channels) {
-					channel.Dispose ();
-				}
+                    foreach (var channel in channels)
+                    {
+                        channel.Dispose ();
+                    }
 
-				channels.Clear ();
+                    channels.Clear ();
 
-				if (channelSubscription != null) {
-					channelSubscription.Dispose ();
-				}
+                    channelSubscription?.Dispose ();
+                    binaryChannelProvider?.Dispose ();
 
-				binaryChannelProvider.Dispose ();
-
-				disposed = true;
+                    Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Disposed));
+                } catch (Exception ex) {
+                    tracer.Error (ex);
+                    Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Error, ex.Message));
+                } finally {
+                    disposed = true;
+                }
 			}
-		}
-
-		void Stop (StoppedReason reason, string message = null)
-		{
-			Dispose (true);
-			Stopped (this, new MqttServerStopped (reason, message));
-			GC.SuppressFinalize (this);
 		}
 
 		void ProcessChannel (IMqttChannel<byte[]> binaryChannel)

@@ -6,7 +6,7 @@ namespace System.Net.Mqtt.Server
     {
         event EventHandler<MqttUndeliveredMessage> MessageUndelivered;
 
-        event EventHandler<MqttServerStopped> Stopped;
+        event EventHandler<MqttEndpointDisconnected> Stopped;
 
         int ActiveChannels { get; }
 

@@ -5,7 +5,7 @@ namespace System.Net.Mqtt
 {
 	public interface IMqttClient : IDisposable
 	{
-		event EventHandler<MqttServerStopped> Closed;
+		event EventHandler<MqttEndpointDisconnected> Disconnected;
 
 		string Id { get; }
 
