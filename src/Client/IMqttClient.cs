@@ -24,7 +24,5 @@ namespace System.Net.Mqtt
 		Task UnsubscribeAsync (params string[] topics);
 
 		Task DisconnectAsync ();
-
-		void Close ();
 	}
 }

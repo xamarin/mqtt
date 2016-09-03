@@ -14,7 +14,6 @@ namespace System.Net.Mqtt
 	{
         static readonly ITracer tracer = Tracer.Get<Client> ();
 
-        bool protocolDisconnected;
 		bool disposed;
 		bool isConnected;
 		IDisposable packetsSubscription;
@@ -69,10 +68,10 @@ namespace System.Net.Mqtt
 
 		public IObservable<MqttApplicationMessage> Receiver { get { return receiver; } }
 
-		internal IObservable<IPacket> Sender { get { return sender; } }
+        internal IMqttChannel<IPacket> Channel {  get { return packetChannel; } }
 
-		/// <exception cref="MqttClientException">ClientException</exception>
-		public async Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false)
+        /// <exception cref="MqttClientException">ClientException</exception>
+        public async Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false)
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
@@ -258,50 +257,39 @@ namespace System.Net.Mqtt
 
 		public async Task DisconnectAsync ()
 		{
-			if (disposed) {
-				throw new ObjectDisposedException (GetType ().FullName);
-			}
-
-			try {
-				CloseClientSession ();
-
-				await SendPacketAsync (new Disconnect ())
-					.ConfigureAwait (continueOnCapturedContext: false);
-
-				protocolDisconnected = true;
-			} catch (Exception ex) {
-				Close (ex);
-				throw;
-			}
-		}
-
-		public void Close ()
-		{
-			Close (StoppedReason.Disposed);
+            await DisposeAsync (disposing: true).ConfigureAwait (continueOnCapturedContext: false);
+            GC.SuppressFinalize (this);
 		}
 
 		void IDisposable.Dispose ()
 		{
-			Close ();
+            DisconnectAsync ().Wait ();
 		}
 
-		protected virtual void Dispose (bool disposing)
+		protected virtual async Task DisposeAsync (bool disposing)
 		{
 			if (disposed) return;
 
 			if (disposing) {
-				receiver.OnCompleted ();
+                try
+                {
+                    CloseClientSession ();
 
-				if (packetsSubscription != null) {
-					packetsSubscription.Dispose ();
-				}
+                    packetsSubscription.Dispose ();
 
-				packetListener.Dispose ();
-				packetChannel.Dispose ();
-				(clientSender as IDisposable)?.Dispose ();
-				IsConnected = false;
-				Id = null;
-				disposed = true;
+                    await SendPacketAsync (new Disconnect ())
+                        .ConfigureAwait (continueOnCapturedContext: false);
+
+                    await packetListener
+                        .Packets
+                        .LastOrDefaultAsync ();
+
+                    Close (StoppedReason.Disposed);
+                } catch (Exception ex) {
+                    Close (ex);
+                } finally {
+                    disposed = true;
+                } 
 			}
 		}
 
@@ -315,9 +303,16 @@ namespace System.Net.Mqtt
 		void Close (StoppedReason reason, string message = null)
 		{
 			tracer.Info (Resources.Tracer_Client_Disposing, Id, reason);
-			Dispose (true);
-			Closed (this, new MqttServerStopped (reason, message));
-			GC.SuppressFinalize (this);
+
+            receiver?.OnCompleted ();
+            packetsSubscription?.Dispose();
+            packetListener?.Dispose();
+            packetChannel?.Dispose();
+            (clientSender as IDisposable)?.Dispose();
+            IsConnected = false;
+            Id = null;
+
+            Closed (this, new MqttServerStopped (reason, message));
 		}
 
 		void OpenClientSession (string clientId, bool cleanSession)
@@ -377,7 +372,8 @@ namespace System.Net.Mqtt
 
 		void ObservePackets ()
 		{
-			packetsSubscription = packetListener.Packets
+			packetsSubscription = packetListener
+                .Packets
 				.ObserveOn (NewThreadScheduler.Default)
 				.Subscribe (packet => {
 					if (packet.Type == MqttPacketType.Publish) {
@@ -385,17 +381,13 @@ namespace System.Net.Mqtt
 						var message = new MqttApplicationMessage (publish.Topic, publish.Payload);
 
 						receiver.OnNext (message);
-
 						tracer.Info (Resources.Tracer_NewApplicationMessageReceived, Id, publish.Topic);
 					}
 				}, ex => {
 					Close (ex);
 				}, () => {
 					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
-
-					var reason = protocolDisconnected ? StoppedReason.Disposed : StoppedReason.Disconnected;
-
-					Close (reason);
+					Close (StoppedReason.Disconnected);
 				});
 		}
 	}
