@@ -56,11 +56,4 @@
 		<Compile Include="$(MSBuildThisFileDirectory)GlobalAssemblyInfo.cs" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-		<!-- If we don't make these invisible, they show up in VS as missing files :S -->
-		<AvailableItemName Include="NuSpec">
-			<Visible>False</Visible>
-		</AvailableItemName>
-	</ItemGroup>
-
 </Project>
