@@ -1,23 +1,24 @@
-﻿using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
-using System.Net.Mqtt.Exceptions;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-	internal class Client : IMqttClient
+    internal class Client : IMqttClient
 	{
-		bool protocolDisconnected;
+        static readonly ITracer tracer = Tracer.Get<Client> ();
+
+        bool protocolDisconnected;
 		bool disposed;
 		bool isConnected;
 		IDisposable packetsSubscription;
 
-		readonly ITracer tracer;
 		readonly ReplaySubject<MqttApplicationMessage> receiver;
 		readonly ReplaySubject<IPacket> sender;
 		readonly IMqttChannel<IPacket> packetChannel;
@@ -32,11 +33,8 @@ namespace System.Net.Mqtt
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<Client> ();
-
 			receiver = new ReplaySubject<MqttApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 
@@ -46,7 +44,7 @@ namespace System.Net.Mqtt
 			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
 			clientSender = TaskRunner.Get ();
-			packetListener = new ClientPacketListener (packetChannel, flowProvider, tracerManager, configuration);
+			packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
 
 			packetListener.Listen ();
 		}

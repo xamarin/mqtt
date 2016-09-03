@@ -1,16 +1,16 @@
-﻿using System.Linq;
-using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
+using System.Linq;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Text;
 using System.Threading.Tasks;
-using Server = System.Net.Mqtt.Server;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal class ServerPublishReceiverFlow : PublishReceiverFlow
+    internal class ServerPublishReceiverFlow : PublishReceiverFlow
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
+
 		readonly Server.IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
 		readonly IRepository<ConnectionWill> willRepository;
@@ -25,11 +25,9 @@ namespace System.Net.Mqtt.Flows
 			IRepository<ConnectionWill> willRepository,
 			IPacketIdProvider packetIdProvider,
             Server.IEventStream eventStream,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
-			: base (topicEvaluator, retainedRepository, sessionRepository, tracerManager, configuration)
+			: base (topicEvaluator, retainedRepository, sessionRepository, configuration)
 		{
-			tracer = tracerManager.Get<ServerPublishReceiverFlow> ();
 			this.connectionProvider = connectionProvider;
 			this.senderFlow = senderFlow;
 			this.willRepository = willRepository;

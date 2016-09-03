@@ -1,29 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 
 namespace System.Net.Mqtt.Flows
 {
-	internal abstract class ProtocolFlowProvider : IProtocolFlowProvider
+    internal abstract class ProtocolFlowProvider : IProtocolFlowProvider
 	{
 		protected readonly IMqttTopicEvaluator topicEvaluator;
 		protected readonly IRepositoryProvider repositoryProvider;
-		protected readonly ITracerManager tracerManager;
 		protected readonly MqttConfiguration configuration;
 
 		IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 
 		protected ProtocolFlowProvider (IMqttTopicEvaluator topicEvaluator,
 			IRepositoryProvider repositoryProvider,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
 			this.topicEvaluator = topicEvaluator;
 			this.repositoryProvider = repositoryProvider;
-			this.tracerManager = tracerManager;
 			this.configuration = configuration;
 		}
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
@@ -11,9 +11,10 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Server
 {
-	internal class ServerPacketListener : IPacketListener
+    internal class ServerPacketListener : IPacketListener
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<ServerPacketListener> ();
+
 		readonly IMqttChannel<IPacket> channel;
 		readonly IConnectionProvider connectionProvider;
 		readonly IProtocolFlowProvider flowProvider;
@@ -28,10 +29,8 @@ namespace System.Net.Mqtt.Server
 		public ServerPacketListener (IMqttChannel<IPacket> channel,
 			IConnectionProvider connectionProvider,
 			IProtocolFlowProvider flowProvider,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<ServerPacketListener> ();
 			this.channel = channel;
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;

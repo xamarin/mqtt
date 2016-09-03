@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net.Mqtt.Diagnostics;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Storage;
@@ -19,9 +18,8 @@ namespace System.Net.Mqtt.Flows
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
 			IEventStream eventStream,
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
-			: base (topicEvaluator, repositoryProvider, tracerManager, configuration)
+			: base (topicEvaluator, repositoryProvider, configuration)
 		{
 			this.authenticationProvider = authenticationProvider;
 			this.connectionProvider = connectionProvider;
@@ -36,17 +34,17 @@ namespace System.Net.Mqtt.Flows
 			var sessionRepository = repositoryProvider.GetRepository<ClientSession>();
 			var willRepository = repositoryProvider.GetRepository<ConnectionWill> ();
 			var retainedRepository = repositoryProvider.GetRepository<RetainedMessage> ();
-			var senderFlow = new PublishSenderFlow (sessionRepository, tracerManager, configuration);
+			var senderFlow = new PublishSenderFlow (sessionRepository, configuration);
 
-			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (authenticationProvider, sessionRepository, willRepository, senderFlow, tracerManager));
+			flows.Add (ProtocolFlowType.Connect, new ServerConnectFlow (authenticationProvider, sessionRepository, willRepository, senderFlow));
 			flows.Add (ProtocolFlowType.PublishSender, senderFlow);
 			flows.Add (ProtocolFlowType.PublishReceiver, new ServerPublishReceiverFlow (topicEvaluator, connectionProvider,
-				senderFlow, retainedRepository, sessionRepository, willRepository, packetIdProvider, eventStream, tracerManager, configuration));
+				senderFlow, retainedRepository, sessionRepository, willRepository, packetIdProvider, eventStream, configuration));
 			flows.Add (ProtocolFlowType.Subscribe, new ServerSubscribeFlow (topicEvaluator, sessionRepository,
-				retainedRepository, packetIdProvider, senderFlow, tracerManager, configuration));
+				retainedRepository, packetIdProvider, senderFlow, configuration));
 			flows.Add (ProtocolFlowType.Unsubscribe, new ServerUnsubscribeFlow (sessionRepository));
 			flows.Add (ProtocolFlowType.Ping, new PingFlow ());
-			flows.Add (ProtocolFlowType.Disconnect, new DisconnectFlow (connectionProvider, sessionRepository, willRepository, tracerManager));
+			flows.Add (ProtocolFlowType.Disconnect, new DisconnectFlow (connectionProvider, sessionRepository, willRepository));
 
 			return flows;
 		}

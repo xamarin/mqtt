@@ -1,22 +1,20 @@
-﻿using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Bindings
 {
-	internal class TcpChannelFactory : IMqttChannelFactory
+    internal class TcpChannelFactory : IMqttChannelFactory
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<TcpChannelFactory> ();
+
 		readonly string hostAddress;
-		readonly ITracerManager tracerManager;
 		readonly MqttConfiguration configuration;
 
-		public TcpChannelFactory (string hostAddress, ITracerManager tracerManager, MqttConfiguration configuration)
+		public TcpChannelFactory (string hostAddress, MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<TcpChannelFactory> ();
 			this.hostAddress = hostAddress;
-			this.tracerManager = tracerManager;
 			this.configuration = configuration;
 		}
 
@@ -37,7 +35,7 @@ namespace System.Net.Mqtt.Bindings
 				throw new MqttException (message, socketEx);
 			}
 
-			return new TcpChannel (tcpClient, new PacketBuffer (), tracerManager, configuration);
+			return new TcpChannel (tcpClient, new PacketBuffer (), configuration);
 		}
 	}
 }

@@ -1,9 +1,7 @@
-﻿using System.Net.Mqtt.Diagnostics;
-
-namespace System.Net.Mqtt.Bindings
+﻿namespace System.Net.Mqtt.Bindings
 {
-	public interface IMqttBinding
+    public interface IMqttBinding
 	{
-		IMqttChannelFactory GetChannelFactory (string hostAddress, ITracerManager tracerManager, MqttConfiguration configuration);
+		IMqttChannelFactory GetChannelFactory (string hostAddress, MqttConfiguration configuration);
 	}
 }

@@ -1,18 +1,19 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
-using System.Reactive.Disposables;
-using System.Net.Mqtt.Exceptions;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-	internal class ClientPacketListener : IPacketListener
+    internal class ClientPacketListener : IPacketListener
 	{
-		readonly ITracer tracer;
+		static readonly ITracer tracer = Tracer.Get<ClientPacketListener> ();
+
 		readonly IMqttChannel<IPacket> channel;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly MqttConfiguration configuration;
@@ -25,10 +26,8 @@ namespace System.Net.Mqtt
 
 		public ClientPacketListener (IMqttChannel<IPacket> channel, 
 			IProtocolFlowProvider flowProvider, 
-			ITracerManager tracerManager,
 			MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<ClientPacketListener> ();
 			this.channel = channel;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;

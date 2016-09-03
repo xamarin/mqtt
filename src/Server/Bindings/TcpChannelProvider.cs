@@ -1,5 +1,5 @@
-﻿using System.Net.Mqtt.Bindings;
-using System.Net.Mqtt.Diagnostics;
+﻿using System.Diagnostics;
+using System.Net.Mqtt.Bindings;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Sockets;
 using System.Reactive.Linq;
@@ -8,16 +8,14 @@ namespace System.Net.Mqtt.Server.Bindings
 {
     internal class TcpChannelProvider : IMqttChannelProvider
 	{
-		readonly ITracer tracer;
-		readonly ITracerManager tracerManager;
+		static readonly ITracer tracer = Tracer.Get<TcpChannelProvider> ();
+
 		readonly MqttConfiguration configuration;
 		readonly Lazy<TcpListener> listener;
 		bool disposed;
 
-		public TcpChannelProvider (ITracerManager tracerManager, MqttConfiguration configuration)
+		public TcpChannelProvider (MqttConfiguration configuration)
 		{
-			tracer = tracerManager.Get<TcpChannelProvider> ();
-			this.tracerManager = tracerManager;
 			this.configuration = configuration;
 			listener = new Lazy<TcpListener> (() => {
 				var tcpListener = new TcpListener(IPAddress.Any, this.configuration.Port);
@@ -44,7 +42,7 @@ namespace System.Net.Mqtt.Server.Bindings
 			return Observable
 				.FromAsync (listener.Value.AcceptTcpClientAsync)
 				.Repeat ()
-				.Select (client => new TcpChannel (client, new PacketBuffer (), tracerManager, configuration));
+				.Select (client => new TcpChannel (client, new PacketBuffer (), configuration));
 		}
 
 		public void Dispose ()
