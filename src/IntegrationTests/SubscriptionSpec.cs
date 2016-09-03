@@ -30,7 +30,7 @@ namespace IntegrationTests
 
 			await client.UnsubscribeAsync (topicFilter);
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		[Fact]
@@ -54,7 +54,7 @@ namespace IntegrationTests
 
 			await client.UnsubscribeAsync (topics.ToArray ());
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		[Fact]
@@ -78,7 +78,7 @@ namespace IntegrationTests
 
 			Assert.True (client.IsConnected);
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		public void Dispose ()

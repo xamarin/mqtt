@@ -67,8 +67,8 @@ namespace IntegrationTests
 			Assert.Equal(1, server.ActiveChannels);
 			Assert.Equal(1, server.ActiveClients.Count ());
 
-			fooClient.Close ();
-			barClient.Close ();
+            fooClient.Dispose ();
+			barClient.Dispose ();
 		}
 
 		[Fact]
@@ -92,7 +92,7 @@ namespace IntegrationTests
 			Assert.True (clients.All(c => !string.IsNullOrEmpty (c.Id)));
 
 			foreach (var client in clients) {
-				client.Close ();
+				client.Dispose ();
 			}
 		}
 
@@ -133,7 +133,7 @@ namespace IntegrationTests
 			Assert.True (clients.All(c => string.IsNullOrEmpty (c.Id)));
 
 			foreach (var client in clients) {
-				client.Close ();
+				client.Dispose ();
 			}
 		}
 
@@ -182,7 +182,7 @@ namespace IntegrationTests
 			Assert.True (clientDisconnected);
 			Assert.False (server.ActiveClients.Any (c => c == clientId));
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		[Fact]
@@ -224,9 +224,9 @@ namespace IntegrationTests
 
 			Assert.False (willReceived);
 
-			client1.Close ();
-			client2.Close ();
-			client3.Close ();
+			client1.Dispose ();
+			client2.Dispose ();
+			client3.Dispose ();
 		}
 		
 		[Fact]
@@ -265,7 +265,8 @@ namespace IntegrationTests
 				}
 			});
 
-			client1.Close ();
+            //Forces socket disconnection without using protocol Disconnect (Disconnect or Dispose Client method)
+            (client1 as Client).Channel.Dispose ();
 
 			var willReceived = willReceivedSignal.Wait (2000);
 
@@ -274,9 +275,8 @@ namespace IntegrationTests
 			Assert.Equal (topic, willMessage.Topic);
 			Assert.Equal (message, Encoding.UTF8.GetString (willMessage.Payload));
 
-			client1.Close ();
-			client2.Close ();
-			client3.Close ();
+			client2.Dispose ();
+			client3.Dispose ();
 		}
 
 		public void Dispose ()
