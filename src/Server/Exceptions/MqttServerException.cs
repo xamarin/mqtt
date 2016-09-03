@@ -1,9 +1,7 @@
 ﻿using System.Net.Mqtt.Exceptions;
-using System.Runtime.Serialization;
 
 namespace System.Net.Mqtt.Server.Exceptions
 {
-	[DataContract]
 	public class MqttServerException : MqttException
 	{
 		public MqttServerException ()

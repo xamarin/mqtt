@@ -1,9 +1,7 @@
 ﻿using System.Net.Mqtt.Packets;
-using System.Runtime.Serialization;
 
 namespace System.Net.Mqtt.Exceptions
 {
-	[DataContract]
 	public class MqttConnectionException : MqttException
 	{
 		public MqttConnectionException (MqttConnectionStatus status)
