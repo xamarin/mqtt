@@ -55,7 +55,7 @@ namespace IntegrationTests
 				_ => { },
 				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
 
-			client.Close ();
+			client.Dispose ();
 
 			var serverDetectedClientClosed = clientClosed.Wait (TimeSpan.FromSeconds(keepAliveSecs * 2));
 
@@ -80,7 +80,7 @@ namespace IntegrationTests
 			Assert.True(client.IsConnected);
 			Assert.False (string.IsNullOrEmpty (client.Id));
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		public void Dispose ()

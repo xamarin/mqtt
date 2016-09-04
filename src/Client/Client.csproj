@@ -92,7 +92,7 @@
     <Compile Include="Resources.cs" />
     <Compile Include="SingleThreadScheduler.cs" />
     <Compile Include="Storage\StorageExtensions.cs" />
-    <Compile Include="MqttServerStopped.cs" />
+    <Compile Include="MqttEndpointDisconnected.cs" />
     <Compile Include="Storage\InMemoryRepositoryProvider.cs" />
     <Compile Include="Storage\IRepositoryProvider.cs" />
     <Compile Include="Storage\PendingMessage.cs" />

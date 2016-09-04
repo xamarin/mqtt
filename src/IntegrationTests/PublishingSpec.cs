@@ -45,7 +45,7 @@ namespace IntegrationTests
 
 			Assert.True (client.IsConnected);
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		[Fact]
@@ -71,7 +71,7 @@ namespace IntegrationTests
 
 			Assert.True (client.IsConnected);
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		[Fact]
@@ -97,7 +97,7 @@ namespace IntegrationTests
 
 			Assert.True (client.IsConnected);
 
-			client.Close ();
+			client.Dispose ();
 		}
 
 		[Fact]
@@ -169,9 +169,9 @@ namespace IntegrationTests
 			await subscriber2.UnsubscribeAsync (topicFilter)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber1.Close ();
-			subscriber2.Close ();
-			publisher.Close ();
+			subscriber1.Dispose ();
+			subscriber2.Dispose ();
+			publisher.Dispose ();
 		}
 
 		[Fact]
@@ -212,7 +212,7 @@ namespace IntegrationTests
 			Assert.Equal (count, topicsNotSubscribedCount);
 			Assert.True (success);
 
-			publisher.Close ();
+			publisher.Dispose ();
 		}
 
 		[Fact]
@@ -285,8 +285,8 @@ namespace IntegrationTests
 			await publisher.UnsubscribeAsync (responseTopic)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber.Close ();
-			publisher.Close ();
+			subscriber.Dispose ();
+			publisher.Dispose ();
 		}
 
 		[Fact]
