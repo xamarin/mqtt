@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Merq;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
