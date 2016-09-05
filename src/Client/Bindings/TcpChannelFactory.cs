@@ -28,7 +28,7 @@ namespace System.Net.Mqtt.Bindings
                     .ConnectAsync (hostAddress, configuration.Port)
                     .ConfigureAwait (continueOnCapturedContext: false);
 			} catch (SocketException socketEx) {
-				var message = string.Format (Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
+				var message = string.Format (Properties.Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
 
 				tracer.Error (socketEx, message);
 

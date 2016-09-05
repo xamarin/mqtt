@@ -18,7 +18,6 @@ namespace System.Net.Mqtt.Server
         public MqttServerFactory (IMqttAuthenticationProvider authenticationProvider = null)
             : this (new TcpBinding (), authenticationProvider)
         {
-
         }
 
         public MqttServerFactory (IMqttServerBinding binding, IMqttAuthenticationProvider authenticationProvider = null)
@@ -44,9 +43,9 @@ namespace System.Net.Mqtt.Server
                 return Task.FromResult<IMqttServer> (new Server (channelProvider, channelFactory,
                     flowProvider, connectionProvider, eventStream, configuration));
             } catch (Exception ex) {
-                tracer.Error (ex, Resources.Server_InitializeError);
+                tracer.Error (ex, Properties.Resources.Server_InitializeError);
 
-                throw new MqttServerException (Resources.Server_InitializeError, ex);
+                throw new MqttServerException (Properties.Resources.Server_InitializeError, ex);
             }
         }
     }

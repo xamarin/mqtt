@@ -44,7 +44,7 @@ namespace System.Net.Mqtt.Flows
 				sessionRepository.Delete (session);
 				session = null;
 
-				tracer.Info (Server.Resources.Tracer_Server_CleanedOldSession, clientId);
+				tracer.Info (Server.Properties.Resources.Server_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -52,7 +52,7 @@ namespace System.Net.Mqtt.Flows
 
 				sessionRepository.Create (session);
 
-				tracer.Info (Server.Resources.Tracer_Server_CreatedSession, clientId);
+				tracer.Info (Server.Properties.Resources.Server_CreatedSession, clientId);
 			} else {
 				await SendPendingMessagesAsync (session, channel)
 					.ConfigureAwait (continueOnCapturedContext: false);

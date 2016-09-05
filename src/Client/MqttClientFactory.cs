@@ -41,9 +41,9 @@ namespace System.Net.Mqtt
 
 				return new Client (packetChannel, flowProvider, repositoryProvider, packetIdProvider, configuration);
 			} catch (Exception ex) {
-				tracer.Error (ex, Resources.Client_InitializeError);
+				tracer.Error (ex, Properties.Resources.Client_InitializeError);
 
-				throw new MqttClientException (Resources.Client_InitializeError, ex);
+				throw new MqttClientException  (Properties.Resources.Client_InitializeError, ex);
 			}
 		}
 	}

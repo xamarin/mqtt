@@ -77,13 +77,13 @@ namespace System.Net.Mqtt.Formatters
 		byte[] GetPayload (Subscribe packet)
 		{
 			if (packet.Subscriptions == null || !packet.Subscriptions.Any ())
-				throw new MqttViolationException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new MqttViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var payload = new List<byte> ();
 
 			foreach (var subscription in packet.Subscriptions) {
 				if (!topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-					var error = string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
+					var error = string.Format  (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
 
 					throw new MqttException (error);
 				}
@@ -101,7 +101,7 @@ namespace System.Net.Mqtt.Formatters
 		IEnumerable<Subscription> GetSubscriptions (byte[] bytes, int headerLength, int remainingLength)
 		{
 			if (bytes.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
-				throw new MqttViolationException (Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new MqttViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var index = headerLength;
 
@@ -109,7 +109,7 @@ namespace System.Net.Mqtt.Formatters
 				var topicFilter = bytes.GetString (index, out index);
 
 				if (!topicEvaluator.IsValidTopicFilter (topicFilter)) {
-					var error = string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
+					var error = string.Format  (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
 
 					throw new MqttException (error);
 				}
@@ -117,7 +117,7 @@ namespace System.Net.Mqtt.Formatters
 				var requestedQosByte = bytes.Byte (index);
 
 				if (!Enum.IsDefined (typeof (MqttQualityOfService), requestedQosByte))
-					throw new MqttViolationException (Resources.Formatter_InvalidQualityOfService);
+					throw new MqttViolationException  (Properties.Resources.Formatter_InvalidQualityOfService);
 
 				var requestedQos = (MqttQualityOfService)requestedQosByte;
 

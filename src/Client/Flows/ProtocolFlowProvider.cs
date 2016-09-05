@@ -31,7 +31,7 @@ namespace System.Net.Mqtt.Flows
 		public IProtocolFlow GetFlow (MqttPacketType packetType)
 		{
 			if (!IsValidPacketType (packetType)) {
-				var error = string.Format (Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
+				var error = string.Format (Properties.Resources.ProtocolFlowProvider_InvalidPacketType, packetType);
 
 				throw new MqttException (error);
 			}
@@ -40,7 +40,7 @@ namespace System.Net.Mqtt.Flows
 			var flowType = packetType.ToFlowType();
 
 			if (!GetFlows ().TryGetValue (flowType, out flow)) {
-				var error = string.Format (Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
+				var error = string.Format (Properties.Resources.ProtocolFlowProvider_UnknownPacketType, packetType);
 
 				throw new MqttException (error);
 			}

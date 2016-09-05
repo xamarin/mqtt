@@ -44,18 +44,18 @@ namespace System.Net.Mqtt.Flows
 		async Task HandlePublishAsync (string clientId, Publish publish, IMqttChannel<IPacket> channel)
 		{
 			if (publish.QualityOfService != MqttQualityOfService.AtMostOnce && !publish.PacketId.HasValue) {
-				throw new MqttException (Resources.PublishReceiverFlow_PacketIdRequired);
+				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdRequired);
 			}
 
 			if (publish.QualityOfService == MqttQualityOfService.AtMostOnce && publish.PacketId.HasValue) {
-				throw new MqttException (Resources.PublishReceiverFlow_PacketIdNotAllowed);
+				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdNotAllowed);
 			}
 
 			var qos = configuration.GetSupportedQos(publish.QualityOfService);
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			if (qos == MqttQualityOfService.ExactlyOnce && session.GetPendingAcknowledgements ().Any (ack => ack.Type == MqttPacketType.PublishReceived && ack.PacketId == publish.PacketId.Value)) {

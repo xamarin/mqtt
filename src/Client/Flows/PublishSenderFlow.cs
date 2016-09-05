@@ -78,7 +78,7 @@ namespace System.Net.Mqtt.Flows
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var pendingMessage = session
@@ -97,7 +97,7 @@ namespace System.Net.Mqtt.Flows
 				.Interval (TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs), NewThreadScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
-						tracer.Warn (Resources.Tracer_PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
+						tracer.Warn (Properties.Resources.PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
 
 						var duplicated = new Publish (sentMessage.Topic, sentMessage.QualityOfService,
 							sentMessage.Retain, duplicated: true, packetId: sentMessage.PacketId) {
@@ -148,7 +148,7 @@ namespace System.Net.Mqtt.Flows
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var savedMessage = new PendingMessage {
