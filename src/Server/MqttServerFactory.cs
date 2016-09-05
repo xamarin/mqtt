@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Merq;
+using System.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Server.Bindings;
 using System.Net.Mqtt.Server.Exceptions;

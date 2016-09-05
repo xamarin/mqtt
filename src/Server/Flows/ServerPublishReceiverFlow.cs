@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Merq;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
@@ -15,7 +16,7 @@ namespace System.Net.Mqtt.Flows
 		readonly IPublishSenderFlow senderFlow;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IPacketIdProvider packetIdProvider;
-		readonly Server.IEventStream eventStream;
+		readonly IEventStream eventStream;
 
 		public ServerPublishReceiverFlow (IMqttTopicEvaluator topicEvaluator,
             Server.IConnectionProvider connectionProvider,
@@ -24,7 +25,7 @@ namespace System.Net.Mqtt.Flows
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
 			IPacketIdProvider packetIdProvider,
-            Server.IEventStream eventStream,
+            IEventStream eventStream,
 			MqttConfiguration configuration)
 			: base (topicEvaluator, retainedRepository, sessionRepository, configuration)
 		{

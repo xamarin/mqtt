@@ -13,8 +13,6 @@
     <Compile Include="Bindings\IMqttServerBinding.cs" />
     <Compile Include="Bindings\TcpBinding.cs" />
     <Compile Include="Bindings\TcpChannelProvider.cs" />
-    <Compile Include="EventStream.cs" />
-    <Compile Include="IEventStream.cs" />
     <Compile Include="IMqttServer.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Exceptions\MqttServerException.cs" />
@@ -33,7 +31,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="MqttUndeliveredMessage.cs" />
-    <Compile Include="SubjectWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Hermes.licenseheader">
