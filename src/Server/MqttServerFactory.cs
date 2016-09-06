@@ -1,9 +1,9 @@
-﻿using Merq;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Server.Bindings;
 using System.Net.Mqtt.Server.Exceptions;
 using System.Net.Mqtt.Storage;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Server
@@ -31,17 +31,17 @@ namespace System.Net.Mqtt.Server
         {
             try {
                 var topicEvaluator = new MqttTopicEvaluator (configuration);
-                var channelProvider = binding.GetChannelProvider (configuration);
+                var channelProvider = binding.GetChannelListener (configuration);
                 var channelFactory = new PacketChannelFactory (topicEvaluator, configuration);
                 var repositoryProvider = new InMemoryRepositoryProvider ();
                 var connectionProvider = new ConnectionProvider ();
                 var packetIdProvider = new PacketIdProvider ();
-                var eventStream = new EventStream ();
+                var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
                 var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, connectionProvider, topicEvaluator,
-                    repositoryProvider, packetIdProvider, eventStream, configuration);
+                    repositoryProvider, packetIdProvider, undeliveredMessagesListener, configuration);
 
                 return Task.FromResult<IMqttServer> (new Server (channelProvider, channelFactory,
-                    flowProvider, connectionProvider, eventStream, configuration));
+                    flowProvider, connectionProvider, undeliveredMessagesListener, configuration));
             } catch (Exception ex) {
                 tracer.Error (ex, Properties.Resources.Server_InitializeError);
 

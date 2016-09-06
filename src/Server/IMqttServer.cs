@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Server
 {
@@ -13,6 +14,8 @@ namespace System.Net.Mqtt.Server
         IEnumerable<string> ActiveClients { get; }
 
         void Start ();
+
+        Task<IMqttClient> CreateClientAsync ();
 
         void Stop ();
     }

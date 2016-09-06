@@ -4,9 +4,9 @@ namespace System.Net.Mqtt.Server.Bindings
 {
     public class TcpBinding : MqttClient.TcpBinding, IMqttServerBinding
     {
-        public IMqttChannelProvider GetChannelProvider (MqttConfiguration configuration)
+        public IMqttChannelListener GetChannelListener (MqttConfiguration configuration)
         {
-            return new TcpChannelProvider (configuration);
+            return new TcpChannelListener (configuration);
         }
     }
 }

@@ -31,6 +31,7 @@
     <Compile Include="Messages\RequestMessage.cs" />
     <Compile Include="Messages\ResponseMessage.cs" />
     <Compile Include="Serializer.cs" />
+    <Compile Include="PrivateClientSpec.cs" />
     <Compile Include="SubscriptionSpec.cs">
       <SubType>Code</SubType>
     </Compile>

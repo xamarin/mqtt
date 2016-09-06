@@ -1,11 +1,11 @@
-﻿using Merq;
-using Moq;
+﻿using Moq;
 using System;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Storage;
+using System.Reactive.Subjects;
 using Xunit;
 using Xunit.Extensions;
 
@@ -47,7 +47,7 @@ namespace Tests
 		{
 			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<IMqttTopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new MqttConfiguration ());
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), Mock.Of<ISubject<MqttUndeliveredMessage>> (), new MqttConfiguration ());
 
 			var flow = flowProvider.GetFlow (packetType);
 
@@ -59,7 +59,7 @@ namespace Tests
 		{
 			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<IMqttTopicEvaluator> (), 
-				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), new EventStream(), new MqttConfiguration ());
+				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), Mock.Of<ISubject<MqttUndeliveredMessage>> (), new MqttConfiguration ());
 
 			var connectFlow = flowProvider.GetFlow<ServerConnectFlow> ();
 			var senderFlow = flowProvider.GetFlow<PublishSenderFlow> ();

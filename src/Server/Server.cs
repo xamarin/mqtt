@@ -1,9 +1,12 @@
-﻿using Merq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Server.Bindings;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Server
 {
@@ -11,35 +14,37 @@ namespace System.Net.Mqtt.Server
 	{
         static readonly ITracer tracer = Tracer.Get<Server>();
 
+        bool started;
         bool disposed;
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
-		readonly IMqttChannelProvider binaryChannelProvider;
+        readonly IEnumerable<IMqttChannelListener> binaryChannelListeners;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
-		readonly IEventStream eventStream;
-		readonly MqttConfiguration configuration;
+        readonly ISubject<MqttUndeliveredMessage> undeliveredMessagesListener;
+        readonly MqttConfiguration configuration;
+        readonly ISubject<PrivateStream> privateStreamListener;
+        readonly IList<IMqttChannel<IPacket>> channels = new List<IMqttChannel<IPacket>>();
 
-		readonly IList<IMqttChannel<IPacket>> channels = new List<IMqttChannel<IPacket>> ();
-
-		internal Server (IMqttChannelProvider binaryChannelProvider,
-			IPacketChannelFactory channelFactory,
-			IProtocolFlowProvider flowProvider,
-			IConnectionProvider connectionProvider,
-			IEventStream eventStream,
-			MqttConfiguration configuration)
+        internal Server (IMqttChannelListener binaryChannelListener,
+            IPacketChannelFactory channelFactory,
+            IProtocolFlowProvider flowProvider,
+            IConnectionProvider connectionProvider,
+            ISubject<MqttUndeliveredMessage> undeliveredMessagesListener,
+            MqttConfiguration configuration)
 		{
-			this.binaryChannelProvider = binaryChannelProvider;
-			this.channelFactory = channelFactory;
-			this.flowProvider = flowProvider;
-			this.connectionProvider = connectionProvider;
-			this.eventStream = eventStream;
-			this.configuration = configuration;
-		}
+            privateStreamListener = new Subject<PrivateStream> ();
+            binaryChannelListeners = new[] { new PrivateChannelListener (privateStreamListener, configuration), binaryChannelListener };
+            this.channelFactory = channelFactory;
+            this.flowProvider = flowProvider;
+            this.connectionProvider = connectionProvider;
+            this.undeliveredMessagesListener = undeliveredMessagesListener;
+            this.configuration = configuration;
+        }
 
-		public event EventHandler<MqttUndeliveredMessage> MessageUndelivered = (sender, args) => { };
+        public event EventHandler<MqttUndeliveredMessage> MessageUndelivered = (sender, args) => { };
 
 		public event EventHandler<MqttEndpointDisconnected> Stopped = (sender, args) => { };
 
@@ -51,25 +56,41 @@ namespace System.Net.Mqtt.Server
 		/// <exception cref="ObjectDisposedException">ObjectDisposedException</exception>
 		public void Start ()
 		{
-			if (disposed)
-				throw new ObjectDisposedException (GetType ().FullName);
+            if (disposed)
+                throw new ObjectDisposedException (nameof (Server));
 
-			channelSubscription = binaryChannelProvider
-				.GetChannels ()
-				.Subscribe (
-					binaryChannel => ProcessChannel (binaryChannel),
-					ex => { tracer.Error (ex); },
-					() => { }
-				);
+            var channelObservables = binaryChannelListeners.Select (listener => listener.AcceptChannelsAsync ());
 
-			streamSubscription = eventStream
-				.Of<MqttUndeliveredMessage> ()
-				.Subscribe (e => {
-					MessageUndelivered (this, e);
-				});
-		}
+            channelSubscription = Observable
+                .Merge (channelObservables)
+                .Subscribe (
+                    binaryChannel => ProcessChannel (binaryChannel),
+                    ex => { tracer.Error (ex); },
+                    () => { }
+                );
 
-		public void Stop ()
+			streamSubscription = undeliveredMessagesListener.Subscribe (e => {
+				    MessageUndelivered (this, e);
+			    });
+
+            started = true;
+        }
+
+        public Task<IMqttClient> CreateClientAsync ()
+        {
+            if (disposed)
+                throw new ObjectDisposedException (nameof (Server));
+
+            if (!started)
+                throw new InvalidOperationException (Properties.Resources.Server_NotStartedError);
+
+            var binding = new PrivateBinding (privateStreamListener, EndpointIdentifier.Client);
+            var factory = new MqttClientFactory (IPAddress.Loopback.ToString (), binding);
+
+            return factory.CreateAsync (configuration);
+        }
+
+        public void Stop ()
 		{
             Dispose (disposing: true);
             GC.SuppressFinalize (this);
@@ -87,7 +108,7 @@ namespace System.Net.Mqtt.Server
 			if (disposing) {
                 try
                 {
-                    tracer.Info (Resources.Tracer_Disposing, GetType ().FullName);
+                    tracer.Info (Properties.Resources.Mqtt_Disposing, GetType ().FullName);
 
                     streamSubscription?.Dispose ();
 
@@ -99,13 +120,17 @@ namespace System.Net.Mqtt.Server
                     channels.Clear ();
 
                     channelSubscription?.Dispose ();
-                    binaryChannelProvider?.Dispose ();
+
+                    foreach (var binaryChannelProvider in binaryChannelListeners) {
+                        binaryChannelProvider?.Dispose();
+                    }
 
                     Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Disposed));
                 } catch (Exception ex) {
                     tracer.Error (ex);
                     Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Error, ex.Message));
                 } finally {
+                    started = false;
                     disposed = true;
                 }
 			}
@@ -113,18 +138,18 @@ namespace System.Net.Mqtt.Server
 
 		void ProcessChannel (IMqttChannel<byte[]> binaryChannel)
 		{
-			tracer.Verbose (Resources.Tracer_Server_NewSocketAccepted);
+			tracer.Verbose (Properties.Resources.Server_NewSocketAccepted);
 
 			var packetChannel = channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, configuration);
 
 			packetListener.Listen ();
 			packetListener.Packets.Subscribe (_ => { }, ex => {
-				tracer.Error (ex, Resources.Tracer_Server_PacketsObservableError);
+				tracer.Error (ex, Properties.Resources.Server_PacketsObservableError);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			}, () => {
-				tracer.Warn (Resources.Tracer_Server_PacketsObservableCompleted);
+				tracer.Warn (Properties.Resources.Server_PacketsObservableCompleted);
 				packetChannel.Dispose ();
 				packetListener.Dispose ();
 			});

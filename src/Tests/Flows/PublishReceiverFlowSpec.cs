@@ -1,5 +1,4 @@
-﻿using Merq;
-using Moq;
+﻿using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,13 +40,13 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object,
 				publishSenderFlow.Object, retainedRepository.Object, sessionRepository.Object, willRepository.Object, 
-				packetIdProvider, eventStream, configuration);
+				packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId1 = Guid.NewGuid().ToString();
 			var subscribedClientId2 = Guid.NewGuid().ToString();
@@ -134,13 +133,13 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
 				retainedRepository.Object, sessionRepository.Object, willRepository.Object,
-				packetIdProvider, eventStream, configuration);
+				packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -188,7 +187,7 @@ namespace Tests.Flows
 		}
 
 		[Fact]
-		public void when_sending_publish_with_qos2_then_publish_is_sent_to_subscribers_and_publish_received_is_sent()
+		public async Task when_sending_publish_with_qos2_then_publish_is_sent_to_subscribers_and_publish_received_is_sent()
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
@@ -211,12 +210,12 @@ namespace Tests.Flows
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -270,7 +269,7 @@ namespace Tests.Flows
 
 			receiver.OnNext (new PublishRelease (packetId.Value));
 
-			Thread.Sleep (1000);
+            await Task.Delay (TimeSpan.FromMilliseconds (1000));
 
 			Assert.True (ackSent);
 			publishSenderFlow.Verify (s => s.SendPublishAsync (It.Is<string>(x => x == subscribedClientId), 
@@ -304,12 +303,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -387,9 +386,9 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid ().ToString (), Clean = false }};
 
@@ -408,7 +407,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -437,9 +436,9 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid().ToString(), Clean = false }};
 
@@ -460,7 +459,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -490,12 +489,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -561,9 +560,9 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var sessions = new List<ClientSession> { new ClientSession { ClientId = subscribedClientId, Clean = false } };
@@ -580,7 +579,7 @@ namespace Tests.Flows
 			channel.Setup (c => c.Receiver).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
@@ -610,12 +609,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.AtLeastOnce;
@@ -690,12 +689,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -767,10 +766,10 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+            var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
+				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishRelease = new PublishRelease (packetId);

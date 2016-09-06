@@ -24,7 +24,7 @@ namespace IntegrationTests.Context
 
 		static IntegrationContext()
 		{
-            Tracer.Configuration.AddListener("System.Net.Mqtt", new TestTracerListener());
+            Tracer.Configuration.AddListener ("System.Net.Mqtt", new TestTracerListener());
             Tracer.Configuration.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
 
             usedPorts = new ConcurrentBag<int> ();
@@ -58,7 +58,7 @@ namespace IntegrationTests.Context
 			}
 		}
 
-		protected virtual async Task<IMqttClient> GetClientAsync ()
+        protected virtual async Task<IMqttClient> GetClientAsync ()
 		{
 			var binding = new TcpBinding ();
 			var initializer = new MqttClientFactory (IPAddress.Loopback.ToString(), binding);

@@ -6,34 +6,34 @@ using System.Reactive.Linq;
 
 namespace System.Net.Mqtt.Server.Bindings
 {
-    internal class TcpChannelProvider : IMqttChannelProvider
+    internal class TcpChannelListener : IMqttChannelListener
 	{
-		static readonly ITracer tracer = Tracer.Get<TcpChannelProvider> ();
+		static readonly ITracer tracer = Tracer.Get<TcpChannelListener> ();
 
 		readonly MqttConfiguration configuration;
 		readonly Lazy<TcpListener> listener;
 		bool disposed;
 
-		public TcpChannelProvider (MqttConfiguration configuration)
+		public TcpChannelListener (MqttConfiguration configuration)
 		{
 			this.configuration = configuration;
 			listener = new Lazy<TcpListener> (() => {
-				var tcpListener = new TcpListener(IPAddress.Any, this.configuration.Port);
+				var tcpListener = new TcpListener (IPAddress.Any, this.configuration.Port);
 
 				try {
 					tcpListener.Start ();
 				} catch (SocketException socketEx) {
-					tracer.Error (socketEx, Resources.TcpChannelProvider_TcpListener_Failed);
+					tracer.Error (socketEx, Properties.Resources.TcpChannelProvider_TcpListener_Failed);
 
-					throw new MqttException (Resources.TcpChannelProvider_TcpListener_Failed, socketEx);
+					throw new MqttException (Properties.Resources.TcpChannelProvider_TcpListener_Failed, socketEx);
 				}
 
 				return tcpListener;
 			});
 		}
 
-		/// <exception cref="MqttException">ProtocolException</exception>
-		public IObservable<IMqttChannel<byte[]>> GetChannels ()
+        /// <exception cref="MqttException">MqttException</exception>
+        public IObservable<IMqttChannel<byte[]>> AcceptChannelsAsync ()
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
