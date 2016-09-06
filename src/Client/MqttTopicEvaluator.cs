@@ -56,13 +56,13 @@ namespace System.Net.Mqtt
 		public bool Matches (string topicName, string topicFilter)
 		{
 			if (!IsValidTopicName (topicName)) {
-				var message = string.Format(Resources.TopicEvaluator_InvalidTopicName, topicName);
+				var message = string.Format (Properties.Resources.TopicEvaluator_InvalidTopicName, topicName);
 
 				throw new MqttException (message);
 			}
 
 			if (!IsValidTopicFilter (topicFilter)) {
-				var message = string.Format(Resources.TopicEvaluator_InvalidTopicFilter, topicFilter);
+				var message = string.Format (Properties.Resources.TopicEvaluator_InvalidTopicFilter, topicFilter);
 
 				throw new MqttException (message);
 			}

@@ -32,20 +32,20 @@ namespace System.Net.Mqtt.Flows
 			await Task.Run (() => {
 				var disconnect = input as Disconnect;
 
-				tracer.Info (Server.Resources.Tracer_DisconnectFlow_Disconnecting, clientId);
+				tracer.Info (Server.Properties.Resources.DisconnectFlow_Disconnecting, clientId);
 
 				willRepository.Delete (w => w.ClientId == clientId);
 
 				var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 				if (session == null) {
-					throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+					throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 				}
 
 				if (session.Clean) {
 					sessionRepository.Delete (session);
 
-					tracer.Info (Server.Resources.Tracer_Server_DeletedSessionOnDisconnect, clientId);
+					tracer.Info (Server.Properties.Resources.Server_DeletedSessionOnDisconnect, clientId);
 				}
 
 				connectionProvider.RemoveConnection (clientId);

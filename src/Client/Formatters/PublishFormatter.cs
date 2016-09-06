@@ -23,13 +23,13 @@ namespace System.Net.Mqtt.Formatters
 			var packetFlags = bytes.Byte (0).Bits(5, 4);
 
 			if (packetFlags.Bits (6, 2) == 0x03)
-				throw new MqttException (Resources.Formatter_InvalidQualityOfService);
+				throw new MqttException  (Properties.Resources.Formatter_InvalidQualityOfService);
 
 			var qos = (MqttQualityOfService)packetFlags.Bits (6, 2);
 			var duplicated = packetFlags.IsSet (3);
 
 			if (qos == MqttQualityOfService.AtMostOnce && duplicated)
-				throw new MqttException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
+				throw new MqttException  (Properties.Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
 
 			var retainFlag = packetFlags.IsSet (0);
 
@@ -38,7 +38,7 @@ namespace System.Net.Mqtt.Formatters
 			var topic = bytes.GetString (topicStartIndex, out nextIndex);
 
 			if (!topicEvaluator.IsValidTopicName (topic)) {
-				var error = string.Format(Resources.PublishFormatter_InvalidTopicName, topic);
+				var error = string.Format (Properties.Resources.PublishFormatter_InvalidTopicName, topic);
 
 				throw new MqttException (error);
 			}
@@ -84,7 +84,7 @@ namespace System.Net.Mqtt.Formatters
 		byte[] GetFixedHeader (Publish packet, byte[] remainingLength)
 		{
 			if (packet.QualityOfService == MqttQualityOfService.AtMostOnce && packet.Duplicated)
-				throw new MqttException (Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
+				throw new MqttException  (Properties.Resources.PublishFormatter_InvalidDuplicatedWithQoSZero);
 
 			var fixedHeader = new List<byte> ();
 
@@ -109,13 +109,13 @@ namespace System.Net.Mqtt.Formatters
 		byte[] GetVariableHeader (Publish packet)
 		{
 			if (!topicEvaluator.IsValidTopicName (packet.Topic))
-				throw new MqttException (Resources.PublishFormatter_InvalidTopicName);
+				throw new MqttException  (Properties.Resources.PublishFormatter_InvalidTopicName);
 
 			if (packet.PacketId.HasValue && packet.QualityOfService == MqttQualityOfService.AtMostOnce)
-				throw new MqttException (Resources.PublishFormatter_InvalidPacketId);
+				throw new MqttException  (Properties.Resources.PublishFormatter_InvalidPacketId);
 
 			if (!packet.PacketId.HasValue && packet.QualityOfService != MqttQualityOfService.AtMostOnce)
-				throw new MqttException (Resources.PublishFormatter_PacketIdRequired);
+				throw new MqttException  (Properties.Resources.PublishFormatter_PacketIdRequired);
 
 			var variableHeader = new List<byte> ();
 

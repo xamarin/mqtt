@@ -30,7 +30,7 @@ namespace System.Net.Mqtt
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue (packetType, out formatter))
-				throw new MqttException (Resources.PacketManager_PacketUnknown);
+				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var packet = await formatter.FormatAsync (bytes)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -46,7 +46,7 @@ namespace System.Net.Mqtt
 			var formatter = default (IFormatter);
 
 			if (!formatters.TryGetValue (packet.Type, out formatter))
-				throw new MqttException (Resources.PacketManager_PacketUnknown);
+				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
 
 			var bytes = await formatter.FormatAsync (packet)
 				.ConfigureAwait(continueOnCapturedContext: false);

@@ -44,7 +44,7 @@ namespace System.Net.Mqtt.Flows
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {
-				throw new MqttException (string.Format (Resources.SessionRepository_ClientSessionNotFound, clientId));
+				throw new MqttException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 			}
 
 			var returnCodes = new List<SubscribeReturnCode> ();
@@ -52,7 +52,7 @@ namespace System.Net.Mqtt.Flows
 			foreach (var subscription in subscribe.Subscriptions) {
 				try {
 					if (!topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-						tracer.Error (Server.Resources.Tracer_ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
+						tracer.Error (Server.Properties.Resources.ServerSubscribeFlow_InvalidTopicSubscription, subscription.TopicFilter, clientId);
 
 						returnCodes.Add (SubscribeReturnCode.Failure);
 						continue;
@@ -82,7 +82,7 @@ namespace System.Net.Mqtt.Flows
 
 					returnCodes.Add (returnCode);
 				} catch (MqttRepositoryException repoEx) {
-					tracer.Error (repoEx, Server.Resources.Tracer_ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
+					tracer.Error (repoEx, Server.Properties.Resources.ServerSubscribeFlow_ErrorOnSubscription, clientId, subscription.TopicFilter);
 
 					returnCodes.Add (SubscribeReturnCode.Failure);
 				}

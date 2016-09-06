@@ -33,7 +33,7 @@ namespace System.Net.Mqtt.Server
 			var existingConnection = default (IMqttChannel<IPacket>);
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
-				tracer.Warn (Resources.Tracer_ConnectionProvider_ClientIdExists, clientId);
+				tracer.Warn (Properties.Resources.ConnectionProvider_ClientIdExists, clientId);
 
 				RemoveConnection (clientId);
 			}
@@ -47,7 +47,7 @@ namespace System.Net.Mqtt.Server
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
 				if (!existingConnection.IsConnected) {
-					tracer.Warn (Resources.Tracer_ConnectionProvider_ClientDisconnected, clientId);
+					tracer.Warn (Properties.Resources.ConnectionProvider_ClientDisconnected, clientId);
 
 					RemoveConnection (clientId);
 					existingConnection = default (IMqttChannel<IPacket>);
@@ -63,7 +63,7 @@ namespace System.Net.Mqtt.Server
 			var existingConnection = default (IMqttChannel<IPacket>);
 
 			if (connections.TryRemove (clientId, out existingConnection)) {
-				tracer.Info (Resources.Tracer_ConnectionProvider_RemovingClient, clientId);
+				tracer.Info (Properties.Resources.ConnectionProvider_RemovingClient, clientId);
 
 				existingConnection.Dispose ();
 			}

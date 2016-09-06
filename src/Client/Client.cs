@@ -101,7 +101,7 @@ namespace System.Net.Mqtt
 					.Timeout (connectTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_ConnectionDisconnected, credentials.ClientId);
+					var message = string.Format(Properties.Resources.Client_ConnectionDisconnected, credentials.ClientId);
 
 					throw new MqttClientException (message);
 				}
@@ -115,11 +115,11 @@ namespace System.Net.Mqtt
 				ObservePackets ();
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
-				throw new MqttClientException (string.Format (Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
 			} catch (MqttConnectionException connectionEx) {
 				Close (connectionEx);
 
-				var message = string.Format(Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
+				var message = string.Format(Properties.Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
 
 				throw new MqttClientException (message, connectionEx);
 			} catch (MqttClientException clientEx) {
@@ -127,7 +127,7 @@ namespace System.Net.Mqtt
 				throw;
 			} catch (Exception ex) {
 				Close (ex);
-				throw new MqttClientException (string.Format (Resources.Client_ConnectionError, credentials.ClientId), ex);
+				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionError, credentials.ClientId), ex);
 			}
 		}
 
@@ -155,7 +155,7 @@ namespace System.Net.Mqtt
 					.Timeout (subscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_SubscriptionDisconnected, Id, topicFilter);
+					var message = string.Format(Properties.Resources.Client_SubscriptionDisconnected, Id, topicFilter);
 
 					tracer.Error (message);
 
@@ -164,7 +164,7 @@ namespace System.Net.Mqtt
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
-				var message = string.Format (Resources.Client_SubscribeTimeout, Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeTimeout, Id, topicFilter);
 
 				throw new MqttClientException (message, timeEx);
 			} catch (MqttClientException clientEx) {
@@ -173,7 +173,7 @@ namespace System.Net.Mqtt
 			} catch (Exception ex) {
 				Close (ex);
 
-				var message = string.Format (Resources.Client_SubscribeError, Id, topicFilter);
+				var message = string.Format (Properties.Resources.Client_SubscribeError, Id, topicFilter);
 
 				throw new MqttClientException (message, ex);
 			}
@@ -227,7 +227,7 @@ namespace System.Net.Mqtt
 					.Timeout (unsubscribeTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Resources.Client_UnsubscribeDisconnected, Id, string.Join(", ", topics));
+					var message = string.Format(Properties.Resources.Client_UnsubscribeDisconnected, Id, string.Join(", ", topics));
 
 					tracer.Error (message);
 
@@ -236,7 +236,7 @@ namespace System.Net.Mqtt
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
-				var message = string.Format (Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
@@ -247,7 +247,7 @@ namespace System.Net.Mqtt
 			} catch (Exception ex) {
 				Close (ex);
 
-				var message = string.Format (Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
+				var message = string.Format (Properties.Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
 
 				tracer.Error (message);
 
@@ -302,7 +302,7 @@ namespace System.Net.Mqtt
 
 		void Close (DisconnectedReason reason, string message = null)
 		{
-			tracer.Info (Resources.Tracer_Client_Disposing, Id, reason);
+			tracer.Info (Properties.Resources.Client_Disposing, Id, reason);
 
             receiver?.OnCompleted ();
             packetsSubscription?.Dispose();
@@ -324,7 +324,7 @@ namespace System.Net.Mqtt
 				sessionRepository.Delete (session);
 				session = null;
 
-				tracer.Info (Resources.Tracer_Client_CleanedOldSession, clientId);
+				tracer.Info (Properties.Resources.Client_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
@@ -332,7 +332,7 @@ namespace System.Net.Mqtt
 
 				sessionRepository.Create (session);
 
-				tracer.Info (Resources.Tracer_Client_CreatedSession, clientId);
+				tracer.Info (Properties.Resources.Client_CreatedSession, clientId);
 			}
 		}
 
@@ -341,7 +341,7 @@ namespace System.Net.Mqtt
 			var session = sessionRepository.Get (s => s.ClientId == Id);
 
 			if (session == null) {
-				var message = string.Format (Resources.SessionRepository_ClientSessionNotFound, Id);
+				var message = string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, Id);
 
 				tracer.Error (message);
 
@@ -351,7 +351,7 @@ namespace System.Net.Mqtt
 			if (session.Clean) {
 				sessionRepository.Delete (session);
 
-				tracer.Info (Resources.Tracer_Client_DeletedSessionOnDisconnect, Id);
+				tracer.Info (Properties.Resources.Client_DeletedSessionOnDisconnect, Id);
 			}
 		}
 
@@ -366,7 +366,7 @@ namespace System.Net.Mqtt
 		void CheckUnderlyingConnection ()
 		{
 			if (isConnected && !packetChannel.IsConnected) {
-				Close (DisconnectedReason.Error, Resources.Client_UnexpectedChannelDisconnection);
+				Close (DisconnectedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 
@@ -381,12 +381,12 @@ namespace System.Net.Mqtt
 						var message = new MqttApplicationMessage (publish.Topic, publish.Payload);
 
 						receiver.OnNext (message);
-						tracer.Info (Resources.Tracer_NewApplicationMessageReceived, Id, publish.Topic);
+						tracer.Info (Properties.Resources.Client_NewApplicationMessageReceived, Id, publish.Topic);
 					}
 				}, ex => {
 					Close (ex);
 				}, () => {
-					tracer.Warn (Resources.Tracer_Client_PacketsObservableCompleted);
+					tracer.Warn (Properties.Resources.Client_PacketsObservableCompleted);
 					Close (DisconnectedReason.RemoteDisconnected);
 				});
 		}

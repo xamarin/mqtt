@@ -5,7 +5,8 @@
     "Merq.Core": "1.1.0-pre",
     "System.Reactive": "3.0.0",
     "System.Runtime.Serialization.Primitives": "4.1.1",
-    "System.Net.Sockets": "4.1.0"
+    "System.Net.Sockets": "4.1.0",
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1"
   },
   "frameworks": {
     "netstandard1.3": { }

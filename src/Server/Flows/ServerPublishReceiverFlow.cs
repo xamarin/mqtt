@@ -69,7 +69,7 @@ namespace System.Net.Mqtt.Flows
 					Payload = Encoding.UTF8.GetBytes (will.Will.Message)
 				};
 
-				tracer.Info (Server.Resources.Tracer_ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
+				tracer.Info (Server.Properties.Resources.ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
 
 				await DispatchAsync (willPublish, clientId, isWill: true)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -84,7 +84,7 @@ namespace System.Net.Mqtt.Flows
 				.Where (x => topicEvaluator.Matches (publish.Topic, x.TopicFilter));
 
 			if (!subscriptions.Any ()) {
-				tracer.Verbose (Server.Resources.Tracer_ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
+				tracer.Verbose (Server.Properties.Resources.ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
 				eventStream.Push (new Server.MqttUndeliveredMessage { SenderId = clientId, Message = new MqttApplicationMessage (publish.Topic, publish.Payload) });
 			} else {
