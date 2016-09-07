@@ -39,7 +39,7 @@ namespace System.Net.Mqtt.Server
 			flowRunner = TaskRunner.Get ();
 		}
 
-		public IObservable<IPacket> Packets { get { return packets; } }
+		public IObservable<IPacket> PacketStream { get { return packets; } }
 
 		public void Listen ()
 		{
@@ -80,7 +80,8 @@ namespace System.Net.Mqtt.Server
 		{
 			var packetDueTime = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
 
-			return channel.Receiver
+			return channel
+                .ReceiverStream
 				.FirstOrDefaultAsync ()
 				.Timeout (packetDueTime)
 				.Subscribe (async packet => {
@@ -111,7 +112,8 @@ namespace System.Net.Mqtt.Server
 
 		IDisposable ListenNextPackets ()
 		{
-			return channel.Receiver
+			return channel
+                .ReceiverStream
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
@@ -128,28 +130,31 @@ namespace System.Net.Mqtt.Server
 
 		IDisposable ListenCompletionAndErrors ()
 		{
-			return channel.Receiver.Subscribe (_ => { },
-				ex => {
-					NotifyError (ex);
-				}, async () => {
-					tracer.Warn (Properties.Resources.PacketChannelCompleted, clientId);
+			return channel
+                .ReceiverStream
+                .Subscribe (_ => { },
+				    ex => {
+					    NotifyError (ex);
+				    }, async () => {
+					    tracer.Warn (Properties.Resources.PacketChannelCompleted, clientId);
 
-					if (!string.IsNullOrEmpty (clientId)) {
-						RemoveClient ();
+					    if (!string.IsNullOrEmpty (clientId)) {
+						    RemoveClient ();
 
-						var publishFlow = flowProvider.GetFlow<ServerPublishReceiverFlow> ();
+						    var publishFlow = flowProvider.GetFlow<ServerPublishReceiverFlow> ();
 
-						await publishFlow.SendWillAsync (clientId)
-							.ConfigureAwait (continueOnCapturedContext: false);
-					}
+						    await publishFlow.SendWillAsync (clientId)
+							    .ConfigureAwait (continueOnCapturedContext: false);
+					    }
 
-					packets.OnCompleted ();
-				});
+					    packets.OnCompleted ();
+				    }
+                );
 		}
 
 		IDisposable ListenSentPackets ()
 		{
-			return channel.Sender
+			return channel.SenderStream
 				.OfType<ConnectAck> ()
 				.FirstAsync ()
 				.Subscribe (connectAck => {
@@ -184,7 +189,8 @@ namespace System.Net.Mqtt.Server
 		{
 			var tolerance = GetKeepAliveTolerance ();
 
-			var keepAliveSubscription = channel.Receiver
+			var keepAliveSubscription = channel
+                .ReceiverStream
 				.Timeout (tolerance)
 				.Subscribe (_ => { }, ex => {
 					var timeEx = ex as TimeoutException;

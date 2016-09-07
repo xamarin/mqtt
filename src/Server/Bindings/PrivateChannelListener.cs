@@ -14,7 +14,7 @@ namespace System.Net.Mqtt.Server.Bindings
             this.configuration = configuration;
         }
 
-        public IObservable<IMqttChannel<byte[]>> AcceptChannelsAsync ()
+        public IObservable<IMqttChannel<byte[]>> GetChannelStream ()
         {
             return privateStreamListener
                 .Select (stream => new PrivateChannel (stream, EndpointIdentifier.Server, configuration));

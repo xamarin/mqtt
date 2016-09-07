@@ -21,7 +21,7 @@ namespace Tests
 			var receiver = new Subject<byte[]>();
 			var bufferedChannel = new Mock<IMqttChannel<byte[]>> ();
 
-			bufferedChannel.Setup (x => x.Receiver).Returns (receiver);
+			bufferedChannel.Setup (x => x.ReceiverStream).Returns (receiver);
 
 			var topicEvaluator = Mock.Of<IMqttTopicEvaluator> ();
 			var factory = new PacketChannelFactory (topicEvaluator, configuration);
@@ -53,7 +53,7 @@ namespace Tests
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 
-			innerChannel.Setup (x => x.Receiver).Returns (receiver);
+			innerChannel.Setup (x => x.ReceiverStream).Returns (receiver);
 
 			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
 
@@ -68,7 +68,7 @@ namespace Tests
 
 			var receivedPacket = default (IPacket);
 
-			channel.Receiver.Subscribe (packet => {
+			channel.ReceiverStream.Subscribe (packet => {
 				receivedPacket = packet;
 			});
 
@@ -92,7 +92,7 @@ namespace Tests
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 
-			innerChannel.Setup (x => x.Receiver).Returns (receiver);
+			innerChannel.Setup (x => x.ReceiverStream).Returns (receiver);
 
 			var expectedPacket = Activator.CreateInstance (packetType);
 			var manager = new Mock<IPacketManager> ();
@@ -104,7 +104,7 @@ namespace Tests
 
 			var receivedPacket = default (IPacket);
 
-			channel.Receiver.Subscribe (packet => {
+			channel.ReceiverStream.Subscribe (packet => {
 				receivedPacket = packet;
 			});
 
@@ -146,7 +146,7 @@ namespace Tests
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 
-			innerChannel.Setup (x => x.Receiver).Returns (receiver);
+			innerChannel.Setup (x => x.ReceiverStream).Returns (receiver);
 			innerChannel.Setup (x => x.SendAsync (It.IsAny<byte[]> ()))
 				.Returns (Task.Delay (0));
 
@@ -183,7 +183,7 @@ namespace Tests
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 
-			innerChannel.Setup (x => x.Receiver).Returns (receiver);
+			innerChannel.Setup (x => x.ReceiverStream).Returns (receiver);
 			innerChannel.Setup (x => x.SendAsync (It.IsAny<byte[]> ()))
 				.Returns (Task.Delay (0));
 
@@ -210,7 +210,7 @@ namespace Tests
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 
-			innerChannel.Setup (x => x.Receiver).Returns (receiver);
+			innerChannel.Setup (x => x.ReceiverStream).Returns (receiver);
 
 			var manager = new Mock<IPacketManager> ();
 
@@ -222,7 +222,7 @@ namespace Tests
 
 			var errorReceived = default (Exception);
 
-			channel.Receiver.Subscribe (_ => { }, ex => {
+			channel.ReceiverStream.Subscribe (_ => { }, ex => {
 				errorReceived = ex;
 			});
 

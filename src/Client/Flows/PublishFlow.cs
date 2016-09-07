@@ -78,7 +78,8 @@ namespace System.Net.Mqtt.Flows
 					}
 				});
 
-			await channel.Receiver
+			await channel
+                .ReceiverStream
 				.ObserveOn (NewThreadScheduler.Default)
 				.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId);

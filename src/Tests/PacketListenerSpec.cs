@@ -28,8 +28,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
 
@@ -46,7 +46,7 @@ namespace Tests
 			var publishReceived = false;
 			var signal = new ManualResetEventSlim ();
 
-			listener.Packets.Subscribe (p => {
+			listener.PacketStream.Subscribe (p => {
 				if (p is Connect) {
 					connectReceived = true;
 				} else if (p is Publish) {
@@ -77,8 +77,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
@@ -103,8 +103,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
@@ -112,7 +112,7 @@ namespace Tests
 
 			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
-			listener.Packets.Subscribe (_ => { }, ex => {
+			listener.PacketStream.Subscribe (_ => { }, ex => {
 				timeoutSignal.Set ();
 			});
 
@@ -132,8 +132,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
@@ -141,7 +141,7 @@ namespace Tests
 			
 			var timeoutOccured = false;
 			
-			listener.Packets.Subscribe (_ => { }, ex => {
+			listener.PacketStream.Subscribe (_ => { }, ex => {
 				timeoutOccured = true;
 			});
 
@@ -163,8 +163,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
@@ -172,7 +172,7 @@ namespace Tests
 			
 			var errorOccured = false;
 			
-			listener.Packets.Subscribe (_ => { }, ex => {
+			listener.PacketStream.Subscribe (_ => { }, ex => {
 				errorOccured = true;
 			});
 
@@ -193,8 +193,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
 
@@ -202,7 +202,7 @@ namespace Tests
 			
 			var errorSignal = new ManualResetEventSlim();
 			
-			listener.Packets.Subscribe (_ => { }, ex => {
+			listener.PacketStream.Subscribe (_ => { }, ex => {
 				errorSignal.Set ();
 			});
 
@@ -232,8 +232,8 @@ namespace Tests
 			var sender = new Subject<IPacket> ();
 			var packetChannelMock = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannelMock.Setup (c => c.Receiver).Returns (receiver);
-			packetChannelMock.Setup (c => c.Sender).Returns (sender);
+			packetChannelMock.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannelMock.Setup (c => c.SenderStream).Returns (sender);
 
 			var packetChannel = packetChannelMock.Object;
 
@@ -243,7 +243,7 @@ namespace Tests
 
 			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
-			listener.Packets.Subscribe (_ => { }, ex => {
+			listener.PacketStream.Subscribe (_ => { }, ex => {
 				timeoutSignal.Set ();
 			});
 
@@ -276,8 +276,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
 
@@ -285,7 +285,7 @@ namespace Tests
 			
 			var timeoutOccured = false;
 			
-			listener.Packets.Subscribe (_ => { }, ex => {
+			listener.PacketStream.Subscribe (_ => { }, ex => {
 				timeoutOccured = true;
 			});
 
@@ -314,8 +314,8 @@ namespace Tests
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			packetChannel.Setup (c => c.Receiver).Returns (receiver);
-			packetChannel.Setup (c => c.Sender).Returns (new Subject<IPacket> ());
+			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
+			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
 			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
 
@@ -323,7 +323,7 @@ namespace Tests
 
 			var timeoutSignal = new ManualResetEventSlim (initialState: false);
 			
-			listener.Packets.Subscribe (_ => { }, ex => {
+			listener.PacketStream.Subscribe (_ => { }, ex => {
 				timeoutSignal.Set ();
 			});
 

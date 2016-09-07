@@ -26,14 +26,14 @@ namespace Tests
 
             var clientReceived = 0;
             var clientReceiver = stream
-                .ReceiveAsync (EndpointIdentifier.Client)
+                .Receive (EndpointIdentifier.Client)
                 .Subscribe (payload => {
                     clientReceived++;
                 });
 
             var serverReceived = 0;
             var serverReceiver = stream
-                .ReceiveAsync (EndpointIdentifier.Server)
+                .Receive (EndpointIdentifier.Server)
                 .Subscribe (payload => {
                     serverReceived++;
                 });
@@ -59,7 +59,7 @@ namespace Tests
 
             var serverReceived = 0;
             var serverReceiver = stream
-                .ReceiveAsync (EndpointIdentifier.Server)
+                .Receive (EndpointIdentifier.Server)
                 .Subscribe (payload => {
                     serverReceived++;
                 });

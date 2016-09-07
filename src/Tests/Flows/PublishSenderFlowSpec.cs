@@ -45,8 +45,8 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
-			channel.Setup (c => c.Sender).Returns (sender);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
+			channel.Setup (c => c.SenderStream).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
@@ -105,8 +105,8 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
-			channel.Setup (c => c.Sender).Returns (sender);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
+			channel.Setup (c => c.SenderStream).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
@@ -161,8 +161,8 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
-			channel.Setup (c => c.Sender).Returns (sender);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
+			channel.Setup (c => c.SenderStream).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
@@ -210,8 +210,8 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
-			channel.Setup (c => c.Sender).Returns (sender);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
+			channel.Setup (c => c.SenderStream).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));

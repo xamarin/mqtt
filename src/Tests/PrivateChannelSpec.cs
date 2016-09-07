@@ -16,8 +16,8 @@ namespace Tests
             var channel = new PrivateChannel (stream, EndpointIdentifier.Client, configuration);
 
             Assert.True (channel.IsConnected);
-            Assert.NotNull (channel.Receiver);
-            Assert.NotNull (channel.Sender);
+            Assert.NotNull (channel.ReceiverStream);
+            Assert.NotNull (channel.SenderStream);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Tests
             var packetsReceived = 0;
 
             stream
-                .ReceiveAsync (EndpointIdentifier.Client)
+                .Receive (EndpointIdentifier.Client)
                 .Subscribe(packet => {
                     packetsReceived++;
                 });
@@ -68,7 +68,7 @@ namespace Tests
 
             var packetsReceived = 0;
 
-            channel.Receiver.Subscribe (packet => {
+            channel.ReceiverStream.Subscribe (packet => {
                 packetsReceived++;
             });
 

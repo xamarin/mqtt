@@ -66,7 +66,7 @@ namespace System.Net.Mqtt
 			}
 		}
 
-		public IObservable<MqttApplicationMessage> Receiver { get { return receiver; } }
+		public IObservable<MqttApplicationMessage> ReceiverStream { get { return receiver; } }
 
         internal IMqttChannel<IPacket> Channel {  get { return packetChannel; } }
 
@@ -98,7 +98,8 @@ namespace System.Net.Mqtt
 				await SendPacketAsync (connect)
 					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await packetListener.Packets
+				ack = await packetListener
+                    .PacketStream
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<ConnectAck> ()
 					.FirstOrDefaultAsync ()
@@ -152,7 +153,8 @@ namespace System.Net.Mqtt
 				await SendPacketAsync (subscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await packetListener.Packets
+				ack = await packetListener
+                    .PacketStream
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<SubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
@@ -224,7 +226,8 @@ namespace System.Net.Mqtt
 				await SendPacketAsync (unsubscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await packetListener.Packets
+				ack = await packetListener
+                    .PacketStream
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<UnsubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
@@ -285,7 +288,7 @@ namespace System.Net.Mqtt
                         .ConfigureAwait (continueOnCapturedContext: false);
 
                     await packetListener
-                        .Packets
+                        .PacketStream
                         .LastOrDefaultAsync ();
 
                     Close (DisconnectedReason.Disposed);
@@ -377,7 +380,7 @@ namespace System.Net.Mqtt
 		void ObservePackets ()
 		{
 			packetsSubscription = packetListener
-                .Packets
+                .PacketStream
 				.ObserveOn (NewThreadScheduler.Default)
 				.Subscribe (packet => {
 					if (packet.Type == MqttPacketType.Publish) {

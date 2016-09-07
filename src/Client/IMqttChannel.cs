@@ -6,9 +6,9 @@ namespace System.Net.Mqtt
 	{
 		bool IsConnected { get; }
 
-		IObservable<T> Receiver { get; }
+		IObservable<T> ReceiverStream { get; }
 
-		IObservable<T> Sender { get; }
+		IObservable<T> SenderStream { get; }
 
 		/// <exception cref="ProtocolException">ProtocolException</exception>
 		Task SendAsync (T message);

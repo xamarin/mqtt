@@ -31,9 +31,9 @@ namespace System.Net.Mqtt.Server.Bindings
 
         public bool IsConnected => !stream.IsDisposed;
 
-        public IObservable<byte[]> Receiver => receiver;
+        public IObservable<byte[]> ReceiverStream => receiver;
 
-        public IObservable<byte[]> Sender => sender;
+        public IObservable<byte[]> SenderStream => sender;
 
         public Task SendAsync (byte[] message)
         {
@@ -86,7 +86,7 @@ namespace System.Net.Mqtt.Server.Bindings
                 EndpointIdentifier.Client;
 
             return stream
-                .ReceiveAsync (senderIdentifier)
+                .Receive (senderIdentifier)
                 .ObserveOn (NewThreadScheduler.Default)
                 .Subscribe (packet => {
                     tracer.Verbose(ClientProperties.Resources.MqttChannel_ReceivedPacket, packet.Length);

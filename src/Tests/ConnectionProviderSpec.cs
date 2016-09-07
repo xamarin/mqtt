@@ -89,13 +89,13 @@ namespace Tests
 			var receiver1 = new Subject<IPacket> ();
 			var channel1 = new Mock<IMqttChannel<IPacket>> ();
 
-			channel1.Setup (c => c.Receiver).Returns (receiver1);
+			channel1.Setup (c => c.ReceiverStream).Returns (receiver1);
 			channel1.Setup (c => c.IsConnected).Returns (true);
 
 			var receiver2 = new Subject<IPacket> ();
 			var channel2 = new Mock<IMqttChannel<IPacket>> ();
 
-			channel2.Setup (c => c.Receiver).Returns (receiver2);
+			channel2.Setup (c => c.ReceiverStream).Returns (receiver2);
 			channel2.Setup (c => c.IsConnected).Returns (true);
 
 			var clientId = Guid.NewGuid().ToString();

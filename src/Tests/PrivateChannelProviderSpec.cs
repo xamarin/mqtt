@@ -19,7 +19,7 @@ namespace Tests
             var channelsCreated = 0;
 
             provider
-                .AcceptChannelsAsync ()
+                .GetChannelStream ()
                 .Subscribe (channel => {
                     channelsCreated++;
                 });
@@ -43,7 +43,7 @@ namespace Tests
             var channelsCreated = 0;
 
             provider
-                .AcceptChannelsAsync ()
+                .GetChannelStream ()
                 .Subscribe (channel => {
                     channelsCreated++;
                 });

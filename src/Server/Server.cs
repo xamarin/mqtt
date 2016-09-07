@@ -59,17 +59,18 @@ namespace System.Net.Mqtt.Server
             if (disposed)
                 throw new ObjectDisposedException (nameof (Server));
 
-            var channelObservables = binaryChannelListeners.Select (listener => listener.AcceptChannelsAsync ());
+            var channelStreams = binaryChannelListeners.Select (listener => listener.GetChannelStream ());
 
             channelSubscription = Observable
-                .Merge (channelObservables)
+                .Merge (channelStreams)
                 .Subscribe (
                     binaryChannel => ProcessChannel (binaryChannel),
                     ex => { tracer.Error (ex); },
                     () => { }
                 );
 
-			streamSubscription = undeliveredMessagesListener.Subscribe (e => {
+			streamSubscription = undeliveredMessagesListener
+                .Subscribe (e => {
 				    MessageUndelivered (this, e);
 			    });
 
@@ -152,15 +153,18 @@ namespace System.Net.Mqtt.Server
 			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, configuration);
 
 			packetListener.Listen ();
-			packetListener.Packets.Subscribe (_ => { }, ex => {
-				tracer.Error (ex, Properties.Resources.Server_PacketsObservableError);
-				packetChannel.Dispose ();
-				packetListener.Dispose ();
-			}, () => {
-				tracer.Warn (Properties.Resources.Server_PacketsObservableCompleted);
-				packetChannel.Dispose ();
-				packetListener.Dispose ();
-			});
+			packetListener
+                .PacketStream
+                .Subscribe (_ => { }, ex => {
+				        tracer.Error (ex, Properties.Resources.Server_PacketsObservableError);
+				        packetChannel.Dispose ();
+				        packetListener.Dispose ();
+			        }, () => {
+				        tracer.Warn (Properties.Resources.Server_PacketsObservableCompleted);
+				        packetChannel.Dispose ();
+				        packetListener.Dispose ();
+			        }
+                );
 
 			channels.Add (packetChannel);
 		}

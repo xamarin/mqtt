@@ -27,7 +27,8 @@ namespace System.Net.Mqtt
 
 			receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
 			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			subscription = innerChannel.Receiver
+			subscription = innerChannel
+                .ReceiverStream
 				.Subscribe (async bytes => {
 					try {
 						var packet = await this.manager.GetPacketAsync (bytes)
@@ -42,9 +43,9 @@ namespace System.Net.Mqtt
 
 		public bool IsConnected { get { return innerChannel != null && innerChannel.IsConnected; } }
 
-		public IObservable<IPacket> Receiver { get { return receiver; } }
+		public IObservable<IPacket> ReceiverStream { get { return receiver; } }
 
-		public IObservable<IPacket> Sender { get { return sender; } }
+		public IObservable<IPacket> SenderStream { get { return sender; } }
 
 		public async Task SendAsync (IPacket packet)
 		{

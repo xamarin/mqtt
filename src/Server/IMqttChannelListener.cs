@@ -2,6 +2,6 @@
 {
 	public interface IMqttChannelListener : IDisposable
 	{
-		IObservable<IMqttChannel<byte[]>> AcceptChannelsAsync ();
+		IObservable<IMqttChannel<byte[]>> GetChannelStream ();
 	}
 }

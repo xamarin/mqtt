@@ -11,7 +11,7 @@ namespace System.Net.Mqtt
 
 		bool IsConnected { get; }
 
-		IObservable<MqttApplicationMessage> Receiver { get; }
+		IObservable<MqttApplicationMessage> ReceiverStream { get; }
 
 		/// <exception cref="MqttClientException">ClientException</exception>
 		Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);

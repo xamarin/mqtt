@@ -33,7 +33,7 @@ namespace System.Net.Mqtt.Server.Bindings
 		}
 
         /// <exception cref="MqttException">MqttException</exception>
-        public IObservable<IMqttChannel<byte[]>> AcceptChannelsAsync ()
+        public IObservable<IMqttChannel<byte[]>> GetChannelStream ()
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);

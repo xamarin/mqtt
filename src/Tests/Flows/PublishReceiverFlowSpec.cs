@@ -72,12 +72,12 @@ namespace Tests.Flows
 			var client1Receiver = new Subject<IPacket> ();
 			var client1Channel = new Mock<IMqttChannel<IPacket>> ();
 
-			client1Channel.Setup (c => c.Receiver).Returns (client1Receiver);
+			client1Channel.Setup (c => c.ReceiverStream).Returns (client1Receiver);
 
 			var client2Receiver = new Subject<IPacket> ();
 			var client2Channel = new Mock<IMqttChannel<IPacket>> ();
 
-			client2Channel.Setup (c => c.Receiver).Returns (client2Receiver);
+			client2Channel.Setup (c => c.ReceiverStream).Returns (client2Receiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns (sessions.AsQueryable());
@@ -96,7 +96,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -154,7 +154,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -172,7 +172,7 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -230,7 +230,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -248,8 +248,8 @@ namespace Tests.Flows
 			var channelMock = new Mock<IMqttChannel<IPacket>> ();
 
 			channelMock.Setup (c => c.IsConnected).Returns (true);
-			channelMock.Setup (c => c.Receiver).Returns (receiver);
-			channelMock.Setup (c => c.Sender).Returns (sender);
+			channelMock.Setup (c => c.ReceiverStream).Returns (receiver);
+			channelMock.Setup (c => c.SenderStream).Returns (sender);
 			channelMock.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
@@ -323,7 +323,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -338,8 +338,8 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
-			channel.Setup (c => c.Sender).Returns (sender);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
+			channel.Setup (c => c.SenderStream).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
@@ -404,7 +404,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
 				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
@@ -456,7 +456,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
 				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
@@ -509,7 +509,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
@@ -527,7 +527,7 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -576,7 +576,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
 				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
@@ -634,8 +634,8 @@ namespace Tests.Flows
 				clientReceiver.OnNext (new PublishAck (p.PacketId.Value));
 			});
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
-			clientChannel.Setup (c => c.Sender).Returns (clientSender);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
+			clientChannel.Setup (c => c.SenderStream).Returns (clientSender);
 			clientChannel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => clientSender.OnNext (packet))
 				.Returns(Task.Delay(0));
@@ -654,7 +654,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -714,8 +714,8 @@ namespace Tests.Flows
 				clientReceiver.OnNext (new PublishReceived (p.PacketId.Value));
 			});
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
-			clientChannel.Setup (c => c.Sender).Returns (clientSender);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
+			clientChannel.Setup (c => c.SenderStream).Returns (clientSender);
 			clientChannel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => clientSender.OnNext (packet))
 				.Returns(Task.Delay(0));
@@ -734,7 +734,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);

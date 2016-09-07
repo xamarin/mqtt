@@ -21,7 +21,7 @@ namespace System.Net.Mqtt.Server.Bindings
 
         public bool IsDisposed => payloadSequence.IsDisposed;
 
-        public IObservable<byte[]> ReceiveAsync (EndpointIdentifier identifier)
+        public IObservable<byte[]> Receive (EndpointIdentifier identifier)
         {
             if (disposed) {
                 throw new ObjectDisposedException (nameof (PrivateStream));

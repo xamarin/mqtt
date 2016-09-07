@@ -115,7 +115,7 @@ namespace IntegrationTests
 
             var messagesReceived = 0;
 
-            fooClient.Receiver.Subscribe (message => {
+            fooClient.ReceiverStream.Subscribe (message => {
                 if (message.Topic == fooTopic) {
                     messagesReceived++;
                 }
@@ -153,13 +153,13 @@ namespace IntegrationTests
             var fooMessagesReceived = 0;
             var barMessagesReceived = 0;
 
-            inProcessClient.Receiver.Subscribe (message => {
+            inProcessClient.ReceiverStream.Subscribe (message => {
                 if (message.Topic == fooTopic)
                 {
                     fooMessagesReceived++;
                 }
             });
-            remoteClient.Receiver.Subscribe (message => {
+            remoteClient.ReceiverStream.Subscribe (message => {
                 if (message.Topic == barTopic)
                 {
                     barMessagesReceived++;

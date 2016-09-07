@@ -51,9 +51,9 @@ namespace System.Net.Mqtt.Bindings
 			}
 		}
 
-		public IObservable<byte[]> Receiver { get { return receiver; } }
+		public IObservable<byte[]> ReceiverStream { get { return receiver; } }
 
-		public IObservable<byte[]> Sender { get { return sender; } }
+		public IObservable<byte[]> SenderStream { get { return sender; } }
 
 		public async Task SendAsync (byte[] message)
 		{
