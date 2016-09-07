@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace System.Net.Mqtt
 {
-	internal class PacketBuffer : IPacketBuffer
+    internal class PacketBuffer : IPacketBuffer
 	{
 		bool packetReadStarted;
 		bool packetRemainingLengthReadCompleted;
@@ -20,7 +20,7 @@ namespace System.Net.Mqtt
 			pendingBuffer = new List<byte> ();
 		}
 
-		public bool TryGetPackets (byte[] sequence, out IEnumerable<byte[]> packets)
+		public bool TryGetPackets (IEnumerable<byte> sequence, out IEnumerable<byte[]> packets)
 		{
 			var result =  new List<byte[]>();
 
@@ -40,7 +40,7 @@ namespace System.Net.Mqtt
 			return result.Any ();
 		}
 
-		void Buffer (byte[] sequence)
+		void Buffer (IEnumerable<byte> sequence)
 		{
 			foreach (var @byte in sequence) {
 				Buffer (@byte);
