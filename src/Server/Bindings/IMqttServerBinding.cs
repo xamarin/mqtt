@@ -1,6 +1,4 @@
-﻿using System.Net.Mqtt.Bindings;
-
-namespace System.Net.Mqtt.Server.Bindings
+﻿namespace System.Net.Mqtt.Bindings
 {
     public interface IMqttServerBinding : IMqttBinding
     {

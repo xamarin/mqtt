@@ -1,18 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Mqtt.Bindings;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server.Bindings;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using ServerProperties = System.Net.Mqtt.Server.Properties;
 
-namespace System.Net.Mqtt.Server
+namespace System.Net.Mqtt
 {
-    internal class Server : IMqttServer
+    internal class MqttServer : IMqttServer
 	{
-        static readonly ITracer tracer = Tracer.Get<Server>();
+        static readonly ITracer tracer = Tracer.Get<MqttServer>();
 
         bool started;
         bool disposed;
@@ -28,7 +29,7 @@ namespace System.Net.Mqtt.Server
         readonly ISubject<PrivateStream> privateStreamListener;
         readonly IList<IMqttChannel<IPacket>> channels = new List<IMqttChannel<IPacket>>();
 
-        internal Server (IMqttChannelListener binaryChannelListener,
+        internal MqttServer (IMqttChannelListener binaryChannelListener,
             IPacketChannelFactory channelFactory,
             IProtocolFlowProvider flowProvider,
             IConnectionProvider connectionProvider,
@@ -83,7 +84,7 @@ namespace System.Net.Mqtt.Server
                 throw new ObjectDisposedException (nameof (Server));
 
             if (!started)
-                throw new InvalidOperationException (Properties.Resources.Server_NotStartedError);
+                throw new InvalidOperationException (ServerProperties.Resources.Server_NotStartedError);
 
             var binding = new PrivateBinding (privateStreamListener, EndpointIdentifier.Client);
             var factory = new MqttClientFactory (IPAddress.Loopback.ToString (), binding);
@@ -147,7 +148,7 @@ namespace System.Net.Mqtt.Server
 
 		void ProcessChannel (IMqttChannel<byte[]> binaryChannel)
 		{
-			tracer.Verbose (Properties.Resources.Server_NewSocketAccepted);
+			tracer.Verbose (ServerProperties.Resources.Server_NewSocketAccepted);
 
 			var packetChannel = channelFactory.Create (binaryChannel);
 			var packetListener = new ServerPacketListener (packetChannel, connectionProvider, flowProvider, configuration);
@@ -156,11 +157,11 @@ namespace System.Net.Mqtt.Server
 			packetListener
                 .PacketStream
                 .Subscribe (_ => { }, ex => {
-				        tracer.Error (ex, Properties.Resources.Server_PacketsObservableError);
+				        tracer.Error (ex, ServerProperties.Resources.Server_PacketsObservableError);
 				        packetChannel.Dispose ();
 				        packetListener.Dispose ();
 			        }, () => {
-				        tracer.Warn (Properties.Resources.Server_PacketsObservableCompleted);
+				        tracer.Warn (ServerProperties.Resources.Server_PacketsObservableCompleted);
 				        packetChannel.Dispose ();
 				        packetListener.Dispose ();
 			        }

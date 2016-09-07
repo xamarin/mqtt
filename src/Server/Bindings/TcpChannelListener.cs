@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics;
-using System.Net.Mqtt.Bindings;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 
-namespace System.Net.Mqtt.Server.Bindings
+namespace System.Net.Mqtt.Bindings
 {
     internal class TcpChannelListener : IMqttChannelListener
 	{

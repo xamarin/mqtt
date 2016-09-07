@@ -1,6 +1,6 @@
 ﻿using Moq;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Server.Bindings;
+using System.Net.Mqtt.Bindings;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Xunit;

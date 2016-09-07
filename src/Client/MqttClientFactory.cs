@@ -39,7 +39,7 @@ namespace System.Net.Mqtt
                     .CreateAsync ()
                     .ConfigureAwait (continueOnCapturedContext: false);
 
-				return new Client (packetChannel, flowProvider, repositoryProvider, packetIdProvider, configuration);
+				return new MqttClient (packetChannel, flowProvider, repositoryProvider, packetIdProvider, configuration);
 			} catch (Exception ex) {
 				tracer.Error (ex, Properties.Resources.Client_InitializeError);
 

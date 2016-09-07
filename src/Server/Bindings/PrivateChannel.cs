@@ -6,7 +6,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using ClientProperties = System.Net.Mqtt.Properties;
 
-namespace System.Net.Mqtt.Server.Bindings
+namespace System.Net.Mqtt.Bindings
 {
     internal class PrivateChannel : IMqttChannel<byte[]>
     {

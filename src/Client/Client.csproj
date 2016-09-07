@@ -12,7 +12,7 @@
   <ItemGroup>
     <Compile Include="MqttApplicationMessage.cs" />
     <Compile Include="ByteExtensions.cs" />
-    <Compile Include="Client.cs" />
+    <Compile Include="MqttClient.cs" />
     <Compile Include="MqttClientCredentials.cs" />
     <Compile Include="Exceptions\MqttClientException.cs" />
     <Compile Include="MqttClientFactory.cs" />

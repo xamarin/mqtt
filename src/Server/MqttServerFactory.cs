@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
+using System.Net.Mqtt.Bindings;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
-using System.Net.Mqtt.Server.Bindings;
-using System.Net.Mqtt.Server.Exceptions;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using ServerProperties = System.Net.Mqtt.Server.Properties;
 
-namespace System.Net.Mqtt.Server
+namespace System.Net.Mqtt
 {
     public class MqttServerFactory : IMqttEndpointFactory<IMqttServer>
     {
@@ -16,7 +17,7 @@ namespace System.Net.Mqtt.Server
         readonly IMqttAuthenticationProvider authenticationProvider;
 
         public MqttServerFactory (IMqttAuthenticationProvider authenticationProvider = null)
-            : this (new TcpBinding (), authenticationProvider)
+            : this (new ServerTcpBinding (), authenticationProvider)
         {
         }
 
@@ -40,12 +41,12 @@ namespace System.Net.Mqtt.Server
                 var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, connectionProvider, topicEvaluator,
                     repositoryProvider, packetIdProvider, undeliveredMessagesListener, configuration);
 
-                return Task.FromResult<IMqttServer> (new Server (channelProvider, channelFactory,
+                return Task.FromResult<IMqttServer> (new MqttServer (channelProvider, channelFactory,
                     flowProvider, connectionProvider, undeliveredMessagesListener, configuration));
             } catch (Exception ex) {
-                tracer.Error (ex, Properties.Resources.Server_InitializeError);
+                tracer.Error (ex, ServerProperties.Resources.Server_InitializeError);
 
-                throw new MqttServerException (Properties.Resources.Server_InitializeError, ex);
+                throw new MqttServerException (ServerProperties.Resources.Server_InitializeError, ex);
             }
         }
     }

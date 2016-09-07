@@ -10,11 +10,11 @@ namespace System.Net.Mqtt.Flows
 	{
 		static readonly ITracer tracer = Tracer.Get<DisconnectFlow> ();
 
-		readonly Server.IConnectionProvider connectionProvider;
+		readonly IConnectionProvider connectionProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 
-		public DisconnectFlow (Server.IConnectionProvider connectionProvider,
+		public DisconnectFlow (IConnectionProvider connectionProvider,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository)
 		{

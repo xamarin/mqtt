@@ -1,7 +1,6 @@
-﻿using System.Net.Mqtt.Bindings;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 
-namespace System.Net.Mqtt.Server.Bindings
+namespace System.Net.Mqtt.Bindings
 {
     internal class PrivateBinding : IMqttBinding
     {

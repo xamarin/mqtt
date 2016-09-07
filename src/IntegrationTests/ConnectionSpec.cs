@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
@@ -266,7 +265,7 @@ namespace IntegrationTests
 			});
 
             //Forces socket disconnection without using protocol Disconnect (Disconnect or Dispose Client method)
-            (client1 as Client).Channel.Dispose ();
+            (client1 as MqttClient).Channel.Dispose ();
 
 			var willReceived = willReceivedSignal.Wait (2000);
 

@@ -11,7 +11,6 @@ using System.Net.Mqtt.Storage;
 using Moq;
 using Xunit;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Server;
 
 namespace Tests.Flows
 {

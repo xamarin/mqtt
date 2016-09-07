@@ -7,7 +7,6 @@ using System.Net.Mqtt;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;

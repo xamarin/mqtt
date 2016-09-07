@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt;
 
 namespace IntegrationTests

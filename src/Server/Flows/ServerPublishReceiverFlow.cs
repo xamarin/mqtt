@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Subjects;
 using System.Text;
@@ -13,14 +12,14 @@ namespace System.Net.Mqtt.Flows
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
 
-		readonly Server.IConnectionProvider connectionProvider;
+		readonly IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly ISubject<MqttUndeliveredMessage> undeliveredMessagesListener;
 
 		public ServerPublishReceiverFlow (IMqttTopicEvaluator topicEvaluator,
-            Server.IConnectionProvider connectionProvider,
+            IConnectionProvider connectionProvider,
 			IPublishSenderFlow senderFlow,
 			IRepository<RetainedMessage> retainedRepository,
 			IRepository<ClientSession> sessionRepository,

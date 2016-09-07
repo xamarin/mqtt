@@ -1,7 +1,7 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-namespace System.Net.Mqtt.Server.Bindings
+namespace System.Net.Mqtt.Bindings
 {
     internal enum EndpointIdentifier
     {

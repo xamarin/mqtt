@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Mqtt.Packets;
+using ServerProperties = System.Net.Mqtt.Server.Properties;
 
-namespace System.Net.Mqtt.Server
+namespace System.Net.Mqtt
 {
     internal class ConnectionProvider : IConnectionProvider
 	{
@@ -33,7 +34,7 @@ namespace System.Net.Mqtt.Server
 			var existingConnection = default (IMqttChannel<IPacket>);
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
-				tracer.Warn (Properties.Resources.ConnectionProvider_ClientIdExists, clientId);
+				tracer.Warn (ServerProperties.Resources.ConnectionProvider_ClientIdExists, clientId);
 
 				RemoveConnection (clientId);
 			}
@@ -47,7 +48,7 @@ namespace System.Net.Mqtt.Server
 
 			if (connections.TryGetValue (clientId, out existingConnection)) {
 				if (!existingConnection.IsConnected) {
-					tracer.Warn (Properties.Resources.ConnectionProvider_ClientDisconnected, clientId);
+					tracer.Warn (ServerProperties.Resources.ConnectionProvider_ClientDisconnected, clientId);
 
 					RemoveConnection (clientId);
 					existingConnection = default (IMqttChannel<IPacket>);
@@ -63,7 +64,7 @@ namespace System.Net.Mqtt.Server
 			var existingConnection = default (IMqttChannel<IPacket>);
 
 			if (connections.TryRemove (clientId, out existingConnection)) {
-				tracer.Info (Properties.Resources.ConnectionProvider_RemovingClient, clientId);
+				tracer.Info (ServerProperties.Resources.ConnectionProvider_RemovingClient, clientId);
 
 				existingConnection.Dispose ();
 			}

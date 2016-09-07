@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Bindings;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Server.Bindings;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Xunit;
@@ -32,7 +31,7 @@ namespace Tests
 				BufferSize = 131072,
 				Port = MqttProtocol.DefaultNonSecurePort
 			};
-			var binding = new TcpBinding ();
+			var binding = new ServerTcpBinding ();
 			var initializer = new MqttServerFactory (binding);
 			var server = await initializer.CreateAsync (configuration);
 

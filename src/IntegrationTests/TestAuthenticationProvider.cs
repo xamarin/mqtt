@@ -1,4 +1,4 @@
-﻿using System.Net.Mqtt.Server;
+﻿using System.Net.Mqtt;
 
 namespace IntegrationTests
 {

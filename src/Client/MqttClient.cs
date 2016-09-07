@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-    internal class Client : IMqttClient
+    internal class MqttClient : IMqttClient
 	{
-        static readonly ITracer tracer = Tracer.Get<Client> ();
+        static readonly ITracer tracer = Tracer.Get<MqttClient> ();
 
 		bool disposed;
 		bool isConnected;
@@ -28,7 +28,7 @@ namespace System.Net.Mqtt
 		readonly TaskRunner clientSender;
 		readonly IPacketListener packetListener;
 
-		internal Client (IMqttChannel<IPacket> packetChannel,
+		internal MqttClient (IMqttChannel<IPacket> packetChannel,
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,

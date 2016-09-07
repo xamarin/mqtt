@@ -1,8 +1,6 @@
-﻿using MqttClient = System.Net.Mqtt.Bindings;
-
-namespace System.Net.Mqtt.Server.Bindings
+﻿namespace System.Net.Mqtt.Bindings
 {
-    public class TcpBinding : MqttClient.TcpBinding, IMqttServerBinding
+    public class ServerTcpBinding : TcpBinding, IMqttServerBinding
     {
         public IMqttChannelListener GetChannelListener (MqttConfiguration configuration)
         {

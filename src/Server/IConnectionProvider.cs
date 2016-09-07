@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Mqtt.Packets;
 
-namespace System.Net.Mqtt.Server
+namespace System.Net.Mqtt
 {
 	internal interface IConnectionProvider
 	{

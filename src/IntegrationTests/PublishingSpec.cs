@@ -7,7 +7,6 @@ using IntegrationTests.Messages;
 using Xunit;
 using System.Text;
 using System.Collections.Generic;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt;
 
 namespace IntegrationTests

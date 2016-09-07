@@ -1,7 +1,7 @@
 ﻿using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
-namespace System.Net.Mqtt.Server.Bindings
+namespace System.Net.Mqtt.Bindings
 {
     internal class PrivateChannelFactory : IMqttChannelFactory
     {

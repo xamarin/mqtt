@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace System.Net.Mqtt.Server
+namespace System.Net.Mqtt
 {
     public interface IMqttServer : IDisposable
     {

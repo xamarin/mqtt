@@ -1,4 +1,4 @@
-﻿namespace System.Net.Mqtt.Server
+﻿namespace System.Net.Mqtt
 {
 	public interface IMqttChannelListener : IDisposable
 	{

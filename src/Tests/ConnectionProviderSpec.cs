@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server;
 using System.Reactive.Subjects;
 using Xunit;
 
