@@ -1,5 +1,4 @@
-﻿using Merq;
-using Moq;
+﻿using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,6 @@ using System.Net.Mqtt;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -41,13 +39,13 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
 			var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object,
 				publishSenderFlow.Object, retainedRepository.Object, sessionRepository.Object, willRepository.Object, 
-				packetIdProvider, eventStream, configuration);
+				packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId1 = Guid.NewGuid().ToString();
 			var subscribedClientId2 = Guid.NewGuid().ToString();
@@ -73,12 +71,12 @@ namespace Tests.Flows
 			var client1Receiver = new Subject<IPacket> ();
 			var client1Channel = new Mock<IMqttChannel<IPacket>> ();
 
-			client1Channel.Setup (c => c.Receiver).Returns (client1Receiver);
+			client1Channel.Setup (c => c.ReceiverStream).Returns (client1Receiver);
 
 			var client2Receiver = new Subject<IPacket> ();
 			var client2Channel = new Mock<IMqttChannel<IPacket>> ();
 
-			client2Channel.Setup (c => c.Receiver).Returns (client2Receiver);
+			client2Channel.Setup (c => c.ReceiverStream).Returns (client2Receiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns (sessions.AsQueryable());
@@ -97,7 +95,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -134,13 +132,13 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
 				retainedRepository.Object, sessionRepository.Object, willRepository.Object,
-				packetIdProvider, eventStream, configuration);
+				packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -155,7 +153,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -173,7 +171,7 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -188,7 +186,7 @@ namespace Tests.Flows
 		}
 
 		[Fact]
-		public void when_sending_publish_with_qos2_then_publish_is_sent_to_subscribers_and_publish_received_is_sent()
+		public async Task when_sending_publish_with_qos2_then_publish_is_sent_to_subscribers_and_publish_received_is_sent()
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
@@ -211,12 +209,12 @@ namespace Tests.Flows
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -231,7 +229,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -249,8 +247,8 @@ namespace Tests.Flows
 			var channelMock = new Mock<IMqttChannel<IPacket>> ();
 
 			channelMock.Setup (c => c.IsConnected).Returns (true);
-			channelMock.Setup (c => c.Receiver).Returns (receiver);
-			channelMock.Setup (c => c.Sender).Returns (sender);
+			channelMock.Setup (c => c.ReceiverStream).Returns (receiver);
+			channelMock.Setup (c => c.SenderStream).Returns (sender);
 			channelMock.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
@@ -270,7 +268,7 @@ namespace Tests.Flows
 
 			receiver.OnNext (new PublishRelease (packetId.Value));
 
-			Thread.Sleep (1000);
+            await Task.Delay (TimeSpan.FromMilliseconds (1000));
 
 			Assert.True (ackSent);
 			publishSenderFlow.Verify (s => s.SendPublishAsync (It.Is<string>(x => x == subscribedClientId), 
@@ -304,12 +302,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -324,7 +322,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
@@ -339,8 +337,8 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
-			channel.Setup (c => c.Sender).Returns (sender);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
+			channel.Setup (c => c.SenderStream).Returns (sender);
 			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
@@ -387,9 +385,9 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid ().ToString (), Clean = false }};
 
@@ -405,10 +403,10 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -437,9 +435,9 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid().ToString(), Clean = false }};
 
@@ -457,10 +455,10 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -490,12 +488,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object, 
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -510,7 +508,7 @@ namespace Tests.Flows
 			var clientReceiver = new Subject<IPacket> ();
 			var clientChannel = new Mock<IMqttChannel<IPacket>> ();
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
 			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
@@ -528,7 +526,7 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
 			channel.Setup (c => c.IsConnected).Returns (true);
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -561,9 +559,9 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var sessions = new List<ClientSession> { new ClientSession { ClientId = subscribedClientId, Clean = false } };
@@ -577,10 +575,10 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait());
 
@@ -610,12 +608,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.AtLeastOnce;
@@ -635,8 +633,8 @@ namespace Tests.Flows
 				clientReceiver.OnNext (new PublishAck (p.PacketId.Value));
 			});
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
-			clientChannel.Setup (c => c.Sender).Returns (clientSender);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
+			clientChannel.Setup (c => c.SenderStream).Returns (clientSender);
 			clientChannel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => clientSender.OnNext (packet))
 				.Returns(Task.Delay(0));
@@ -655,7 +653,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -690,12 +688,12 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var topic = "foo/bar";
+            var topic = "foo/bar";
 
 			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+				retainedRepository.Object, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
@@ -715,8 +713,8 @@ namespace Tests.Flows
 				clientReceiver.OnNext (new PublishReceived (p.PacketId.Value));
 			});
 
-			clientChannel.Setup (c => c.Receiver).Returns (clientReceiver);
-			clientChannel.Setup (c => c.Sender).Returns (clientSender);
+			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
+			clientChannel.Setup (c => c.SenderStream).Returns (clientSender);
 			clientChannel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
 				.Callback<IPacket> (packet => clientSender.OnNext (packet))
 				.Returns(Task.Delay(0));
@@ -735,7 +733,7 @@ namespace Tests.Flows
 			var receiver = new Subject<IPacket> ();
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 
-			channel.Setup (c => c.Receiver).Returns (receiver);
+			channel.Setup (c => c.ReceiverStream).Returns (receiver);
 
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -767,10 +765,10 @@ namespace Tests.Flows
 				});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
-			var eventStream = new EventStream ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
 
-			var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
-				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, eventStream, configuration);
+            var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object, publishSenderFlow.Object,
+				retainedRepository, sessionRepository.Object, willRepository.Object, packetIdProvider, undeliveredMessagesListener, configuration);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var publishRelease = new PublishRelease (packetId);

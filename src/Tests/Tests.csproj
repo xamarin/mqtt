@@ -16,6 +16,10 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PrivateChannelFactorySpec.cs" />
+    <Compile Include="PrivateChannelProviderSpec.cs" />
+    <Compile Include="PrivateChannelSpec.cs" />
+    <Compile Include="PrivateStreamSpec.cs" />
     <Compile Include="PacketIdProviderSpec.cs" />
     <Compile Include="PacketProcessorSpec.cs" />
     <Compile Include="ByteExtensionsSpec.cs" />

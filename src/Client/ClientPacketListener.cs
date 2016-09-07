@@ -35,7 +35,7 @@ namespace System.Net.Mqtt
 			flowRunner = TaskRunner.Get ();
 		}
 
-		public IObservable<IPacket> Packets { get { return packets; } }
+		public IObservable<IPacket> PacketStream { get { return packets; } }
 
 		public void Listen ()
 		{
@@ -76,7 +76,8 @@ namespace System.Net.Mqtt
 
 		IDisposable ListenFirstPacket ()
 		{
-			return channel.Receiver
+			return channel
+                .ReceiverStream
 				.FirstOrDefaultAsync ()
 				.Subscribe (async packet => {
 					if (packet == default (IPacket)) {
@@ -101,7 +102,8 @@ namespace System.Net.Mqtt
 
 		IDisposable ListenNextPackets ()
 		{
-			return channel.Receiver
+			return channel
+                .ReceiverStream
 				.Skip (1)
 				.Subscribe (async packet => {
 					await DispatchPacketAsync (packet)
@@ -113,19 +115,22 @@ namespace System.Net.Mqtt
 
 		IDisposable ListenCompletionAndErrors ()
 		{
-			return channel.Receiver.Subscribe (_ => { },
-				ex => {
-					NotifyError (ex);
-				}, () => {
-					tracer.Warn (Properties.Resources.ClientPacketListener_PacketChannelCompleted, clientId);
+			return channel
+                .ReceiverStream
+                .Subscribe (_ => { },
+				    ex => {
+					    NotifyError (ex);
+				    }, () => {
+					    tracer.Warn (Properties.Resources.ClientPacketListener_PacketChannelCompleted, clientId);
 
-					packets.OnCompleted ();
-				});
+					    packets.OnCompleted ();
+				    }
+                );
 		}
 
 		IDisposable ListenSentConnectPacket ()
 		{
-			return channel.Sender
+			return channel.SenderStream
 				.OfType<Connect> ()
 				.FirstAsync ()
 				.ObserveOn (NewThreadScheduler.Default)
@@ -140,7 +145,7 @@ namespace System.Net.Mqtt
 
 		IDisposable ListenSentDisconnectPacket ()
 		{
-			return channel.Sender
+			return channel.SenderStream
 				.OfType<Disconnect> ()
 				.FirstAsync ()
 				.ObserveOn (NewThreadScheduler.Default)
@@ -173,7 +178,7 @@ namespace System.Net.Mqtt
 			};
 			keepAliveTimer.Start ();
 
-			channel.Sender.Subscribe (p => {
+			channel.SenderStream.Subscribe (p => {
 				keepAliveTimer.IntervalMillisecs = interval;
 			});
 		}

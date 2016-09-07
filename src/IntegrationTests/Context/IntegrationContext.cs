@@ -8,8 +8,7 @@ using System.Net.Mqtt.Packets;
 using System.Linq;
 using System.Net.Sockets;
 using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Server;
-using System.Net.Mqtt.Server.Bindings;
+using System.Net.Mqtt.Bindings;
 using System.Threading.Tasks;
 
 namespace IntegrationTests.Context
@@ -24,7 +23,7 @@ namespace IntegrationTests.Context
 
 		static IntegrationContext()
 		{
-            Tracer.Configuration.AddListener("System.Net.Mqtt", new TestTracerListener());
+            Tracer.Configuration.AddListener ("System.Net.Mqtt", new TestTracerListener());
             Tracer.Configuration.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
 
             usedPorts = new ConcurrentBag<int> ();
@@ -42,7 +41,7 @@ namespace IntegrationTests.Context
 			try {
 				LoadConfiguration ();
 
-				var binding = new TcpBinding ();
+				var binding = new ServerTcpBinding ();
 				var initializer = new MqttServerFactory (binding, authenticationProvider);
 				var server = await initializer.CreateAsync (Configuration);
 
@@ -58,7 +57,7 @@ namespace IntegrationTests.Context
 			}
 		}
 
-		protected virtual async Task<IMqttClient> GetClientAsync ()
+        protected virtual async Task<IMqttClient> GetClientAsync ()
 		{
 			var binding = new TcpBinding ();
 			var initializer = new MqttClientFactory (IPAddress.Loopback.ToString(), binding);

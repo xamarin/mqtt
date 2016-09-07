@@ -1,14 +1,14 @@
-﻿using System;
+﻿using IntegrationTests.Context;
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Net.Mqtt;
 using System.Net.Mqtt.Packets;
-using IntegrationTests.Context;
+using System.Threading.Tasks;
 using Xunit;
-using System.Net.Mqtt.Server;
 
 namespace IntegrationTests
 {
-	public class SubscriptionSpec : ConnectedContext
+    public class SubscriptionSpec : ConnectedContext
 	{
 		readonly IMqttServer server;
 

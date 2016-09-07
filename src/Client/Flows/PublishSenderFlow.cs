@@ -66,7 +66,8 @@ namespace System.Net.Mqtt.Flows
 					.ConfigureAwait (continueOnCapturedContext: false);
 			} else if (qos == MqttQualityOfService.ExactlyOnce) {
 				await MonitorAckAsync<PublishReceived> (message, clientId, channel).ConfigureAwait (continueOnCapturedContext: false);
-				await channel.Receiver
+				await channel
+                    .ReceiverStream
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<PublishComplete> ()
 					.FirstOrDefaultAsync (x => x.PacketId == message.PacketId.Value);
@@ -108,7 +109,8 @@ namespace System.Net.Mqtt.Flows
 					}
 				});
 
-			await channel.Receiver
+			await channel
+                .ReceiverStream
 				.ObserveOn (NewThreadScheduler.Default)
 				.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value);

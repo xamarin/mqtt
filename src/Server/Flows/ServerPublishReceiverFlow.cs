@@ -1,8 +1,8 @@
-﻿using Merq;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,20 +12,20 @@ namespace System.Net.Mqtt.Flows
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
 
-		readonly Server.IConnectionProvider connectionProvider;
+		readonly IConnectionProvider connectionProvider;
 		readonly IPublishSenderFlow senderFlow;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IPacketIdProvider packetIdProvider;
-		readonly IEventStream eventStream;
+		readonly ISubject<MqttUndeliveredMessage> undeliveredMessagesListener;
 
 		public ServerPublishReceiverFlow (IMqttTopicEvaluator topicEvaluator,
-            Server.IConnectionProvider connectionProvider,
+            IConnectionProvider connectionProvider,
 			IPublishSenderFlow senderFlow,
 			IRepository<RetainedMessage> retainedRepository,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
 			IPacketIdProvider packetIdProvider,
-            IEventStream eventStream,
+            ISubject<MqttUndeliveredMessage> undeliveredMessagesListener,
 			MqttConfiguration configuration)
 			: base (topicEvaluator, retainedRepository, sessionRepository, configuration)
 		{
@@ -33,7 +33,7 @@ namespace System.Net.Mqtt.Flows
 			this.senderFlow = senderFlow;
 			this.willRepository = willRepository;
 			this.packetIdProvider = packetIdProvider;
-			this.eventStream = eventStream;
+			this.undeliveredMessagesListener = undeliveredMessagesListener;
 		}
 
 		protected override async Task ProcessPublishAsync (Publish publish, string clientId)
@@ -86,7 +86,7 @@ namespace System.Net.Mqtt.Flows
 			if (!subscriptions.Any ()) {
 				tracer.Verbose (Server.Properties.Resources.ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
-				eventStream.Push (new Server.MqttUndeliveredMessage { SenderId = clientId, Message = new MqttApplicationMessage (publish.Topic, publish.Payload) });
+				undeliveredMessagesListener.OnNext (new MqttUndeliveredMessage { SenderId = clientId, Message = new MqttApplicationMessage (publish.Topic, publish.Payload) });
 			} else {
 				foreach (var subscription in subscriptions) {
 					await DispatchAsync (publish, subscription, isWill)

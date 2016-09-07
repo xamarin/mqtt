@@ -204,4 +204,7 @@
   <data name="Mqtt_Disposing" xml:space="preserve">
     <value>Disposing {0}...</value>
   </data>
+  <data name="Server_NotStartedError" xml:space="preserve">
+    <value>The Server has to be started first, in order to execute any operation</value>
+  </data>
 </root>

@@ -10,12 +10,12 @@ namespace System.Net.Mqtt.Flows
 	{
 		static readonly ITracer tracer = Tracer.Get<ServerConnectFlow> ();
 
-		readonly Server.IMqttAuthenticationProvider authenticationProvider;
+		readonly IMqttAuthenticationProvider authenticationProvider;
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IRepository<ConnectionWill> willRepository;
 		readonly IPublishSenderFlow senderFlow;
 
-		public ServerConnectFlow (Server.IMqttAuthenticationProvider authenticationProvider,
+		public ServerConnectFlow (IMqttAuthenticationProvider authenticationProvider,
 			IRepository<ClientSession> sessionRepository,
 			IRepository<ConnectionWill> willRepository,
 			IPublishSenderFlow senderFlow)

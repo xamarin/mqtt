@@ -2,8 +2,8 @@
 
 namespace System.Net.Mqtt
 {
-	internal interface IPacketBuffer
+    internal interface IPacketBuffer
 	{
-		bool TryGetPackets (byte[] sequence, out IEnumerable<byte[]> packets);
+		bool TryGetPackets (IEnumerable<byte> sequence, out IEnumerable<byte[]> packets);
 	}
 }

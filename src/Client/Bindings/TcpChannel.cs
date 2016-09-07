@@ -51,9 +51,9 @@ namespace System.Net.Mqtt.Bindings
 			}
 		}
 
-		public IObservable<byte[]> Receiver { get { return receiver; } }
+		public IObservable<byte[]> ReceiverStream { get { return receiver; } }
 
-		public IObservable<byte[]> Sender { get { return sender; } }
+		public IObservable<byte[]> SenderStream { get { return sender; } }
 
 		public async Task SendAsync (byte[] message)
 		{
@@ -112,13 +112,13 @@ namespace System.Net.Mqtt.Bindings
 				return Observable.FromAsync<int> (() => {
 					return client.GetStream ().ReadAsync (buffer, 0, buffer.Length);
 				})
-				.Select (x => buffer.Take (x).ToArray ());
+				.Select (x => buffer.Take (x));
 			})
 			.Repeat ()
 			.TakeWhile (bytes => bytes.Any ())
 			.ObserveOn (NewThreadScheduler.Default)
 			.Subscribe (bytes => {
-				var packets = default(IEnumerable<byte[]>);
+				var packets = default (IEnumerable<byte[]>);
 
 				if (buffer.TryGetPackets (bytes, out packets)) {
 					foreach (var packet in packets) {

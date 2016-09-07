@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt;
 
 namespace IntegrationTests
@@ -74,7 +73,7 @@ namespace IntegrationTests
 			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Thread.Sleep (TimeSpan.FromSeconds(keepAliveSecs * 5));
+            await Task.Delay (TimeSpan.FromSeconds (keepAliveSecs * 5));
 
 			Assert.Equal (1, server.ActiveClients.Count ());
 			Assert.True(client.IsConnected);

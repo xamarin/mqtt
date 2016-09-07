@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-    internal class Client : IMqttClient
+    internal class MqttClient : IMqttClient
 	{
-        static readonly ITracer tracer = Tracer.Get<Client> ();
+        static readonly ITracer tracer = Tracer.Get<MqttClient> ();
 
 		bool disposed;
 		bool isConnected;
@@ -28,7 +28,7 @@ namespace System.Net.Mqtt
 		readonly TaskRunner clientSender;
 		readonly IPacketListener packetListener;
 
-		internal Client (IMqttChannel<IPacket> packetChannel,
+		internal MqttClient (IMqttChannel<IPacket> packetChannel,
 			IProtocolFlowProvider flowProvider,
 			IRepositoryProvider repositoryProvider,
 			IPacketIdProvider packetIdProvider,
@@ -66,7 +66,7 @@ namespace System.Net.Mqtt
 			}
 		}
 
-		public IObservable<MqttApplicationMessage> Receiver { get { return receiver; } }
+		public IObservable<MqttApplicationMessage> ReceiverStream { get { return receiver; } }
 
         internal IMqttChannel<IPacket> Channel {  get { return packetChannel; } }
 
@@ -76,6 +76,10 @@ namespace System.Net.Mqtt
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
 			}
+
+            if (IsConnected && !string.IsNullOrEmpty (Id)) {
+                return;
+            } 
 
 			var ack = default (ConnectAck);
 
@@ -94,7 +98,8 @@ namespace System.Net.Mqtt
 				await SendPacketAsync (connect)
 					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await packetListener.Packets
+				ack = await packetListener
+                    .PacketStream
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<ConnectAck> ()
 					.FirstOrDefaultAsync ()
@@ -148,7 +153,8 @@ namespace System.Net.Mqtt
 				await SendPacketAsync (subscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await packetListener.Packets
+				ack = await packetListener
+                    .PacketStream
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<SubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
@@ -220,7 +226,8 @@ namespace System.Net.Mqtt
 				await SendPacketAsync (unsubscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
 
-				ack = await packetListener.Packets
+				ack = await packetListener
+                    .PacketStream
 					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<UnsubscribeAck> ()
 					.FirstOrDefaultAsync (x => x.PacketId == packetId)
@@ -281,7 +288,7 @@ namespace System.Net.Mqtt
                         .ConfigureAwait (continueOnCapturedContext: false);
 
                     await packetListener
-                        .Packets
+                        .PacketStream
                         .LastOrDefaultAsync ();
 
                     Close (DisconnectedReason.Disposed);
@@ -373,7 +380,7 @@ namespace System.Net.Mqtt
 		void ObservePackets ()
 		{
 			packetsSubscription = packetListener
-                .Packets
+                .PacketStream
 				.ObserveOn (NewThreadScheduler.Default)
 				.Subscribe (packet => {
 					if (packet.Type == MqttPacketType.Publish) {

@@ -7,7 +7,6 @@ using IntegrationTests.Messages;
 using Xunit;
 using System.Text;
 using System.Collections.Generic;
-using System.Net.Mqtt.Server;
 using System.Net.Mqtt;
 
 namespace IntegrationTests
@@ -123,7 +122,7 @@ namespace IntegrationTests
 			await subscriber2.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber1.Receiver
+			subscriber1.ReceiverStream
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber1Received++;
@@ -133,7 +132,7 @@ namespace IntegrationTests
 					}
 				});
 
-			subscriber2.Receiver
+			subscriber2.ReceiverStream
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber2Received++;
@@ -235,7 +234,7 @@ namespace IntegrationTests
 			await publisher.SubscribeAsync (responseTopic, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber.Receiver
+			subscriber.ReceiverStream
 				.Subscribe (async m => {
 					if (m.Topic == requestTopic) {
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
@@ -250,7 +249,7 @@ namespace IntegrationTests
 					}
 				});
 
-			publisher.Receiver
+			publisher.ReceiverStream
 				.Subscribe (m => {
 					if (m.Topic == responseTopic) {
 						subscriberReceived++;

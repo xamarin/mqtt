@@ -161,6 +161,15 @@ namespace System.Net.Mqtt.Server.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Server has to be started first, in order to execute any operation.
+        /// </summary>
+        internal static string Server_NotStartedError {
+            get {
+                return ResourceManager.GetString("Server_NotStartedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Server - Packet observable sequence has been completed, hence closing the channel.
         /// </summary>
         internal static string Server_PacketsObservableCompleted {

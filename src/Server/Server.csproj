@@ -11,10 +11,20 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bindings\IMqttServerBinding.cs" />
-    <Compile Include="Bindings\TcpBinding.cs" />
-    <Compile Include="Bindings\TcpChannelProvider.cs" />
+    <Compile Include="Bindings\PrivateBinding.cs" />
+    <Compile Include="Bindings\PrivateChannel.cs" />
+    <Compile Include="Bindings\PrivateChannelFactory.cs" />
+    <Compile Include="Bindings\PrivateChannelListener.cs" />
+    <Compile Include="Bindings\PrivateStream.cs" />
+    <Compile Include="Bindings\ServerTcpBinding.cs" />
+    <Compile Include="Bindings\TcpChannelListener.cs" />
+    <Compile Include="IMqttChannelListener.cs" />
     <Compile Include="IMqttServer.cs" />
-    <Compile Include="Resources.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Exceptions\MqttServerException.cs" />
     <Compile Include="ConnectionProvider.cs" />
     <Compile Include="Flows\ServerProtocolFlowProvider.cs" />
@@ -29,7 +39,7 @@
     <Compile Include="MqttServerFactory.cs" />
     <Compile Include="ServerPacketListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server.cs" />
+    <Compile Include="MqttServer.cs" />
     <Compile Include="MqttUndeliveredMessage.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -45,6 +55,12 @@
       <Project>{6481b999-0479-4162-ac53-5936ce5fd8bf}</Project>
       <Name>Client</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />

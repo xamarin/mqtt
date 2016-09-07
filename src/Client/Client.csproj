@@ -12,7 +12,7 @@
   <ItemGroup>
     <Compile Include="MqttApplicationMessage.cs" />
     <Compile Include="ByteExtensions.cs" />
-    <Compile Include="Client.cs" />
+    <Compile Include="MqttClient.cs" />
     <Compile Include="MqttClientCredentials.cs" />
     <Compile Include="Exceptions\MqttClientException.cs" />
     <Compile Include="MqttClientFactory.cs" />
@@ -46,7 +46,6 @@
     <Compile Include="Formatters\SubscribeFormatter.cs" />
     <Compile Include="IMqttChannel.cs" />
     <Compile Include="IMqttChannelFactory.cs" />
-    <Compile Include="IMqttChannelProvider.cs" />
     <Compile Include="IMqttClient.cs" />
     <Compile Include="IMqttEndpointFactory.cs" />
     <Compile Include="IPacketIdProvider.cs" />
@@ -89,7 +88,11 @@
     <Compile Include="MqttEncoder.cs" />
     <Compile Include="Exceptions\MqttViolationException.cs" />
     <Compile Include="Exceptions\MqttException.cs" />
-    <Compile Include="Resources.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="SingleThreadScheduler.cs" />
     <Compile Include="Storage\StorageExtensions.cs" />
     <Compile Include="MqttEndpointDisconnected.cs" />
@@ -117,6 +120,12 @@
     </None>
     <None Include="project.json" />
     <None Include="System.Net.Mqtt.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\Hermes.targets" />

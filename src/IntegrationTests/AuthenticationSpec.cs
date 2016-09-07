@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Mqtt.Server;
 using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
