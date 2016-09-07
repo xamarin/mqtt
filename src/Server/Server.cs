@@ -76,7 +76,7 @@ namespace System.Net.Mqtt.Server
             started = true;
         }
 
-        public Task<IMqttClient> CreateClientAsync ()
+        public async Task<IMqttClient> CreateClientAsync ()
         {
             if (disposed)
                 throw new ObjectDisposedException (nameof (Server));
@@ -86,8 +86,16 @@ namespace System.Net.Mqtt.Server
 
             var binding = new PrivateBinding (privateStreamListener, EndpointIdentifier.Client);
             var factory = new MqttClientFactory (IPAddress.Loopback.ToString (), binding);
+            var client = await factory
+                .CreateAsync (configuration)
+                .ConfigureAwait (continueOnCapturedContext: false);
+            var clientId = GetPrivateClientId ();
 
-            return factory.CreateAsync (configuration);
+            await client
+                .ConnectAsync (new MqttClientCredentials (clientId))
+                .ConfigureAwait (continueOnCapturedContext: false);
+
+            return client;
         }
 
         public void Stop ()
@@ -156,5 +164,7 @@ namespace System.Net.Mqtt.Server
 
 			channels.Add (packetChannel);
 		}
-	}
+
+        string GetPrivateClientId () => $"private{Guid.NewGuid ().ToString ().Split ('-').First ()}";
+    }
 }

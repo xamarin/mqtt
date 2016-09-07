@@ -20,26 +20,31 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task when_creating_in_process_client_then_succeeds ()
+        public async Task when_creating_in_process_client_then_it_is_already_connected ()
         {
             var client = await server.CreateClientAsync ();
 
             Assert.NotNull (client);
-            Assert.False (client.IsConnected);
+            Assert.True (client.IsConnected);
+            Assert.False (string.IsNullOrEmpty (client.Id));
+            Assert.True (client.Id.StartsWith ("private"));
 
             client.Dispose ();
         }
 
         [Fact]
-        public async Task when_in_process_client_connect_then_succeeds ()
+        public async Task when_in_process_client_connect_then_client_id_doesnt_change ()
         {
             var client = await server.CreateClientAsync ();
+            var clientId = client.Id;
 
             await client.ConnectAsync (new MqttClientCredentials (GetClientId ()));
 
             Assert.Equal (1, server.ActiveClients.Count ());
             Assert.True (client.IsConnected);
             Assert.False (string.IsNullOrEmpty (client.Id));
+            Assert.Equal (clientId, client.Id);
+            Assert.True (client.Id.StartsWith("private"));
 
             client.Dispose ();
         }
@@ -48,9 +53,6 @@ namespace IntegrationTests
         public async Task when_in_process_client_subscribe_to_topic_then_succeeds ()
         {
             var client = await server.CreateClientAsync ();
-
-            await client.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-
             var topicFilter = Guid.NewGuid ().ToString () + "/#";
 
             await client.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
@@ -67,9 +69,6 @@ namespace IntegrationTests
         public async Task when_in_process_client_publish_messages_then_succeeds ()
         {
             var client = await server.CreateClientAsync ();
-
-            await client.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-
             var topic = Guid.NewGuid ().ToString ();
             var testMessage = new TestMessage
             {
@@ -96,7 +95,6 @@ namespace IntegrationTests
         {
             var client = await server.CreateClientAsync ();
 
-            await client.ConnectAsync (new MqttClientCredentials (GetClientId ()));
             await client.DisconnectAsync ();
 
             Assert.Equal (0, server.ActiveClients.Count ());
@@ -111,10 +109,6 @@ namespace IntegrationTests
         {
             var fooClient = await server.CreateClientAsync ();
             var barClient = await server.CreateClientAsync ();
-
-            await fooClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-            await barClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-
             var fooTopic = "foo/message";
 
             await fooClient.SubscribeAsync (fooTopic, MqttQualityOfService.ExactlyOnce);
@@ -148,7 +142,6 @@ namespace IntegrationTests
             var inProcessClient = await server.CreateClientAsync ();
             var remoteClient = await GetClientAsync ();
 
-            await inProcessClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
             await remoteClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
 
             var fooTopic = "foo/message";

@@ -77,6 +77,10 @@ namespace System.Net.Mqtt
 				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
+            if (IsConnected && !string.IsNullOrEmpty (Id)) {
+                return;
+            } 
+
 			var ack = default (ConnectAck);
 
 			try {
