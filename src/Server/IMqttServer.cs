@@ -15,7 +15,7 @@ namespace System.Net.Mqtt
 
         void Start ();
 
-        Task<IMqttClient> CreateClientAsync ();
+        Task<IMqttConnectedClient> CreateClientAsync ();
 
         void Stop ();
     }

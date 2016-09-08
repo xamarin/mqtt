@@ -19,7 +19,9 @@
     <Compile Include="Bindings\ServerTcpBinding.cs" />
     <Compile Include="Bindings\TcpChannelListener.cs" />
     <Compile Include="IMqttChannelListener.cs" />
+    <Compile Include="IMqttConnectedClient.cs" />
     <Compile Include="IMqttServer.cs" />
+    <Compile Include="MqttConnectedClientFactory.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

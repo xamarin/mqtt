@@ -78,7 +78,7 @@ namespace System.Net.Mqtt
             started = true;
         }
 
-        public async Task<IMqttClient> CreateClientAsync ()
+        public async Task<IMqttConnectedClient> CreateClientAsync ()
         {
             if (disposed)
                 throw new ObjectDisposedException (nameof (Server));
@@ -86,8 +86,7 @@ namespace System.Net.Mqtt
             if (!started)
                 throw new InvalidOperationException (ServerProperties.Resources.Server_NotStartedError);
 
-            var binding = new PrivateBinding (privateStreamListener, EndpointIdentifier.Client);
-            var factory = new MqttClientFactory (IPAddress.Loopback.ToString (), binding);
+            var factory = new MqttConnectedClientFactory (privateStreamListener);
             var client = await factory
                 .CreateAsync (configuration)
                 .ConfigureAwait (continueOnCapturedContext: false);
