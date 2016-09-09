@@ -22,9 +22,9 @@
 
 		public const int ClientIdMaxLength = 23;
 
-		public static readonly int NameLength = Name.Length + MqttProtocol.StringPrefixLength;
+		public static readonly int NameLength = Name.Length + StringPrefixLength;
 
-		public static MqttEncoder Encoding { get; private set; }
+		internal static MqttEncoder Encoding { get; private set; }
 
 		static MqttProtocol ()
 		{
