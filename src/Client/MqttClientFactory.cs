@@ -17,11 +17,26 @@ namespace System.Net.Mqtt
 		readonly string hostAddress;
 		readonly IMqttBinding binding;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttClientFactory" /> class,
+        /// specifying the address to connect and using TCP as the 
+        /// default transport protocol binding
+        /// </summary>
+        /// <param name="hostAddress">Address of the host to connect the client</param>
         public MqttClientFactory (string hostAddress)
             : this (hostAddress, new TcpBinding ())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttClientFactory" /> class,
+        /// specifying the address to connect and the transport protocol binding to use
+        /// </summary>
+        /// <param name="hostAddress">Address of the host to connect the client</param>
+        /// <param name="binding">
+        /// Transport protocol binding to use as the MQTT underlying protocol
+        /// See <see cref="IMqttBinding" /> for more details about how to implement it 
+        /// </param>
         public MqttClientFactory (string hostAddress, IMqttBinding binding)
         {
             this.hostAddress = hostAddress;

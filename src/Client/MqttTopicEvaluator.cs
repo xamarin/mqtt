@@ -13,6 +13,14 @@ namespace System.Net.Mqtt
 	{
 		readonly MqttConfiguration configuration;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttTopicEvaluator" /> class,
+        /// specifying the configuration to use
+        /// </summary>
+        /// <param name="configuration">
+        /// Configuration to use by the evaluator.
+        /// See <see cref="MqttConfiguration" /> for more details about the configuration options 
+        /// </param>
 		public MqttTopicEvaluator (MqttConfiguration configuration)
 		{
 			this.configuration = configuration;

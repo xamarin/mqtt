@@ -26,6 +26,15 @@
     /// </summary>
 	public class MqttEndpointDisconnected
 	{
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttEndpointDisconnected" /> class,
+        /// specifying the disconnection reason and an optional disconnection message
+        /// </summary>
+        /// <param name="reason">
+        /// Reason of the disconnection.
+        /// See <see cref="DisconnectedReason" /> for more details about the possible options 
+        /// </param>
+        /// <param name="message">Optional message for the disconnection</param>
 		public MqttEndpointDisconnected (DisconnectedReason reason, string message = null)
 		{
 			Reason = reason;

@@ -7,6 +7,19 @@
     /// </summary>
 	public class MqttLastWill : IEquatable<MqttLastWill>
 	{
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttLastWill" /> class,
+        /// specifying the topic to pusblish the last will message to, the Quality of Service (QoS)
+        /// to use, if the message should be sent as a retained message and also the content of the will message
+        /// to publish
+        /// </summary>
+        /// <param name="topic">Topic to publish the last will message to</param>
+        /// <param name="qos">
+        /// Quality of Service (QoS) to use when publishing the last will message.
+        /// See <see cref="MqttQualityOfService" /> for more details about the QoS meanings
+        /// </param>
+        /// <param name="retain">Specifies if the message should be retained or not</param>
+        /// <param name="message">Content of the will message to publish</param>
 		public MqttLastWill (string topic, MqttQualityOfService qos, bool retain, string message)
 		{
 			Topic = topic;

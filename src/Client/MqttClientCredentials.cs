@@ -5,12 +5,25 @@
     /// </summary>
 	public class MqttClientCredentials
 	{
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttClientCredentials" /> class 
+        /// specifying the id of client to connect
+        /// </summary>
+        /// <param name="clientId">Id of the client to connect</param>
 		public MqttClientCredentials (string clientId)
 		{
 			ClientId = clientId;
 		}
 
-		public MqttClientCredentials (string clientId, string userName, string password)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttClientCredentials" /> class 
+        /// specifying the id of client to connect, and the username and password
+        /// for authentication
+        /// </summary>
+        /// <param name="clientId">Id of the client to connect</param>
+        /// <param name="userName">Username for authentication</param>
+        /// /// <param name="password">Password for authentication</param>
+        public MqttClientCredentials (string clientId, string userName, string password)
 		{
 			ClientId = clientId;
 			UserName = userName;
