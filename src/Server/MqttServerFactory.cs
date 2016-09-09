@@ -9,6 +9,9 @@ using ServerProperties = System.Net.Mqtt.Server.Properties;
 
 namespace System.Net.Mqtt
 {
+    /// <summary>
+    /// Provides a factory for MQTT Brokers
+    /// </summary>
     public class MqttServerFactory : IMqttEndpointFactory<IMqttServer>
     {
         static readonly ITracer tracer = Tracer.Get<MqttServerFactory> ();
@@ -27,7 +30,15 @@ namespace System.Net.Mqtt
             this.authenticationProvider = authenticationProvider ?? NullAuthenticationProvider.Instance;
         }
 
-        /// <exception cref="ServerException">ServerException</exception>
+        /// <summary>
+        /// Creates an MQTT Broker
+        /// </summary>
+        /// <param name="configuration">
+        /// The configuration used for creating the Broker
+        /// See <see cref="MqttConfiguration" /> for more details about the supported values
+        /// </param>
+        /// <returns>A new MQTT Broker</returns>
+        /// <exception cref="MqttServerException">MqttServerException</exception>
         public Task<IMqttServer> CreateAsync (MqttConfiguration configuration)
         {
             try {

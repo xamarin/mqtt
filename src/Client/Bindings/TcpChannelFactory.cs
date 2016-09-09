@@ -18,7 +18,6 @@ namespace System.Net.Mqtt.Bindings
 			this.configuration = configuration;
 		}
 
-		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<IMqttChannel<byte[]>> CreateAsync ()
 		{
 			var tcpClient = new TcpClient ();

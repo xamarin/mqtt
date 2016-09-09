@@ -2,6 +2,9 @@
 
 namespace System.Net.Mqtt.Exceptions
 {
+    /// <summary>
+    /// The exception that is thrown when a server operation fails
+    /// </summary>
     [DataContract]
 	public class MqttServerException : MqttException
 	{

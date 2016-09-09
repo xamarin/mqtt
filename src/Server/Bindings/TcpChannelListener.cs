@@ -31,7 +31,6 @@ namespace System.Net.Mqtt.Bindings
 			});
 		}
 
-        /// <exception cref="MqttException">MqttException</exception>
         public IObservable<IMqttChannel<byte[]>> GetChannelStream ()
 		{
 			if (disposed) {

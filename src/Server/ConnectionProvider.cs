@@ -58,7 +58,6 @@ namespace System.Net.Mqtt
 			return existingConnection;
 		}
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public void RemoveConnection (string clientId)
 		{
 			var existingConnection = default (IMqttChannel<IPacket>);

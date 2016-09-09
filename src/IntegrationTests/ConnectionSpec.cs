@@ -206,12 +206,12 @@ namespace IntegrationTests
 
 			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
 
-			client2.ReceiverStream.Subscribe (m => {
+			client2.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willReceivedSignal.Set ();
 				}
 			});
-			client3.ReceiverStream.Subscribe (m => {
+			client3.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willReceivedSignal.Set ();
 				}
@@ -251,13 +251,13 @@ namespace IntegrationTests
 			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
 			var willMessage = default (MqttApplicationMessage);
 
-			client2.ReceiverStream.Subscribe (m => {
+			client2.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willMessage = m;
 					willReceivedSignal.Set ();
 				}
 			});
-			client3.ReceiverStream.Subscribe (m => {
+			client3.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willMessage = m;
 					willReceivedSignal.Set ();

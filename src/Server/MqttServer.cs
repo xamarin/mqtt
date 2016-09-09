@@ -53,8 +53,6 @@ namespace System.Net.Mqtt
 
 		public IEnumerable<string> ActiveClients { get { return connectionProvider.ActiveClients; } }
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
-		/// <exception cref="ObjectDisposedException">ObjectDisposedException</exception>
 		public void Start ()
 		{
             if (disposed)

@@ -2,6 +2,9 @@
 
 namespace System.Net.Mqtt
 {
+    /// <summary>
+    /// General configuration used across the protocol implementation
+    /// </summary>
 	public class MqttConfiguration
 	{
 		public MqttConfiguration ()
@@ -17,16 +20,42 @@ namespace System.Net.Mqtt
 			AllowWildcardsInTopicFilters = true;
 		}
 
+        /// <summary>
+        /// Port to connect a Client to a Broker
+        /// </summary>
 		public int Port { get; set; }
 
+        /// <summary>
+        /// Size in bytes of the receive buffer of the underlying transport protocol
+        /// Only use it when the property applies to the undelrying protocol used
+        /// </summary>
 		public int BufferSize { get; set; }
 
+        /// <summary>
+        /// Maximum Quality of Service (QoS) to support
+        /// Default value is AtMostOnce, which means QoS 0
+        /// </summary>
 		public MqttQualityOfService MaximumQualityOfService { get; set; }
 
+        /// <summary>
+        /// Seconds to wait for the MQTT Keep Alive mechanism
+        /// until a Ping packet is sent to maintain the connection alive
+        /// Default value is 0 seconds, which means Keep Alive disabled
+        /// </summary>
 		public ushort KeepAliveSecs { get; set; }
 
+        /// <summary>
+        /// Seconds to wait for an incoming required message until the operation timeouts
+        /// This value is generally used to wait for Broker or Client acknowledgements
+        /// Default value is 5 seconds
+        /// </summary>
 		public int WaitingTimeoutSecs { get; set; }
 
+        /// <summary>
+        /// Determines if multi level (#)  and single level (+)
+        /// wildcards are allowed on topic filters
+        /// Default value is true
+        /// </summary>
 		public bool AllowWildcardsInTopicFilters { get; set; }
 	}
 }

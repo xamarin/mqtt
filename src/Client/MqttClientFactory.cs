@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
+    /// <summary>
+    /// Provides a factory for MQTT Clients
+    /// </summary>
     public class MqttClientFactory : IMqttEndpointFactory<IMqttClient>
 	{
 		static readonly ITracer tracer = Tracer.Get<MqttClientFactory> ();
@@ -25,7 +28,15 @@ namespace System.Net.Mqtt
             this.binding = binding;
         }
 
-        /// <exception cref="MqttClientException">ClientException</exception>
+        /// <summary>
+        /// Creates an MQTT Client
+        /// </summary>
+        /// <param name="configuration">
+        /// The configuration used for creating the Client
+        /// See <see cref="MqttConfiguration" /> for more details about the supported values
+        /// </param>
+        /// <returns>A new MQTT Client</returns>
+        /// <exception cref="MqttClientException">MqttClientException</exception>
         public async Task<IMqttClient> CreateAsync (MqttConfiguration configuration)
 		{
 			try {

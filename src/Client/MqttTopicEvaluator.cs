@@ -3,6 +3,12 @@ using System.Net.Mqtt.Exceptions;
 
 namespace System.Net.Mqtt
 {
+    /// <summary>
+    /// Represents an evaluator for MQTT topics
+    /// according to the rules defined in the protocol specification
+    /// </summary>
+    /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180919">Topic Names and Topic Filters</a> 
+    /// for more details on the topics specification
 	public class MqttTopicEvaluator : IMqttTopicEvaluator
 	{
 		readonly MqttConfiguration configuration;
@@ -12,6 +18,11 @@ namespace System.Net.Mqtt
 			this.configuration = configuration;
 		}
 
+        /// <summary>
+        /// Determines if a topic filter is valid according to the protocol specification
+        /// </summary>
+        /// <param name="topicFilter">Topic filter to evaluate</param>
+        /// <returns>A boolean value that indicates if the topic filter is valid or not</returns>
 		public bool IsValidTopicFilter (string topicFilter)
 		{
 			if (!configuration.AllowWildcardsInTopicFilters) {
@@ -44,7 +55,12 @@ namespace System.Net.Mqtt
 			return true;
 		}
 
-		public bool IsValidTopicName (string topicName)
+        /// <summary>
+        /// Determines if a topic name is valid according to the protocol specification
+        /// </summary>
+        /// <param name="topicName">Topic name to evaluate</param>
+        /// <returns>A boolean value that indicates if the topic name is valid or not</returns>
+        public bool IsValidTopicName (string topicName)
 		{
 			return !string.IsNullOrEmpty (topicName) &&
 				topicName.Length <= 65536 &&
@@ -52,8 +68,17 @@ namespace System.Net.Mqtt
 				!topicName.Contains ("+");
 		}
 
-		/// <exception cref="MqttException">ProtocolException</exception>
-		public bool Matches (string topicName, string topicFilter)
+        /// <summary>
+        /// Evaluates if a topic name applies to a specific topic filter
+        /// If a topic name matches a filter, it means that the Broker will
+        /// successfully dispatch incoming messages of that topic name
+        /// to the subscribers of the topic filter
+        /// </summary>
+        /// <param name="topicName">Topic name to evaluate</param>
+        /// <param name="topicFilter">Topic filter to evaluate</param>
+        /// <returns>A boolean value that indicates if the topic name matches with the topic filter</returns>
+        /// <exception cref="MqttException">MqttException</exception>
+        public bool Matches (string topicName, string topicFilter)
 		{
 			if (!IsValidTopicName (topicName)) {
 				var message = string.Format (Properties.Resources.TopicEvaluator_InvalidTopicName, topicName);

@@ -122,7 +122,7 @@ namespace IntegrationTests
 			await subscriber2.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber1.ReceiverStream
+			subscriber1.MessageStream
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber1Received++;
@@ -132,7 +132,7 @@ namespace IntegrationTests
 					}
 				});
 
-			subscriber2.ReceiverStream
+			subscriber2.MessageStream
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber2Received++;
@@ -234,7 +234,7 @@ namespace IntegrationTests
 			await publisher.SubscribeAsync (responseTopic, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber.ReceiverStream
+			subscriber.MessageStream
 				.Subscribe (async m => {
 					if (m.Topic == requestTopic) {
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
@@ -249,7 +249,7 @@ namespace IntegrationTests
 					}
 				});
 
-			publisher.ReceiverStream
+			publisher.MessageStream
 				.Subscribe (m => {
 					if (m.Topic == responseTopic) {
 						subscriberReceived++;

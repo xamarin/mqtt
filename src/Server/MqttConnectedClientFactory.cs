@@ -20,7 +20,6 @@ namespace System.Net.Mqtt
             this.privateStreamListener = privateStreamListener;
         }
 
-        /// <exception cref="MqttClientException">MqttClientException</exception>
         public async Task<IMqttConnectedClient> CreateAsync (MqttConfiguration configuration)
         {
             try

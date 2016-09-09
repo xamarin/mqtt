@@ -2,6 +2,9 @@
 
 namespace System.Net.Mqtt.Exceptions
 {
+    /// <summary>
+    /// The exception thrown when a protocol violation is caused
+    /// </summary>
 	[DataContract]
 	public class MqttViolationException : MqttException
 	{

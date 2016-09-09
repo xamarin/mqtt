@@ -66,20 +66,15 @@ namespace System.Net.Mqtt
 			}
 		}
 
-		public IObservable<MqttApplicationMessage> ReceiverStream { get { return receiver; } }
+		public IObservable<MqttApplicationMessage> MessageStream { get { return receiver; } }
 
         internal IMqttChannel<IPacket> Channel {  get { return packetChannel; } }
 
-        /// <exception cref="MqttClientException">ClientException</exception>
         public async Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false)
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
 			}
-
-            if (IsConnected && !string.IsNullOrEmpty (Id)) {
-                return;
-            } 
 
 			var ack = default (ConnectAck);
 
@@ -136,7 +131,6 @@ namespace System.Net.Mqtt
 			}
 		}
 
-		/// <exception cref="MqttClientException">ClientException</exception>
 		public async Task SubscribeAsync (string topicFilter, MqttQualityOfService qos)
 		{
 			if (disposed) {
