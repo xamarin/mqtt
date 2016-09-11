@@ -41,17 +41,24 @@ namespace System.Net.Mqtt.Flows
 			return Task.Delay (0);
 		}
 
-		async Task HandlePublishAsync (string clientId, Publish publish, IMqttChannel<IPacket> channel)
+        protected virtual void Validate (Publish publish, string clientId)
+        {
+            if (publish.QualityOfService != MqttQualityOfService.AtMostOnce && !publish.PacketId.HasValue)
+            {
+                throw new MqttException(Properties.Resources.PublishReceiverFlow_PacketIdRequired);
+            }
+
+            if (publish.QualityOfService == MqttQualityOfService.AtMostOnce && publish.PacketId.HasValue)
+            {
+                throw new MqttException(Properties.Resources.PublishReceiverFlow_PacketIdNotAllowed);
+            }
+        }
+
+        async Task HandlePublishAsync (string clientId, Publish publish, IMqttChannel<IPacket> channel)
 		{
-			if (publish.QualityOfService != MqttQualityOfService.AtMostOnce && !publish.PacketId.HasValue) {
-				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdRequired);
-			}
+            Validate (publish, clientId);
 
-			if (publish.QualityOfService == MqttQualityOfService.AtMostOnce && publish.PacketId.HasValue) {
-				throw new MqttException (Properties.Resources.PublishReceiverFlow_PacketIdNotAllowed);
-			}
-
-			var qos = configuration.GetSupportedQos(publish.QualityOfService);
+			var qos = configuration.GetSupportedQos (publish.QualityOfService);
 			var session = sessionRepository.Get (s => s.ClientId == clientId);
 
 			if (session == null) {

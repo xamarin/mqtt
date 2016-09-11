@@ -13,13 +13,13 @@ namespace IntegrationTests
     {
         readonly IMqttServer server;
 
-        public PrivateClientSpec ()
+        public PrivateClientSpec()
         {
             server = GetServerAsync ().Result;
         }
 
         [Fact]
-        public async Task when_creating_in_process_client_then_it_is_already_connected ()
+        public async Task when_creating_in_process_client_then_it_is_already_connected()
         {
             var client = await server.CreateClientAsync ();
 
@@ -32,7 +32,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task when_in_process_client_subscribe_to_topic_then_succeeds ()
+        public async Task when_in_process_client_subscribe_to_topic_then_succeeds()
         {
             var client = await server.CreateClientAsync ();
             var topicFilter = Guid.NewGuid ().ToString () + "/#";
@@ -48,7 +48,23 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task when_in_process_client_publish_messages_then_succeeds ()
+        public async Task when_in_process_client_subscribe_to_system_topic_then_succeeds()
+        {
+            var client = await server.CreateClientAsync ();
+            var topicFilter = "$SYS/" + Guid.NewGuid ().ToString () + "/#";
+
+            await client.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            Assert.True (client.IsConnected);
+
+            await client.UnsubscribeAsync (topicFilter);
+
+            client.Dispose ();
+        }
+
+        [Fact]
+        public async Task when_in_process_client_publish_messages_then_succeeds()
         {
             var client = await server.CreateClientAsync ();
             var topic = Guid.NewGuid ().ToString ();
@@ -73,7 +89,32 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task when_in_process_client_disconnect_then_succeeds ()
+        public async Task when_in_process_client_publish_system_messages_then_succeeds()
+        {
+            var client = await server.CreateClientAsync ();
+            var topic = "$SYS/" + Guid.NewGuid ().ToString ();
+            var testMessage = new TestMessage
+            {
+                Name = string.Concat ("Message ", Guid.NewGuid ().ToString ().Substring (0, 4)),
+                Value = new Random ().Next ()
+            };
+            var message = new MqttApplicationMessage
+            {
+                Topic = topic,
+                Payload = Serializer.Serialize (testMessage)
+            };
+
+            await client.PublishAsync (message, MqttQualityOfService.AtMostOnce);
+            await client.PublishAsync (message, MqttQualityOfService.AtLeastOnce);
+            await client.PublishAsync (message, MqttQualityOfService.ExactlyOnce);
+
+            Assert.True (client.IsConnected);
+
+            client.Dispose ();
+        }
+
+        [Fact]
+        public async Task when_in_process_client_disconnect_then_succeeds()
         {
             var client = await server.CreateClientAsync ();
 
@@ -87,7 +128,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task when_in_process_clients_communicate_each_other_then_succeeds ()
+        public async Task when_in_process_clients_communicate_each_other_then_succeeds()
         {
             var fooClient = await server.CreateClientAsync ();
             var barClient = await server.CreateClientAsync ();
@@ -119,7 +160,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task when_in_process_client_communicate_with_tcp_client_then_succeeds ()
+        public async Task when_in_process_client_communicate_with_tcp_client_then_succeeds()
         {
             var inProcessClient = await server.CreateClientAsync ();
             var remoteClient = await GetClientAsync ();

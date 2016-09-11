@@ -94,6 +94,8 @@ namespace System.Net.Mqtt
                 .ConnectAsync (new MqttClientCredentials (clientId))
                 .ConfigureAwait (continueOnCapturedContext: false);
 
+            connectionProvider.RegisterPrivateClient (clientId);
+
             return client;
         }
 
@@ -167,6 +169,18 @@ namespace System.Net.Mqtt
 			channels.Add (packetChannel);
 		}
 
-        string GetPrivateClientId () => $"private{Guid.NewGuid ().ToString ().Split ('-').First ()}";
+        string GetPrivateClientId ()
+        {
+            var clientId = string.Format (
+                "private{0}", 
+                Guid.NewGuid ().ToString ().Replace ("-", string.Empty).Substring (0, 10)
+            );
+
+            if (connectionProvider.PrivateClients.Contains (clientId)) {
+                return GetPrivateClientId ();
+            }
+
+            return clientId;
+        }
     }
 }
