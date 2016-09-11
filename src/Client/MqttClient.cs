@@ -7,6 +7,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace System.Net.Mqtt
 {
@@ -46,7 +47,8 @@ namespace System.Net.Mqtt
 			packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
 
 			packetListener.Listen ();
-		}
+            ObservePackets ();
+        }
 
 		public event EventHandler<MqttEndpointDisconnected> Disconnected = (sender, args) => { };
 
@@ -112,7 +114,6 @@ namespace System.Net.Mqtt
 
 				Id = credentials.ClientId;
 				IsConnected = true;
-				ObservePackets ();
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
@@ -142,7 +143,7 @@ namespace System.Net.Mqtt
 				var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 				var ack = default (SubscribeAck);
-				var subscribeTimeout = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
+				var subscribeTimeout = TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs);
 
 				await SendPacketAsync (subscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -161,6 +162,14 @@ namespace System.Net.Mqtt
 
 					throw new MqttClientException (message);
 				}
+
+                if (ack.ReturnCodes.FirstOrDefault () == SubscribeReturnCode.Failure) {
+                    var message = string.Format(Properties.Resources.Client_SubscriptionRejected, Id, topicFilter);
+
+                    tracer.Error(message);
+
+                    throw new MqttClientException (message);
+                }
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
@@ -211,6 +220,8 @@ namespace System.Net.Mqtt
 			}
 
 			try {
+                topics = topics ?? new string[] { };
+
 				var packetId = packetIdProvider.GetPacketId ();
 				var unsubscribe = new Unsubscribe(packetId, topics);
 

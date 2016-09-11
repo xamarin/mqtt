@@ -82,6 +82,10 @@ namespace System.Net.Mqtt.Formatters
 			var payload = new List<byte> ();
 
 			foreach (var subscription in packet.Subscriptions) {
+                if (string.IsNullOrEmpty (subscription.TopicFilter)) {
+                    throw new MqttViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+                }
+
 				if (!topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
 					var error = string.Format  (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
 
