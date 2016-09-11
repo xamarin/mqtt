@@ -20,13 +20,13 @@ namespace IntegrationTests
 				message = string.Format (format, args);
 			}
 				
-			Debug.WriteLine (GetTestLogMessage (eventCache, message));
+			Debug.WriteLine (GetTestLogMessage (eventCache, eventType, message));
 		}
 
-		string GetTestLogMessage(TraceEventCache eventCache, string message)
+		string GetTestLogMessage(TraceEventCache eventCache, TraceEventType eventType, string message)
 		{
-			return string.Format ("Thread {0} - {1} - {2}", eventCache.ThreadId.PadLeft(4), 
-				eventCache.DateTime.ToString("MM/dd/yyyy hh:mm:ss.fff").PadLeft(4), message);
+			return string.Format ("Thread {0} - {1} - {2} - {3}", eventCache.ThreadId.PadLeft(4), 
+				eventCache.DateTime.ToString("MM/dd/yyyy hh:mm:ss.fff").PadLeft(4), eventType, message);
 		}
 	}
 }

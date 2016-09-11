@@ -55,7 +55,19 @@ namespace IntegrationTests
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
-			for (var i = 1; i <= count; i++) {
+            var publishAckPackets = 0;
+
+            (client as MqttClient)
+               .Channel
+               .ReceiverStream
+               .Subscribe(packet => {
+                   if (packet is PublishAck)
+                   {
+                       publishAckPackets++;
+                   }
+               });
+
+            for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
 				var message = new MqttApplicationMessage
 				{
@@ -69,8 +81,9 @@ namespace IntegrationTests
 			await Task.WhenAll (tasks);
 
 			Assert.True (client.IsConnected);
+            Assert.True (publishAckPackets >= count);
 
-			client.Dispose ();
+            client.Dispose ();
 		}
 
 		[Fact]
@@ -80,6 +93,20 @@ namespace IntegrationTests
 			var topic = Guid.NewGuid ().ToString ();
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
+
+            var publishReceivedPackets = 0;
+            var publishCompletePackets = 0;
+
+            (client as MqttClient)
+                .Channel
+                .ReceiverStream
+                .Subscribe(packet =>  {
+                    if (packet is PublishReceived) {
+                        publishReceivedPackets++;
+                    } else if (packet is PublishComplete) {
+                        publishCompletePackets++;
+                    }
+                });
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
@@ -94,7 +121,9 @@ namespace IntegrationTests
 
 			await Task.WhenAll (tasks);
 
-			Assert.True (client.IsConnected);
+            Assert.True (client.IsConnected);
+            Assert.True (publishReceivedPackets >= count);
+            Assert.True (publishCompletePackets >= count);
 
 			client.Dispose ();
 		}
@@ -348,7 +377,31 @@ namespace IntegrationTests
 			Assert.True (client.IsConnected);
 		}
 
-		public void Dispose ()
+        [Fact]
+        public async Task when_publish_system_messages_then_fails_and_server_disconnects_client()
+        {
+            var client = await GetClientAsync ();
+            var topic = "$SYS/" + Guid.NewGuid ().ToString ();
+            var message = new MqttApplicationMessage (topic, Encoding.UTF8.GetBytes ("Foo Message"));
+
+            var clientDisconnectedEvent = new ManualResetEventSlim ();
+
+            client.Disconnected += (sender, e) => {
+                if (e.Reason == DisconnectedReason.RemoteDisconnected) {
+                    clientDisconnectedEvent.Set ();
+                }
+            };
+
+            await client.PublishAsync (message, MqttQualityOfService.ExactlyOnce);
+
+            var clientRemoteDisconnected = clientDisconnectedEvent.Wait (2000);
+
+            Assert.True (clientRemoteDisconnected);
+
+            client.Dispose();
+        }
+
+        public void Dispose ()
 		{
 			if (server != null) {
 				server.Stop ();

@@ -6,6 +6,7 @@ using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Subjects;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests
@@ -187,15 +188,18 @@ namespace Tests
 
 			connectionProvider.Setup (p => p.RemoveConnection (It.IsAny<string> ()));
 
-			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
+            var serverPublishReceiverFlow = new Mock<IServerPublishReceiverFlow>();
+            var flowProvider = new Mock<IProtocolFlowProvider> ();
 			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
+            serverPublishReceiverFlow.Setup (f => f.SendWillAsync (It.IsAny<string> ())).Returns (Task.FromResult (true));
+            flowProvider.Setup (p => p.GetFlow<IServerPublishReceiverFlow> ()).Returns (serverPublishReceiverFlow.Object);
 			packetChannel.Setup (c => c.ReceiverStream).Returns (receiver);
 			packetChannel.Setup (c => c.SenderStream).Returns (new Subject<IPacket> ());
 
-			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider, configuration);
+			var listener = new ServerPacketListener (packetChannel.Object, connectionProvider.Object, flowProvider.Object, configuration);
 
 			listener.Listen ();
 			
@@ -221,8 +225,13 @@ namespace Tests
 		public void when_keep_alive_enabled_and_no_packet_received_then_times_out ()
 		{
 			var connectionProvider = new Mock<IConnectionProvider> ();
+            var serverPublishReceiverFlow = new Mock<IServerPublishReceiverFlow> ();
 			var flowProvider = new Mock<IProtocolFlowProvider> ();
 
+            serverPublishReceiverFlow.Setup(f => f.SendWillAsync (It.IsAny<string> ()))
+                .Returns (Task.FromResult (true));
+            flowProvider.Setup (p => p.GetFlow<IServerPublishReceiverFlow> ())
+                .Returns (serverPublishReceiverFlow.Object);
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<MqttPacketType> ()))
 				.Returns (Mock.Of<IProtocolFlow> ());
 
