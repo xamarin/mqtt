@@ -61,7 +61,7 @@ namespace Tests.Formatters
 			
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
 
-			Assert.True (ex.InnerException is MqttViolationException);
+			Assert.True (ex.InnerException is MqttProtocolViolationException);
 		}
 
 		[Theory]
@@ -95,7 +95,7 @@ namespace Tests.Formatters
 
 			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (subscribe).Wait());
 
-			Assert.True (ex.InnerException is MqttViolationException);
+			Assert.True (ex.InnerException is MqttProtocolViolationException);
 		}
 	}
 }

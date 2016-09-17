@@ -2,9 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Extensions;
+using System.Net.Mqtt.Properties;
 
 namespace IntegrationTests
 {
@@ -17,7 +20,25 @@ namespace IntegrationTests
 			server = GetServerAsync ().Result;
 		}
 
-		[Fact]
+        [Fact]
+        public async Task when_server_is_closed_then_error_occurs_when_client_send_message()
+        {
+            var server = await GetServerAsync();
+            var client = await GetClientAsync();
+
+            await client.ConnectAsync(new MqttClientCredentials(GetClientId()))
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            server.Stop();
+
+            var aggregateException = Assert.Throws<AggregateException>(() => client.SubscribeAsync("test\foo", MqttQualityOfService.AtLeastOnce).Wait());
+
+            Assert.NotNull(aggregateException);
+            Assert.NotNull(aggregateException.InnerException);
+            Assert.True(aggregateException.InnerException is MqttClientException || aggregateException.InnerException is ObjectDisposedException);
+        }
+
+        [Fact]
 		public async Task when_subscribe_topic_then_succeeds()
 		{
 			var client = await GetClientAsync ();
@@ -57,7 +78,40 @@ namespace IntegrationTests
 			client.Dispose ();
 		}
 
-		[Fact]
+        [Theory]
+        [InlineData("foo/#/#")]
+        [InlineData("foo/bar#/")]
+        [InlineData("foo/bar+/test")]
+        [InlineData("foo/#/bar")]
+        public async Task when_subscribing_invalid_topic_then_fails(string topicFilter)
+        {
+            var client = await GetClientAsync ();
+
+            var ex = Assert.Throws<AggregateException> (() => client.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce).Wait ());
+
+            Assert.NotNull (ex);
+            Assert.NotNull (ex.InnerException);
+            Assert.True (ex.InnerException is MqttClientException);
+            Assert.NotNull (ex.InnerException.InnerException);
+            Assert.NotNull (ex.InnerException.InnerException is MqttException);
+            Assert.Equal (string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter), ex.InnerException.InnerException.Message);
+        }
+
+        [Fact]
+        public async Task when_subscribing_emtpy_topic_then_fails_with_protocol_violation()
+        {
+            var client = await GetClientAsync();
+
+            var ex = Assert.Throws<AggregateException> (() => client.SubscribeAsync (string.Empty, MqttQualityOfService.AtMostOnce).Wait ());
+
+            Assert.NotNull (ex);
+            Assert.NotNull (ex.InnerException);
+            Assert.True (ex.InnerException is MqttClientException);
+            Assert.NotNull (ex.InnerException.InnerException);
+            Assert.NotNull (ex.InnerException.InnerException is MqttProtocolViolationException);
+        }
+
+        [Fact]
 		public async Task when_unsubscribe_topic_then_succeeds()
 		{
 			var client = await GetClientAsync ();
@@ -81,7 +135,21 @@ namespace IntegrationTests
 			client.Dispose ();
 		}
 
-		public void Dispose ()
+        [Fact]
+        public async Task when_unsubscribing_emtpy_topic_then_fails_with_protocol_violation()
+        {
+            var client = await GetClientAsync ();
+
+            var ex = Assert.Throws<AggregateException> (() => client.UnsubscribeAsync (null).Wait ());
+
+            Assert.NotNull (ex);
+            Assert.NotNull (ex.InnerException);
+            Assert.True (ex.InnerException is MqttClientException);
+            Assert.NotNull (ex.InnerException.InnerException);
+            Assert.NotNull (ex.InnerException.InnerException is MqttProtocolViolationException);
+
+        }
+        public void Dispose ()
 		{
 			if (server != null) {
 				server.Stop ();

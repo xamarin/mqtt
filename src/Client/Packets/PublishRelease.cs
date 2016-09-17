@@ -9,7 +9,7 @@
 
 		public MqttPacketType Type { get { return MqttPacketType.PublishRelease; } }
 
-		public ushort PacketId { get; private set; }
+		public ushort PacketId { get; }
 
 		public bool Equals (PublishRelease other)
 		{

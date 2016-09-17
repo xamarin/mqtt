@@ -1,15 +1,17 @@
 ﻿using System.Diagnostics;
 using System.Linq;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
+using ServerProperties = System.Net.Mqtt.Server.Properties;
 
 namespace System.Net.Mqtt.Flows
 {
-    internal class ServerPublishReceiverFlow : PublishReceiverFlow
-	{
+    internal class ServerPublishReceiverFlow : PublishReceiverFlow, IServerPublishReceiverFlow
+    {
 		static readonly ITracer tracer = Tracer.Get<ServerPublishReceiverFlow> ();
 
 		readonly IConnectionProvider connectionProvider;
@@ -36,10 +38,28 @@ namespace System.Net.Mqtt.Flows
 			this.undeliveredMessagesListener = undeliveredMessagesListener;
 		}
 
-		protected override async Task ProcessPublishAsync (Publish publish, string clientId)
+        public async Task SendWillAsync(string clientId)
+        {
+            var will = willRepository.Get(w => w.ClientId == clientId);
+
+            if (will != null && will.Will != null)
+            {
+                var willPublish = new Publish(will.Will.Topic, will.Will.QualityOfService, will.Will.Retain, duplicated: false)
+                {
+                    Payload = Encoding.UTF8.GetBytes(will.Will.Message)
+                };
+
+                tracer.Info(Server.Properties.Resources.ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
+
+                await DispatchAsync(willPublish, clientId, isWill: true)
+                    .ConfigureAwait(continueOnCapturedContext: false);
+            }
+        }
+
+        protected override async Task ProcessPublishAsync (Publish publish, string clientId)
 		{
 			if (publish.Retain) {
-				var existingRetainedMessage = retainedRepository.Get(r => r.Topic == publish.Topic);
+				var existingRetainedMessage = retainedRepository.Get (r => r.Topic == publish.Topic);
 
 				if (existingRetainedMessage != null) {
 					retainedRepository.Delete (existingRetainedMessage);
@@ -60,21 +80,15 @@ namespace System.Net.Mqtt.Flows
 				.ConfigureAwait (continueOnCapturedContext: false);
 		}
 
-		internal async Task SendWillAsync (string clientId)
-		{
-			var will = willRepository.Get (w => w.ClientId == clientId);
+        protected override void Validate (Publish publish, string clientId)
+        {
+            base.Validate (publish, clientId);
 
-			if (will != null && will.Will != null) {
-				var willPublish = new Publish (will.Will.Topic, will.Will.QualityOfService, will.Will.Retain, duplicated: false) {
-					Payload = Encoding.UTF8.GetBytes (will.Will.Message)
-				};
-
-				tracer.Info (Server.Properties.Resources.ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
-
-				await DispatchAsync (willPublish, clientId, isWill: true)
-					.ConfigureAwait (continueOnCapturedContext: false);
-			}
-		}
+            if (publish.Topic.Trim ().StartsWith ("$") && !connectionProvider.PrivateClients.Contains (clientId))
+            {
+                throw new MqttException (ServerProperties.Resources.ServerPublishReceiverFlow_SystemMessageNotAllowedForClient);
+            }
+        }
 
 		async Task DispatchAsync (Publish publish, string clientId, bool isWill = false)
 		{

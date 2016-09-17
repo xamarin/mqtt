@@ -80,6 +80,15 @@ namespace System.Net.Mqtt.Server.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A private client with Id {0} is already registered.
+        /// </summary>
+        internal static string ConnectionProvider_PrivateClientAlreadyRegistered {
+            get {
+                return ResourceManager.GetString("ConnectionProvider_PrivateClientAlreadyRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Server - Removing connection of client {0}.
         /// </summary>
         internal static string ConnectionProvider_RemovingClient {
@@ -283,6 +292,15 @@ namespace System.Net.Mqtt.Server.Properties {
         internal static string ServerPublishReceiverFlow_SendingWill {
             get {
                 return ResourceManager.GetString("ServerPublishReceiverFlow_SendingWill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Publish messages with a leading $ in the topic are considered  server specific messages, hence remote clients are not allowed to publish them.
+        /// </summary>
+        internal static string ServerPublishReceiverFlow_SystemMessageNotAllowedForClient {
+            get {
+                return ResourceManager.GetString("ServerPublishReceiverFlow_SystemMessageNotAllowedForClient", resourceCulture);
             }
         }
         

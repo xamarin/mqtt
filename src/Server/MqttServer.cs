@@ -53,8 +53,6 @@ namespace System.Net.Mqtt
 
 		public IEnumerable<string> ActiveClients { get { return connectionProvider.ActiveClients; } }
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
-		/// <exception cref="ObjectDisposedException">ObjectDisposedException</exception>
 		public void Start ()
 		{
             if (disposed)
@@ -78,7 +76,7 @@ namespace System.Net.Mqtt
             started = true;
         }
 
-        public async Task<IMqttClient> CreateClientAsync ()
+        public async Task<IMqttConnectedClient> CreateClientAsync ()
         {
             if (disposed)
                 throw new ObjectDisposedException (nameof (Server));
@@ -86,8 +84,7 @@ namespace System.Net.Mqtt
             if (!started)
                 throw new InvalidOperationException (ServerProperties.Resources.Server_NotStartedError);
 
-            var binding = new PrivateBinding (privateStreamListener, EndpointIdentifier.Client);
-            var factory = new MqttClientFactory (IPAddress.Loopback.ToString (), binding);
+            var factory = new MqttConnectedClientFactory (privateStreamListener);
             var client = await factory
                 .CreateAsync (configuration)
                 .ConfigureAwait (continueOnCapturedContext: false);
@@ -96,6 +93,8 @@ namespace System.Net.Mqtt
             await client
                 .ConnectAsync (new MqttClientCredentials (clientId))
                 .ConfigureAwait (continueOnCapturedContext: false);
+
+            connectionProvider.RegisterPrivateClient (clientId);
 
             return client;
         }
@@ -135,7 +134,7 @@ namespace System.Net.Mqtt
                         binaryChannelProvider?.Dispose();
                     }
 
-                    Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Disposed));
+                    Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.SelfDisconnected));
                 } catch (Exception ex) {
                     tracer.Error (ex);
                     Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Error, ex.Message));
@@ -170,6 +169,18 @@ namespace System.Net.Mqtt
 			channels.Add (packetChannel);
 		}
 
-        string GetPrivateClientId () => $"private{Guid.NewGuid ().ToString ().Split ('-').First ()}";
+        string GetPrivateClientId ()
+        {
+            var clientId = string.Format (
+                "private{0}", 
+                Guid.NewGuid ().ToString ().Replace ("-", string.Empty).Substring (0, 10)
+            );
+
+            if (connectionProvider.PrivateClients.Contains (clientId)) {
+                return GetPrivateClientId ();
+            }
+
+            return clientId;
+        }
     }
 }

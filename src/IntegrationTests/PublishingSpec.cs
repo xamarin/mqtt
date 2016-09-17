@@ -30,12 +30,8 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+				var testMessage = GetTestMessage ();
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
@@ -55,13 +51,21 @@ namespace IntegrationTests
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
-			for (var i = 1; i <= count; i++) {
+            var publishAckPackets = 0;
+
+            (client as MqttClient)
+               .Channel
+               .ReceiverStream
+               .Subscribe(packet => {
+                   if (packet is PublishAck)
+                   {
+                       publishAckPackets++;
+                   }
+               });
+
+            for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtLeastOnce));
 			}
@@ -69,8 +73,9 @@ namespace IntegrationTests
 			await Task.WhenAll (tasks);
 
 			Assert.True (client.IsConnected);
+            Assert.True (publishAckPackets >= count);
 
-			client.Dispose ();
+            client.Dispose ();
 		}
 
 		[Fact]
@@ -81,20 +86,32 @@ namespace IntegrationTests
 			var count = GetTestLoad();
 			var tasks = new List<Task> ();
 
+            var publishReceivedPackets = 0;
+            var publishCompletePackets = 0;
+
+            (client as MqttClient)
+                .Channel
+                .ReceiverStream
+                .Subscribe(packet =>  {
+                    if (packet is PublishReceived) {
+                        publishReceivedPackets++;
+                    } else if (packet is PublishComplete) {
+                        publishCompletePackets++;
+                    }
+                });
+
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (client.PublishAsync (message, MqttQualityOfService.ExactlyOnce));
 			}
 
 			await Task.WhenAll (tasks);
 
-			Assert.True (client.IsConnected);
+            Assert.True (client.IsConnected);
+            Assert.True (publishReceivedPackets >= count);
+            Assert.True (publishCompletePackets >= count);
 
 			client.Dispose ();
 		}
@@ -122,7 +139,7 @@ namespace IntegrationTests
 			await subscriber2.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber1.ReceiverStream
+			subscriber1.MessageStream
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber1Received++;
@@ -132,7 +149,7 @@ namespace IntegrationTests
 					}
 				});
 
-			subscriber2.ReceiverStream
+			subscriber2.MessageStream
 				.Subscribe (m => {
 					if (m.Topic == topic) {
 						subscriber2Received++;
@@ -145,19 +162,15 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{ 
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+				var testMessage = GetTestMessage ();
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
 
-			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(Configuration.WaitingTimeoutSecs));
+			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
 
 			Assert.Equal (count, subscriber1Received);
 			Assert.Equal (count, subscriber2Received);
@@ -194,12 +207,8 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{ 
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+				var testMessage = GetTestMessage ();
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
@@ -234,22 +243,19 @@ namespace IntegrationTests
 			await publisher.SubscribeAsync (responseTopic, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber.ReceiverStream
+			subscriber.MessageStream
 				.Subscribe (async m => {
 					if (m.Topic == requestTopic) {
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
 						var response = GetResponseMessage (request);
-						var message = new MqttApplicationMessage {
-							Topic = responseTopic,
-							Payload = Serializer.Serialize(response)
-						};
+                        var message = new MqttApplicationMessage (responseTopic, Serializer.Serialize (response));
 
 						await subscriber.PublishAsync (message, MqttQualityOfService.AtMostOnce)
 							.ConfigureAwait(continueOnCapturedContext: false);
 					}
 				});
 
-			publisher.ReceiverStream
+			publisher.MessageStream
 				.Subscribe (m => {
 					if (m.Topic == responseTopic) {
 						subscriberReceived++;
@@ -263,18 +269,14 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var request = GetRequestMessage ();
-				var message = new MqttApplicationMessage
-				{ 
-					Topic = requestTopic,
-					Payload = Serializer.Serialize(request)
-				};
+                var message = new MqttApplicationMessage (requestTopic, Serializer.Serialize (request));
 
 				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
 
-			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (Configuration.WaitingTimeoutSecs));
+			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (Configuration.WaitTimeoutSecs));
 
 			Assert.Equal (count, subscriberReceived);
 			Assert.True (completed);
@@ -348,7 +350,31 @@ namespace IntegrationTests
 			Assert.True (client.IsConnected);
 		}
 
-		public void Dispose ()
+        [Fact]
+        public async Task when_publish_system_messages_then_fails_and_server_disconnects_client()
+        {
+            var client = await GetClientAsync ();
+            var topic = "$SYS/" + Guid.NewGuid ().ToString ();
+            var message = new MqttApplicationMessage (topic, Encoding.UTF8.GetBytes ("Foo Message"));
+
+            var clientDisconnectedEvent = new ManualResetEventSlim ();
+
+            client.Disconnected += (sender, e) => {
+                if (e.Reason == DisconnectedReason.RemoteDisconnected) {
+                    clientDisconnectedEvent.Set ();
+                }
+            };
+
+            await client.PublishAsync (message, MqttQualityOfService.ExactlyOnce);
+
+            var clientRemoteDisconnected = clientDisconnectedEvent.Wait (2000);
+
+            Assert.True (clientRemoteDisconnected);
+
+            client.Dispose();
+        }
+
+        public void Dispose ()
 		{
 			if (server != null) {
 				server.Stop ();

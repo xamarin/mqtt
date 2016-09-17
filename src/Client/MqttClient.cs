@@ -7,6 +7,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace System.Net.Mqtt
 {
@@ -34,8 +35,8 @@ namespace System.Net.Mqtt
 			IPacketIdProvider packetIdProvider,
 			MqttConfiguration configuration)
 		{
-			receiver = new ReplaySubject<MqttApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			receiver = new ReplaySubject<MqttApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
+			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 
 			this.packetChannel = packetChannel;
 			this.flowProvider = flowProvider;
@@ -46,7 +47,8 @@ namespace System.Net.Mqtt
 			packetListener = new ClientPacketListener (packetChannel, flowProvider, configuration);
 
 			packetListener.Listen ();
-		}
+            ObservePackets ();
+        }
 
 		public event EventHandler<MqttEndpointDisconnected> Disconnected = (sender, args) => { };
 
@@ -66,20 +68,15 @@ namespace System.Net.Mqtt
 			}
 		}
 
-		public IObservable<MqttApplicationMessage> ReceiverStream { get { return receiver; } }
+		public IObservable<MqttApplicationMessage> MessageStream { get { return receiver; } }
 
         internal IMqttChannel<IPacket> Channel {  get { return packetChannel; } }
 
-        /// <exception cref="MqttClientException">ClientException</exception>
         public async Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false)
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
 			}
-
-            if (IsConnected && !string.IsNullOrEmpty (Id)) {
-                return;
-            } 
 
 			var ack = default (ConnectAck);
 
@@ -93,7 +90,7 @@ namespace System.Net.Mqtt
 					KeepAlive = configuration.KeepAliveSecs
 				};
 
-				var connectTimeout = TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs);
+				var connectTimeout = TimeSpan.FromSeconds (configuration.WaitTimeoutSecs);
 
 				await SendPacketAsync (connect)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -117,7 +114,6 @@ namespace System.Net.Mqtt
 
 				Id = credentials.ClientId;
 				IsConnected = true;
-				ObservePackets ();
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
@@ -136,7 +132,6 @@ namespace System.Net.Mqtt
 			}
 		}
 
-		/// <exception cref="MqttClientException">ClientException</exception>
 		public async Task SubscribeAsync (string topicFilter, MqttQualityOfService qos)
 		{
 			if (disposed) {
@@ -148,7 +143,7 @@ namespace System.Net.Mqtt
 				var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 				var ack = default (SubscribeAck);
-				var subscribeTimeout = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
+				var subscribeTimeout = TimeSpan.FromSeconds (configuration.WaitTimeoutSecs);
 
 				await SendPacketAsync (subscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -167,6 +162,14 @@ namespace System.Net.Mqtt
 
 					throw new MqttClientException (message);
 				}
+
+                if (ack.ReturnCodes.FirstOrDefault () == SubscribeReturnCode.Failure) {
+                    var message = string.Format(Properties.Resources.Client_SubscriptionRejected, Id, topicFilter);
+
+                    tracer.Error(message);
+
+                    throw new MqttClientException (message);
+                }
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 
@@ -217,11 +220,13 @@ namespace System.Net.Mqtt
 			}
 
 			try {
+                topics = topics ?? new string[] { };
+
 				var packetId = packetIdProvider.GetPacketId ();
 				var unsubscribe = new Unsubscribe(packetId, topics);
 
 				var ack = default (UnsubscribeAck);
-				var unsubscribeTimeout = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
+				var unsubscribeTimeout = TimeSpan.FromSeconds(configuration.WaitTimeoutSecs);
 
 				await SendPacketAsync (unsubscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -291,7 +296,7 @@ namespace System.Net.Mqtt
                         .PacketStream
                         .LastOrDefaultAsync ();
 
-                    Close (DisconnectedReason.Disposed);
+                    Close (DisconnectedReason.SelfDisconnected);
                 } catch (Exception ex) {
                     Close (ex);
                 } finally {
@@ -373,7 +378,7 @@ namespace System.Net.Mqtt
 		void CheckUnderlyingConnection ()
 		{
 			if (isConnected && !packetChannel.IsConnected) {
-				Close (DisconnectedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
+				Close (DisconnectedReason.SelfDisconnected, Properties.Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 

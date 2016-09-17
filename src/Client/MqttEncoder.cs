@@ -4,10 +4,9 @@ using System.Text;
 
 namespace System.Net.Mqtt
 {
-	public class MqttEncoder
+    internal class MqttEncoder
 	{
-		/// <exception cref="MqttException">ProtocolException</exception>
-		public byte[] EncodeString (string text)
+        internal byte[] EncodeString (string text)
 		{
 			if (string.IsNullOrEmpty (text)) {
 				return new byte[] { };
@@ -29,8 +28,7 @@ namespace System.Net.Mqtt
 			return bytes.ToArray ();
 		}
 
-		/// <exception cref="MqttException">ProtocolException</exception>
-		public byte[] EncodeInteger (int number)
+        internal byte[] EncodeInteger (int number)
 		{
 			if (number > MqttProtocol.MaxIntegerLength) {
 				throw new MqttException  (Properties.Resources.ProtocolEncoding_IntegerMaxValueExceeded);
@@ -39,7 +37,7 @@ namespace System.Net.Mqtt
 			return EncodeInteger ((ushort)number);
 		}
 
-		public byte[] EncodeInteger (ushort number)
+        internal byte[] EncodeInteger (ushort number)
 		{
 			var bytes = BitConverter.GetBytes (number);
 
@@ -50,7 +48,7 @@ namespace System.Net.Mqtt
 			return bytes;
 		}
 
-		public byte[] EncodeRemainingLength (int length)
+        internal byte[] EncodeRemainingLength (int length)
 		{
 			var bytes = new List<byte> ();
 			var encoded = default(int);
@@ -69,8 +67,7 @@ namespace System.Net.Mqtt
 			return bytes.ToArray ();
 		}
 
-		/// <exception cref="MqttException">ProtocolException</exception>
-		public int DecodeRemainingLength (byte[] packet, out int arrayLength)
+        internal int DecodeRemainingLength (byte[] packet, out int arrayLength)
 		{
 			var multiplier = 1;
 			var value = 0;

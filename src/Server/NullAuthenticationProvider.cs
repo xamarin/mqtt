@@ -15,7 +15,7 @@
 
 		public static IMqttAuthenticationProvider Instance { get { return instance.Value; } }
 
-		public bool Authenticate (string username, string password)
+		public bool Authenticate (string clientId, string username, string password)
 		{
 			return true;
 		}

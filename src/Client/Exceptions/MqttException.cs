@@ -2,6 +2,9 @@
 
 namespace System.Net.Mqtt.Exceptions
 {
+    /// <summary>
+    /// Represents the base exception for any MQTT failure
+    /// </summary>
 	[DataContract]
 	public class MqttException : Exception
 	{

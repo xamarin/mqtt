@@ -30,8 +30,8 @@ namespace System.Net.Mqtt.Bindings
 			this.client.ReceiveBufferSize = configuration.BufferSize;
 			this.client.SendBufferSize = configuration.BufferSize;
 			this.buffer = buffer;
-			receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
+			sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			streamSubscription = SubscribeStream ();
 		}
 

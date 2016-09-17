@@ -14,7 +14,7 @@
         <copyright>Copyright 2012</copyright>
         <tags>m2m iot sockets mqtt</tags>
         <dependencies>
-			    <dependency id="System.Diagnostics.Tracer" version="2.0.3" />
+			    <dependency id="System.Diagnostics.Tracer" version="2.0.4" />
 			    <dependency id="System.Reactive" version="3.0.0" />
 			    <dependency id="System.Runtime.Serialization.Primitives" version="4.1.1" />
           <dependency id="System.Net.Sockets" version="4.1.0" />

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using ServerProperties = System.Net.Mqtt.Server.Properties;
 
@@ -9,12 +10,15 @@ namespace System.Net.Mqtt
 {
     internal class ConnectionProvider : IConnectionProvider
 	{
-        static readonly ITracer tracer = Tracer.Get<ConnectionProvider>();
+        static readonly ITracer tracer = Tracer.Get<ConnectionProvider> ();
+        static readonly IList<string> privateClients;
         static readonly ConcurrentDictionary<string, IMqttChannel<IPacket>> connections;
+        static readonly object lockObject = new object();
 
 		static ConnectionProvider ()
 		{
-			connections = new ConcurrentDictionary<string, IMqttChannel<IPacket>> ();
+            privateClients = new List<string>();
+            connections = new ConcurrentDictionary<string, IMqttChannel<IPacket>> ();
 		}
 
 		public int Connections { get { return connections.Skip (0).Count (); } }
@@ -29,7 +33,22 @@ namespace System.Net.Mqtt
 			}
 		}
 
-		public void AddConnection (string clientId, IMqttChannel<IPacket> connection)
+        public IEnumerable<string> PrivateClients => privateClients;
+
+        public void RegisterPrivateClient (string clientId)
+        {
+            if (privateClients.Contains (clientId)) {
+                var message = string.Format (ServerProperties.Resources.ConnectionProvider_PrivateClientAlreadyRegistered, clientId);
+
+                throw new MqttServerException (message);
+            }
+
+            lock (lockObject) {
+                privateClients.Add(clientId);
+            }
+        }
+
+        public void AddConnection (string clientId, IMqttChannel<IPacket> connection)
 		{
 			var existingConnection = default (IMqttChannel<IPacket>);
 
@@ -58,7 +77,6 @@ namespace System.Net.Mqtt
 			return existingConnection;
 		}
 
-		/// <exception cref="ProtocolException">ProtocolException</exception>
 		public void RemoveConnection (string clientId)
 		{
 			var existingConnection = default (IMqttChannel<IPacket>);
@@ -68,6 +86,14 @@ namespace System.Net.Mqtt
 
 				existingConnection.Dispose ();
 			}
+
+            if (privateClients.Contains (clientId))  {
+                lock (lockObject) {
+                    if (privateClients.Contains (clientId)) {
+                        privateClients.Remove (clientId);
+                    }
+                }
+            }
 		}
-	}
+    }
 }

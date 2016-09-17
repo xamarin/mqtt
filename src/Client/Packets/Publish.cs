@@ -15,15 +15,15 @@ namespace System.Net.Mqtt.Packets
 
 		public MqttPacketType Type { get { return MqttPacketType.Publish; } }
 
-		public MqttQualityOfService QualityOfService { get; private set; }
+		public MqttQualityOfService QualityOfService { get; }
 
-		public bool Duplicated { get; private set; }
+		public bool Duplicated { get; }
 
-		public bool Retain { get; private set; }
+		public bool Retain { get; }
 
-		public string Topic { get; private set; }
+		public string Topic { get; }
 
-		public ushort? PacketId { get; private set; }
+		public ushort? PacketId { get; }
 
 		public byte[] Payload { get; set; }
 

@@ -13,7 +13,7 @@ namespace IntegrationTests
 			this.expectedPassword = expectedPassword;
 		}
 
-		public bool Authenticate (string username, string password)
+		public bool Authenticate (string clientId, string username, string password)
 		{
 			return username == expectedUsername && password == expectedPassword;
 		}

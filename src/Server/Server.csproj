@@ -18,13 +18,11 @@
     <Compile Include="Bindings\PrivateStream.cs" />
     <Compile Include="Bindings\ServerTcpBinding.cs" />
     <Compile Include="Bindings\TcpChannelListener.cs" />
+    <Compile Include="Flows\IServerPublishReceiverFlow.cs" />
     <Compile Include="IMqttChannelListener.cs" />
+    <Compile Include="IMqttConnectedClient.cs" />
     <Compile Include="IMqttServer.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    <Compile Include="MqttConnectedClientFactory.cs" />
     <Compile Include="Exceptions\MqttServerException.cs" />
     <Compile Include="ConnectionProvider.cs" />
     <Compile Include="Flows\ServerProtocolFlowProvider.cs" />
@@ -37,6 +35,11 @@
     <Compile Include="IConnectionProvider.cs" />
     <Compile Include="NullAuthenticationProvider.cs" />
     <Compile Include="MqttServerFactory.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="ServerPacketListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MqttServer.cs" />
@@ -60,6 +63,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

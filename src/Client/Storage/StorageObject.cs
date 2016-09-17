@@ -7,6 +7,6 @@
 			Id = Guid.NewGuid ().ToString ();
 		}
 
-		public string Id { get; private set; }
+		public string Id { get; }
 	}
 }

@@ -238,7 +238,7 @@
     <value>Client Id cannot exceed 23 bytes</value>
   </data>
   <data name="ConnectFormatter_ClientIdRequired" xml:space="preserve">
-    <value>Client Id value is cannot be null or empty</value>
+    <value>Client Id value is required and cannot be null or empty</value>
   </data>
   <data name="ConnectFormatter_InvalidClientIdFormat" xml:space="preserve">
     <value>{0} is an invalid ClientId. It must contain only numbers and letters</value>
@@ -332,5 +332,8 @@
   </data>
   <data name="UnsubscribeFormatter_MissingTopics" xml:space="preserve">
     <value>An unsubscribe packet must contain at least one topic to unsubscribe</value>
+  </data>
+  <data name="Client_SubscriptionRejected" xml:space="preserve">
+    <value>The server has rejected the subscription of client {0} to topic {1}</value>
   </data>
 </root>

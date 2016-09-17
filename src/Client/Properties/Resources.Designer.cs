@@ -206,6 +206,15 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The server has rejected the subscription of client {0} to topic {1}.
+        /// </summary>
+        internal static string Client_SubscriptionRejected {
+            get {
+                return ResourceManager.GetString("Client_SubscriptionRejected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The underlying connection has been disconnected unexpectedly.
         /// </summary>
         internal static string Client_UnexpectedChannelDisconnection {
@@ -332,7 +341,7 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client Id value is cannot be null or empty.
+        ///   Looks up a localized string similar to Client Id value is required and cannot be null or empty.
         /// </summary>
         internal static string ConnectFormatter_ClientIdRequired {
             get {

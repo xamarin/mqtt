@@ -5,8 +5,8 @@ namespace IntegrationTests.Context
 {
 	public abstract class ConnectedContext : IntegrationContext
 	{
-		public ConnectedContext (ushort keepAliveSecs = 0)
-			: base(keepAliveSecs)
+		public ConnectedContext (ushort keepAliveSecs = 0, bool allowWildcardsInTopicFilters = true)
+			: base (keepAliveSecs, allowWildcardsInTopicFilters)
 		{
 		}
 

@@ -13,9 +13,6 @@ namespace System.Net.Mqtt.Formatters
 
 		protected abstract byte[] Write (T packet);
 
-		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
-		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<IPacket> FormatAsync (byte[] bytes)
 		{
 			var actualType = (MqttPacketType)bytes.Byte (0).Bits (4);
@@ -32,9 +29,6 @@ namespace System.Net.Mqtt.Formatters
 			return packet;
 		}
 
-		/// <exception cref="MqttConnectionException">ConnectProtocolException</exception>
-		/// <exception cref="MqttViolationException">ProtocolViolationException</exception>
-		/// <exception cref="MqttException">ProtocolException</exception>
 		public async Task<byte[]> FormatAsync (IPacket packet)
 		{
 			if (packet.Type != PacketType) {

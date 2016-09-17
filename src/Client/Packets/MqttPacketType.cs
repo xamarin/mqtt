@@ -1,5 +1,8 @@
 ﻿namespace System.Net.Mqtt.Packets
 {
+    /// <summary>
+    /// Represents one of the possible MQTT packet types
+    /// </summary>
 	public enum MqttPacketType : byte
     {
         Connect = 0x01,

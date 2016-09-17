@@ -20,19 +20,21 @@ namespace IntegrationTests.Context
 		static readonly object lockObject = new object ();
 
 		protected readonly ushort keepAliveSecs;
+        protected readonly bool allowWildcardsInTopicFilters;
 
-		static IntegrationContext()
+        static IntegrationContext()
 		{
-            Tracer.Configuration.AddListener ("System.Net.Mqtt", new TestTracerListener());
+            Tracer.Configuration.AddListener ("System.Net.Mqtt", new TestTracerListener ());
             Tracer.Configuration.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
 
             usedPorts = new ConcurrentBag<int> ();
 		}
 
-		public IntegrationContext (ushort keepAliveSecs = 0)
+		public IntegrationContext (ushort keepAliveSecs = 0, bool allowWildcardsInTopicFilters = true)
 		{
 			this.keepAliveSecs = keepAliveSecs;
-		}
+            this.allowWildcardsInTopicFilters = allowWildcardsInTopicFilters;
+        }
 
 		protected MqttConfiguration Configuration { get; private set; }
 
@@ -91,8 +93,9 @@ namespace IntegrationTests.Context
 					BufferSize = 128 * 1024,
 					Port = GetPort (),
 					KeepAliveSecs = keepAliveSecs,
-					WaitingTimeoutSecs = 2,
-					MaximumQualityOfService = MqttQualityOfService.ExactlyOnce
+					WaitTimeoutSecs = 2,
+					MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
+                    AllowWildcardsInTopicFilters = allowWildcardsInTopicFilters
 				};
 			}
 		}

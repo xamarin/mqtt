@@ -87,30 +87,6 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_toggling_bits_then_succeeds()
-		{
-			var @byte = Convert.ToByte ("00101000", fromBase: 2);
-			var byte2 = Convert.ToByte ("00100000", fromBase: 2);
-
-			@byte = @byte.Toggle (3);
-			byte2 = byte2.Toggle (3);
-
-			var expectedByte = Convert.ToByte ("00100000", fromBase: 2);
-			var expectedByte2 = Convert.ToByte ("00101000", fromBase: 2);
-
-			Assert.Equal (expectedByte, @byte);
-			Assert.Equal (expectedByte2, byte2);
-		}
-
-		[Fact]
-		public void when_toggling_bits_out_of_range_then_fails()
-		{
-			var @byte = Convert.ToByte ("00101000", fromBase: 2);
-
-			Assert.Throws<ArgumentOutOfRangeException> (() => @byte = @byte.Toggle (8));
-		}
-
-		[Fact]
 		public void when_getting_bits_then_succeeds()
 		{
 			var @byte1 = Convert.ToByte ("11101110", fromBase: 2);

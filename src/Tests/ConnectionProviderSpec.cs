@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
 using System.Reactive.Subjects;
 using Xunit;
@@ -10,7 +11,53 @@ namespace Tests
 {
     public class ConnectionProviderSpec
 	{
-		[Fact]
+        [Fact]
+        public void when_registering_private_client_then_private_client_list_increases()
+        {
+            var provider = new ConnectionProvider ();
+
+            var existingPrivateClients = provider.PrivateClients.Count ();
+            var clientId = Guid.NewGuid ().ToString ();
+
+            provider.RegisterPrivateClient (clientId);
+
+            Assert.Equal (existingPrivateClients + 1, provider.PrivateClients.Count ());
+        }
+
+        [Fact]
+        public void when_registering_existing_private_client_then_fails()
+        {
+            var provider = new ConnectionProvider ();
+
+            var clientId = Guid.NewGuid().ToString ();
+
+            provider.RegisterPrivateClient (clientId);
+
+            var ex = Assert.Throws<MqttServerException> (() => provider.RegisterPrivateClient (clientId));
+
+            Assert.NotNull (ex);
+        }
+
+        [Fact]
+        public void when_removing_private_connection_then_private_client_list_decreases()
+        {
+            var provider = new ConnectionProvider ();
+
+            var clientId = Guid.NewGuid ().ToString ();
+
+            provider.AddConnection (clientId, Mock.Of<IMqttChannel<IPacket>> (c => c.IsConnected == true));
+            provider.RegisterPrivateClient (clientId);
+
+            var previousPrivateClients = provider.PrivateClients.Count ();
+
+            provider.RemoveConnection (clientId);
+
+            var currentPrivateClients = provider.PrivateClients.Count ();
+
+            Assert.Equal (previousPrivateClients - 1, currentPrivateClients);
+        }
+
+        [Fact]
 		public void when_adding_new_client_then_connection_list_increases()
 		{
 			var provider = new ConnectionProvider ();
@@ -24,7 +71,7 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_adding_disconnected_client_then_active_clients_list_does_not_increase()
+		public void when_adding_disconnected_client_then_active_clients_list_does_not_increases()
 		{
 			var provider = new ConnectionProvider ();
 
@@ -77,7 +124,8 @@ namespace Tests
 
 			var finalClients = provider.Connections;
 
-			Assert.Equal (initialClients, finalClients);
+            Assert.Equal (initialClients + 1, newClients);
+            Assert.Equal (initialClients, finalClients);
 		}
 
 		[Fact]

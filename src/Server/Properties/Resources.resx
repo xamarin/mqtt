@@ -207,4 +207,10 @@
   <data name="Server_NotStartedError" xml:space="preserve">
     <value>The Server has to be started first, in order to execute any operation</value>
   </data>
+  <data name="ConnectionProvider_PrivateClientAlreadyRegistered" xml:space="preserve">
+    <value>A private client with Id {0} is already registered</value>
+  </data>
+  <data name="ServerPublishReceiverFlow_SystemMessageNotAllowedForClient" xml:space="preserve">
+    <value>Publish messages with a leading $ in the topic are considered  server specific messages, hence remote clients are not allowed to publish them</value>
+  </data>
 </root>

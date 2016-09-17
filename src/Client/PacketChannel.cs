@@ -25,8 +25,8 @@ namespace System.Net.Mqtt
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 
-			receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
+			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			subscription = innerChannel
                 .ReceiverStream
 				.Subscribe (async bytes => {

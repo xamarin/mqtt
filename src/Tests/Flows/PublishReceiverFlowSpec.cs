@@ -7,6 +7,7 @@ using System.Net.Mqtt;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Flows;
 using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Server.Properties;
 using System.Net.Mqtt.Storage;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -286,7 +287,7 @@ namespace Tests.Flows
 
 			var configuration = new MqttConfiguration { 
 				MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-				WaitingTimeoutSecs = 1
+				WaitTimeoutSecs = 1
 			};
 			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
@@ -592,7 +593,7 @@ namespace Tests.Flows
 
 			var configuration = new MqttConfiguration { 
 				MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-				WaitingTimeoutSecs = 2
+				WaitTimeoutSecs = 2
 			};
 			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
@@ -672,7 +673,7 @@ namespace Tests.Flows
 
 			var configuration = new MqttConfiguration { 
 				MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-				WaitingTimeoutSecs = 2
+				WaitTimeoutSecs = 2
 			};
 			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
@@ -782,5 +783,100 @@ namespace Tests.Flows
 
 			channel.Verify (c => c.SendAsync (It.Is<IPacket> (p => p is PublishComplete && (p as PublishComplete).PacketId == packetId)));
 		}
-	}
+
+        [Fact]
+        public void when_sending_publish_to_a_system_topic_with_remote_client_then_fails()
+        {
+            var clientId = Guid.NewGuid ().ToString ();
+
+            var configuration = new Mock<MqttConfiguration> ();
+            var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
+            var connectionProvider = new Mock<IConnectionProvider> ();
+            var publishSenderFlow = new Mock<IPublishSenderFlow> ();
+            var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
+            var sessionRepository = new Mock<IRepository<ClientSession>> ();
+            var willRepository = new Mock<IRepository<ConnectionWill>> ();
+
+            sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
+                .Returns (new ClientSession
+                {
+                    ClientId = clientId,
+                    PendingMessages = new List<PendingMessage> { new PendingMessage () }
+                });
+
+            var packetIdProvider = Mock.Of<IPacketIdProvider> ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
+
+            var systemTopic = "$SYS/foo";
+
+            var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object,
+                publishSenderFlow.Object, retainedRepository.Object, sessionRepository.Object, willRepository.Object,
+                packetIdProvider, undeliveredMessagesListener, configuration.Object);
+
+            var publish = new Publish (systemTopic, MqttQualityOfService.AtMostOnce, retain: false, duplicated: false);
+
+            publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
+
+            var receiver = new Subject<IPacket> ();
+            var channel = new Mock<IMqttChannel<IPacket>> ();
+
+            channel.Setup (c => c.ReceiverStream).Returns (receiver);
+
+            var ex = Assert.Throws<AggregateException> (() => flow.ExecuteAsync (clientId, publish, channel.Object).Wait ());
+
+            Assert.NotNull (ex);
+            Assert.NotNull (ex.InnerException);
+            Assert.True (ex.InnerException is MqttException);
+            Assert.Equal (Resources.ServerPublishReceiverFlow_SystemMessageNotAllowedForClient, ex.InnerException.Message);
+        }
+
+        [Fact]
+        public async Task when_sending_publish_to_a_system_topic_with_private_client_then_succeeds()
+        {
+            var clientId = Guid.NewGuid ().ToString ();
+
+            var configuration = new Mock<MqttConfiguration> ();
+            var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
+            var connectionProvider = new Mock<IConnectionProvider> ();
+            var publishSenderFlow = new Mock<IPublishSenderFlow> ();
+            var retainedRepository = new Mock<IRepository<RetainedMessage>> ();
+            var sessionRepository = new Mock<IRepository<ClientSession>> ();
+            var willRepository = new Mock<IRepository<ConnectionWill>> ();
+
+            connectionProvider.Setup (p => p.PrivateClients)
+                .Returns (new[] { clientId });
+
+            sessionRepository.Setup (r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>> ()))
+                .Returns (new ClientSession
+                {
+                    ClientId = clientId,
+                    PendingMessages = new List<PendingMessage> { new PendingMessage () }
+                });
+
+            var packetIdProvider = Mock.Of<IPacketIdProvider> ();
+            var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
+
+            var systemTopic = "$SYS/foo";
+
+            var flow = new ServerPublishReceiverFlow (topicEvaluator.Object, connectionProvider.Object,
+                publishSenderFlow.Object, retainedRepository.Object, sessionRepository.Object, willRepository.Object,
+                packetIdProvider, undeliveredMessagesListener, configuration.Object);
+
+            var publish = new Publish (systemTopic, MqttQualityOfService.AtMostOnce, retain: false, duplicated: false);
+
+            publish.Payload = Encoding.UTF8.GetBytes ("Publish Receiver Flow Test");
+
+            var receiver = new Subject<IPacket> ();
+            var channel = new Mock<IMqttChannel<IPacket>> ();
+
+            channel.Setup (c => c.ReceiverStream).Returns (receiver);
+
+            await flow.ExecuteAsync (clientId, publish, channel.Object);
+
+            retainedRepository.Verify (r => r.Create (It.IsAny<RetainedMessage> ()), Times.Never);
+            channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
+            publishSenderFlow.Verify (s => s.SendPublishAsync (It.IsAny<string> (),
+               It.IsAny<Publish> (), It.IsAny<IMqttChannel<IPacket>> (), It.IsAny<PendingMessageStatus> ()), Times.Never);
+        }
+    }
 }

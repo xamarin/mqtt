@@ -19,7 +19,7 @@ namespace System.Net.Mqtt
 		readonly MqttConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
 		readonly TaskRunner flowRunner;
-		IDisposable disposable;
+		IDisposable listenerDisposable;
 		bool disposed;
 		string clientId = string.Empty;
 		Timer keepAliveTimer;
@@ -31,7 +31,7 @@ namespace System.Net.Mqtt
 			this.channel = channel;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
-			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			flowRunner = TaskRunner.Get ();
 		}
 
@@ -43,7 +43,7 @@ namespace System.Net.Mqtt
 				throw new ObjectDisposedException (GetType ().FullName);
 			}
 
-			disposable = new CompositeDisposable (
+			listenerDisposable = new CompositeDisposable (
 				ListenFirstPacket (),
 				ListenNextPackets (),
 				ListenCompletionAndErrors (),
@@ -66,7 +66,7 @@ namespace System.Net.Mqtt
 			if (disposing) {
 				tracer.Info (Properties.Resources.Mqtt_Disposing, GetType ().FullName);
 
-				disposable.Dispose ();
+				listenerDisposable.Dispose ();
 				StopKeepAliveMonitor ();
 				packets.OnCompleted ();
 				(flowRunner as IDisposable)?.Dispose ();

@@ -1,14 +1,15 @@
-﻿using System;
+﻿using IntegrationTests.Context;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Exceptions;
 using System.Net.Mqtt.Packets;
+using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using IntegrationTests.Context;
 using Xunit;
 
 namespace IntegrationTests
@@ -22,19 +23,24 @@ namespace IntegrationTests
 			server = GetServerAsync ().Result;
 		}
 
-		[Fact]
-		public async Task when_stopping_server_then_it_is_not_reachable()
-		{
-			server.Stop ();
-
-            try {
+        [Fact]
+        public async Task when_connecting_client_to_non_existing_server_then_fails()
+        {
+            try
+            {
                 await GetClientAsync();
-            } catch (Exception ex) {
-                Assert.True(ex is MqttException);
             }
-		}
+            catch (Exception ex)
+            {
+                Assert.True(ex is MqttClientException);
+                Assert.NotNull(ex.InnerException);
+                Assert.True(ex.InnerException is MqttException);
+                Assert.NotNull(ex.InnerException.InnerException);
+                Assert.True(ex.InnerException.InnerException is SocketException);
+            }
+        }
 
-		[Fact]
+        [Fact]
 		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
 		{
 			var fooClient = await GetClientAsync ();
@@ -43,6 +49,7 @@ namespace IntegrationTests
 			await fooClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
 			await barClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
 
+            var initialConnectedClients = server.ActiveClients.Count ();
 			var exceptionThrown = false;
 
 			try {
@@ -62,9 +69,10 @@ namespace IntegrationTests
 
 			serverSignal.Wait ();
 
+            Assert.Equal (2, initialConnectedClients);
 			Assert.True (exceptionThrown);
-			Assert.Equal(1, server.ActiveChannels);
-			Assert.Equal(1, server.ActiveClients.Count ());
+			Assert.Equal (1, server.ActiveChannels);
+			Assert.Equal (1, server.ActiveClients.Count ());
 
             fooClient.Dispose ();
 			barClient.Dispose ();
@@ -95,7 +103,79 @@ namespace IntegrationTests
 			}
 		}
 
-		[Fact]
+        [Fact]
+        public async Task when_connecting_twice_with_same_client_then_fails()
+        {
+            var client = await GetClientAsync ();
+            var clientId = GetClientId ();
+
+            var clientDisconnectedEvent = new ManualResetEventSlim ();
+
+            client.Disconnected += (sender, e) => {
+                if (e.Reason == DisconnectedReason.RemoteDisconnected)
+                {
+                    clientDisconnectedEvent.Set ();
+                }
+            };
+
+            await client.ConnectAsync (new MqttClientCredentials (clientId));
+            await client.ConnectAsync (new MqttClientCredentials (clientId));
+
+            var clientRemoteDisconnected = clientDisconnectedEvent.Wait (2000);
+
+            Assert.True (clientRemoteDisconnected);
+        }
+
+        [Fact]
+        public async Task when_connecting_client_with_invalid_id_then_fails()
+        {
+            var client = await GetClientAsync ();
+            var clientId = "#invalid*client-id";
+
+            var ex = Assert.Throws<AggregateException> (() => client.ConnectAsync (new MqttClientCredentials (clientId)).Wait ());
+
+            Assert.NotNull (ex);
+            Assert.NotNull (ex.InnerException);
+            Assert.True (ex.InnerException is MqttClientException);
+            Assert.NotNull (ex.InnerException.InnerException);
+            Assert.True (ex.InnerException.InnerException is MqttException);
+        }
+
+        [Fact]
+        public async Task when_connecting_client_with_empty_id_then_fails()
+        {
+            var client = await GetClientAsync ();
+            var clientId = string.Empty;
+
+            var ex = Assert.Throws<AggregateException> (() => client.ConnectAsync (new MqttClientCredentials (clientId)).Wait ());
+
+            Assert.NotNull (ex);
+            Assert.NotNull (ex.InnerException);
+            Assert.True (ex.InnerException is MqttClientException);
+            Assert.NotNull (ex.InnerException.InnerException);
+            Assert.True (ex.InnerException.InnerException is ArgumentNullException);
+
+        }
+
+        [Fact]
+        public async Task when_server_doesnt_receive_connect_then_disconnects_channel()
+        {
+            var client = await GetClientAsync ();
+            var clientDisconnectedEvent = new ManualResetEventSlim ();
+
+            client.Disconnected += (sender, e) => {
+                if (e.Reason == DisconnectedReason.RemoteDisconnected)
+                {
+                    clientDisconnectedEvent.Set ();
+                }
+            };
+
+            var clientRemoteDisconnected = clientDisconnectedEvent.Wait (2500);
+
+            Assert.True (clientRemoteDisconnected);
+        }
+
+        [Fact]
 		public async Task when_disconnect_clients_then_succeeds()
 		{
 			var count = GetTestLoad ();
@@ -111,6 +191,7 @@ namespace IntegrationTests
 
 			await Task.WhenAll (connectTasks);
 
+            var initialConnectedClients = server.ActiveClients.Count ();
 			var disconnectTasks = new List<Task> ();
 
 			foreach (var client in clients) {
@@ -127,6 +208,7 @@ namespace IntegrationTests
 				}
 			}
 
+            Assert.Equal (clients.Count, initialConnectedClients);
 			Assert.Equal (0, server.ActiveClients.Count ());
 			Assert.True (clients.All(c => !c.IsConnected));
 			Assert.True (clients.All(c => string.IsNullOrEmpty (c.Id)));
@@ -206,12 +288,12 @@ namespace IntegrationTests
 
 			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
 
-			client2.ReceiverStream.Subscribe (m => {
+			client2.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willReceivedSignal.Set ();
 				}
 			});
-			client3.ReceiverStream.Subscribe (m => {
+			client3.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willReceivedSignal.Set ();
 				}
@@ -251,13 +333,13 @@ namespace IntegrationTests
 			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
 			var willMessage = default (MqttApplicationMessage);
 
-			client2.ReceiverStream.Subscribe (m => {
+			client2.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willMessage = m;
 					willReceivedSignal.Set ();
 				}
 			});
-			client3.ReceiverStream.Subscribe (m => {
+			client3.MessageStream.Subscribe (m => {
 				if (m.Topic == topic) {
 					willMessage = m;
 					willReceivedSignal.Set ();

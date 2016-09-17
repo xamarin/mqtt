@@ -25,7 +25,6 @@
     <Compile Include="Context\ConnectedContext.cs" />
     <Compile Include="ConnectionSpec.cs" />
     <Compile Include="Context\IntegrationContext.cs" />
-    <Compile Include="ExceptionSpec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PublishingSpec.cs" />
     <Compile Include="Messages\RequestMessage.cs" />

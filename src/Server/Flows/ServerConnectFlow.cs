@@ -33,7 +33,7 @@ namespace System.Net.Mqtt.Flows
 
 			var connect = input as Connect;
 
-			if (!authenticationProvider.Authenticate (connect.UserName, connect.Password)) {
+			if (!authenticationProvider.Authenticate (clientId, connect.UserName, connect.Password)) {
 				throw new MqttConnectionException (MqttConnectionStatus.BadUserNameOrPassword);
 			}
 
