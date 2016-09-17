@@ -108,7 +108,7 @@ namespace IntegrationTests
             Assert.NotNull (ex.InnerException);
             Assert.True (ex.InnerException is MqttClientException);
             Assert.NotNull (ex.InnerException.InnerException);
-            Assert.NotNull (ex.InnerException.InnerException is MqttViolationException);
+            Assert.NotNull (ex.InnerException.InnerException is MqttProtocolViolationException);
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace IntegrationTests
             Assert.NotNull (ex.InnerException);
             Assert.True (ex.InnerException is MqttClientException);
             Assert.NotNull (ex.InnerException.InnerException);
-            Assert.NotNull (ex.InnerException.InnerException is MqttViolationException);
+            Assert.NotNull (ex.InnerException.InnerException is MqttProtocolViolationException);
 
         }
         public void Dispose ()

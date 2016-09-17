@@ -13,9 +13,9 @@ namespace System.Net.Mqtt.Packets
 
 		public MqttPacketType Type { get { return MqttPacketType.SubscribeAck; } }
 
-		public ushort PacketId { get; private set; }
+		public ushort PacketId { get; }
 
-		public IEnumerable<SubscribeReturnCode> ReturnCodes { get; private set; }
+		public IEnumerable<SubscribeReturnCode> ReturnCodes { get; }
 
 		public bool Equals (SubscribeAck other)
 		{

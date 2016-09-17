@@ -86,7 +86,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MqttConfiguration.cs" />
     <Compile Include="MqttEncoder.cs" />
-    <Compile Include="Exceptions\MqttViolationException.cs" />
+    <Compile Include="Exceptions\MqttProtocolViolationException.cs" />
     <Compile Include="Exceptions\MqttException.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

@@ -77,13 +77,13 @@ namespace System.Net.Mqtt.Formatters
 		byte[] GetPayload (Subscribe packet)
 		{
 			if (packet.Subscriptions == null || !packet.Subscriptions.Any ())
-				throw new MqttViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new MqttProtocolViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var payload = new List<byte> ();
 
 			foreach (var subscription in packet.Subscriptions) {
                 if (string.IsNullOrEmpty (subscription.TopicFilter)) {
-                    throw new MqttViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+                    throw new MqttProtocolViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
                 }
 
 				if (!topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
@@ -105,7 +105,7 @@ namespace System.Net.Mqtt.Formatters
 		IEnumerable<Subscription> GetSubscriptions (byte[] bytes, int headerLength, int remainingLength)
 		{
 			if (bytes.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
-				throw new MqttViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new MqttProtocolViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var index = headerLength;
 
@@ -121,7 +121,7 @@ namespace System.Net.Mqtt.Formatters
 				var requestedQosByte = bytes.Byte (index);
 
 				if (!Enum.IsDefined (typeof (MqttQualityOfService), requestedQosByte))
-					throw new MqttViolationException  (Properties.Resources.Formatter_InvalidQualityOfService);
+					throw new MqttProtocolViolationException  (Properties.Resources.Formatter_InvalidQualityOfService);
 
 				var requestedQos = (MqttQualityOfService)requestedQosByte;
 

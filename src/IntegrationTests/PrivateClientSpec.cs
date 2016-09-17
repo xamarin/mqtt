@@ -73,11 +73,7 @@ namespace IntegrationTests
                 Name = string.Concat ("Message ", Guid.NewGuid ().ToString ().Substring (0, 4)),
                 Value = new Random ().Next ()
             };
-            var message = new MqttApplicationMessage
-            {
-                Topic = topic,
-                Payload = Serializer.Serialize (testMessage)
-            };
+            var message = new MqttApplicationMessage (topic, Serializer.Serialize(testMessage));
 
             await client.PublishAsync (message, MqttQualityOfService.AtMostOnce);
             await client.PublishAsync (message, MqttQualityOfService.AtLeastOnce);
@@ -98,11 +94,7 @@ namespace IntegrationTests
                 Name = string.Concat ("Message ", Guid.NewGuid ().ToString ().Substring (0, 4)),
                 Value = new Random ().Next ()
             };
-            var message = new MqttApplicationMessage
-            {
-                Topic = topic,
-                Payload = Serializer.Serialize (testMessage)
-            };
+            var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
             await client.PublishAsync (message, MqttQualityOfService.AtMostOnce);
             await client.PublishAsync (message, MqttQualityOfService.AtLeastOnce);

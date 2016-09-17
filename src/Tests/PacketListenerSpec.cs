@@ -24,7 +24,7 @@ namespace Tests
 
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<MqttPacketType> ())).Returns (flow.Object);
 
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
@@ -73,7 +73,7 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
@@ -99,7 +99,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var waitingTimeout = 1;
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = waitingTimeout };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = waitingTimeout };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
@@ -128,7 +128,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
 			var waitingTimeout = 1;
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = waitingTimeout };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = waitingTimeout };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
@@ -159,7 +159,7 @@ namespace Tests
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
@@ -190,7 +190,7 @@ namespace Tests
 
             var serverPublishReceiverFlow = new Mock<IServerPublishReceiverFlow>();
             var flowProvider = new Mock<IProtocolFlowProvider> ();
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
@@ -235,7 +235,7 @@ namespace Tests
 			flowProvider.Setup (p => p.GetFlow (It.IsAny<MqttPacketType> ()))
 				.Returns (Mock.Of<IProtocolFlow> ());
 
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var sender = new Subject<IPacket> ();
 			var packetChannelMock = new Mock<IMqttChannel<IPacket>> ();
@@ -280,7 +280,7 @@ namespace Tests
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 
@@ -318,7 +318,7 @@ namespace Tests
 				.Returns (Mock.Of<IProtocolFlow> ());
 
 			var repositoryProvider = Mock.Of<IRepositoryProvider> ();
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 10 };
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 10 };
 			var receiver = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>> ();
 

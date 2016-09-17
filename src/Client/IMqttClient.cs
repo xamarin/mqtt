@@ -11,7 +11,7 @@ namespace System.Net.Mqtt
         /// <summary>
         /// Event fired when the Client gets disconnected.
         /// The Client disconnection could be caused by a protocol disconnect, 
-        /// an error or a remote disconnection produced by the Broker
+        /// an error or a remote disconnection produced by the Server
         /// See <see cref="MqttEndpointDisconnected"/> for more details on the disconnection information
         /// </summary>
 		event EventHandler<MqttEndpointDisconnected> Disconnected;
@@ -31,7 +31,7 @@ namespace System.Net.Mqtt
 		bool IsConnected { get; }
 
         /// <summary>
-        /// Represents the incoming application messages received from the Broker
+        /// Represents the incoming application messages received from the Server
         /// These messages correspond to the topics subscribed,
         /// by calling <see cref="SubscribeAsync(string, MqttQualityOfService)"/> method 
         /// See <see cref="MqttApplicationMessage"/> for more details about the application messages
@@ -40,42 +40,43 @@ namespace System.Net.Mqtt
 
         /// <summary>
         /// Represents the protocol connection, which consists of sending a CONNECT packet
-        /// and awaiting the corresponding CONNACK packet from the Broker
+        /// and awaiting the corresponding CONNACK packet from the Server
         /// </summary>
         /// <param name="credentials">
-        /// The credentials used to connect to the Broker. 
+        /// The credentials used to connect to the Server. 
         /// See <see cref="MqttClientCredentials" /> for more details on the credentials information
         /// </param>
         /// <param name="will">
-        /// The last will message to send from the Broker when an unexpected Client disconnection occurrs. 
+        /// The last will message to send from the Server when an unexpected Client disconnection occurrs. 
         /// See <see cref="MqttLastWill" /> for more details about the will message structure
         /// </param>
         /// <param name="cleanSession">
-        /// Indicates if the session state between Client and Broker must be preserved and re used between connections
+        /// Indicates if the session state between Client and Server must be cleared between connections
+        /// Defaults to false, meaning that session state will be preserved by default accross connections
         /// </param>
         /// <exception cref="MqttClientException">MqttClientException</exception>
         /// <remarks>
-        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180841">MQTT Connect</a>
+        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180841">MQTT Connect</a>
         /// for more details about the protocol connection
         /// </remarks>
 		Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
 
         /// <summary>
         /// Represents the protocol subscription, which consists of sending a SUBSCRIBE packet
-        /// and awaiting the corresponding SUBACK packet from the Broker
+        /// and awaiting the corresponding SUBACK packet from the Server
         /// </summary>
         /// <param name="topicFilter">
         /// The topic to subscribe for incoming application messages. 
-        /// Every message sent by the Broker that matches a subscribed topic, will go to the <see cref="MessageStream"/> 
+        /// Every message sent by the Server that matches a subscribed topic, will go to the <see cref="MessageStream"/> 
         /// </param>
         /// <param name="qos">
-        /// The maximum Quality Of Service (QoS) that the Broker should maintain when publishing application messages for the subscribed topic to the Client
-        /// This QoS is maximum because it depends on the QoS supported by the Broker. 
+        /// The maximum Quality Of Service (QoS) that the Server should maintain when publishing application messages for the subscribed topic to the Client
+        /// This QoS is maximum because it depends on the QoS supported by the Server. 
         /// See <see cref="MqttQualityOfService" /> for more details about the QoS values
         /// </param>
         /// <exception cref="MqttClientException">MqttClientException</exception>
         /// <remarks>
-        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180876">MQTT Subscribe</a>
+        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180876">MQTT Subscribe</a>
         /// for more details about the protocol subscription
         /// </remarks>
 		Task SubscribeAsync (string topicFilter, MqttQualityOfService qos);
@@ -85,27 +86,27 @@ namespace System.Net.Mqtt
         /// and awaiting the corresponding ACK packet, if applies, based on the QoS defined
         /// </summary>
         /// <param name="message">
-        /// The application message to publish to the Broker.
+        /// The application message to publish to the Server.
         /// See <see cref="MqttApplicationMessage" /> for more details about the application messages
         /// </param>
         /// <param name="qos">
         /// The Quality Of Service (QoS) associated to the application message, which determines 
-        /// the sequence of acknowledgements that Client and Broker should send each other to consider the message as delivered
+        /// the sequence of acknowledgements that Client and Server should send each other to consider the message as delivered
         /// See <see cref="MqttQualityOfService" /> for more details about the QoS values
         /// </param>
         /// <param name="retain">
-        /// Indicates if the application message should be retained by the Broker for future subscribers.
+        /// Indicates if the application message should be retained by the Server for future subscribers.
         /// Only the last message of each topic is retained
         /// </param>
         /// <remarks>
-        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180850">MQTT Publish</a>
+        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180850">MQTT Publish</a>
         /// for more details about the protocol publish
         /// </remarks>
         Task PublishAsync (MqttApplicationMessage message, MqttQualityOfService qos, bool retain = false);
 
         /// <summary>
         /// Represents the protocol unsubscription, which consists of sending an UNSUBSCRIBE packet
-        /// and awaiting the corresponding UNSUBACK packet from the Broker
+        /// and awaiting the corresponding UNSUBACK packet from the Server
         /// </summary>
         /// <param name="topics">
         /// The list of topics to unsubscribe from
@@ -113,18 +114,18 @@ namespace System.Net.Mqtt
         /// </param>
         /// <exception cref="MqttClientException">MqttClientException</exception>
         /// <remarks>
-        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180885">MQTT Unsubscribe</a>
+        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180885">MQTT Unsubscribe</a>
         /// for more details about the protocol unsubscription
         /// </remarks>
 		Task UnsubscribeAsync (params string[] topics);
 
         /// <summary>
-        /// Represents the protocol disconnection, which consists of sending a DISCONNECT packet to the Broker
-        /// No acknowledgement is sent by the Broker on the disconnection
+        /// Represents the protocol disconnection, which consists of sending a DISCONNECT packet to the Server
+        /// No acknowledgement is sent by the Server on the disconnection
         /// Once the client is successfully disconnected, the <see cref="Disconnected"/> event will be fired 
         /// </summary>
         /// <remarks>
-        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180903">MQTT Disconnect</a>
+        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180903">MQTT Disconnect</a>
         /// for more details about the protocol disconnection
         /// </remarks>
 		Task DisconnectAsync ();

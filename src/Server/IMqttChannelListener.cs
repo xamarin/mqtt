@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a listener for incoming channel connections on top of an underlying transport protocol
     /// The connections are performed by MQTT Clients through <see cref="IMqttChannel{T}" /> 
-    /// and the listener accepts and establishes the connection on the Broker side
+    /// and the listener accepts and establishes the connection on the Server side
     /// </summary>
 	public interface IMqttChannelListener : IDisposable
 	{

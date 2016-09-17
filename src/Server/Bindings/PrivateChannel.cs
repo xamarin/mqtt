@@ -24,8 +24,8 @@ namespace System.Net.Mqtt.Bindings
         {
             this.stream = stream;
             this.identifier = identifier;
-            receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
-            sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs));
+            receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitTimeoutSecs));
+            sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds(configuration.WaitTimeoutSecs));
             streamSubscription = SubscribeStream ();
         }
 

@@ -4,7 +4,7 @@
     /// Represents a server binding for a supported MQTT underlying transport protocol
     /// </summary>
     /// <remarks>
-    /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180911">Network Connections</a>
+    /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180911">Network Connections</a>
     /// for more details about default and supported transport protocols for MQTT
     /// </remarks>
     public interface IMqttServerBinding : IMqttBinding

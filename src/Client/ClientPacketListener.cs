@@ -31,7 +31,7 @@ namespace System.Net.Mqtt
 			this.channel = channel;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
-			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			flowRunner = TaskRunner.Get ();
 		}
 

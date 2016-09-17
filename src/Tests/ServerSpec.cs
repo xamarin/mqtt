@@ -21,7 +21,7 @@ namespace Tests
 				.Setup (p => p.GetChannelStream ())
 				.Returns (sockets);
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 60);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>>();
@@ -59,7 +59,7 @@ namespace Tests
 				.Setup (p => p.GetChannelStream ())
 				.Returns (sockets);
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 60);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
 			var packetChannel = new Mock<IMqttChannel<IPacket>>();
@@ -114,7 +114,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 60);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 60);
 
 			var server = new MqttServer (channelProvider.Object, Mock.Of<IPacketChannelFactory> (x => x.Create (It.IsAny<IMqttChannel<byte[]>> ()) == packetChannel.Object), 
 				flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>> (), configuration);
@@ -140,7 +140,7 @@ namespace Tests
 				.Setup (p => p.GetChannelStream ())
 				.Returns (sockets);
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 60);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 60);
 
 			var packets = new Subject<IPacket> ();
 

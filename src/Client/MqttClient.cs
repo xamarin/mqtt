@@ -35,8 +35,8 @@ namespace System.Net.Mqtt
 			IPacketIdProvider packetIdProvider,
 			MqttConfiguration configuration)
 		{
-			receiver = new ReplaySubject<MqttApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
-			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			receiver = new ReplaySubject<MqttApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
+			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 
 			this.packetChannel = packetChannel;
 			this.flowProvider = flowProvider;
@@ -90,7 +90,7 @@ namespace System.Net.Mqtt
 					KeepAlive = configuration.KeepAliveSecs
 				};
 
-				var connectTimeout = TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs);
+				var connectTimeout = TimeSpan.FromSeconds (configuration.WaitTimeoutSecs);
 
 				await SendPacketAsync (connect)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -143,7 +143,7 @@ namespace System.Net.Mqtt
 				var subscribe = new Subscribe (packetId, new Subscription (topicFilter, qos));
 
 				var ack = default (SubscribeAck);
-				var subscribeTimeout = TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs);
+				var subscribeTimeout = TimeSpan.FromSeconds (configuration.WaitTimeoutSecs);
 
 				await SendPacketAsync (subscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -226,7 +226,7 @@ namespace System.Net.Mqtt
 				var unsubscribe = new Unsubscribe(packetId, topics);
 
 				var ack = default (UnsubscribeAck);
-				var unsubscribeTimeout = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
+				var unsubscribeTimeout = TimeSpan.FromSeconds(configuration.WaitTimeoutSecs);
 
 				await SendPacketAsync (unsubscribe)
 					.ConfigureAwait (continueOnCapturedContext: false);
@@ -296,7 +296,7 @@ namespace System.Net.Mqtt
                         .PacketStream
                         .LastOrDefaultAsync ();
 
-                    Close (DisconnectedReason.Disposed);
+                    Close (DisconnectedReason.SelfDisconnected);
                 } catch (Exception ex) {
                     Close (ex);
                 } finally {
@@ -378,7 +378,7 @@ namespace System.Net.Mqtt
 		void CheckUnderlyingConnection ()
 		{
 			if (isConnected && !packetChannel.IsConnected) {
-				Close (DisconnectedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
+				Close (DisconnectedReason.SelfDisconnected, Properties.Resources.Client_UnexpectedChannelDisconnection);
 			}
 		}
 

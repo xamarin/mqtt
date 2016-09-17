@@ -44,7 +44,7 @@ namespace Tests
 		[InlineData(MqttPacketType.Unsubscribe, typeof(ServerUnsubscribeFlow))]
 		public void when_getting_server_flow_from_valid_packet_type_then_succeeds(MqttPacketType packetType, Type flowType)
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<IMqttTopicEvaluator> (), 
 				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), Mock.Of<ISubject<MqttUndeliveredMessage>> (), new MqttConfiguration ());
 
@@ -56,7 +56,7 @@ namespace Tests
 		[Fact]
 		public void when_getting_explicit_server_flow_from_type_then_succeeds()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var flowProvider = new ServerProtocolFlowProvider (authenticationProvider, Mock.Of<IConnectionProvider> (), Mock.Of<IMqttTopicEvaluator> (), 
 				Mock.Of<IRepositoryProvider>(), Mock.Of<IPacketIdProvider>(), Mock.Of<ISubject<MqttUndeliveredMessage>> (), new MqttConfiguration ());
 

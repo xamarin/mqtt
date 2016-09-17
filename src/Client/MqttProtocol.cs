@@ -24,7 +24,7 @@
 
 		public static readonly int NameLength = Name.Length + StringPrefixLength;
 
-		internal static MqttEncoder Encoding { get; private set; }
+		internal static MqttEncoder Encoding { get; }
 
 		static MqttProtocol ()
 		{

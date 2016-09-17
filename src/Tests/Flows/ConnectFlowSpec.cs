@@ -16,7 +16,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_then_session_is_created_and_ack_is_sent()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -58,7 +58,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_without_clean_session_then_session_is_not_deleted_and_ack_is_sent_with_session_present()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -104,7 +104,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_clean_session_then_session_is_deleted_and_ack_is_sent_with_session_present()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -150,7 +150,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_without_existing_session_and_without_clean_session_then_ack_is_sent_with_no_session_present()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -188,7 +188,7 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_with_will_then_will_is_created_and_ack_is_sent()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == true);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
@@ -234,7 +234,7 @@ namespace Tests.Flows
 		[Fact]
 		public void when_sending_connect_with_invalid_user_credentials_then_connection_exception_is_thrown()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string> (), It.IsAny<string> ()) == false);
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == false);
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 			var senderFlow = new Mock<IPublishSenderFlow> ();

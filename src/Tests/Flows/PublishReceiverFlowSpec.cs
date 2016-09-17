@@ -287,7 +287,7 @@ namespace Tests.Flows
 
 			var configuration = new MqttConfiguration { 
 				MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-				WaitingTimeoutSecs = 1
+				WaitTimeoutSecs = 1
 			};
 			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
@@ -593,7 +593,7 @@ namespace Tests.Flows
 
 			var configuration = new MqttConfiguration { 
 				MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-				WaitingTimeoutSecs = 2
+				WaitTimeoutSecs = 2
 			};
 			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
@@ -673,7 +673,7 @@ namespace Tests.Flows
 
 			var configuration = new MqttConfiguration { 
 				MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-				WaitingTimeoutSecs = 2
+				WaitTimeoutSecs = 2
 			};
 			var topicEvaluator = new Mock<IMqttTopicEvaluator> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();

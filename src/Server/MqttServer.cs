@@ -134,7 +134,7 @@ namespace System.Net.Mqtt
                         binaryChannelProvider?.Dispose();
                     }
 
-                    Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Disposed));
+                    Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.SelfDisconnected));
                 } catch (Exception ex) {
                     tracer.Error (ex);
                     Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.Error, ex.Message));

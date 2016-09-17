@@ -22,7 +22,7 @@ namespace System.Net.Mqtt.Formatters
 			var index = 1 + remainingLengthBytesLength + 2;
 
 			if (bytes.Length == index)
-				throw new MqttViolationException  (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+				throw new MqttProtocolViolationException  (Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
 			var topics = new List<string> ();
 
@@ -80,7 +80,7 @@ namespace System.Net.Mqtt.Formatters
 		byte[] GetPayload (Unsubscribe packet)
 		{
 			if (packet.Topics == null || !packet.Topics.Any ())
-				throw new MqttViolationException  (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+				throw new MqttProtocolViolationException  (Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
 			var payload = new List<byte> ();
 

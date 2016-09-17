@@ -2,11 +2,11 @@
 {
     /// <summary>
     /// Represents the possible values accepted for the MQTT Quality of Service (QoS)
-    /// The QoS is used on protocol publish to determine how Client and Broker should acknowledge
+    /// The QoS is used on protocol publish to determine how Client and Server should acknowledge
     /// the published packets
     /// </summary>
     /// <remarks>
-    /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180912">Quality of Service levels and protocol flows</a>
+    /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180912">Quality of Service levels and protocol flows</a>
     /// for more details about the QoS values and description
     /// </remarks>
 	public enum MqttQualityOfService : byte

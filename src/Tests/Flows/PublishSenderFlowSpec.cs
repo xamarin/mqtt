@@ -21,7 +21,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == MqttQualityOfService.AtLeastOnce);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 1 && c.MaximumQualityOfService == MqttQualityOfService.AtLeastOnce);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
@@ -81,7 +81,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 1 && c.MaximumQualityOfService == MqttQualityOfService.ExactlyOnce);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 1 && c.MaximumQualityOfService == MqttQualityOfService.ExactlyOnce);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
@@ -141,7 +141,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 10);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 10);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
@@ -190,7 +190,7 @@ namespace Tests.Flows
 		{
 			var clientId = Guid.NewGuid ().ToString ();
 
-			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitingTimeoutSecs == 1);
+			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 1);
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 

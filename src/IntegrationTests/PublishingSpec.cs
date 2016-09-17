@@ -30,12 +30,8 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+				var testMessage = GetTestMessage ();
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
@@ -69,11 +65,7 @@ namespace IntegrationTests
 
             for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtLeastOnce));
 			}
@@ -110,11 +102,7 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (client.PublishAsync (message, MqttQualityOfService.ExactlyOnce));
 			}
@@ -174,19 +162,15 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{ 
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+				var testMessage = GetTestMessage ();
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
 
-			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(Configuration.WaitingTimeoutSecs));
+			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
 
 			Assert.Equal (count, subscriber1Received);
 			Assert.Equal (count, subscriber2Received);
@@ -223,12 +207,8 @@ namespace IntegrationTests
 			var tasks = new List<Task> ();
 
 			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage();
-				var message = new MqttApplicationMessage
-				{ 
-					Topic = topic,
-					Payload = Serializer.Serialize(testMessage)
-				};
+				var testMessage = GetTestMessage ();
+                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
 
 				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
@@ -268,10 +248,7 @@ namespace IntegrationTests
 					if (m.Topic == requestTopic) {
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
 						var response = GetResponseMessage (request);
-						var message = new MqttApplicationMessage {
-							Topic = responseTopic,
-							Payload = Serializer.Serialize(response)
-						};
+                        var message = new MqttApplicationMessage (responseTopic, Serializer.Serialize (response));
 
 						await subscriber.PublishAsync (message, MqttQualityOfService.AtMostOnce)
 							.ConfigureAwait(continueOnCapturedContext: false);
@@ -292,18 +269,14 @@ namespace IntegrationTests
 
 			for (var i = 1; i <= count; i++) {
 				var request = GetRequestMessage ();
-				var message = new MqttApplicationMessage
-				{ 
-					Topic = requestTopic,
-					Payload = Serializer.Serialize(request)
-				};
+                var message = new MqttApplicationMessage (requestTopic, Serializer.Serialize (request));
 
 				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
 			}
 
 			await Task.WhenAll (tasks);
 
-			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (Configuration.WaitingTimeoutSecs));
+			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (Configuration.WaitTimeoutSecs));
 
 			Assert.Equal (count, subscriberReceived);
 			Assert.True (completed);

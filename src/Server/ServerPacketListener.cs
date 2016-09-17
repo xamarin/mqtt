@@ -36,7 +36,7 @@ namespace System.Net.Mqtt
 			this.connectionProvider = connectionProvider;
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
-			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			flowRunner = TaskRunner.Get ();
 		}
 
@@ -79,7 +79,7 @@ namespace System.Net.Mqtt
 
 		IDisposable ListenFirstPacket ()
 		{
-			var packetDueTime = TimeSpan.FromSeconds(configuration.WaitingTimeoutSecs);
+			var packetDueTime = TimeSpan.FromSeconds(configuration.WaitTimeoutSecs);
 
 			return channel
                 .ReceiverStream
@@ -120,7 +120,7 @@ namespace System.Net.Mqtt
 				.Skip (1)
 				.Subscribe (async packet => {
 					if (packet is Connect) {
-						await NotifyErrorAsync (new MqttViolationException (ServerProperties.Resources.ServerPacketListener_SecondConnectNotAllowed))
+						await NotifyErrorAsync (new MqttProtocolViolationException (ServerProperties.Resources.ServerPacketListener_SecondConnectNotAllowed))
                             .ConfigureAwait (continueOnCapturedContext: false);
 
 						return;

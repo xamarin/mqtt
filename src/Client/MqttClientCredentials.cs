@@ -1,7 +1,7 @@
 ﻿namespace System.Net.Mqtt
 {
     /// <summary>
-    /// Credentials used to connect a Client to a Broker as part of the protocol connection
+    /// Credentials used to connect a Client to a Server as part of the protocol connection
     /// </summary>
 	public class MqttClientCredentials
 	{
@@ -35,17 +35,17 @@
         /// The Client Id must contain only the characters 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
         /// and have a maximum of 23 encoded bytes
         /// </summary>
-		public string ClientId { get; private set; }
+		public string ClientId { get; }
 
         /// <summary>
         /// User Name used for authentication
         /// Authentication is not mandatory on MQTT and is up to the consumer of the API
         /// </summary>
-		public string UserName { get; private set; }
+		public string UserName { get; }
 
         /// <summary>
         /// Password used for authentication
         /// Authentication is not mandatory on MQTT and is up to the consumer of the API
-		public string Password { get; private set; }
+		public string Password { get; }
 	}
 }

@@ -10,7 +10,7 @@ using ServerProperties = System.Net.Mqtt.Server.Properties;
 namespace System.Net.Mqtt
 {
     /// <summary>
-    /// Provides a factory for MQTT Brokers
+    /// Provides a factory for MQTT Servers
     /// </summary>
     public class MqttServerFactory : IMqttEndpointFactory<IMqttServer>
     {
@@ -58,13 +58,13 @@ namespace System.Net.Mqtt
         }
 
         /// <summary>
-        /// Creates an MQTT Broker
+        /// Creates an MQTT Server
         /// </summary>
         /// <param name="configuration">
-        /// The configuration used for creating the Broker
+        /// The configuration used for creating the Server
         /// See <see cref="MqttConfiguration" /> for more details about the supported values
         /// </param>
-        /// <returns>A new MQTT Broker</returns>
+        /// <returns>A new MQTT Server</returns>
         /// <exception cref="MqttServerException">MqttServerException</exception>
         public Task<IMqttServer> CreateAsync (MqttConfiguration configuration)
         {

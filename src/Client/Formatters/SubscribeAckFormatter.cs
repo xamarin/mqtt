@@ -23,10 +23,10 @@ namespace System.Net.Mqtt.Formatters
 			var returnCodeBytes = bytes.Bytes(headerLength);
 
 			if (!returnCodeBytes.Any ())
-				throw new MqttViolationException  (Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
+				throw new MqttProtocolViolationException  (Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			if (returnCodeBytes.Any (b => !Enum.IsDefined (typeof (SubscribeReturnCode), b)))
-				throw new MqttViolationException  (Properties.Resources.SubscribeAckFormatter_InvalidReturnCodes);
+				throw new MqttProtocolViolationException  (Properties.Resources.SubscribeAckFormatter_InvalidReturnCodes);
 
 			var returnCodes = returnCodeBytes.Select(b => (SubscribeReturnCode)b).ToArray();
 
@@ -78,7 +78,7 @@ namespace System.Net.Mqtt.Formatters
 		byte[] GetPayload (SubscribeAck packet)
 		{
 			if (packet.ReturnCodes == null || !packet.ReturnCodes.Any ())
-				throw new MqttViolationException  (Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
+				throw new MqttProtocolViolationException  (Properties.Resources.SubscribeAckFormatter_MissingReturnCodes);
 
 			return packet.ReturnCodes
 				.Select (c => Convert.ToByte (c))

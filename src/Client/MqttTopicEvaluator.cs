@@ -7,7 +7,7 @@ namespace System.Net.Mqtt
     /// Represents an evaluator for MQTT topics
     /// according to the rules defined in the protocol specification
     /// </summary>
-    /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180919">Topic Names and Topic Filters</a> 
+    /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180919">Topic Names and Topic Filters</a> 
     /// for more details on the topics specification
 	public class MqttTopicEvaluator : IMqttTopicEvaluator
 	{
@@ -78,7 +78,7 @@ namespace System.Net.Mqtt
 
         /// <summary>
         /// Evaluates if a topic name applies to a specific topic filter
-        /// If a topic name matches a filter, it means that the Broker will
+        /// If a topic name matches a filter, it means that the Server will
         /// successfully dispatch incoming messages of that topic name
         /// to the subscribers of the topic filter
         /// </summary>

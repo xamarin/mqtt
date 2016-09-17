@@ -10,9 +10,9 @@
 
 		public MqttPacketType Type { get { return MqttPacketType.ConnectAck; } }
 
-		public MqttConnectionStatus Status { get; private set; }
+		public MqttConnectionStatus Status { get; }
 
-		public bool SessionPresent { get; private set; }
+		public bool SessionPresent { get;  }
 
 		public bool Equals (ConnectAck other)
 		{

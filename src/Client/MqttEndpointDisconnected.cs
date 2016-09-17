@@ -1,28 +1,34 @@
 ﻿namespace System.Net.Mqtt
 {
     /// <summary>
-    /// Reason of an MQTT Client disconnection
+    /// Reason of an MQTT Client or Server disconnection
     /// </summary>
 	public enum DisconnectedReason
 	{
         /// <summary>
         /// Disconnected by the remote host
         /// </summary>
+        /// <remarks>
+        /// This reason is used only on Client disconnections
+        /// </remarks>
 		RemoteDisconnected,
         /// <summary>
-        /// Disconnected by the client itself, on purpose
-        /// This could mean a protocol disconnect or a dispose of the <see cref="IMqttClient" /> 
+        /// Disconnected by the endpoint itself
+        /// This could mean a protocol Disconnect in case of Clients,
+        /// a Stop in case of Servers or an explicit Dispose 
+        /// of the corresponding endpoint instance
         /// </summary>
-		Disposed,
+		SelfDisconnected,
         /// <summary>
-        /// Disconnected because of an unexpected error on the Client
+        /// Disconnected because of an unexpected error on the endpoint, 
+        /// being this the Client or Server
         /// </summary>
 		Error
-	}
+    }
 
     /// <summary>
-    /// Represents the disconnection information produced by the
-    /// <see cref="IMqttClient.Disconnected" /> event 
+    /// Represents the disconnection information produced by 
+    /// a disconnection event fired by a Client or Server instance
     /// </summary>
 	public class MqttEndpointDisconnected
 	{
@@ -45,11 +51,11 @@
         /// Reason of the disconnection
         /// See <see cref="DisconnectedReason" /> for more details on the supported values 
         /// </summary>
-		public DisconnectedReason Reason { get; private set; }
+		public DisconnectedReason Reason { get; }
 
         /// <summary>
         /// Message that explains the disconnection cause
         /// </summary>
-		public string Message { get; private set; }
+		public string Message { get; }
 	}
 }

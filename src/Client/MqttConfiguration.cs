@@ -16,12 +16,12 @@ namespace System.Net.Mqtt
 			BufferSize = 8192;
 			MaximumQualityOfService = MqttQualityOfService.AtMostOnce;
 			KeepAliveSecs = 0;
-			WaitingTimeoutSecs = 5;
+			WaitTimeoutSecs = 5;
 			AllowWildcardsInTopicFilters = true;
 		}
 
         /// <summary>
-        /// Port to connect a Client to a Broker
+        /// Port to connect a Client to a Server
         /// </summary>
 		public int Port { get; set; }
 
@@ -46,10 +46,10 @@ namespace System.Net.Mqtt
 
         /// <summary>
         /// Seconds to wait for an incoming required message until the operation timeouts
-        /// This value is generally used to wait for Broker or Client acknowledgements
+        /// This value is generally used to wait for Server or Client acknowledgements
         /// Default value is 5 seconds
         /// </summary>
-		public int WaitingTimeoutSecs { get; set; }
+		public int WaitTimeoutSecs { get; set; }
 
         /// <summary>
         /// Determines if multi level (#)  and single level (+)

@@ -93,7 +93,7 @@ namespace IntegrationTests.Context
 					BufferSize = 128 * 1024,
 					Port = GetPort (),
 					KeepAliveSecs = keepAliveSecs,
-					WaitingTimeoutSecs = 2,
+					WaitTimeoutSecs = 2,
 					MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
                     AllowWildcardsInTopicFilters = allowWildcardsInTopicFilters
 				};

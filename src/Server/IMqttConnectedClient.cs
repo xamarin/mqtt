@@ -7,7 +7,7 @@ namespace System.Net.Mqtt
     /// <summary>
     /// Represents an <see cref="IMqttClient"/> that has already
     /// performed the protocol connection
-    /// This interface is only provided by the Broker when creating in process clients
+    /// This interface is only provided by the Server when creating in process clients
     /// doing <see cref="IMqttServer.CreateClientAsync" /> 
     /// </summary>
     public interface IMqttConnectedClient : IMqttClient

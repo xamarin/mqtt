@@ -17,7 +17,7 @@ namespace Tests
 		[Fact]
 		public void when_creating_packet_channel_then_succeeds()
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]>();
 			var bufferedChannel = new Mock<IMqttChannel<byte[]>> ();
 
@@ -49,7 +49,7 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck))]
 		public void when_reading_bytes_from_source_then_notifies_packet(string packetPath, string jsonPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 
@@ -88,7 +88,7 @@ namespace Tests
 		[InlineData("Files/Binaries/PingResponse.packet", typeof(PingResponse))]
 		public void when_reading_bytes_then_notifies_packet(string packetPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 
@@ -137,7 +137,7 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck))]
 		public async Task when_writing_packet_from_source_then_inner_channel_is_notified(string packetPath, string jsonPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 1 }; 
 
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			
@@ -174,7 +174,7 @@ namespace Tests
 		[InlineData("Files/Binaries/PingResponse.packet", typeof(PingResponse))]
 		public async Task when_writing_packet_then_inner_channel_is_notified(string packetPath, Type packetType)
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 1 }; 
 
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 			
@@ -206,7 +206,7 @@ namespace Tests
 		[Fact]
 		public void when_packet_channel_error_then_notifies()
 		{
-			var configuration = new MqttConfiguration { WaitingTimeoutSecs = 1 }; 
+			var configuration = new MqttConfiguration { WaitTimeoutSecs = 1 }; 
 			var receiver = new Subject<byte[]> ();
 			var innerChannel = new Mock<IMqttChannel<byte[]>>();
 

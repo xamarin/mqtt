@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace System.Net.Mqtt
 {
     /// <summary>
-    /// Represents an MQTT Broker
+    /// Represents an MQTT Server
     /// </summary>
     public interface IMqttServer : IDisposable
     {
@@ -17,25 +17,25 @@ namespace System.Net.Mqtt
         event EventHandler<MqttUndeliveredMessage> MessageUndelivered;
 
         /// <summary>
-        /// Event fired when the Broker gets stopped.
-        /// The Broker disconnection could be caused by an intentional Stop or disposal, 
-        /// or an error during a Broker operation
+        /// Event fired when the Server gets stopped.
+        /// The Server disconnection could be caused by an intentional Stop or disposal, 
+        /// or an error during a Server operation
         /// See <see cref="MqttEndpointDisconnected"/> for more details on the disconnection information
         /// </summary>
         event EventHandler<MqttEndpointDisconnected> Stopped;
 
         /// <summary>
-        /// Gets the current number of active channels connected to the Broker
+        /// Gets the current number of active channels connected to the Server
         /// </summary>
         int ActiveChannels { get; }
 
         /// <summary>
-        /// Gets the list of Client Ids connected to the Broker
+        /// Gets the list of Client Ids connected to the Server
         /// </summary>
         IEnumerable<string> ActiveClients { get; }
 
         /// <summary>
-        /// Starts the Broker and enables it to listen for incoming connections
+        /// Starts the Server and enables it to listen for incoming connections
         /// </summary>
         /// <exception cref="MqttException">MqttException</exception>
         void Start ();

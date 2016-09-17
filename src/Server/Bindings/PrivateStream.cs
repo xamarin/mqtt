@@ -16,7 +16,7 @@ namespace System.Net.Mqtt.Bindings
 
         public PrivateStream (MqttConfiguration configuration)
         {
-            payloadSequence = new ReplaySubject<Tuple<byte[], EndpointIdentifier>> (window: TimeSpan.FromSeconds (configuration.WaitingTimeoutSecs));
+            payloadSequence = new ReplaySubject<Tuple<byte[], EndpointIdentifier>> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
         }
 
         public bool IsDisposed => payloadSequence.IsDisposed;
