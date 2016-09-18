@@ -17,7 +17,9 @@
 		public const int DefaultNonSecurePort = 1883;
 
         /// <summary>
-        /// Supported protocol level for the version 3.1.1 of the protocol, which is level 4
+        /// Supported protocol level for the version 3.1.1 of the protocol, which is level 4.
+        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180843">Protocol Level</a>
+        /// for more details about this value
         /// </summary>
 		public const int SupportedLevel = 4;
 
@@ -32,7 +34,9 @@
 		public const string MultiLevelTopicWildcard = "#";
 
         /// <summary>
-        /// Maximum length supported for the Client Id, which is 23 bytes
+        /// Maximum length supported for the Client Id, which is 23 bytes.
+        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180844">Client Identifier</a>
+        /// for more details about this value
         /// </summary>
         public const int ClientIdMaxLength = 23;
 
