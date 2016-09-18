@@ -23,6 +23,6 @@
     <files>
 		<file src="bin\$Configuration$\System.Net.Mqtt.dll" target="lib\netstandard1.3" />
 		<file src="bin\$Configuration$\System.Net.Mqtt.pdb" target="lib\netstandard1.3" />
-		<!--<file src="bin\$Configuration$\System.Net.Mqtt.xml" target="lib\netstandard1.3" />-->
+		<file src="bin\$Configuration$\System.Net.Mqtt.xml" target="lib\netstandard1.3" />
 	</files>
 </package>

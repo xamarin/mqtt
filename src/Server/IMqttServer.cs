@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Mqtt.Exceptions;
 using System.Threading.Tasks;
 
 namespace System.Net.Mqtt

@@ -53,7 +53,17 @@
         /// </summary>
 		public string Message { get; }
 
-		public bool Equals (MqttLastWill other)
+        /// <summary>
+        /// Determines whether this instance and another 
+        /// specified <see cref="MqttLastWill" /> have
+        /// the same values
+        /// </summary>
+        /// <param name="other">The <see cref="MqttLastWill" /> to compare to this instance</param>
+        /// <returns>true if the values of the <paramref name="other"/> parameter 
+        /// are the same values of this instance, otherwise returns false.
+        /// If <paramref name="other"/> is null, the method returns false
+        ///</returns>
+        public bool Equals (MqttLastWill other)
 		{
 			if (other == null)
 				return false;
@@ -64,6 +74,16 @@
 				Message == other.Message;
 		}
 
+        /// <summary>
+        /// Determines whether this instance and a specified object, 
+        /// which must also be a <see cref="MqttLastWill" />,
+        /// have the same values
+        /// </summary>
+        /// <param name="obj">The <see cref="MqttLastWill" /> to compare to this instance</param>
+        /// <returns>true if the values of the <paramref name="obj"/> parameter 
+        /// are the same values of this instance, otherwise returns false.
+        /// If <paramref name="obj"/> is null, the method returns false
+        ///</returns>
 		public override bool Equals (object obj)
 		{
 			if (obj == null)
@@ -77,6 +97,16 @@
 			return Equals (will);
 		}
 
+        /// <summary>
+        /// Determines whether the specified instances of 
+        /// <see cref="MqttLastWill" /> have the same values
+        /// </summary>
+        /// <param name="will">The first <see cref="MqttLastWill" /> to compare</param>
+        /// <param name="other">The second <see cref="MqttLastWill" /> to compare</param>
+        /// <returns>true if the values of the <paramref name="will"/> parameter 
+        /// and the <paramref name="other"/> parameter are the same, otherwise returns false.
+        /// If <paramref name="will"/> or <paramref name="other"/> is null, the method returns false
+        ///</returns>
 		public static bool operator == (MqttLastWill will, MqttLastWill other)
 		{
 			if ((object)will == null || (object)other == null)
@@ -85,6 +115,16 @@
 			return will.Equals (other);
 		}
 
+        /// <summary>
+        /// Determines whether the specified instances of 
+        /// <see cref="MqttLastWill" /> have different values
+        /// </summary>
+        /// <param name="will">The first <see cref="MqttLastWill" /> to compare</param>
+        /// <param name="other">The second <see cref="MqttLastWill" /> to compare</param>
+        /// <returns>true if the values of the <paramref name="will"/> parameter 
+        /// and the <paramref name="other"/> parameter are different, otherwise returns false.
+        /// If <paramref name="will"/> or <paramref name="other"/> is null, the method returns false
+        ///</returns>
 		public static bool operator != (MqttLastWill will, MqttLastWill other)
 		{
 			if ((object)will == null || (object)other == null)
@@ -93,6 +133,10 @@
 			return !will.Equals (other);
 		}
 
+        /// <summary>
+        /// Returns the hash code for this <see cref="MqttLastWill" /> instance 
+        /// </summary>
+        /// <returns>A 32-bit signed integer hash code</returns>
 		public override int GetHashCode ()
 		{
 			return Topic.GetHashCode () + Message.GetHashCode ();

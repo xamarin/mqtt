@@ -1,28 +1,50 @@
 ﻿namespace System.Net.Mqtt
 {
+    /// <summary>
+    /// Defines some well known values of the MQTT protocol,
+    /// which are useful to access anywhere
+    /// </summary>
 	public class MqttProtocol
 	{
-		public const string Name = "MQTT";
-
+        /// <summary>
+        /// Default port for using secure communication on MQTT, which is 8883
+        /// </summary>
 		public const int DefaultSecurePort = 8883;
 
+        /// <summary>
+        /// Default port for using non secure communication on MQTT, which is 1883
+        /// </summary>
 		public const int DefaultNonSecurePort = 1883;
 
+        /// <summary>
+        /// Supported protocol level for the version 3.1.1 of the protocol, which is level 4
+        /// </summary>
 		public const int SupportedLevel = 4;
 
+        /// <summary>
+        /// Character that defines the single level topic wildcard, which is '+'
+        /// </summary>
 		public const string SingleLevelTopicWildcard = "+";
 
+        /// <summary>
+        /// Character that defines the multi level topic wildcard, which is '#'
+        /// </summary>
 		public const string MultiLevelTopicWildcard = "#";
 
-		public const int MaxIntegerLength = 65535;
+        /// <summary>
+        /// Maximum length supported for the Client Id, which is 23 bytes
+        /// </summary>
+        public const int ClientIdMaxLength = 23;
 
-		public const int StringPrefixLength = 2;
+        internal const string Name = "MQTT";
 
-		public const int PacketTypeLength = 1;
+        internal static readonly int NameLength = Name.Length + StringPrefixLength;
 
-		public const int ClientIdMaxLength = 23;
+        internal const int MaxIntegerLength = 65535;
 
-		public static readonly int NameLength = Name.Length + StringPrefixLength;
+		internal const int StringPrefixLength = 2;
+
+        internal const int PacketTypeLength = 1;
 
 		internal static MqttEncoder Encoding { get; }
 

@@ -7,6 +7,9 @@ namespace System.Net.Mqtt
     /// </summary>
 	public class MqttConfiguration
 	{
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttConfiguration" /> class 
+        /// </summary>
 		public MqttConfiguration ()
 		{
 			Port = MqttProtocol.DefaultNonSecurePort;

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net.Mqtt.Exceptions;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
