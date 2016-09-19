@@ -46,6 +46,7 @@
         /// <summary>
         /// Password used for authentication
         /// Authentication is not mandatory on MQTT and is up to the consumer of the API
+        /// </summary>
 		public string Password { get; }
 	}
 }

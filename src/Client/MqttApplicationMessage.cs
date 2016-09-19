@@ -6,6 +6,15 @@
     /// </summary>
 	public class MqttApplicationMessage
 	{
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MqttApplicationMessage" /> class,
+        /// specifying the topic and payload of the message
+        /// </summary>
+        /// <param name="topic">
+        /// Topic associated with the message
+        /// Any subscriber of this topic should receive the corresponding messages
+        /// </param>
+        /// <param name="payload">Content of the message, as a byte array</param>
 		public MqttApplicationMessage (string topic, byte[] payload)
 		{
 			Topic = topic;
@@ -19,7 +28,7 @@
 		public string Topic { get; }
 
         /// <summary>
-        /// Payload associated with the message
+        /// Content of the message, as a byte array
         /// </summary>
 		public byte[] Payload { get; }
 	}

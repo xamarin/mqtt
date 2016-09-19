@@ -24,6 +24,6 @@
     <files>
 		<file src="bin\$Configuration$\System.Net.Mqtt.Server.dll" target="lib\netstandard1.3" />
 		<file src="bin\$Configuration$\System.Net.Mqtt.Server.pdb" target="lib\netstandard1.3" />
-		<!--<file src="bin\$Configuration$\System.Net.Mqtt.Server.xml" target="lib\netstandard1.3" />-->
+		<file src="bin\$Configuration$\System.Net.Mqtt.Server.xml" target="lib\netstandard1.3" />
 	</files>
 </package>

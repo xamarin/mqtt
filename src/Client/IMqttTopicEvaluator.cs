@@ -1,4 +1,6 @@
-﻿namespace System.Net.Mqtt
+﻿using System.Net.Mqtt.Exceptions;
+
+namespace System.Net.Mqtt
 {
     /// <summary>
     /// Represents an evaluator for MQTT topics
