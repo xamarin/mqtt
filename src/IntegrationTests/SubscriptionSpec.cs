@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Packets;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Extensions;
@@ -11,7 +9,7 @@ using System.Net.Mqtt.Properties;
 
 namespace IntegrationTests
 {
-    public class SubscriptionSpec : ConnectedContext
+	public class SubscriptionSpec : ConnectedContext
 	{
 		readonly IMqttServer server;
 

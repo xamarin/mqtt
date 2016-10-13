@@ -3,13 +3,12 @@ using IntegrationTests.Messages;
 using System;
 using System.Linq;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Packets;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace IntegrationTests
 {
-    public class PrivateClientSpec : IntegrationContext, IDisposable
+	public class PrivateClientSpec : IntegrationContext, IDisposable
     {
         readonly IMqttServer server;
 

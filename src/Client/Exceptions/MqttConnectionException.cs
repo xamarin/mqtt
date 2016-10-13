@@ -1,11 +1,10 @@
-﻿using System.Net.Mqtt.Packets;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
-namespace System.Net.Mqtt.Exceptions
+namespace System.Net.Mqtt
 {
-    /// <summary>
-    /// The exception that is thrown when something related to the Client connection fails
-    /// </summary>
+	/// <summary>
+	/// The exception that is thrown when something related to the Client connection fails
+	/// </summary>
 	[DataContract]
 	public class MqttConnectionException : MqttException
 	{

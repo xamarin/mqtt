@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 using Xunit;
 
 namespace Tests

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Packets;
 using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using Xunit;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 
 namespace IntegrationTests
 {
@@ -53,7 +54,7 @@ namespace IntegrationTests
 
             var publishAckPackets = 0;
 
-            (client as MqttClient)
+            (client as MqttClientImpl)
                .Channel
                .ReceiverStream
                .Subscribe(packet => {
@@ -89,7 +90,7 @@ namespace IntegrationTests
             var publishReceivedPackets = 0;
             var publishCompletePackets = 0;
 
-            (client as MqttClient)
+            (client as MqttClientImpl)
                 .Channel
                 .ReceiverStream
                 .Subscribe(packet =>  {

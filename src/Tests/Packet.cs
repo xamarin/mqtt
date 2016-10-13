@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Net.Mqtt;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Packets;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Tests
 {

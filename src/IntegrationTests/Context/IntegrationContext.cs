@@ -4,12 +4,11 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Packets;
 using System.Linq;
 using System.Net.Sockets;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Bindings;
+using System.Net.Mqtt.Sdk.Bindings;
 using System.Threading.Tasks;
+using System.Net.Mqtt.Sdk;
 
 namespace IntegrationTests.Context
 {
@@ -45,7 +44,7 @@ namespace IntegrationTests.Context
 
 				var binding = new ServerTcpBinding ();
 				var initializer = new MqttServerFactory (binding, authenticationProvider);
-				var server = await initializer.CreateAsync (Configuration);
+				var server = initializer.CreateServer (Configuration);
 
 				server.Start ();
 
@@ -68,7 +67,7 @@ namespace IntegrationTests.Context
 				LoadConfiguration ();
 			}
 
-			return await initializer.CreateAsync (Configuration);
+			return await initializer.CreateClientAsync (Configuration);
 		}
 
 		protected string GetClientId()

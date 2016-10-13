@@ -1,10 +1,8 @@
-﻿using System.Net.Mqtt.Packets;
-
-namespace System.Net.Mqtt
+﻿namespace System.Net.Mqtt
 {
-    /// <summary>
-    /// General configuration used across the protocol implementation
-    /// </summary>
+	/// <summary>
+	/// General configuration used across the protocol implementation
+	/// </summary>
 	public class MqttConfiguration
 	{
         /// <summary>

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Net.Mqtt;
-using System.Net.Mqtt.Flows;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Flows;
+using System.Net.Mqtt.Sdk.Packets;
 using Moq;
 using Xunit;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests.Flows
 {

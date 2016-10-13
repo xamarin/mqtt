@@ -1,5 +1,5 @@
 ﻿using System.Net.Mqtt;
-using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Sdk;
 using Xunit;
 using Xunit.Extensions;
 

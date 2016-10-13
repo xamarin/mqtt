@@ -10,7 +10,6 @@
 */
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Net.Mqtt;
 
 [assembly: AssemblyCompany("MobileEssentials")]

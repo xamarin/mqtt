@@ -3,7 +3,7 @@
     /// <summary>
     /// Provides an extensibility point to implement authentication on MQTT
     /// Authentication mechanism is up to the consumer of the API as
-    /// this library doesn't provide any pre defined authentication mechanism
+    /// this library doesn't provide any pre-defined authentication mechanism.
     /// </summary>
 	public interface IMqttAuthenticationProvider
 	{

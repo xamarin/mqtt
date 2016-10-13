@@ -2,16 +2,16 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Formatters;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Formatters;
+using System.Net.Mqtt.Sdk.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
-using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests.Formatters
 {
-	public class EmptyPacketFormatterSpec
+	internal class EmptyPacketFormatterSpec
 	{
 		readonly Mock<IMqttChannel<IPacket>> packetChannel;
 		readonly Mock<IMqttChannel<byte[]>> byteChannel;

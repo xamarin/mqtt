@@ -4,11 +4,11 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
-using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests
 {

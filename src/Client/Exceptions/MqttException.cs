@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace System.Net.Mqtt.Exceptions
+namespace System.Net.Mqtt
 {
     /// <summary>
     /// Represents the base exception for any MQTT failure

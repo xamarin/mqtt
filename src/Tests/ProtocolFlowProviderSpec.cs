@@ -1,16 +1,17 @@
 ﻿using Moq;
 using System;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Flows;
-using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Sdk.Flows;
+using System.Net.Mqtt.Sdk.Packets;
+using System.Net.Mqtt.Sdk.Storage;
 using System.Reactive.Subjects;
 using Xunit;
 using Xunit.Extensions;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests
 {
-    public class ProtocolFlowProviderSpec
+    internal class ProtocolFlowProviderSpec
 	{
 		[Theory]
 		[InlineData(MqttPacketType.ConnectAck, typeof(ClientConnectFlow))]
