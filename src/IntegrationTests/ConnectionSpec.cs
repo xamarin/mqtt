@@ -3,18 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Packets;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using System.Net.Mqtt.Sdk;
 
 namespace IntegrationTests
 {
-    public class ConnectionSpec : IntegrationContext, IDisposable
+	public class ConnectionSpec : IntegrationContext, IDisposable
 	{
 		readonly IMqttServer server;
 
@@ -40,7 +39,45 @@ namespace IntegrationTests
             }
         }
 
-        [Fact]
+		[Fact]
+		public async Task when_clients_connect_and_disconnect_then_server_raises_events()
+		{
+			var fooClient = await GetClientAsync();
+			var barClient = await GetClientAsync();
+
+			var clientId1 = GetClientId();
+			var clientId2 = GetClientId();
+
+			var connected = new List<string>();
+			var disconnected = new List<string>();
+
+			server.ClientConnected += (sender, id) => connected.Add(id);
+			server.ClientDisconnected += (sender, id) =>
+			{
+				connected.Remove(id);
+				disconnected.Add(id);
+			};
+
+			await fooClient.ConnectAsync(new MqttClientCredentials(clientId1));
+
+			Assert.Equal(new[] { clientId1 }, connected);
+
+			await barClient.ConnectAsync(new MqttClientCredentials(clientId2));
+
+			Assert.Equal(new[] { clientId1, clientId2 }, connected);
+
+			await barClient.DisconnectAsync();
+
+			Assert.Equal(new[] { clientId2 }, disconnected);
+			Assert.Equal(new[] { clientId1 }, connected);
+
+			await fooClient.DisconnectAsync();
+
+			Assert.Equal(new[] { clientId2, clientId1 }, disconnected);
+			Assert.Equal(0, connected.Count);
+		}
+
+		[Fact]
 		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
 		{
 			var fooClient = await GetClientAsync ();
@@ -62,7 +99,7 @@ namespace IntegrationTests
 			var serverSignal = new ManualResetEventSlim ();
 
 			while (!serverSignal.IsSet) {
-				if (server.ActiveChannels == 1 && server.ActiveClients.Count () == 1) {
+				if (server.ActiveConnections == 1 && server.ActiveClients.Count () == 1) {
 					serverSignal.Set ();
 				}
 			}
@@ -71,7 +108,7 @@ namespace IntegrationTests
 
             Assert.Equal (2, initialConnectedClients);
 			Assert.True (exceptionThrown);
-			Assert.Equal (1, server.ActiveChannels);
+			Assert.Equal (1, server.ActiveConnections);
 			Assert.Equal (1, server.ActiveClients.Count ());
 
             fooClient.Dispose ();
@@ -347,7 +384,7 @@ namespace IntegrationTests
 			});
 
             //Forces socket disconnection without using protocol Disconnect (Disconnect or Dispose Client method)
-            (client1 as MqttClient).Channel.Dispose ();
+            (client1 as MqttClientImpl).Channel.Dispose ();
 
 			var willReceived = willReceivedSignal.Wait (2000);
 

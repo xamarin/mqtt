@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Formatters;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Formatters;
+using System.Net.Mqtt.Sdk.Packets;
 using Xunit;
 using Xunit.Extensions;
-using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt;
 
 namespace Tests.Formatters
 {

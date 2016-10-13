@@ -1,15 +1,15 @@
 ﻿{
   "dependencies": {
-    "NETStandard.Library": "1.6.0",
     "GitInfo": "1.1.12",
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+    "NETStandard.Library": "1.6.0",
     "System.Diagnostics.Tracer": "2.0.4",
-    "System.Reactive": "3.0.0",
-    "System.Runtime.Serialization.Primitives": "4.1.1",
     "System.Net.Sockets": "4.1.0",
-    "Microsoft.NETCore.Portable.Compatibility": "1.0.1"
+    "System.Reactive": "3.0.0",
+    "System.Runtime.Serialization.Primitives": "4.1.1"
   },
   "frameworks": {
-    "netstandard1.3": { }
+    "netstandard1.3": {}
   },
   "supports": {}
 }

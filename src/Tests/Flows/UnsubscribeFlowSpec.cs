@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Flows;
-using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Sdk.Flows;
+using System.Net.Mqtt.Sdk.Packets;
+using System.Net.Mqtt.Sdk.Storage;
 using Moq;
 using Xunit;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests.Flows
 {

@@ -3,16 +3,16 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Formatters;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Formatters;
+using System.Net.Mqtt.Sdk.Packets;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
-using System.Net.Mqtt.Exceptions;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests
 {
-	public class PacketManagerSpec
+	internal class PacketManagerSpec
 	{
 		[Theory]
 		[InlineData("Files/Binaries/Connect_Full.packet", "Files/Packets/Connect_Full.json", typeof(Connect), MqttPacketType.Connect)]

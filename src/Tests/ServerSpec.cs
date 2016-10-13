@@ -1,11 +1,12 @@
 ﻿using Moq;
 using System;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Flows;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Flows;
+using System.Net.Mqtt.Sdk.Packets;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Xunit;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests
 {
@@ -40,13 +41,13 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
-			var server = new MqttServer (channelProvider.Object, factory, flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>>(), configuration);
+			var server = new MqttServerImpl (channelProvider.Object, factory, flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>>(), configuration);
 
 			sockets.OnNext (Mock.Of<IMqttChannel<byte[]>> (x => x.ReceiverStream == new Subject<byte[]> ()));
 			sockets.OnNext (Mock.Of<IMqttChannel<byte[]>> (x => x.ReceiverStream == new Subject<byte[]> ()));
 			sockets.OnNext (Mock.Of<IMqttChannel<byte[]>> (x => x.ReceiverStream == new Subject<byte[]> ()));
 
-			Assert.Equal (0, server.ActiveChannels);
+			Assert.Equal (0, server.ActiveConnections);
 		}
 
 		[Fact]
@@ -78,7 +79,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
-			var server = new MqttServer (channelProvider.Object, factory, flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>> (), configuration);
+			var server = new MqttServerImpl (channelProvider.Object, factory, flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>> (), configuration);
 
 			server.Start ();
 
@@ -86,7 +87,7 @@ namespace Tests
 			sockets.OnNext (Mock.Of<IMqttChannel<byte[]>> (x => x.ReceiverStream == new Subject<byte[]> ()));
 			sockets.OnNext (Mock.Of<IMqttChannel<byte[]>> (x => x.ReceiverStream == new Subject<byte[]> ()));
 
-			Assert.Equal (3, server.ActiveChannels);
+			Assert.Equal (3, server.ActiveConnections);
 		}
 
 		[Fact]
@@ -116,7 +117,7 @@ namespace Tests
 
 			var configuration = Mock.Of<MqttConfiguration> (c => c.WaitTimeoutSecs == 60);
 
-			var server = new MqttServer (channelProvider.Object, Mock.Of<IPacketChannelFactory> (x => x.Create (It.IsAny<IMqttChannel<byte[]>> ()) == packetChannel.Object), 
+			var server = new MqttServerImpl (channelProvider.Object, Mock.Of<IPacketChannelFactory> (x => x.Create (It.IsAny<IMqttChannel<byte[]>> ()) == packetChannel.Object), 
 				flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>> (), configuration);
 
 			server.Start ();
@@ -163,7 +164,7 @@ namespace Tests
 			var flowProvider = Mock.Of<IProtocolFlowProvider> ();
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
-			var server = new MqttServer (channelProvider.Object, factory.Object, flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>> (), configuration);
+			var server = new MqttServerImpl (channelProvider.Object, factory.Object, flowProvider, connectionProvider.Object, Mock.Of<ISubject<MqttUndeliveredMessage>> (), configuration);
 			var receiver = new Subject<byte[]> ();
 			var socket = new Mock<IMqttChannel<byte[]>> ();
 

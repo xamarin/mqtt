@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace System.Net.Mqtt.Exceptions
+namespace System.Net.Mqtt
 {
     /// <summary>
     /// The exception thrown when a protocol violation is caused

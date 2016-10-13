@@ -1,18 +1,16 @@
-﻿using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Packets;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
 {
-    /// <summary>
-    /// Represents an MQTT Client
-    /// </summary>
-    public interface IMqttClient : IDisposable
+	/// <summary>
+	/// Represents an MQTT Client
+	/// </summary>
+	public interface IMqttClient : IDisposable
 	{
         /// <summary>
-        /// Event fired when the Client gets disconnected.
+        /// Event raised when the Client gets disconnected.
         /// The Client disconnection could be caused by a protocol disconnect, 
-        /// an error or a remote disconnection produced by the Server
+        /// an error or a remote disconnection produced by the Server.
         /// See <see cref="MqttEndpointDisconnected"/> for more details on the disconnection information
         /// </summary>
 		event EventHandler<MqttEndpointDisconnected> Disconnected;

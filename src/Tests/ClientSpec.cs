@@ -1,7 +1,4 @@
-﻿using System.Reactive.Subjects;
-using System.Net.Mqtt;
-using Moq;
-using Xunit;
+﻿using Xunit;
 
 namespace Tests
 {

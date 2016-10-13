@@ -1,4 +1,6 @@
-﻿namespace System.Net.Mqtt
+﻿using System.Net.Mqtt.Sdk;
+
+namespace System.Net.Mqtt
 {
     /// <summary>
     /// Defines some well known values of the MQTT protocol,
@@ -50,11 +52,6 @@
 
         internal const int PacketTypeLength = 1;
 
-		internal static MqttEncoder Encoding { get; }
-
-		static MqttProtocol ()
-		{
-			Encoding = new MqttEncoder ();
-		}
+		internal static MqttEncoder Encoding => MqttEncoder.Default;
 	}
 }

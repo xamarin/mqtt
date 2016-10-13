@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Mqtt;
 using Xunit;
 using Xunit.Extensions;
 using System.Linq;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests
 {

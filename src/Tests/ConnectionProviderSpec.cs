@@ -2,14 +2,14 @@
 using System;
 using System.Linq;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Packets;
+using System.Net.Mqtt.Sdk.Packets;
 using System.Reactive.Subjects;
 using Xunit;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests
 {
-    public class ConnectionProviderSpec
+	public class ConnectionProviderSpec
 	{
         [Fact]
         public void when_registering_private_client_then_private_client_list_increases()

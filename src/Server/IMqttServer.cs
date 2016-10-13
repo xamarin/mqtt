@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net.Mqtt.Exceptions;
 using System.Threading.Tasks;
 
 namespace System.Net.Mqtt
@@ -10,7 +9,7 @@ namespace System.Net.Mqtt
     public interface IMqttServer : IDisposable
     {
         /// <summary>
-        /// Event fired when a message published by a Client 
+        /// Event raised when a message published by a Client 
         /// has no subscribers for the published topic
         /// See <see cref="MqttUndeliveredMessage" /> for more details 
         /// about the information exposed by this event 
@@ -25,13 +24,30 @@ namespace System.Net.Mqtt
         /// </summary>
         event EventHandler<MqttEndpointDisconnected> Stopped;
 
-        /// <summary>
-        /// Gets the current number of active channels connected to the Server
-        /// </summary>
-        int ActiveChannels { get; }
+		/// <summary>
+		/// Event raised when a client has successfully authenticated and connected to the server.
+		/// </summary>
+		event EventHandler<string> ClientConnected;
+
+		/// <summary>
+		/// Event raised when a client has been disconnected from the server.
+		/// </summary>
+		event EventHandler<string> ClientDisconnected;
 
         /// <summary>
-        /// Gets the list of Client Ids connected to the Server
+        /// Gets the current number of active connections to the Server.
+        /// </summary>
+		/// <remarks>
+		/// <see cref="ActiveConnections"/> may temporarily differ with <see cref="ActiveClients"/> 
+		/// since the latter represents channels that have performed the MQTT Connect flow and 
+		/// have provided a valid Client ID and have been successfully authenticated (if authentication 
+		/// is supported by the server).
+		/// </remarks>
+        int ActiveConnections { get; }
+
+        /// <summary>
+        /// Gets the list of Client Ids connected to the Server, once they have performed the 
+		/// Connect flow over their Channel and they have been authenticated.
         /// </summary>
         IEnumerable<string> ActiveClients { get; }
 
@@ -50,7 +66,7 @@ namespace System.Net.Mqtt
         Task<IMqttConnectedClient> CreateClientAsync ();
 
         /// <summary>
-        /// Stops the server and disposes it
+        /// Stops the server and disposes it.
         /// </summary>
         void Stop ();
     }

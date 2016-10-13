@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Bindings;
+using System.Net.Mqtt.Sdk.Bindings;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Xunit;

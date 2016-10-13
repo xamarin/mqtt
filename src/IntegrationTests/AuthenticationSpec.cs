@@ -3,12 +3,10 @@ using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Packets;
 
 namespace IntegrationTests
 {
-    public class AuthenticationSpec : IntegrationContext, IDisposable
+	public class AuthenticationSpec : IntegrationContext, IDisposable
 	{
 		readonly IMqttServer server;
 

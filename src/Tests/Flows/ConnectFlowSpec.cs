@@ -2,16 +2,16 @@
 using System;
 using System.Linq.Expressions;
 using System.Net.Mqtt;
-using System.Net.Mqtt.Exceptions;
-using System.Net.Mqtt.Flows;
-using System.Net.Mqtt.Packets;
-using System.Net.Mqtt.Storage;
+using System.Net.Mqtt.Sdk.Flows;
+using System.Net.Mqtt.Sdk.Packets;
+using System.Net.Mqtt.Sdk.Storage;
 using System.Threading.Tasks;
 using Xunit;
+using System.Net.Mqtt.Sdk;
 
 namespace Tests.Flows
 {
-    public class ConnectFlowSpec
+	public class ConnectFlowSpec
 	{
 		[Fact]
 		public async Task when_sending_connect_then_session_is_created_and_ack_is_sent()
