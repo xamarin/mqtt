@@ -36,11 +36,11 @@ namespace System.Net.Mqtt
 		public const string MultiLevelTopicWildcard = "#";
 
         /// <summary>
-        /// Maximum length supported for the Client Id, which is 23 bytes.
+        /// Maximum length supported  for the Client Id, which is 65535 bytes.
         /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180844">Client Identifier</a>
-        /// for more details about this value
+        /// for more details.
         /// </summary>
-        public const int ClientIdMaxLength = 23;
+        public const int ClientIdMaxLength = 65535;
 
         internal const string Name = "MQTT";
 
