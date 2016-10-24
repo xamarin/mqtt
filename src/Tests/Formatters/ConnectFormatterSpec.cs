@@ -52,9 +52,7 @@ namespace Tests.Formatters
 		[Theory]
 		[InlineData("Files/Binaries/Connect_Invalid_ClientIdEmpty.packet")]
 		[InlineData("Files/Binaries/Connect_Invalid_ClientIdBadFormat.packet")]
-		// TODO: re-enable, dunno why it's failing.
-		//[InlineData("Files/Binaries/Connect_Invalid_ClientIdInvalidLength.packet")]
-		public void when_reading_invalid_client_id_in_connect_packet_then_fails(string packetPath)
+        public void when_reading_invalid_client_id_in_connect_packet_then_fails(string packetPath)
 		{
 			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
 
