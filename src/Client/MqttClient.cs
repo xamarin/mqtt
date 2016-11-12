@@ -14,9 +14,14 @@ namespace System.Net.Mqtt
 		/// <paramref name="hostAddress"/> server via TCP using the specified 
 		/// MQTT configuration to customize the protocol parameters.
 		/// </summary>
-		public static Task<IMqttClient> CreateAsync(string hostAddress, MqttConfiguration configuration)
-		{
-			return new MqttClientFactory(hostAddress).CreateClientAsync(configuration);
-		}
+		public static Task<IMqttClient> CreateAsync(string hostAddress, MqttConfiguration configuration) =>
+			new MqttClientFactory(hostAddress).CreateClientAsync(configuration);
+
+		/// <summary>
+		/// Creates an <see cref="IMqttClient"/> and connects it to the destination 
+		/// <paramref name="hostAddress"/> server via TCP using the specified port.
+		/// </summary>
+		public static Task<IMqttClient> CreateAsync(string hostAddress, int port) => 
+			new MqttClientFactory(hostAddress).CreateClientAsync(new MqttConfiguration { Port = port });
 	}
 }
