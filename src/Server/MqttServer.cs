@@ -36,7 +36,14 @@ namespace System.Net.Mqtt
 		/// </param>
 		/// <returns>A new MQTT Server</returns>
 		/// <exception cref="MqttServerException">MqttServerException</exception>
-		public static IMqttServer Create(int port) => 
-			new MqttServerFactory().CreateServer(new MqttConfiguration { Port = port });
+		public static IMqttServer Create(int port) => new MqttServerFactory().CreateServer(new MqttConfiguration { Port = port });
+
+		/// <summary>
+		/// Creates an <see cref="IMqttServer"/> over the TCP protocol, using the 
+		/// MQTT protocol defaults.
+		/// </summary>
+		/// <returns>A new MQTT Server</returns>
+		/// <exception cref="MqttServerException">MqttServerException</exception>
+		public static IMqttServer Create() => new MqttServerFactory().CreateServer(new MqttConfiguration());
 	}
 }
