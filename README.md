@@ -13,8 +13,3 @@ Server package:
 Client package:
 
 `Install-Package System.Net.Mqtt -Pre`
-
-To debug with full symbols and sources the above packages, setup SymbolSource in the Visual Studio debugging options as explained in the [SymbolSource site](http://www.symbolsource.org/Public/Home/VisualStudio)
-
-
-![Build status](https://ci.appveyor.com/api/projects/status/pm3eub699l9un5by?svg=true)
