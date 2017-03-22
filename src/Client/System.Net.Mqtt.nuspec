@@ -5,13 +5,13 @@
         <version>0.1.0</version>
         <title>System.Net.Mqtt: a lightweight C# MQTT messenger</title>
         <authors>Xamarin</authors>
-        <licenseUrl>http://clarius.io/hermes/license</licenseUrl>
-        <projectUrl>http://clarius.io/hermes/home</projectUrl>
-        <iconUrl>http://clarius.io/hermes/48.png</iconUrl>
+        <licenseUrl>http://https://github.com/xamarin/mqtt/license</licenseUrl>
+        <projectUrl>https://github.com/xamarin/mqtt</projectUrl>
+        <iconUrl>https://github.com/xamarin/mqtt/raw/master/logo/48px.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>A lightweight and high-performance MQTT client.</description>
         <releaseNotes />
-        <copyright>Copyright 2012</copyright>
+        <copyright>Copyright 2017 Xamarin</copyright>
         <tags>m2m iot sockets mqtt</tags>
         <dependencies>
 			    <dependency id="System.Diagnostics.Tracer" version="2.0.4" />
