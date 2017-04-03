@@ -3,6 +3,7 @@
 
 Minimalist and intuitive asynchronous MQTT messaging server and client written entirely in C#
 
+> Hermes: messenger of the Greek gods
 
 ## Installation
 
