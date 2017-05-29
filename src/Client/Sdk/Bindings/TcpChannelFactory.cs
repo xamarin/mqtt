@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Sdk.Bindings
@@ -31,7 +32,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 					throw new TimeoutException ();
 
 				if (resultTask.IsFaulted)
-					throw resultTask.Exception.InnerException;
+					ExceptionDispatchInfo.Capture (resultTask.Exception.InnerException).Throw ();
 			} catch (SocketException socketEx) {
 				var message = string.Format (Properties.Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
 
