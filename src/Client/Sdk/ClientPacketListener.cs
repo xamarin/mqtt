@@ -92,6 +92,10 @@ namespace System.Net.Mqtt.Sdk
 						return;
 					}
 
+					if (configuration.KeepAliveSecs > 0) {
+						StartKeepAliveMonitor ();
+					}
+
 					await DispatchPacketAsync (packet)
 						.ConfigureAwait (continueOnCapturedContext: false);
 				}, ex => {
@@ -129,16 +133,12 @@ namespace System.Net.Mqtt.Sdk
 
 		IDisposable ListenSentConnectPacket ()
 		{
-			return channel.SenderStream
+			return channel
+				.SenderStream
 				.OfType<Connect> ()
 				.FirstAsync ()
-				.ObserveOn (NewThreadScheduler.Default)
 				.Subscribe (connect => {
 					clientId = connect.ClientId;
-
-					if (configuration.KeepAliveSecs > 0) {
-						StartKeepAliveMonitor ();
-					}
 				});
 		}
 
