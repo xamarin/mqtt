@@ -8,10 +8,11 @@ namespace System.Net.Mqtt.Sdk
     /// </summary>
 	public interface IMqttChannelFactory
 	{
-        /// <summary>
-        /// Creates instances of <see cref="IMqttChannel{T}"/> of byte[].
-        /// </summary>
-        /// <returns>An MQTT channel of byte[].</returns>
+		/// <summary>
+		/// Creates instances of <see cref="IMqttChannel{T}"/> of byte[].
+		/// </summary>
+		/// <returns>An MQTT channel of byte[].</returns>
+		/// <exception cref="MqttException">MqttException</exception>
 		Task<IMqttChannel<byte[]>> CreateAsync ();
 	}
 }

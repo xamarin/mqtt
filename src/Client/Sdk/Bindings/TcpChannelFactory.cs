@@ -24,12 +24,14 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			try {
 				var connectTask = tcpClient.ConnectAsync (hostAddress, configuration.Port);
 				var timeoutTask = Task.Delay (TimeSpan.FromSeconds (configuration.ConnectionTimeoutSecs));
+				var resultTask = await Task.WhenAny (connectTask, timeoutTask)
+				                           .ConfigureAwait (continueOnCapturedContext: false);
 
-				var maybeTimeout = await Task.WhenAny (connectTask, timeoutTask)
-				                             .ConfigureAwait (continueOnCapturedContext: false);
-
-				if (maybeTimeout == timeoutTask)
+				if (resultTask == timeoutTask)
 					throw new TimeoutException ();
+
+				if (resultTask.IsFaulted)
+					throw resultTask.Exception.InnerException;
 			} catch (SocketException socketEx) {
 				var message = string.Format (Properties.Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
 
@@ -46,7 +48,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 				var message = string.Format (Properties.Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
 
-				tracer.Error(tex, message);
+				tracer.Error (tex, message);
 
 				throw new MqttException (message, tex);
 			}
