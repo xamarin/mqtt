@@ -307,7 +307,6 @@ namespace System.Net.Mqtt.Sdk
 		void Close (Exception ex)
 		{
 			tracer.Error (ex);
-			receiver.OnError (ex);
 			Close (DisconnectedReason.Error, ex.Message);
 		}
 
