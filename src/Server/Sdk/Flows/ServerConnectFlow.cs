@@ -46,6 +46,8 @@ namespace System.Net.Mqtt.Sdk.Flows
 				tracer.Info (Server.Properties.Resources.Server_CleanedOldSession, clientId);
 			}
 
+			var sendPendingMessages = false;
+
 			if (session == null) {
 				session = new ClientSession { ClientId = clientId, Clean = connect.CleanSession };
 
@@ -53,10 +55,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 				tracer.Info (Server.Properties.Resources.Server_CreatedSession, clientId);
 			} else {
-				await SendPendingMessagesAsync (session, channel)
-					.ConfigureAwait (continueOnCapturedContext: false);
-				await SendPendingAcknowledgementsAsync (session, channel)
-					.ConfigureAwait (continueOnCapturedContext: false);
+				sendPendingMessages = true;
 			}
 
 			if (connect.Will != null) {
@@ -67,6 +66,13 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 			await channel.SendAsync (new ConnectAck (MqttConnectionStatus.Accepted, sessionPresent))
 				.ConfigureAwait (continueOnCapturedContext: false);
+
+			if (sendPendingMessages) {
+				await SendPendingMessagesAsync (session, channel)
+					.ConfigureAwait (continueOnCapturedContext: false);
+				await SendPendingAcknowledgementsAsync (session, channel)
+					.ConfigureAwait (continueOnCapturedContext: false);
+			}
 		}
 
 		async Task SendPendingMessagesAsync (ClientSession session, IMqttChannel<IPacket> channel)
