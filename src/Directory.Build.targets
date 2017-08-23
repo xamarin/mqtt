@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!-- Common Packages -->
+	<ItemGroup>
+		<PackageReference Include="GitInfo" Version="1.1.*" />
+		<PackageReference Include="System.Diagnostics.Tracer" Version="2.0.8" />
+		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.1.1" />
+		<PackageReference Include="System.Reactive" Version="3.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+		<PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(IncludeTesting)' == 'true'">
+		<PackageReference Include="xunit" Version="*" />
+		<PackageReference Include="Moq" Version="*" />
+		<PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
+	</ItemGroup>
+
+	<Target Name="SetVersions" BeforeTargets="GetAssemblyVersion" DependsOnTargets="GitInfo">
+		<PropertyGroup>
+			<MqttMajor>$(GitSemVerMajor)</MqttMajor>
+			<MqttMinor>$(GitSemVerMinor)</MqttMinor>
+			<MqttBuild>$(GitBaseVersion.Substring($(GitBaseVersion.LastIndexOf('.'))).TrimStart('.'))</MqttBuild>
+			<MqttRevision>$(GitCommits)</MqttRevision>
+			<MqttSimpleVersion>$(MqttMajor).$(MqttMinor).$(MqttBuild)</MqttSimpleVersion>
+			<MqttInformationalVersion>$(MqttSimpleVersion)-$(GitBranch)+$(GitCommit)</MqttInformationalVersion>
+			<MqttVersion>$(MqttMajor).$(MqttMinor).$(MqttBuild).$(MqttRevision)</MqttVersion>
+
+			<!-- Assembly versions -->
+			<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(MqttVersion)</AssemblyVersion>
+			<FileVersion Condition="'$(FileVersion)' == ''">$(MqttSimpleVersion)</FileVersion>
+			<InformationalVersion Condition="'$(InformationalVersion)' == ''">$(MqttInformationalVersion)</InformationalVersion>
+
+			<!-- NuSpec versions -->
+			<Version>$(MqttVersion)</Version>
+		</PropertyGroup>
+	</Target>
+
+</Project>
