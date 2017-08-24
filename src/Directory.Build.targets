@@ -42,7 +42,7 @@
 			<MqttBaseVersion>$(MqttMajor).$(MqttMinor).$(MqttBuild)</MqttBaseVersion>
 			<MqttVersion>$(MqttMajor).$(MqttMinor).$(MqttRevision)</MqttVersion>
 
-			<MqttInformationalVersion>$(PackageVersion)-$(GitBranch)+$(GitCommit)</MqttInformationalVersion>
+			<MqttInformationalVersion>$(PackageVersion)+$(GitBranch)@$(GitCommit)</MqttInformationalVersion>
 
 			<!-- Assembly versions -->
 			<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(MqttBaseVersion)</AssemblyVersion>
