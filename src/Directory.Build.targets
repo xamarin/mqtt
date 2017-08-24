@@ -32,6 +32,8 @@
 
 			<PackageVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageVersion>
 
+			<GitBranch Condition="'$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
+
 			<MqttMajor>$(GitSemVerMajor)</MqttMajor>
 			<MqttMinor>$(GitSemVerMinor)</MqttMinor>
 			<MqttBuild>$(GitBaseVersionPatch)</MqttBuild>
