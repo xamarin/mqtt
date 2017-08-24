@@ -3,10 +3,6 @@
 
 	<PropertyGroup>
 		<ThisAssemblyNamespace>System.Net.Mqtt</ThisAssemblyNamespace>
-
-		<GitVersionFile Condition="'$(GitVersionFile)' == ''">Mqtt.Version</GitVersionFile>
-		<GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
-		<GitIgnoreTagVersion>true</GitIgnoreTagVersion>
 	</PropertyGroup>
 
 	<PropertyGroup>
