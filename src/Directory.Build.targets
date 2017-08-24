@@ -51,7 +51,7 @@
 			<Version>$(PackageVersion)</Version>
 		</PropertyGroup>
 
-		<
+		<Message Importance="high" Text="##vso[build.updatebuildnumber]$(BUILD_BUILDID) ($(PackageVersion))" Condition="'$(TF_BUILD)' == 'true'" />
 	</Target>
 
 </Project>
