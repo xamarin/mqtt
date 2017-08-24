@@ -22,17 +22,16 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 -->
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="Configure" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Rebuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<PropertyGroup>
 		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
 		<IntermediateOutputPath>.nuget\</IntermediateOutputPath>
 		<PackagesPath>$(IntermediateOutputPath)packages</PackagesPath>
-		<Out Condition=" '$(Out)' == '' ">out</Out>
-		<GitInfoReportImportance>high</GitInfoReportImportance>
-		<GitIgnoreTagVersion>true</GitIgnoreTagVersion>
-		<GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
-		<CommonBuildProperties>TrackFileAccess=false;WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration)</CommonBuildProperties>
+		<NuGet>.nuget\nuget.exe</NuGet>
+		<Out>out</Out>
+		<CommonBuildProperties>TrackFileAccess=false;WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration);SkipGitCache=true</CommonBuildProperties>
+		<PS Condition="'$(PS)' == ''">%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PS>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -41,23 +40,34 @@
 		<Solution Include="$(Solution)" Condition="'$(Solution)' != ''" />
 		<!-- TODO: include IntegrationTests -->
 		<TestProject Include="src\**\Tests.csproj" />
-		<NuSpec Include="src\**\*.nuspec" />
 	</ItemGroup>
+
+	<Target Name="Rebuild" DependsOnTargets="Clean;Restore;Build" />
+
+	<Target Name="All" DependsOnTargets="Clean;Restore;Build;Test;Publish" />
 
 	<Target Name="Clean">
 		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" Targets="Clean" />
-		<Exec Command="rmdir $(Out) /S /Q" ContinueOnError="true" />
 		<Exec Command="rmdir $(PackagesPath) /S /Q" ContinueOnError="true" />
 		<Exec Command="rmdir src\packages /S /Q" ContinueOnError="true" />
+		<Exec Command='for /d /r . %%d in (bin,obj) do @if exist "%%d" rd /s/q "%%d"' WorkingDirectory='src' ContinueOnError='true' />
 	</Target>
 
-	<Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+	<Target Name="Restore">
+		<MakeDir Directories=".nuget" Condition="!Exists('.nuget')" />
+		<Exec Command="&quot;$(PS)&quot; -NoProfile -Command &quot;&amp; { Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile &quot;.nuget\nuget.exe&quot; -UseBasicParsing }&quot;"
+			  Condition="!Exists('.nuget\nuget.exe')" />
+		<Exec Command='"$(NuGet)" Install "$(MSBuildThisFileDirectory)packages.config" -OutputDirectory "$(PackagesPath)" -ExcludeVersion' />
 
-	<Target Name="Build" DependsOnTargets="GitVersion">
+		<MSBuild Projects="@(Solution)" Targets="Restore" />
+	</Target>
+
+	<Target Name="Build">
+		<MakeDir Directories="$(Out)" Condition="!Exists('$(Out)')" />
 		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" />
 	</Target>
 	
-	<Target Name="Test"><!--  DependsOnTargets="Build" -->
+	<Target Name="Test">
 		<MSBuild Projects="@(TestProject)" BuildInParallel="true" Targets="GetTargetPath" Properties="$(CommonBuildProperties)">
 			<Output TaskParameter="TargetOutputs" ItemName="_TestAssembly" />
 		</MSBuild>
@@ -65,8 +75,6 @@
 		<ItemGroup>
 			<TestAssembly Include="@(_TestAssembly)" Condition=" Exists('%(_TestAssembly.FullPath)') " />
 		</ItemGroup>
-
-		<MakeDir Directories="$(Out)" Condition="!Exists('$(Out)')" />
 
 		<PropertyGroup>
 			<XunitConsole>$(PackagesPath)\xunit.runner.console\tools\xunit.console.x86.exe</XunitConsole>
@@ -81,47 +89,19 @@
 		<Exec Command="$(CoverageCommand)" ContinueOnError="ErrorAndContinue" />
 	</Target>
 
-	<Target Name="Package" DependsOnTargets="Build">
-		<MakeDir Directories="$(Out)" Condition=" !Exists('$(Out)') " />
-		<Exec Command='"$(NuGet)" Pack "%(NuSpec.Identity)" $(Args) -Properties Id=%(NuSpec.Filename);Configuration=$(Configuration);Version=$(Version) -Version $(Version) -OutputDirectory $(Out)' />
-	</Target>
+	<Target Name="Publish">
 
-	<Target Name="Publish" DependsOnTargets="Package">
-		<Exec Command='$(NuGet) Push "$(Out)\%(NuSpec.Filename).$(Version).nupkg" $(NuGetPushArgs)'
+		<ItemGroup>
+			<NuPkg Include="src\**\Release\**\*.nupkg" />
+		</ItemGroup>
+
+		<Message Text="Publishing %(NuPkg.Identity)..." Condition="'@(NuPkg)' != ''" Importance="high" />
+		
+		<Exec Command='$(NuGet) Push "%(NuPkg.Identity)" $(NuGetPushArgs)'
 						StandardErrorImportance="high"
 						StandardOutputImportance="normal" />
 
-		<Message Text="Published new package: Id=%(NuSpec.Filename), Version=$(Version)"
-				 Importance="high" />
-	</Target>
-
-	<!-- Configure and restore initial targets and packages -->
-	<Import Project="src\NuGet.Restore.targets" />
-	<PropertyGroup>
-		<GitInfoTargets>$(PackagesPath)\GitInfo\build\GitInfo.targets</GitInfoTargets>
-		<PendingRestore Condition=" !Exists('$(GitInfoTargets)') ">true</PendingRestore>
-	</PropertyGroup>
-
-	<Target Name="GitVersion" />
-	<!-- Gets overriden by the $(GitInfoTargets) if it exists -->
-	<Import Project="$(GitInfoTargets)" Condition=" Exists('$(GitInfoTargets)') " />
-
-	<Target Name="Configure" DependsOnTargets="_GetNuGet;GitVersion">
-		<!-- We always run NuGet Install since it already checks for already-installed packages and skips them -->
-		<Exec Command='"$(NuGet)" Install "$(MSBuildThisFileDirectory)packages.config" -OutputDirectory "$(PackagesPath)" -ExcludeVersion' />
-
-		<!-- Errors if nuget packages were restored during the build -->
-		<Error Text="Required build-time NuGet packages were missing and were just restored. Please run the build again."
-			   Condition=" '$(PendingRestore)' == 'true' And '$(target)' != 'configure' "/>
-
-		<PropertyGroup>
-			<Version>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</Version>
-		</PropertyGroup>
-
-		<!-- Update AppVeyor build # to match the actual one being used -->
-		<Exec Command="appveyor UpdateBuild -Version $(Version)" Condition=" '$(APPVEYOR)' == 'true' "
-              ConsoleToMSBuild="true"
-              ContinueOnError="ErrorAndContinue" />
+		<Copy SourceFiles="@(NuPkg)" DestinationFolder="$(Out)" OverwriteReadOnlyFiles="true" />
 	</Target>
 
 </Project>
