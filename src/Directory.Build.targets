@@ -3,7 +3,7 @@
 
 	<!-- Common Packages -->
 	<ItemGroup>
-		<PackageReference Include="GitInfo" Version="1.1.*" />
+		<PackageReference Include="GitInfo" Version="2.0.1" />
 		<PackageReference Include="System.Diagnostics.Tracer" Version="2.0.8" />
 		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.1.1" />
 		<PackageReference Include="System.Reactive" Version="3.0.0" />
@@ -19,23 +19,37 @@
 		<PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
 	</ItemGroup>
 
-	<Target Name="SetVersions" BeforeTargets="GetAssemblyVersion" DependsOnTargets="GitInfo">
+	<PropertyGroup>
+		<GenerateNuspecDependsOn>SetVersions;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+	</PropertyGroup>
+
+	<Target Name="SetVersions" BeforeTargets="GetAssemblyVersion" DependsOnTargets="GitVersion" Returns="$(Version)">
 		<PropertyGroup>
+			<!-- PR builds are *always* prerelease -->
+			<!-- TFS case: BUILD_REASON=PullRequest and BUILD_SOURCEBRANCH=refs/pull/[#]/merge -->
+			<GitSemVerDashLabel Condition="'$(TF_BUILD)' == 'true' and '$(BUILD_REASON)' == 'PullRequest'">-pr$(BUILD_SOURCEBRANCH.Substring(10).TrimEnd('/merge'))</GitSemVerDashLabel>
+			<GitSemVerDashLabel Condition="'$(APPVEYOR_PULL_REQUEST_NUMBER)' != ''">-pr$(APPVEYOR_PULL_REQUEST_NUMBER)</GitSemVerDashLabel>
+
+			<!-- Non-prerelease versions will use the package version determined by SemVer -->
+			<PackageVersion Condition="'$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</PackageVersion>
+			<!-- Prerelease versions are fixed to the base version (this allows the stable versions to always be greater) and have the build number instead -->
+			<PackageVersion Condition="'$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel)-build$(GitCommits.PadLeft(4, '0'))</PackageVersion>
+
 			<MqttMajor>$(GitSemVerMajor)</MqttMajor>
 			<MqttMinor>$(GitSemVerMinor)</MqttMinor>
-			<MqttBuild>$(GitBaseVersion.Substring($(GitBaseVersion.LastIndexOf('.'))).TrimStart('.'))</MqttBuild>
-			<MqttRevision>$(GitCommits)</MqttRevision>
-			<MqttSimpleVersion>$(MqttMajor).$(MqttMinor).$(MqttBuild)</MqttSimpleVersion>
-			<MqttInformationalVersion>$(MqttSimpleVersion)-$(GitBranch)+$(GitCommit)</MqttInformationalVersion>
-			<MqttVersion>$(MqttMajor).$(MqttMinor).$(MqttBuild).$(MqttRevision)</MqttVersion>
+			<MqttBuild>$(GitBaseVersionPatch)</MqttBuild>
+			<MqttRevision>$(GitSemVerPatch)</MqttRevision>
+			<MqttBaseVersion>$(MqttMajor).$(MqttMinor).$(MqttBuild)</MqttBaseVersion>
+			<MqttVersion>$(MqttMajor).$(MqttMinor).$(MqttRevision)</MqttVersion>
+			<MqttInformationalVersion>$(PackageVersion)-$(GitBranch)+$(GitCommit)</MqttInformationalVersion>
 
 			<!-- Assembly versions -->
-			<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(MqttVersion)</AssemblyVersion>
-			<FileVersion Condition="'$(FileVersion)' == ''">$(MqttSimpleVersion)</FileVersion>
+			<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(MqttBaseVersion)</AssemblyVersion>
+			<FileVersion Condition="'$(FileVersion)' == ''">$(MqttVersion)</FileVersion>
 			<InformationalVersion Condition="'$(InformationalVersion)' == ''">$(MqttInformationalVersion)</InformationalVersion>
 
 			<!-- NuSpec versions -->
-			<Version>$(MqttVersion)</Version>
+			<Version>$(PackageVersion)</Version>
 		</PropertyGroup>
 	</Target>
 
