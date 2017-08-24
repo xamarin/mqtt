@@ -30,7 +30,7 @@
 		<PackagesPath>$(IntermediateOutputPath)packages</PackagesPath>
 		<NuGet>.nuget\nuget.exe</NuGet>
 		<Out>out</Out>
-		<CommonBuildProperties>TrackFileAccess=false;WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration)</CommonBuildProperties>
+		<CommonBuildProperties>TrackFileAccess=false;WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration);SkipGitCache=true</CommonBuildProperties>
 		<PS Condition="'$(PS)' == ''">%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PS>
 	</PropertyGroup>
 
