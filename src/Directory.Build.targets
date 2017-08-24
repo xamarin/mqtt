@@ -30,7 +30,7 @@
 			<GitSemVerDashLabel Condition="'$(TF_BUILD)' == 'true' and '$(BUILD_REASON)' == 'PullRequest'">-pr$(BUILD_SOURCEBRANCH.Substring(10).TrimEnd('/merge'))</GitSemVerDashLabel>
 			<GitSemVerDashLabel Condition="'$(APPVEYOR_PULL_REQUEST_NUMBER)' != ''">-pr$(APPVEYOR_PULL_REQUEST_NUMBER)</GitSemVerDashLabel>
 
-			<PackageVersion Condition="'$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageVersion>
+			<PackageVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageVersion>
 
 			<MqttMajor>$(GitSemVerMajor)</MqttMajor>
 			<MqttMinor>$(GitSemVerMinor)</MqttMinor>
@@ -50,6 +50,8 @@
 			<!-- NuSpec versions -->
 			<Version>$(PackageVersion)</Version>
 		</PropertyGroup>
+
+		<
 	</Target>
 
 </Project>
