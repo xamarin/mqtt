@@ -9,12 +9,8 @@
 		<PackageReference Include="System.Reactive" Version="3.0.0" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-		<PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
-	</ItemGroup>
-
 	<ItemGroup Condition="'$(IncludeTesting)' == 'true'">
-		<PackageReference Include="xunit" Version="*" />
+		<PackageReference Include="xunit" Version="2.2.*" />
 		<PackageReference Include="Moq" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
 	</ItemGroup>
