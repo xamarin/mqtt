@@ -17,6 +17,7 @@
 
 	<PropertyGroup>
 		<GenerateNuspecDependsOn>SetVersions;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+		<GetPackageVersionDependsOn>SetVersions;$(GetPackageVersionDependsOn)</GetPackageVersionDependsOn>
 	</PropertyGroup>
 
 	<Target Name="SetVersions" BeforeTargets="GetAssemblyVersion" DependsOnTargets="GitVersion" Returns="$(Version)">
