@@ -3,7 +3,7 @@
 
 	<!-- Common Packages -->
 	<ItemGroup>
-		<PackageReference Include="GitInfo" Version="2.0.1" />
+		<PackageReference Include="GitInfo" Version="2.0.10" PrivateAssets="all" />
 		<PackageReference Include="System.Diagnostics.Tracer" Version="2.0.8" />
 		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.1.1" />
 		<PackageReference Include="System.Reactive" Version="3.0.0" />
@@ -15,12 +15,12 @@
 		<PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
 	</ItemGroup>
 
-	<PropertyGroup>
+	<PropertyGroup Condition="'$(GitInfoImported)' == 'true'">
 		<GenerateNuspecDependsOn>SetVersions;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
 		<GetPackageVersionDependsOn>SetVersions;$(GetPackageVersionDependsOn)</GetPackageVersionDependsOn>
 	</PropertyGroup>
 
-	<Target Name="SetVersions" BeforeTargets="GetAssemblyVersion" DependsOnTargets="GitVersion" Returns="$(Version)">
+	<Target Name="SetVersions" BeforeTargets="GetAssemblyVersion;GetPackageVersion;Pack" DependsOnTargets="GitVersion" Condition="'$(GitInfoImported)' == 'true'" Returns="$(Version)">
 		<PropertyGroup>
 			<!-- PR builds are *always* prerelease -->
 			<!-- TFS case: BUILD_REASON=PullRequest and BUILD_SOURCEBRANCH=refs/pull/[#]/merge -->
