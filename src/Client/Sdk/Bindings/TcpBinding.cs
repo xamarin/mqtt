@@ -16,8 +16,6 @@
         /// </param>
         /// <returns>A factory for creating MQTT channels on top of TCP</returns>
 		public IMqttChannelFactory GetChannelFactory (string hostAddress, MqttConfiguration configuration)
-		{
-			return new TcpChannelFactory (hostAddress, configuration);
-		}
+			=> new TcpChannelFactory (hostAddress, configuration);
 	}
 }

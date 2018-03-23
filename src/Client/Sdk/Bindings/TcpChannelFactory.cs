@@ -25,21 +25,24 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			try {
 				var connectTask = tcpClient.ConnectAsync (hostAddress, configuration.Port);
 				var timeoutTask = Task.Delay (TimeSpan.FromSeconds (configuration.ConnectionTimeoutSecs));
-				var resultTask = await Task.WhenAny (connectTask, timeoutTask)
-				                           .ConfigureAwait (continueOnCapturedContext: false);
+				var resultTask = await Task
+					.WhenAny (connectTask, timeoutTask)
+					.ConfigureAwait (continueOnCapturedContext: false);
 
 				if (resultTask == timeoutTask)
 					throw new TimeoutException ();
 
 				if (resultTask.IsFaulted)
-					ExceptionDispatchInfo.Capture (resultTask.Exception.InnerException).Throw ();
+					ExceptionDispatchInfo.Capture (resultTask.Exception.InnerException).Throw();
+
+				return new TcpChannel (tcpClient, new PacketBuffer (), configuration);
 			} catch (SocketException socketEx) {
 				var message = string.Format (Properties.Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
 
 				tracer.Error (socketEx, message);
 
 				throw new MqttException (message, socketEx);
-			} catch (TimeoutException tex) {
+			} catch (TimeoutException timeoutEx) {
 				try {
 					// Just in case the connection is a little late,
 					// dispose the tcpClient. This may throw an exception,
@@ -49,12 +52,10 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 				var message = string.Format (Properties.Resources.TcpChannelFactory_TcpClient_Failed, hostAddress, configuration.Port);
 
-				tracer.Error (tex, message);
+				tracer.Error (timeoutEx, message);
 
-				throw new MqttException (message, tex);
+				throw new MqttException (message, timeoutEx);
 			}
-
-			return new TcpChannel (tcpClient, new PacketBuffer (), configuration);
 		}
 	}
 }

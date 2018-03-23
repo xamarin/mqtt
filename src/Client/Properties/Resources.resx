@@ -345,4 +345,7 @@
   <data name="Client_AnonymousClientWithoutCleanSession" xml:space="preserve">
     <value>Anonymous clients must set the "cleanSession" parameter to true in order to perform the protocol connection</value>
   </data>
+  <data name="WebSocketChannelFactory_WebSocketClient_Failed" xml:space="preserve">
+    <value>An error occurred while connecting via Web Sockets to the endpoint address {0}, to establish an MQTT connection</value>
+  </data>
 </root>
