@@ -40,7 +40,7 @@ namespace IntegrationTests.Context
 			try {
 				LoadConfiguration ();
 
-				var server = MqttServer.Create (Configuration, authenticationProvider);
+				var server = MqttServer.Create (Configuration, authenticationProvider: authenticationProvider);
 
 				server.Start ();
 				
