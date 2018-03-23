@@ -743,5 +743,14 @@ namespace System.Net.Mqtt.Properties {
                 return ResourceManager.GetString("UnsubscribeFormatter_MissingTopics", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while connecting via Web Sockets to the endpoint address {0}, to establish an MQTT connection.
+        /// </summary>
+        internal static string WebSocketChannelFactory_WebSocketClient_Failed {
+            get {
+                return ResourceManager.GetString("WebSocketChannelFactory_WebSocketClient_Failed", resourceCulture);
+            }
+        }
     }
 }
