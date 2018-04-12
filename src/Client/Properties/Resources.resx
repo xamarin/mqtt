@@ -217,7 +217,7 @@
     <value>Sending packet of {0} bytes</value>
   </data>
   <data name="MqttChannel_StreamDisconnected" xml:space="preserve">
-    <value>The underlying communication stream is not available. The socket could became disconnected</value>
+    <value>The underlying communication stream is not available. The socket could have been disconnected</value>
   </data>
   <data name="Mqtt_Disposing" xml:space="preserve">
     <value>Disposing {0}...</value>
