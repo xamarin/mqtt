@@ -54,17 +54,19 @@ namespace System.Net.Mqtt.Sdk
         public async Task<IMqttClient> CreateClientAsync (MqttConfiguration configuration)
 		{
 			try {
+				//Adding this to not break backwards compatibility related to the method signature
+				//Yielding at this point will cause the method to return immediately after it's called,
+				//running the rest of the logic acynchronously
+				await Task.Yield ();
+				
 				var topicEvaluator = new MqttTopicEvaluator (configuration);
 				var innerChannelFactory = binding.GetChannelFactory (hostAddress, configuration);
 				var channelFactory = new PacketChannelFactory (innerChannelFactory, topicEvaluator, configuration);
 				var packetIdProvider = new PacketIdProvider ();
 				var repositoryProvider = new InMemoryRepositoryProvider ();
 				var flowProvider = new ClientProtocolFlowProvider (topicEvaluator, repositoryProvider, configuration);
-				var packetChannel = await channelFactory
-                    .CreateAsync ()
-                    .ConfigureAwait (continueOnCapturedContext: false);
 
-				return new MqttClientImpl (packetChannel, flowProvider, repositoryProvider, packetIdProvider, configuration);
+				return new MqttClientImpl (channelFactory, flowProvider, repositoryProvider, packetIdProvider, configuration);
 			} catch (Exception ex) {
 				tracer.Error (ex, Properties.Resources.Client_InitializeError);
 

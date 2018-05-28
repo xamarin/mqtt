@@ -10,7 +10,6 @@
 
 namespace System.Net.Mqtt.Properties {
     using System;
-	using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace System.Net.Mqtt.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("System.Net.Mqtt.Properties.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("System.Net.Mqtt.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -80,11 +79,38 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The protocol connection cannot be performed because an active connection for client {0} already exists.
+        /// </summary>
+        internal static string Client_AlreadyConnected {
+            get {
+                return ResourceManager.GetString("Client_AlreadyConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The protocol disconnection cannot be performed because the client is already disconnected.
+        /// </summary>
+        internal static string Client_AlreadyDisconnected {
+            get {
+                return ResourceManager.GetString("Client_AlreadyDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client {0} - Cleaned old session.
         /// </summary>
         internal static string Client_CleanedOldSession {
             get {
                 return ResourceManager.GetString("Client_CleanedOldSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client {0} - Closing. Reason: {1}.
+        /// </summary>
+        internal static string Client_Closing {
+            get {
+                return ResourceManager.GetString("Client_Closing", resourceCulture);
             }
         }
         
@@ -134,20 +160,11 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client {0} - Removed client session as part of Disconnect.
+        ///   Looks up a localized string similar to Client {0} - Removed client session.
         /// </summary>
         internal static string Client_DeletedSessionOnDisconnect {
             get {
                 return ResourceManager.GetString("Client_DeletedSessionOnDisconnect", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client {0} - Disposing. Reason: {1}.
-        /// </summary>
-        internal static string Client_Disposing {
-            get {
-                return ResourceManager.GetString("Client_Disposing", resourceCulture);
             }
         }
         
@@ -494,7 +511,7 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The underlying communication stream is not available. The socket could became disconnected.
+        ///   Looks up a localized string similar to The underlying communication stream is not available. The socket could have been disconnected.
         /// </summary>
         internal static string MqttChannel_StreamDisconnected {
             get {
