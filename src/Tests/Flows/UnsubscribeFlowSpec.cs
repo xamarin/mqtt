@@ -1,14 +1,13 @@
-﻿using System;
+﻿using Moq;
+using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 using System.Net.Mqtt.Sdk.Flows;
 using System.Net.Mqtt.Sdk.Packets;
 using System.Net.Mqtt.Sdk.Storage;
-using Moq;
+using System.Threading.Tasks;
 using Xunit;
-using System.Net.Mqtt.Sdk;
 
 namespace Tests.Flows
 {
@@ -22,16 +21,14 @@ namespace Tests.Flows
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var topic = "foo/bar/test";
 			var qos = MqttQualityOfService.AtLeastOnce;
-			var session = new ClientSession { 
-				ClientId = clientId,
-				Clean = false, 
+			var session = new ClientSession(clientId, clean: false) {
 				Subscriptions = new List<ClientSubscription> { 
-					new ClientSubscription { ClientId = clientId, MaximumQualityOfService = qos, TopicFilter = topic } 
-				} 
+						new ClientSubscription { ClientId = clientId, MaximumQualityOfService = qos, TopicFilter = topic } 
+					} 
 			};
 			var updatedSession = default(ClientSession);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
 			sessionRepository.Setup (r => r.Update (It.IsAny<ClientSession> ())).Callback<ClientSession> (s => updatedSession = s);
 			
 			var unsubscribe = new Unsubscribe (packetId, topic);
@@ -70,12 +67,9 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var clientId = Guid.NewGuid ().ToString ();
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
-			var session = new ClientSession { 
-				ClientId = clientId,
-				Clean = false
-			};
+			var session = new ClientSession(clientId, clean: false);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
 
 			var unsubscribe = new Unsubscribe (packetId, "foo/bar");
 
@@ -98,7 +92,7 @@ namespace Tests.Flows
 			await flow.ExecuteAsync(clientId, unsubscribe, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
+			sessionRepository.Verify (r => r.Delete (It.IsAny<string> ()), Times.Never);
 			Assert.NotNull (response);
 
 			var unsubscribeAck = response as UnsubscribeAck;

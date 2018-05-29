@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Sdk;
 using System.Net.Mqtt.Sdk.Flows;
@@ -43,8 +42,8 @@ namespace Tests.Flows
 			await flow.ExecuteAsync (clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
-			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
+			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.Id == clientId && s.Clean == true)));
+			sessionRepository.Verify (r => r.Delete (It.IsAny<string> ()), Times.Never);
 			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
 
 			Assert.NotNull (sentPacket);
@@ -65,9 +64,10 @@ namespace Tests.Flows
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var existingSession = new ClientSession { ClientId = clientId, Clean = false };
+			var existingSession = new ClientSession (clientId, clean: false);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
+			sessionRepository
+				.Setup (r => r.Get (It.IsAny<string>()))
 				.Returns (existingSession);
 
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -92,7 +92,7 @@ namespace Tests.Flows
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			sessionRepository.Verify (r => r.Create (It.IsAny<ClientSession> ()), Times.Never);
-			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
+			sessionRepository.Verify (r => r.Delete (It.IsAny<string> ()), Times.Never);
 			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
 
 			var connectAck = sentPacket as ConnectAck;
@@ -111,9 +111,10 @@ namespace Tests.Flows
 			var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
 			var clientId = Guid.NewGuid ().ToString ();
-			var existingSession = new ClientSession { ClientId = clientId, Clean = true };
+			var existingSession = new ClientSession (clientId, clean: true);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
+			sessionRepository
+				.Setup (r => r.Get (It.IsAny<string>()))
 				.Returns (existingSession);
 
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -139,7 +140,7 @@ namespace Tests.Flows
 
 			var connectAck = sentPacket as ConnectAck;
 
-			sessionRepository.Verify (r => r.Delete (It.Is<ClientSession> (s => s == existingSession)));
+			sessionRepository.Verify (r => r.Delete (It.Is<string> (s => s == existingSession.Id)));
 			sessionRepository.Verify (r => r.Create(It.Is<ClientSession> (s => s.Clean == true)));
 			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
 
@@ -158,7 +159,8 @@ namespace Tests.Flows
 
 			var clientId = Guid.NewGuid ().ToString ();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>>()))
+			sessionRepository
+				.Setup (r => r.Get (It.IsAny<string>()))
 				.Returns (default(ClientSession));
 
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -223,9 +225,9 @@ namespace Tests.Flows
 
 			var connectAck = sentPacket as ConnectAck;
 
-			sessionRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ClientSession, bool>>> ()), Times.Never);
-			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.ClientId == clientId && s.Clean == true)));
-			willRepository.Verify (r => r.Create (It.Is<ConnectionWill> (w => w.ClientId == clientId && w.Will == will)));
+			sessionRepository.Verify (r => r.Delete (It.IsAny<string> ()), Times.Never);
+			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.Id == clientId && s.Clean == true)));
+			willRepository.Verify (r => r.Create (It.Is<ConnectionWill> (w => w.Id == clientId && w.Will == will)));
 
 			Assert.NotNull (connectAck);
 			Assert.Equal (MqttPacketType.ConnectAck, connectAck.Type);
@@ -273,7 +275,7 @@ namespace Tests.Flows
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
 			var clientId = Guid.NewGuid().ToString();
-			var existingSession = new ClientSession { ClientId = clientId, Clean = false };
+			var existingSession = new ClientSession (clientId, clean: false);
 
 			var topic = "foo/bar";
 			var payload = new byte[10];
@@ -308,7 +310,7 @@ namespace Tests.Flows
 			};
 
 			sessionRepository
-				.Setup(r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>>()))
+				.Setup(r => r.Get(It.IsAny<string>()))
 				.Returns(existingSession);
 
 			var senderFlow = new Mock<IPublishSenderFlow>();
@@ -361,14 +363,14 @@ namespace Tests.Flows
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			sessionRepository.Verify(r => r.Create(It.IsAny<ClientSession>()), Times.Never);
-			sessionRepository.Verify(r => r.Delete(It.IsAny<Expression<Func<ClientSession, bool>>>()), Times.Never);
+			sessionRepository.Verify(r => r.Delete(It.IsAny<string>()), Times.Never);
 			sessionRepository.Verify(r => r.Update(It.IsAny<ClientSession>()), Times.Once);
 			willRepository.Verify(r => r.Create(It.IsAny<ConnectionWill>()), Times.Never);
-			senderFlow.Verify(f => f.SendPublishAsync(It.Is<string>(x => x == existingSession.ClientId),
+			senderFlow.Verify(f => f.SendPublishAsync(It.Is<string>(x => x == existingSession.Id),
 				It.Is<Publish>(x => x.Topic == topic && x.QualityOfService == qos && x.PacketId == packetId),
 				It.IsAny<IMqttChannel<IPacket>>(),
 				It.IsAny<PendingMessageStatus>()), Times.Exactly(2));
-			senderFlow.Verify(f => f.SendAckAsync(It.Is<string>(x => x == existingSession.ClientId),
+			senderFlow.Verify(f => f.SendAckAsync(It.Is<string>(x => x == existingSession.Id),
 				It.Is<IFlowPacket>(x => x.Type == MqttPacketType.PublishReceived && x.PacketId == packetId),
 				It.IsAny<IMqttChannel<IPacket>>(),
 				It.Is<PendingMessageStatus>(x => x == PendingMessageStatus.PendingToAcknowledge)), Times.Once);

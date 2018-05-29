@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Moq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 using System.Net.Mqtt.Sdk.Flows;
 using System.Net.Mqtt.Sdk.Packets;
 using System.Net.Mqtt.Sdk.Storage;
-using Moq;
+using System.Text;
+using System.Threading.Tasks;
 using Xunit;
-using System.Net.Mqtt.Sdk;
 
 namespace Tests.Flows
 {
@@ -27,10 +26,10 @@ namespace Tests.Flows
 			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
-			var session = new ClientSession {  ClientId = clientId, Clean = false };
+			var session = new ClientSession (clientId, clean: false );
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
 
 			var fooQoS = MqttQualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -62,7 +61,7 @@ namespace Tests.Flows
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.ClientId == clientId && s.Subscriptions.Count == 2 
+			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.Id == clientId && s.Subscriptions.Count == 2 
 				&& s.Subscriptions.All(x => x.TopicFilter == fooTopic || x.TopicFilter == barTopic))));
 			Assert.NotNull (response);
 
@@ -90,16 +89,14 @@ namespace Tests.Flows
 			var fooTopic = "test/foo/1";
 			var fooSubscription = new Subscription (fooTopic, fooQoS);
 
-			var session = new ClientSession { 
-				ClientId = clientId,
-				Clean = false, 
+			var session = new ClientSession (clientId, clean: false) {  
 				Subscriptions = new List<ClientSubscription> { 
 					new ClientSubscription { ClientId = clientId, MaximumQualityOfService = MqttQualityOfService.ExactlyOnce, TopicFilter = fooTopic } 
 				} 
 			};
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
@@ -125,7 +122,7 @@ namespace Tests.Flows
 			await flow.ExecuteAsync (clientId, subscribe, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.ClientId == clientId && s.Subscriptions.Count == 1 
+			sessionRepository.Verify (r => r.Update (It.Is<ClientSession> (s => s.Id == clientId && s.Subscriptions.Count == 1 
 				&& s.Subscriptions.Any(x => x.TopicFilter == fooTopic && x.MaximumQualityOfService == fooQoS))));
 			Assert.NotNull (response);
 
@@ -148,10 +145,10 @@ namespace Tests.Flows
 			var senderFlow = Mock.Of<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
-			var session = new ClientSession {  ClientId = clientId, Clean = false };
+			var session = new ClientSession (clientId, clean: false );
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (false);
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
 
 			var fooQoS = MqttQualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -202,9 +199,9 @@ namespace Tests.Flows
 			var senderFlow = new Mock<IPublishSenderFlow> ();
 
 			var clientId = Guid.NewGuid().ToString();
-			var session = new ClientSession {  ClientId = clientId, Clean = false };
+			var session = new ClientSession (clientId, clean: false);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (session);
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
 
 			var fooQoS = MqttQualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/#";
@@ -214,16 +211,12 @@ namespace Tests.Flows
 			var retainedQoS =  MqttQualityOfService.ExactlyOnce;
 			var retainedPayload = Encoding.UTF8.GetBytes ("Retained Message Test");
 			var retainedMessages = new List<RetainedMessage> {
-				new RetainedMessage { 
-					Topic = retainedTopic,
-					QualityOfService = retainedQoS, 
-					Payload = retainedPayload
-				}
+				new RetainedMessage (retainedTopic, retainedQoS, retainedPayload)
 			};
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			retainedMessageRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<RetainedMessage, bool>>> ())).Returns (retainedMessages.AsQueryable());
+			retainedMessageRepository.Setup (r => r.GetAll ()).Returns (retainedMessages.AsQueryable());
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);

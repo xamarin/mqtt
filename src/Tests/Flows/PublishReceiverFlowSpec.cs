@@ -2,19 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 using System.Net.Mqtt.Sdk.Flows;
 using System.Net.Mqtt.Sdk.Packets;
-using System.Net.Mqtt.Server.Properties;
 using System.Net.Mqtt.Sdk.Storage;
+using System.Net.Mqtt.Server.Properties;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using System.Net.Mqtt.Sdk;
 
 namespace Tests.Flows
 {
@@ -33,11 +32,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
-					PendingMessages = new List<PendingMessage> { new PendingMessage() }
-				});
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) { PendingMessages = new List<PendingMessage> { new PendingMessage() }});
 
 			var packetIdProvider = Mock.Of<IPacketIdProvider> ();
             var undeliveredMessagesListener = new Subject<MqttUndeliveredMessage> ();
@@ -53,16 +49,12 @@ namespace Tests.Flows
 			var requestedQoS1 = MqttQualityOfService.AtLeastOnce;
 			var requestedQoS2 = MqttQualityOfService.ExactlyOnce;
 			var sessions = new List<ClientSession> { 
-				new ClientSession {
-					ClientId = subscribedClientId1,
-					Clean = false,
+				new ClientSession (subscribedClientId1,  clean: false) {
 					Subscriptions = new List<ClientSubscription> { 
 						new ClientSubscription { ClientId = subscribedClientId1, 
 							MaximumQualityOfService = requestedQoS1, TopicFilter = topic }}
 				},
-				new ClientSession {
-					ClientId = subscribedClientId2,
-					Clean = false,
+				new ClientSession (subscribedClientId2, clean: false) {
 					Subscriptions = new List<ClientSubscription> { 
 						new ClientSubscription { ClientId = subscribedClientId2, 
 							MaximumQualityOfService = requestedQoS2, TopicFilter = topic }}
@@ -80,7 +72,7 @@ namespace Tests.Flows
 			client2Channel.Setup (c => c.ReceiverStream).Returns (client2Receiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns (sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns (sessions.AsQueryable());
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId1)))
@@ -126,9 +118,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) { 
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -143,9 +134,7 @@ namespace Tests.Flows
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
-			var sessions = new List<ClientSession> { new ClientSession {
-				ClientId = subscribedClientId,
-				Clean = false,
+			var sessions = new List<ClientSession> { new ClientSession (subscribedClientId, clean: false) {
 				Subscriptions = new List<ClientSubscription> { 
 					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
 				}
@@ -157,7 +146,7 @@ namespace Tests.Flows
 			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
@@ -202,9 +191,8 @@ namespace Tests.Flows
 			publishSenderFlow.Setup (f => f.SendPublishAsync (It.IsAny<string> (), It.IsAny<Publish> (), It.IsAny <IMqttChannel<IPacket>> (), It.IsAny<PendingMessageStatus> ()))
 				.Returns(Task.Delay(0));
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) { 
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -219,9 +207,7 @@ namespace Tests.Flows
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
-			var sessions = new List<ClientSession> { new ClientSession {
-				ClientId = subscribedClientId,
-				Clean = false,
+			var sessions = new List<ClientSession> { new ClientSession (subscribedClientId, clean: false) {
 				Subscriptions = new List<ClientSubscription> { 
 					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
 				}
@@ -233,7 +219,7 @@ namespace Tests.Flows
 			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
@@ -296,9 +282,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -312,9 +297,7 @@ namespace Tests.Flows
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
-			var sessions = new List<ClientSession> { new ClientSession {
-				ClientId = subscribedClientId,
-				Clean = false,
+			var sessions = new List<ClientSession> { new ClientSession (subscribedClientId, clean: false) {
 				Subscriptions = new List<ClientSubscription> { 
 					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
 				}
@@ -326,7 +309,7 @@ namespace Tests.Flows
 			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns ( sessions.AsQueryable());
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
 			var publish = new Publish (topic, MqttQualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
@@ -379,9 +362,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -390,10 +372,10 @@ namespace Tests.Flows
 
             var topic = "foo/bar";
 
-			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid ().ToString (), Clean = false }};
+			var sessions = new List<ClientSession> { new ClientSession (Guid.NewGuid ().ToString (), clean: false)};
 
-			retainedRepository.Setup (r => r.Get (It.IsAny<Expression<Func<RetainedMessage, bool>>>())).Returns (default(RetainedMessage));
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
+			retainedRepository.Setup (r => r.Get (It.IsAny<string>())).Returns (default(RetainedMessage));
+			sessionRepository.Setup (r => r.GetAll ()).Returns ( sessions.AsQueryable());
 
 			var qos = MqttQualityOfService.AtMostOnce;
 			var payload = "Publish Flow Test";
@@ -412,7 +394,7 @@ namespace Tests.Flows
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
+			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Id == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
@@ -429,9 +411,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -440,12 +421,12 @@ namespace Tests.Flows
 
             var topic = "foo/bar";
 
-			var sessions = new List<ClientSession> { new ClientSession { ClientId = Guid.NewGuid().ToString(), Clean = false }};
+			var sessions = new List<ClientSession> { new ClientSession (Guid.NewGuid().ToString(), clean: false)};
 
-			var existingRetainedMessage = new RetainedMessage();
+			var existingRetainedMessage = new RetainedMessage (topic: "foo", qos: MqttQualityOfService.AtLeastOnce, payload: new byte[100]);
 
-			retainedRepository.Setup (r => r.Get (It.IsAny<Expression<Func<RetainedMessage, bool>>>())).Returns (existingRetainedMessage);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
+			retainedRepository.Setup (r => r.Get (It.IsAny<string>())).Returns (existingRetainedMessage);
+			sessionRepository.Setup (r => r.GetAll ()).Returns (sessions.AsQueryable());
 
 			var qos = MqttQualityOfService.AtMostOnce;
 			var payload = "Publish Flow Test";
@@ -464,8 +445,8 @@ namespace Tests.Flows
 			await flow.ExecuteAsync (clientId, publish, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			retainedRepository.Verify (r => r.Delete (It.Is<RetainedMessage> (m => m == existingRetainedMessage)));
-			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Topic == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
+			retainedRepository.Verify (r => r.Delete (It.Is<string> (m => m == existingRetainedMessage.Id)));
+			retainedRepository.Verify (r => r.Create (It.Is<RetainedMessage> (m => m.Id == topic && m.QualityOfService == qos && m.Payload.ToList().SequenceEqual(publish.Payload))));
 			channel.Verify (c => c.SendAsync (It.IsAny<IPacket> ()), Times.Never);
 		}
 
@@ -482,9 +463,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -498,9 +478,7 @@ namespace Tests.Flows
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
-			var sessions = new List<ClientSession> { new ClientSession {
-				ClientId = subscribedClientId,
-				Clean = false,
+			var sessions = new List<ClientSession> { new ClientSession(subscribedClientId, clean: false) {
 				Subscriptions = new List<ClientSubscription> { 
 					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
 				}
@@ -512,7 +490,7 @@ namespace Tests.Flows
 			clientChannel.Setup (c => c.ReceiverStream).Returns (clientReceiver);
 
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns (sessions.AsQueryable());
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
@@ -553,9 +531,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) { 
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -565,9 +542,9 @@ namespace Tests.Flows
             var topic = "foo/bar";
 
 			var subscribedClientId = Guid.NewGuid().ToString();
-			var sessions = new List<ClientSession> { new ClientSession { ClientId = subscribedClientId, Clean = false } };
+			var sessions = new List<ClientSession> { new ClientSession (subscribedClientId, clean: false) };
 
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>> ())).Returns (sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns (sessions.AsQueryable());
 
 			var publish = new Publish (topic, MqttQualityOfService.AtLeastOnce, retain: false, duplicated: false);
 
@@ -602,9 +579,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -618,9 +594,7 @@ namespace Tests.Flows
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.AtLeastOnce;
-			var sessions = new List<ClientSession> { new ClientSession {
-				ClientId = subscribedClientId,
-				Clean = false,
+			var sessions = new List<ClientSession> { new ClientSession (subscribedClientId, clean: false) {
 				Subscriptions = new List<ClientSubscription> { 
 					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
 				}
@@ -640,7 +614,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => clientSender.OnNext (packet))
 				.Returns(Task.Delay(0));
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
@@ -682,9 +656,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -698,9 +671,7 @@ namespace Tests.Flows
 
 			var subscribedClientId = Guid.NewGuid().ToString();
 			var requestedQoS = MqttQualityOfService.ExactlyOnce;
-			var sessions = new List<ClientSession> { new ClientSession {
-				ClientId = subscribedClientId,
-				Clean = false,
+			var sessions = new List<ClientSession> { new ClientSession (subscribedClientId, clean: false) {
 				Subscriptions = new List<ClientSubscription> { 
 					new ClientSubscription { ClientId = subscribedClientId, MaximumQualityOfService = requestedQoS, TopicFilter = topic }
 				}
@@ -720,7 +691,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => clientSender.OnNext (packet))
 				.Returns(Task.Delay(0));
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.GetAll (It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns ( sessions.AsQueryable());
+			sessionRepository.Setup (r => r.GetAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
@@ -759,9 +730,8 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -797,10 +767,8 @@ namespace Tests.Flows
             var sessionRepository = new Mock<IRepository<ClientSession>> ();
             var willRepository = new Mock<IRepository<ConnectionWill>> ();
 
-            sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-                .Returns (new ClientSession
-                {
-                    ClientId = clientId,
+            sessionRepository.Setup (r => r.Get (It.IsAny<string> ()))
+                .Returns (new ClientSession (clientId) { 
                     PendingMessages = new List<PendingMessage> { new PendingMessage () }
                 });
 
@@ -846,10 +814,8 @@ namespace Tests.Flows
             connectionProvider.Setup (p => p.PrivateClients)
                 .Returns (new[] { clientId });
 
-            sessionRepository.Setup (r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-                .Returns (new ClientSession
-                {
-                    ClientId = clientId,
+            sessionRepository.Setup (r => r.Get(It.IsAny<string> ()))
+                .Returns (new ClientSession (clientId) { 
                     PendingMessages = new List<PendingMessage> { new PendingMessage () }
                 });
 

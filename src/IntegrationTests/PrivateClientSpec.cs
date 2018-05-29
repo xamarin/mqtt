@@ -108,10 +108,11 @@ namespace IntegrationTests
         public async Task when_in_process_client_disconnect_then_succeeds()
         {
             var client = await server.CreateClientAsync ();
+			var clientId = client.Id;
 
             await client.DisconnectAsync ();
 
-            Assert.Equal (0, server.ActiveClients.Count ());
+            Assert.False (server.ActiveClients.Any (c => c == clientId));
             Assert.False (client.IsConnected);
             Assert.True (string.IsNullOrEmpty (client.Id));
 
@@ -136,9 +137,9 @@ namespace IntegrationTests
             });
 
             await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[255]), MqttQualityOfService.AtMostOnce);
-            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[10]), MqttQualityOfService.AtLeastOnce);
-            await barClient.PublishAsync (new MqttApplicationMessage ("other/topic", new byte[500]), MqttQualityOfService.ExactlyOnce);
-            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[50]), MqttQualityOfService.ExactlyOnce);
+            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[10]), MqttQualityOfService.AtMostOnce);
+            await barClient.PublishAsync (new MqttApplicationMessage ("other/topic", new byte[500]), MqttQualityOfService.AtMostOnce);
+            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[50]), MqttQualityOfService.AtMostOnce);
 
             await Task.Delay (TimeSpan.FromMilliseconds (1000));
 

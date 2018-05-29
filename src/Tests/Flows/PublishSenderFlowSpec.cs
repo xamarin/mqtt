@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Moq;
+using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Reactive.Subjects;
-using System.Text;
-using System.Threading;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 using System.Net.Mqtt.Sdk.Flows;
 using System.Net.Mqtt.Sdk.Packets;
 using System.Net.Mqtt.Sdk.Storage;
-using Moq;
-using Xunit;
+using System.Reactive.Subjects;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Sdk;
+using Xunit;
 
 namespace Tests.Flows
 {
@@ -26,9 +25,9 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository
+				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -86,9 +85,9 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository
+				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -146,9 +145,9 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository
+				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 
@@ -195,9 +194,9 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<Expression<Func<ClientSession, bool>>> ()))
-				.Returns (new ClientSession {
-					ClientId = clientId,
+			sessionRepository
+				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
 

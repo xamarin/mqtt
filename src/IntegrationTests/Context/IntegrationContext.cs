@@ -16,8 +16,8 @@ namespace IntegrationTests.Context
 	{
 		static readonly ConcurrentBag<int> usedPorts;
 		static readonly Random random = new Random ();
-		static readonly object lockObject = new object ();
 
+		readonly object lockObject = new object ();
 		protected readonly ushort keepAliveSecs;
         protected readonly bool allowWildcardsInTopicFilters;
 
@@ -63,9 +63,7 @@ namespace IntegrationTests.Context
 			var binding = new TcpBinding ();
 			var initializer = new MqttClientFactory (IPAddress.Loopback.ToString(), binding);
 
-			if (Configuration == null) {
-				LoadConfiguration ();
-			}
+			LoadConfiguration ();
 
 			return await initializer.CreateClientAsync (Configuration);
 		}
@@ -87,15 +85,19 @@ namespace IntegrationTests.Context
 
 		void LoadConfiguration()
 		{
-			lock (lockObject) {
-				Configuration = new MqttConfiguration {
-					BufferSize = 128 * 1024,
-					Port = GetPort (),
-					KeepAliveSecs = keepAliveSecs,
-					WaitTimeoutSecs = 2,
-					MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-                    AllowWildcardsInTopicFilters = allowWildcardsInTopicFilters
-				};
+			if (Configuration == null) {
+				lock (lockObject) {
+					if (Configuration == null) {
+						Configuration = new MqttConfiguration {
+							BufferSize = 128 * 1024,
+							Port = GetPort (),
+							KeepAliveSecs = keepAliveSecs,
+							WaitTimeoutSecs = 2,
+							MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
+							AllowWildcardsInTopicFilters = allowWildcardsInTopicFilters
+						};
+					}
+				}
 			}
 		}
 
