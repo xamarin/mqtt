@@ -78,6 +78,7 @@ namespace System.Net.Mqtt.Sdk
 					throw new MqttClientException (string.Format (Properties.Resources.Client_AlreadyConnected, Id));
 				}
 
+				Id = credentials.ClientId;
 				OpenClientSession (credentials.ClientId, cleanSession);
 
 				await InitializeChannelAsync ().ConfigureAwait (continueOnCapturedContext: false);
@@ -110,7 +111,6 @@ namespace System.Net.Mqtt.Sdk
 					throw new MqttConnectionException (ack.Status);
 				}
 
-				Id = credentials.ClientId;
 				IsConnected = true;
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
@@ -298,7 +298,10 @@ namespace System.Net.Mqtt.Sdk
 			if (disposed) return;
 
 			if (disposing) {
-				await DisconnectAsync ().ConfigureAwait (continueOnCapturedContext: false);
+				if (IsConnected) {
+					await DisconnectAsync ().ConfigureAwait (continueOnCapturedContext: false);
+				}
+
 				sender?.OnCompleted ();
 				receiver?.OnCompleted ();
 				(clientSender as IDisposable)?.Dispose ();
@@ -339,18 +342,18 @@ namespace System.Net.Mqtt.Sdk
 
 		void OpenClientSession (string clientId, bool cleanSession)
 		{
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Get (clientId);
 			var sessionPresent = cleanSession ? false : session != null;
 
 			if (cleanSession && session != null) {
-				sessionRepository.Delete (session);
+				sessionRepository.Delete (session.Id);
 				session = null;
 
 				tracer.Info (Properties.Resources.Client_CleanedOldSession, clientId);
 			}
 
 			if (session == null) {
-				session = new ClientSession { ClientId = clientId, Clean = cleanSession };
+				session = new ClientSession (clientId, cleanSession);
 
 				sessionRepository.Create (session);
 
@@ -360,14 +363,14 @@ namespace System.Net.Mqtt.Sdk
 
 		void CloseClientSession ()
 		{
-			var session = sessionRepository.Get (s => s.ClientId == Id);
+			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Get (Id);
 
 			if (session == null) {
 				return;
 			}
 
 			if (session.Clean) {
-				sessionRepository.Delete (session);
+				sessionRepository.Delete (session.Id);
 
 				tracer.Info (Properties.Resources.Client_DeletedSessionOnDisconnect, Id);
 			}

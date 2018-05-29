@@ -28,7 +28,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 				return;
 			}
 
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Get (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
@@ -47,7 +47,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
 
 				await senderFlow
-					.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge)
+					.SendPublishAsync (session.Id, publish, channel, PendingMessageStatus.PendingToAcknowledge)
 					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}
@@ -63,7 +63,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 				}
 
-				await senderFlow.SendAckAsync (session.ClientId, ack, channel)
+				await senderFlow.SendAckAsync (session.Id, ack, channel)
 					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}

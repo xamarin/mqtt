@@ -33,16 +33,16 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 				tracer.Info (Server.Properties.Resources.DisconnectFlow_Disconnecting, clientId);
 
-				willRepository.Delete (w => w.ClientId == clientId);
+				willRepository.Delete (clientId);
 
-				var session = sessionRepository.Get (s => s.ClientId == clientId);
+				var session = sessionRepository.Get (clientId);
 
 				if (session == null) {
 					throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
 				}
 
 				if (session.Clean) {
-					sessionRepository.Delete (session);
+					sessionRepository.Delete (session.Id);
 
 					tracer.Info (Server.Properties.Resources.Server_DeletedSessionOnDisconnect, clientId);
 				}
