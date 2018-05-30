@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 using System.Net.Sockets;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Tests;
 using Xunit;
-using System.Net.Mqtt.Sdk;
 
 namespace IntegrationTests
 {
@@ -328,8 +328,8 @@ namespace IntegrationTests
 			var topic = Guid.NewGuid().ToString();
 			var qos = MqttQualityOfService.ExactlyOnce;
 			var retain = true;
-			var message = "Client 1 has been disconnected unexpectedly";
-			var will = new MqttLastWill(topic, qos, retain, message);
+			var willMessage = new FooWillMessage { Message = "Client 1 has been disconnected unexpectedly" };
+			var will = new MqttLastWill(topic, qos, retain, FooWillMessage.GetPayload(willMessage));
 
 			await client1.ConnectAsync(new MqttClientCredentials(GetClientId()), will);
 			await client2.ConnectAsync(new MqttClientCredentials(GetClientId()));
@@ -376,8 +376,9 @@ namespace IntegrationTests
 			var topic = Guid.NewGuid().ToString();
 			var qos = MqttQualityOfService.ExactlyOnce;
 			var retain = true;
-			var message = "Client 1 has been disconnected unexpectedly";
-			var will = new MqttLastWill(topic, qos, retain, message);
+			var willMessage = new FooWillMessage { Message = "Client 1 has been disconnected unexpectedly" };
+			var willMessagePayload = FooWillMessage.GetPayload(willMessage);
+			var will = new MqttLastWill(topic, qos, retain, willMessagePayload);
 
 			await client1.ConnectAsync(new MqttClientCredentials(GetClientId()), will);
 			await client2.ConnectAsync(new MqttClientCredentials(GetClientId()));
@@ -387,24 +388,24 @@ namespace IntegrationTests
 			await client3.SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce);
 
 			var willReceivedSignal = new ManualResetEventSlim(initialState: false);
-			var willMessage = default(MqttApplicationMessage);
+			var willApplicationMessage = default(MqttApplicationMessage);
 
-			client2.MessageStream.Subscribe(m =>
+			client2.MessageStream.Subscribe((Action<MqttApplicationMessage>)(m =>
 			{
 				if (m.Topic == topic)
 				{
-					willMessage = m;
+					willApplicationMessage = m;
 					willReceivedSignal.Set();
 				}
-			});
-			client3.MessageStream.Subscribe(m =>
+			}));
+			client3.MessageStream.Subscribe((Action<MqttApplicationMessage>)(m =>
 			{
 				if (m.Topic == topic)
 				{
-					willMessage = m;
+					willApplicationMessage = m;
 					willReceivedSignal.Set();
 				}
-			});
+			}));
 
 			//Forces socket disconnection without using protocol Disconnect (Disconnect or Dispose Client method)
 			(client1 as MqttClientImpl).Channel.Dispose();
@@ -413,8 +414,8 @@ namespace IntegrationTests
 
 			Assert.True(willReceived);
 			Assert.NotNull(willMessage);
-			Assert.Equal(topic, willMessage.Topic);
-			Assert.Equal(message, Encoding.UTF8.GetString(willMessage.Payload));
+			Assert.Equal(topic, willApplicationMessage.Topic);
+			Assert.Equal(willMessage.Message, FooWillMessage.GetMessage(willApplicationMessage.Payload).Message);
 
 			client2.Dispose();
 			client3.Dispose();

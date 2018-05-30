@@ -201,7 +201,8 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid ().ToString ();
 			var connect = new Connect (clientId, cleanSession: true);
 
-			var will = new MqttLastWill ("foo/bar", MqttQualityOfService.AtLeastOnce, retain: true, message: "Foo Will Message");
+			var willMessage = new FooWillMessage { Message = "Foo Will Message" };
+			var will = new MqttLastWill ("foo/bar", MqttQualityOfService.AtLeastOnce, retain: true, payload: FooWillMessage.GetPayload(willMessage));
 
 			connect.Will = will;
 

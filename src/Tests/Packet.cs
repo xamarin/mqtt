@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Net.Mqtt;
 using System.Net.Mqtt.Sdk.Packets;
-using Newtonsoft.Json;
+using System.Text;
 
 namespace Tests
 {
@@ -80,14 +81,22 @@ namespace Tests
 			return Deserialize (text, type);
 		}
 
-		static T Deserialize<T>(string serialized)
+		static T Deserialize<T> (string serialized)
         {
-			return JsonConvert.DeserializeObject<T> (serialized, new StringByteArrayConverter());
+			return JsonConvert.DeserializeObject<T> (serialized, GetConverters (typeof(T)).ToArray ());
         }
 
-		static object Deserialize(string serialized, Type type)
+		static object Deserialize (string serialized, Type type)
         {
-			return JsonConvert.DeserializeObject (serialized, type, new StringByteArrayConverter());
+			return JsonConvert.DeserializeObject (serialized, type, GetConverters (type).ToArray ());
         }
+
+		static IEnumerable<JsonConverter> GetConverters (Type type)
+		{
+			if (type == typeof (Connect))
+				yield return new MqttLastWillConverter ();
+
+			yield return new StringByteArrayConverter ();
+		}
 	}
 }
