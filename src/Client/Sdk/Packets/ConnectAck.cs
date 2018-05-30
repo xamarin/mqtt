@@ -1,6 +1,6 @@
 ﻿namespace System.Net.Mqtt.Sdk.Packets
 {
-	internal class ConnectAck : IPacket, IEquatable<ConnectAck>
+	internal class ConnectAck : IPacket, IConnectAck, IEquatable<ConnectAck>
 	{
 		public ConnectAck (MqttConnectionStatus status, bool existingSession)
 		{

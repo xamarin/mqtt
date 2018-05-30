@@ -18,6 +18,6 @@ namespace System.Net.Mqtt
 		/// method from the interface.
         /// </summary>
         [EditorBrowsable (EditorBrowsableState.Never)]
-        new Task ConnectAsync(MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
+        new Task<IConnectAck> ConnectAsync(MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
     }
 }

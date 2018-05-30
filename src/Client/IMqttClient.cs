@@ -58,7 +58,7 @@ namespace System.Net.Mqtt
         /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180841">MQTT Connect</a>
         /// for more details about the protocol connection
         /// </remarks>
-		Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
+		Task<IConnectAck> ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
 
         /// <summary>
         /// Represents the protocol subscription, which consists of sending a SUBSCRIBE packet
