@@ -220,6 +220,66 @@ namespace IntegrationTests
 		}
 
 		[Fact]
+		public async Task when_connecting_client_with_clean_session_true_then_session_is_not_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var ack1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			var ack2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			Assert.False(ack1.SessionPresent);
+			Assert.False(ack2.SessionPresent);
+
+			client?.Dispose();
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_clean_session_false_and_then_true_then_session_is_not_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var ack1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			var ack2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			Assert.False(ack1.SessionPresent);
+			Assert.False(ack2.SessionPresent);
+
+			client?.Dispose();
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_clean_session_false_then_session_is_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var ack1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			var ack2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			Assert.False(ack1.SessionPresent);
+			Assert.True(ack2.SessionPresent);
+
+			client?.Dispose();
+		}
+
+		[Fact]
 		public async Task when_disconnect_clients_then_succeeds()
 		{
 			var count = GetTestLoad();
