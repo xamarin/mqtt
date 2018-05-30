@@ -19,8 +19,8 @@ namespace System.Net.Mqtt.Sdk
 		IPacketListener packetListener;
 		IDisposable packetsSubscription;
 
-		readonly ReplaySubject<MqttApplicationMessage> receiver;
-		readonly ReplaySubject<IPacket> sender;
+		readonly Subject<MqttApplicationMessage> receiver;
+		readonly Subject<IPacket> sender;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IRepository<ClientSession> sessionRepository;
@@ -34,8 +34,8 @@ namespace System.Net.Mqtt.Sdk
 			IPacketIdProvider packetIdProvider,
 			MqttConfiguration configuration)
 		{
-			receiver = new ReplaySubject<MqttApplicationMessage> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
-			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
+			receiver = new Subject<MqttApplicationMessage> ();
+			sender = new Subject<IPacket> ();
 
 			this.channelFactory = channelFactory;
 			this.flowProvider = flowProvider;

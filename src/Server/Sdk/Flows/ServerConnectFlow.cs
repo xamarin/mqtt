@@ -78,8 +78,11 @@ namespace System.Net.Mqtt.Sdk.Flows
 		async Task SendPendingMessagesAsync (ClientSession session, IMqttChannel<IPacket> channel)
 		{
 			foreach (var pendingMessage in session.GetPendingMessages ()) {
-				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService,
-					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
+				var publish = new Publish (pendingMessage.Topic, pendingMessage.QualityOfService,
+					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId)
+				{
+					Payload = pendingMessage.Payload
+				};
 
 				if (pendingMessage.Status == PendingMessageStatus.PendingToSend) {
 					session.RemovePendingMessage (pendingMessage);
