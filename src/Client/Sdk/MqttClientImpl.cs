@@ -67,7 +67,7 @@ namespace System.Net.Mqtt.Sdk
 
         internal IMqttChannel<IPacket> Channel { get; private set; }
 
-        public async Task ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false)
+        public async Task<SessionState> ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false)
 		{
 			if (disposed) {
 				throw new ObjectDisposedException (GetType ().FullName);
@@ -112,6 +112,8 @@ namespace System.Net.Mqtt.Sdk
 				}
 
 				IsConnected = true;
+
+				return ack.SessionPresent ? SessionState.SessionPresent : SessionState.CleanSession;
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
 				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);

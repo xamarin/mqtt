@@ -1,15 +1,15 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Net.Mqtt.Sdk.Packets;
-using IntegrationTests.Context;
+﻿using IntegrationTests.Context;
 using IntegrationTests.Messages;
-using Xunit;
-using System.Text;
+using System;
 using System.Collections.Generic;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Sdk;
+using System.Net.Mqtt.Sdk.Packets;
 using System.Reactive.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace IntegrationTests
 {
@@ -494,6 +494,118 @@ namespace IntegrationTests
 
 			client1.Dispose();
 			client2.Dispose();
+		}
+
+		[Fact]
+		public async Task when_publish_with_client_with_session_present_then_subscriptions_are_re_used()
+		{
+			var count = GetTestLoad();
+			var topic = "topic/foo/bar";
+
+			var publisher = await GetClientAsync();
+			var subscriber = await GetClientAsync();
+			var subscriberId = subscriber.Id;
+
+			var subscriberDone = new ManualResetEventSlim();
+			var subscriberReceived = 0;
+
+			await subscriber
+				.SubscribeAsync(topic, MqttQualityOfService.AtMostOnce)
+				.ConfigureAwait(continueOnCapturedContext: false);
+
+			subscriber
+				.MessageStream
+				.Where(m => m.Topic == topic)
+				.Subscribe(m => {
+					subscriberReceived++;
+
+					if (subscriberReceived == count)
+						subscriberDone.Set();
+				});
+
+			await subscriber.DisconnectAsync();
+			var sessionState = await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: false);
+
+			var tasks = new List<Task>();
+
+			for (var i = 1; i <= count; i++)
+			{
+				var testMessage = GetTestMessage(i);
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
+
+				tasks.Add(publisher.PublishAsync(message, MqttQualityOfService.AtMostOnce));
+			}
+
+			await Task.WhenAll(tasks);
+
+			var completed = subscriberDone.Wait(TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
+
+			Assert.True(completed);
+			Assert.Equal(SessionState.SessionPresent, sessionState);
+			Assert.Equal(count, subscriberReceived);
+
+			await subscriber.UnsubscribeAsync(topic)
+				.ConfigureAwait(continueOnCapturedContext: false);
+
+			subscriber.Dispose();
+			publisher.Dispose();
+		}
+
+		[Fact]
+		public async Task when_publish_with_client_with_session_clared_then_subscriptions_are_not_re_used()
+		{
+			CleanSession = true;
+
+			var count = GetTestLoad();
+			var topic = "topic/foo/bar";
+
+			var publisher = await GetClientAsync();
+			var subscriber = await GetClientAsync();
+			var subscriberId = subscriber.Id;
+
+			var subscriberDone = new ManualResetEventSlim();
+			var subscriberReceived = 0;
+
+			await subscriber
+				.SubscribeAsync(topic, MqttQualityOfService.AtMostOnce)
+				.ConfigureAwait(continueOnCapturedContext: false);
+
+			subscriber
+				.MessageStream
+				.Where(m => m.Topic == topic)
+				.Subscribe(m => {
+					subscriberReceived++;
+
+					if (subscriberReceived == count)
+						subscriberDone.Set();
+				});
+
+			await subscriber.DisconnectAsync();
+			var sessionState = await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: true);
+
+			var tasks = new List<Task>();
+
+			for (var i = 1; i <= count; i++)
+			{
+				var testMessage = GetTestMessage(i);
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
+
+				tasks.Add(publisher.PublishAsync(message, MqttQualityOfService.AtMostOnce));
+			}
+
+			await Task.WhenAll(tasks);
+
+			var completed = subscriberDone.Wait(TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
+
+			Assert.False(completed);
+			Assert.Equal(SessionState.CleanSession, sessionState);
+			Assert.Equal(0, subscriberReceived);
+
+			await subscriber.UnsubscribeAsync(topic)
+				.ConfigureAwait(continueOnCapturedContext: false);
+
+			subscriber.Dispose();
+			publisher.Dispose();
 		}
 
 		public void Dispose ()

@@ -220,6 +220,66 @@ namespace IntegrationTests
 		}
 
 		[Fact]
+		public async Task when_connecting_client_with_clean_session_true_then_session_is_not_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.CleanSession, sessionState2);
+
+			client?.Dispose();
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_clean_session_false_and_then_true_then_session_is_not_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.CleanSession, sessionState2);
+
+			client?.Dispose();
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_clean_session_false_then_session_is_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.SessionPresent, sessionState2);
+
+			client?.Dispose();
+		}
+
+		[Fact]
 		public async Task when_disconnect_clients_then_succeeds()
 		{
 			var count = GetTestLoad();
