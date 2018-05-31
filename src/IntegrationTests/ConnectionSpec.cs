@@ -225,16 +225,16 @@ namespace IntegrationTests
 			var client = await GetClientAsync();
 			var clientId = GetClientId();
 
-			var ack1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
 
 			await client.DisconnectAsync();
 
-			var ack2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
 
 			await client.DisconnectAsync();
 
-			Assert.False(ack1.SessionPresent);
-			Assert.False(ack2.SessionPresent);
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.CleanSession, sessionState2);
 
 			client?.Dispose();
 		}
@@ -245,16 +245,16 @@ namespace IntegrationTests
 			var client = await GetClientAsync();
 			var clientId = GetClientId();
 
-			var ack1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
 
 			await client.DisconnectAsync();
 
-			var ack2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
 
 			await client.DisconnectAsync();
 
-			Assert.False(ack1.SessionPresent);
-			Assert.False(ack2.SessionPresent);
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.CleanSession, sessionState2);
 
 			client?.Dispose();
 		}
@@ -265,16 +265,16 @@ namespace IntegrationTests
 			var client = await GetClientAsync();
 			var clientId = GetClientId();
 
-			var ack1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
 
 			await client.DisconnectAsync();
 
-			var ack2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
 
 			await client.DisconnectAsync();
 
-			Assert.False(ack1.SessionPresent);
-			Assert.True(ack2.SessionPresent);
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.SessionPresent, sessionState2);
 
 			client?.Dispose();
 		}

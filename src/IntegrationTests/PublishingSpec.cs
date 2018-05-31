@@ -524,7 +524,7 @@ namespace IntegrationTests
 				});
 
 			await subscriber.DisconnectAsync();
-			var subscriberAck = await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: false);
+			var sessionState = await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: false);
 
 			var tasks = new List<Task>();
 
@@ -541,7 +541,7 @@ namespace IntegrationTests
 			var completed = subscriberDone.Wait(TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
 
 			Assert.True(completed);
-			Assert.True(subscriberAck.SessionPresent);
+			Assert.Equal(SessionState.SessionPresent, sessionState);
 			Assert.Equal(count, subscriberReceived);
 
 			await subscriber.UnsubscribeAsync(topic)
@@ -581,7 +581,7 @@ namespace IntegrationTests
 				});
 
 			await subscriber.DisconnectAsync();
-			var subscriberAck = await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: true);
+			var sessionState = await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: true);
 
 			var tasks = new List<Task>();
 
@@ -598,7 +598,7 @@ namespace IntegrationTests
 			var completed = subscriberDone.Wait(TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
 
 			Assert.False(completed);
-			Assert.False(subscriberAck.SessionPresent);
+			Assert.Equal(SessionState.CleanSession, sessionState);
 			Assert.Equal(0, subscriberReceived);
 
 			await subscriber.UnsubscribeAsync(topic)
