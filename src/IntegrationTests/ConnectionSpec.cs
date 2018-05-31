@@ -329,7 +329,7 @@ namespace IntegrationTests
 			var qos = MqttQualityOfService.ExactlyOnce;
 			var retain = true;
 			var willMessage = new FooWillMessage { Message = "Client 1 has been disconnected unexpectedly" };
-			var will = new MqttLastWill(topic, qos, retain, FooWillMessage.GetPayload(willMessage));
+			var will = new MqttLastWill(topic, qos, retain, willMessage.GetPayload());
 
 			await client1.ConnectAsync(new MqttClientCredentials(GetClientId()), will);
 			await client2.ConnectAsync(new MqttClientCredentials(GetClientId()));
@@ -377,7 +377,7 @@ namespace IntegrationTests
 			var qos = MqttQualityOfService.ExactlyOnce;
 			var retain = true;
 			var willMessage = new FooWillMessage { Message = "Client 1 has been disconnected unexpectedly" };
-			var willMessagePayload = FooWillMessage.GetPayload(willMessage);
+			var willMessagePayload = willMessage.GetPayload();
 			var will = new MqttLastWill(topic, qos, retain, willMessagePayload);
 
 			await client1.ConnectAsync(new MqttClientCredentials(GetClientId()), will);

@@ -27,12 +27,9 @@ namespace System.Net.Mqtt
 		[Obsolete ("This constructor is obsolete, please use the constructor with the byte[] payload parameter instead.")]
 		[EditorBrowsable (EditorBrowsableState.Never)]
 		public MqttLastWill (string topic, MqttQualityOfService qualityOfService, bool retain, string message)
+			: this (topic, qualityOfService, retain, payload: Encoding.UTF8.GetBytes (message))
 		{
-			Topic = topic;
-			QualityOfService = qualityOfService;
-			Retain = retain;
 			Message = message;
-			Payload = Encoding.UTF8.GetBytes (message);
 		}
 
 		/// <summary>

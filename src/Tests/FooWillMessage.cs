@@ -9,12 +9,12 @@ namespace Tests
 	{
 		public string Message { get; set; }
 
-		public static byte[] GetPayload (FooWillMessage willMessage)
+		public byte[] GetPayload ()
 		{
 			var formatter = new BinaryFormatter ();
 
 			using (var stream = new MemoryStream ()) {
-				formatter.Serialize(stream, willMessage);
+				formatter.Serialize(stream, this);
 
 				return stream.ToArray();
 			}

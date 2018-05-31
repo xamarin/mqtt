@@ -202,7 +202,7 @@ namespace Tests.Flows
 			var connect = new Connect (clientId, cleanSession: true);
 
 			var willMessage = new FooWillMessage { Message = "Foo Will Message" };
-			var will = new MqttLastWill ("foo/bar", MqttQualityOfService.AtLeastOnce, retain: true, payload: FooWillMessage.GetPayload(willMessage));
+			var will = new MqttLastWill ("foo/bar", MqttQualityOfService.AtLeastOnce, retain: true, payload: willMessage.GetPayload());
 
 			connect.Will = will;
 
