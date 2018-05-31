@@ -178,10 +178,10 @@
     <value>Client {0} - Created new client session</value>
   </data>
   <data name="Client_DeletedSessionOnDisconnect" xml:space="preserve">
-    <value>Client {0} - Removed client session as part of Disconnect</value>
+    <value>Client {0} - Removed client session</value>
   </data>
-  <data name="Client_Disposing" xml:space="preserve">
-    <value>Client {0} - Disposing. Reason: {1}</value>
+  <data name="Client_Closing" xml:space="preserve">
+    <value>Client {0} - Closing. Reason: {1}</value>
   </data>
   <data name="Client_PacketsObservableCompleted" xml:space="preserve">
     <value>Client - Packet observable sequence has been completed, hence closing the channel</value>
@@ -335,5 +335,11 @@
   </data>
   <data name="Client_SubscriptionRejected" xml:space="preserve">
     <value>The server has rejected the subscription of client {0} to topic {1}</value>
+  </data>
+  <data name="Client_AlreadyConnected" xml:space="preserve">
+    <value>The protocol connection cannot be performed because an active connection for client {0} already exists</value>
+  </data>
+  <data name="Client_AlreadyDisconnected" xml:space="preserve">
+    <value>The protocol disconnection cannot be performed because the client is already disconnected</value>
   </data>
 </root>
