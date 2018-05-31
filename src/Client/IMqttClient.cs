@@ -74,12 +74,16 @@ namespace System.Net.Mqtt
 		/// The last will message to send from the Server when an unexpected Client disconnection occurrs. 
 		/// See <see cref="MqttLastWill" /> for more details about the will message structure
 		/// </param>
+		/// /// <returns>
+		/// Returns the state of the client session created as part of the connection
+		/// See <see cref="SessionState" /> for more details about the session state values
+		/// </returns>
 		/// <exception cref="MqttClientException">MqttClientException</exception>
 		/// <remarks>
 		/// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180841">MQTT Connect</a>
 		/// for more details about the protocol connection
 		/// </remarks>
-		Task<IConnectAck> ConnectAsync (MqttLastWill will = null);
+		Task<SessionState> ConnectAsync (MqttLastWill will = null);
 
 		/// <summary>
 		/// Represents the protocol subscription, which consists of sending a SUBSCRIBE packet

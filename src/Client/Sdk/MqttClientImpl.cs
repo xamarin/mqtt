@@ -354,7 +354,7 @@ namespace System.Net.Mqtt.Sdk
 
 		void OpenClientSession (bool cleanSession)
 		{
-			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Get (Id);
+			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Read (Id);
 			var sessionPresent = cleanSession ? false : session != null;
 
 			if (cleanSession && session != null) {
@@ -375,7 +375,7 @@ namespace System.Net.Mqtt.Sdk
 
 		void CloseClientSession ()
 		{
-			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Get (Id);
+			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Read (Id);
 
 			if (session == null) {
 				return;
