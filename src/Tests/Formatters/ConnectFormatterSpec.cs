@@ -49,7 +49,7 @@ namespace Tests.Formatters
 		}
 
 		[Theory]
-		[InlineData("Files/Binaries/Connect_Invalid_ClientIdEmpty.packet")]
+		[InlineData("Files/Binaries/Connect_Invalid_ClientIdEmptyAndNoCleanSession.packet")]
 		[InlineData("Files/Binaries/Connect_Invalid_ClientIdBadFormat.packet")]
         public void when_reading_invalid_client_id_in_connect_packet_then_fails(string packetPath)
 		{
@@ -83,7 +83,6 @@ namespace Tests.Formatters
 
 		[Theory]
 		[InlineData("Files/Packets/Connect_Invalid_UserNamePassword.json")]
-		[InlineData("Files/Packets/Connect_Invalid_ClientIdEmpty.json")]
 		[InlineData("Files/Packets/Connect_Invalid_ClientIdBadFormat.json")]
 		[InlineData("Files/Packets/Connect_Invalid_ClientIdInvalidLength.json")]
 		public void when_writing_invalid_connect_packet_then_fails(string jsonPath)

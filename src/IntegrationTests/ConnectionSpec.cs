@@ -204,19 +204,40 @@ namespace IntegrationTests
 		}
 
 		[Fact]
-		public async Task when_connecting_client_with_empty_id_then_fails()
+		public async Task when_connecting_client_with_empty_id_then_succeeds()
+		{
+			var client = await GetClientAsync();
+
+			await client.ConnectAsync();
+
+			Assert.True(client.IsConnected);
+			Assert.False(string.IsNullOrEmpty(client.Id));
+			Assert.True(client.Id.StartsWith("anonymous"));
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_empty_id_and_clean_session_true_then_succeeds()
+		{
+			var client = await GetClientAsync();
+
+			await client.ConnectAsync(new MqttClientCredentials(clientId: null), cleanSession: true);
+
+			Assert.True(client.IsConnected);
+			Assert.False(string.IsNullOrEmpty(client.Id));
+			Assert.True(client.Id.StartsWith("anonymous"));
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_empty_id_and_clean_session_false_then_fails()
 		{
 			var client = await GetClientAsync();
 			var clientId = string.Empty;
 
-			var ex = Assert.Throws<AggregateException>(() => client.ConnectAsync(new MqttClientCredentials(clientId)).Wait());
+			var ex = Assert.Throws<AggregateException>(() => client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false).Wait());
 
 			Assert.NotNull(ex);
 			Assert.NotNull(ex.InnerException);
 			Assert.True(ex.InnerException is MqttClientException);
-			Assert.NotNull(ex.InnerException.InnerException);
-			Assert.True(ex.InnerException.InnerException is ArgumentNullException);
-
 		}
 
 		[Fact]
