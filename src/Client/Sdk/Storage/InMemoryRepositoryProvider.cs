@@ -1,29 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 
 namespace System.Net.Mqtt.Sdk.Storage
 {
 	internal class InMemoryRepositoryProvider : IRepositoryProvider
 	{
-		readonly IDictionary<Type, object> repositories;
-
-		public InMemoryRepositoryProvider ()
-		{
-			repositories = new Dictionary<Type, object> ();
-		}
+		readonly ConcurrentDictionary<Type, object> repositories = new ConcurrentDictionary<Type, object> ();
 
 		public IRepository<T> GetRepository<T> ()
-			where T : StorageObject
+			where T : IStorageObject
 		{
-			if (repositories.Any (r => r.Key == typeof (T))) {
-				return repositories.FirstOrDefault (r => r.Key == typeof (T)).Value as IRepository<T>;
-			}
-
-			var repository = new InMemoryRepository<T> ();
-
-			repositories.Add (typeof (T), repository);
-
-			return repository;
+			return repositories.GetOrAdd (typeof (T), new InMemoryRepository<T> ()) as IRepository<T>;
 		}
 	}
 }

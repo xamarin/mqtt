@@ -1,11 +1,18 @@
 ﻿namespace System.Net.Mqtt.Sdk.Storage
 {
-	internal class RetainedMessage : StorageObject
+	internal class RetainedMessage : IStorageObject
 	{
-		public MqttQualityOfService QualityOfService { get; set; }
+		public RetainedMessage (string topic, MqttQualityOfService qos, byte[] payload)
+		{
+			Id = topic;
+			QualityOfService = qos;
+			Payload = payload;
+		}
 
-		public string Topic { get; set; }
+		public string Id { get; }
 
-		public byte[] Payload { get; set; }
+		public MqttQualityOfService QualityOfService { get; }
+
+		public byte[] Payload { get; }
 	}
 }

@@ -1,82 +1,27 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace System.Net.Mqtt.Sdk.Storage
 {
 	internal class InMemoryRepository<T> : IRepository<T>
-		where T : StorageObject
+		where T : IStorageObject
 	{
-		readonly ConcurrentDictionary<string, T> elements;
+		readonly ConcurrentDictionary<string, T> elements = new ConcurrentDictionary<string, T> ();
 
-		public InMemoryRepository ()
+		public IEnumerable<T> ReadAll () => elements.Select (e => e.Value);
+
+		public T Read (string id)
 		{
-			elements = new ConcurrentDictionary<string, T> ();
-		}
-
-		public IEnumerable<T> GetAll (Expression<Func<T, bool>> predicate = null)
-		{
-			var result = elements.Select(x => x.Value);
-
-			if (predicate != null) {
-				result = result.Where (predicate.Compile ());
-			}
-
-			return result;
-		}
-
-		public T Get (string id)
-		{
-			var element = default (T);
-
-			elements.TryGetValue (id, out element);
+			elements.TryGetValue (id, out T element);
 
 			return element;
 		}
 
-		public T Get (Expression<Func<T, bool>> predicate)
-		{
-			return GetAll ().FirstOrDefault (predicate.Compile ());
-		}
+		public void Create (T element) => elements.TryAdd (element.Id, element);
 
-		public bool Exist (string id)
-		{
-			return Get (id) != default (T);
-		}
+		public void Update (T element) => elements.AddOrUpdate (element.Id, element, (key, value) => element);
 
-		public bool Exist (Expression<Func<T, bool>> predicate)
-		{
-			return Get (predicate) != default (T);
-		}
-
-		public void Create (T element)
-		{
-			elements.TryAdd (element.Id, element);
-		}
-
-		public void Update (T element)
-		{
-			Delete (element);
-			Create (element);
-		}
-
-		public void Delete (T element)
-		{
-			var removedElement = default(T);
-
-			elements.TryRemove (element.Id, out removedElement);
-		}
-
-		public void Delete (Expression<Func<T, bool>> predicate)
-		{
-			var element = Get (predicate);
-
-			if (element == null) {
-				return;
-			}
-
-			Delete (element);
-		}
+		public void Delete (string id) => elements.TryRemove (id, out T removedElement);
 	}
 }

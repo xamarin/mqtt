@@ -69,13 +69,14 @@ namespace IntegrationTests
 		public async Task when_keep_alive_enabled_and_no_packets_are_sent_then_connection_is_maintained()
 		{
 			var client = await GetClientAsync ();
+			var clientId = GetClientId ();
 
-			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()))
+			await client.ConnectAsync (new MqttClientCredentials (clientId))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
             await Task.Delay (TimeSpan.FromSeconds (keepAliveSecs * 5));
 
-			Assert.Equal (1, server.ActiveClients.Count ());
+			Assert.True(server.ActiveClients.Any(c => c == clientId));
 			Assert.True(client.IsConnected);
 			Assert.False (string.IsNullOrEmpty (client.Id));
 

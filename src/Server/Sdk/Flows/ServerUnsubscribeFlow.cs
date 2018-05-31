@@ -21,7 +21,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 			}
 
 			var unsubscribe = input as Unsubscribe;
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Read (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));

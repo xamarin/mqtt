@@ -132,19 +132,22 @@ namespace IntegrationTests
 		{
 			var count = GetTestLoad();
 			var clients = new List<IMqttClient>();
+			var clientIds = new List<string>();
 			var tasks = new List<Task>();
 
 			for (var i = 1; i <= count; i++)
 			{
 				var client = await GetClientAsync();
+				var clientId = GetClientId();
 
-				tasks.Add(client.ConnectAsync(new MqttClientCredentials(GetClientId())));
+				tasks.Add(client.ConnectAsync(new MqttClientCredentials(clientId)));
 				clients.Add(client);
+				clientIds.Add(clientId);
 			}
 
 			await Task.WhenAll(tasks);
 
-			Assert.Equal(count, server.ActiveClients.Count());
+			Assert.Equal(count, server.ActiveClients.Where(c => clientIds.Contains (c)).Count());
 			Assert.True(clients.All(c => c.IsConnected));
 			Assert.True(clients.All(c => !string.IsNullOrEmpty(c.Id)));
 
@@ -221,40 +224,37 @@ namespace IntegrationTests
 		{
 			var count = GetTestLoad();
 			var clients = new List<IMqttClient>();
-			var connectTasks = new List<Task>();
+			var clientIds = new List<string>();
 
 			for (var i = 1; i <= count; i++)
 			{
 				var client = await GetClientAsync();
+				var clientId = GetClientId();
 
-				connectTasks.Add(client.ConnectAsync(new MqttClientCredentials(GetClientId())));
+				await client.ConnectAsync(new MqttClientCredentials(clientId));
 				clients.Add(client);
+				clientIds.Add(clientId);
 			}
 
-			await Task.WhenAll(connectTasks);
-
-			var initialConnectedClients = server.ActiveClients.Count();
-			var disconnectTasks = new List<Task>();
+			var initialConnectedClients = server.ActiveClients.Where(c => clientIds.Contains(c)).Count();
 
 			foreach (var client in clients)
 			{
-				disconnectTasks.Add(client.DisconnectAsync());
+				await client.DisconnectAsync();
 			}
-
-			await Task.WhenAll(disconnectTasks);
 
 			var disconnectedSignal = new ManualResetEventSlim(initialState: false);
 
 			while (!disconnectedSignal.IsSet)
 			{
-				if (server.ActiveClients.Count() == 0 && clients.All(c => !c.IsConnected))
+				if (server.ActiveClients.Where(c => clientIds.Contains (c)).Count() == 0 && clients.All(c => !c.IsConnected))
 				{
 					disconnectedSignal.Set();
 				}
 			}
 
 			Assert.Equal(clients.Count, initialConnectedClients);
-			Assert.Equal(0, server.ActiveClients.Count());
+			Assert.Equal(0, server.ActiveClients.Where(c => clientIds.Contains(c)).Count());
 			Assert.True(clients.All(c => !c.IsConnected));
 			Assert.True(clients.All(c => string.IsNullOrEmpty(c.Id)));
 

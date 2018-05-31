@@ -2,18 +2,20 @@
 
 namespace System.Net.Mqtt.Sdk.Storage
 {
-	internal class ClientSession : StorageObject
+	internal class ClientSession : IStorageObject
 	{
-		public ClientSession ()
+		public ClientSession (string clientId, bool clean = false)
 		{
+			Id = clientId;
+			Clean = clean;
 			Subscriptions = new List<ClientSubscription> ();
 			PendingMessages = new List<PendingMessage> ();
 			PendingAcknowledgements = new List<PendingAcknowledgement> ();
 		}
 
-		public string ClientId { get; set; }
+		public string Id { get; }
 
-		public bool Clean { get; set; }
+		public bool Clean { get; }
 
 		public List<ClientSubscription> Subscriptions { get; set; }
 

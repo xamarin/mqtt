@@ -75,7 +75,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 		protected void RemovePendingMessage (string clientId, ushort packetId)
 		{
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Read (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
@@ -146,7 +146,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 				return;
 			}
 
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Read (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
