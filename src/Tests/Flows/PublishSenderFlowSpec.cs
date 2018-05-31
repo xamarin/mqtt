@@ -26,7 +26,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
 			sessionRepository
-				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Setup (r => r.Read (It.IsAny<string> ()))
 				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
@@ -86,7 +86,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
 			sessionRepository
-				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Setup (r => r.Read (It.IsAny<string> ()))
 				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
@@ -146,7 +146,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
 			sessionRepository
-				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Setup (r => r.Read (It.IsAny<string> ()))
 				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});
@@ -195,7 +195,7 @@ namespace Tests.Flows
 			var sessionRepository = new Mock<IRepository<ClientSession>> ();
 
 			sessionRepository
-				.Setup (r => r.Get (It.IsAny<string> ()))
+				.Setup (r => r.Read (It.IsAny<string> ()))
 				.Returns (new ClientSession (clientId) {
 					PendingMessages = new List<PendingMessage> { new PendingMessage() }
 				});

@@ -36,7 +36,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 				throw new MqttConnectionException (MqttConnectionStatus.BadUserNameOrPassword);
 			}
 
-			var session = sessionRepository.Get (clientId);
+			var session = sessionRepository.Read (clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 
 			if (connect.CleanSession && session != null) {

@@ -40,7 +40,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 			}
 
 			var subscribe = input as Subscribe;
-			var session = sessionRepository.Get (clientId);
+			var session = sessionRepository.Read (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format(Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
@@ -96,7 +96,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 		async Task SendRetainedMessagesAsync (ClientSubscription subscription, IMqttChannel<IPacket> channel)
 		{
 			var retainedMessages = retainedRepository
-				.GetAll ()
+				.ReadAll ()
 				.Where (r => topicEvaluator.Matches (topicName: r.Id, topicFilter: subscription.TopicFilter));
 
 			if (retainedMessages != null) {

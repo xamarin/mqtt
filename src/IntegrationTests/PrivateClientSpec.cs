@@ -137,9 +137,9 @@ namespace IntegrationTests
             });
 
             await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[255]), MqttQualityOfService.AtMostOnce);
-            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[10]), MqttQualityOfService.AtMostOnce);
-            await barClient.PublishAsync (new MqttApplicationMessage ("other/topic", new byte[500]), MqttQualityOfService.AtMostOnce);
-            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[50]), MqttQualityOfService.AtMostOnce);
+            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[10]), MqttQualityOfService.AtLeastOnce);
+            await barClient.PublishAsync (new MqttApplicationMessage ("other/topic", new byte[500]), MqttQualityOfService.ExactlyOnce);
+            await barClient.PublishAsync (new MqttApplicationMessage (fooTopic, new byte[50]), MqttQualityOfService.ExactlyOnce);
 
             await Task.Delay (TimeSpan.FromMilliseconds (1000));
 

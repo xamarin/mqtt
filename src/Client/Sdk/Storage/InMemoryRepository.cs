@@ -9,9 +9,9 @@ namespace System.Net.Mqtt.Sdk.Storage
 	{
 		readonly ConcurrentDictionary<string, T> elements = new ConcurrentDictionary<string, T> ();
 
-		public IEnumerable<T> GetAll () => elements.Select (e => e.Value);
+		public IEnumerable<T> ReadAll () => elements.Select (e => e.Value);
 
-		public T Get (string id)
+		public T Read (string id)
 		{
 			elements.TryGetValue (id, out T element);
 

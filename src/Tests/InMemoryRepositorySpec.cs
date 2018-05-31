@@ -20,7 +20,7 @@ namespace Tests
 			repository.Create(new FooStorageObject { Id = "Foo3", Value = 3 });
 			repository.Create(new FooStorageObject { Id = "Foo4", Value = 4 });
 
-			Assert.Equal(4, repository.GetAll().Count());
+			Assert.Equal(4, repository.ReadAll().Count());
 		}
 
 		[Fact]
@@ -35,7 +35,7 @@ namespace Tests
 
 			repository.Update(item);
 			
-			Assert.Equal(2, repository.GetAll().First().Value);
+			Assert.Equal(2, repository.ReadAll().First().Value);
 		}
 
 		[Fact]
@@ -45,21 +45,9 @@ namespace Tests
 			var item = new FooStorageObject { Id = "Foo1", Value = 1 };
 
 			repository.Create(item);
-			repository.Delete(item.Id);
-
-			Assert.Empty(repository.GetAll());
-		}
-
-		[Fact]
-		public void when_deleting_item_by_id_then_succeeds()
-		{
-			var repository = new InMemoryRepository<FooStorageObject>();
-			var item = new FooStorageObject { Id = "Foo1", Value = 1 };
-
-			repository.Create(item);
 			repository.Delete("Foo1");
 
-			Assert.Empty(repository.GetAll());
+			Assert.Empty(repository.ReadAll());
 		}
 
 		[Fact]
@@ -71,27 +59,11 @@ namespace Tests
 			repository.Create(item);
 			repository.Delete("Foo2");
 
-			Assert.NotEmpty(repository.GetAll());
+			Assert.NotEmpty(repository.ReadAll());
 		}
 
 		[Fact]
-		public void when_checking_existing_items_with_expressions_then_succeeds()
-		{
-			var repository = new InMemoryRepository<FooStorageObject>();
-
-			repository.Create(new FooStorageObject { Id = "Foo1", Value = 1 });
-			repository.Create(new FooStorageObject { Id = "Foo2", Value = 2 });
-			repository.Create(new FooStorageObject { Id = "Foo3", Value = 3 });
-			repository.Create(new FooStorageObject { Id = "Foo4", Value = 4 });
-
-			Assert.Equal(4, repository.GetAll().Where(x => x.Id.StartsWith("Foo")).Count());
-			Assert.True(repository.GetAll().Any(x => x.Id == "Foo1"));
-			Assert.True(repository.GetAll().Any(x => x.Value == 4));
-			Assert.False(repository.GetAll().Any(x => x.Value == 5));
-		}
-
-		[Fact]
-		public async Task when_getting_element_by_expression_in_multiple_threads_then_succeeds()
+		public async Task when_getting_element_by_id_in_multiple_threads_then_succeeds()
 		{
 			var count = 100;
 			var repository = new InMemoryRepository<FooStorageObject>();
@@ -114,7 +86,7 @@ namespace Tests
 
 			Parallel.For(fromInclusive: 1, toExclusive: count + 1, body: i => {
 				var value = random.Next(minValue: 1, maxValue: count);
-				var element = repository.Get($"Foo{value}");
+				var element = repository.Read($"Foo{value}");
 
 				bag.Add(element);
 			});

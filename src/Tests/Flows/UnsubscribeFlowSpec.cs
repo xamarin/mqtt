@@ -28,7 +28,7 @@ namespace Tests.Flows
 			};
 			var updatedSession = default(ClientSession);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
+			sessionRepository.Setup (r => r.Read (It.IsAny<string> ())).Returns (session);
 			sessionRepository.Setup (r => r.Update (It.IsAny<ClientSession> ())).Callback<ClientSession> (s => updatedSession = s);
 			
 			var unsubscribe = new Unsubscribe (packetId, topic);
@@ -69,7 +69,7 @@ namespace Tests.Flows
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var session = new ClientSession(clientId, clean: false);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
+			sessionRepository.Setup (r => r.Read (It.IsAny<string> ())).Returns (session);
 
 			var unsubscribe = new Unsubscribe (packetId, "foo/bar");
 

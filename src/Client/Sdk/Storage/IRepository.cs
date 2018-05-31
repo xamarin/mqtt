@@ -5,9 +5,9 @@ namespace System.Net.Mqtt.Sdk.Storage
 	internal interface IRepository<T>
 		 where T : IStorageObject
 	{
-		IEnumerable<T> GetAll ();
+		IEnumerable<T> ReadAll ();
 
-		T Get (string id);
+		T Read (string id);
 
 		void Create (T element);
 

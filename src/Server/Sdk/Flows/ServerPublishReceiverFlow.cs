@@ -39,7 +39,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 
         public async Task SendWillAsync(string clientId)
         {
-            var will = willRepository.Get(clientId);
+            var will = willRepository.Read(clientId);
 
             if (will != null && will.Will != null)
             {
@@ -58,7 +58,7 @@ namespace System.Net.Mqtt.Sdk.Flows
         protected override async Task ProcessPublishAsync (Publish publish, string clientId)
 		{
 			if (publish.Retain) {
-				var existingRetainedMessage = retainedRepository.Get (publish.Topic);
+				var existingRetainedMessage = retainedRepository.Read (publish.Topic);
 
 				if (existingRetainedMessage != null) {
 					retainedRepository.Delete (existingRetainedMessage.Id);
@@ -90,7 +90,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 		async Task DispatchAsync (Publish publish, string clientId, bool isWill = false)
 		{
 			var subscriptions = sessionRepository
-				.GetAll ().ToList ()
+				.ReadAll ().ToList ()
 				.SelectMany (s => s.GetSubscriptions ())
 				.Where (x => topicEvaluator.Matches (publish.Topic, x.TopicFilter));
 

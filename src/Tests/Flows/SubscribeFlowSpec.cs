@@ -29,7 +29,7 @@ namespace Tests.Flows
 			var session = new ClientSession (clientId, clean: false );
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
+			sessionRepository.Setup (r => r.Read (It.IsAny<string> ())).Returns (session);
 
 			var fooQoS = MqttQualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -96,7 +96,7 @@ namespace Tests.Flows
 			};
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
-			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
+			sessionRepository.Setup (r => r.Read (It.IsAny<string> ())).Returns (session);
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);
@@ -148,7 +148,7 @@ namespace Tests.Flows
 			var session = new ClientSession (clientId, clean: false );
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (false);
-			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
+			sessionRepository.Setup (r => r.Read (It.IsAny<string> ())).Returns (session);
 
 			var fooQoS = MqttQualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/1";
@@ -201,7 +201,7 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid().ToString();
 			var session = new ClientSession (clientId, clean: false);
 
-			sessionRepository.Setup (r => r.Get (It.IsAny<string> ())).Returns (session);
+			sessionRepository.Setup (r => r.Read (It.IsAny<string> ())).Returns (session);
 
 			var fooQoS = MqttQualityOfService.AtLeastOnce;
 			var fooTopic = "test/foo/#";
@@ -216,7 +216,7 @@ namespace Tests.Flows
 
 			topicEvaluator.Setup (e => e.IsValidTopicFilter (It.IsAny<string> ())).Returns (true);
 			topicEvaluator.Setup (e => e.Matches (It.IsAny<string> (), It.IsAny<string> ())).Returns (true);
-			retainedMessageRepository.Setup (r => r.GetAll ()).Returns (retainedMessages.AsQueryable());
+			retainedMessageRepository.Setup (r => r.ReadAll ()).Returns (retainedMessages.AsQueryable());
 
 			var packetId = (ushort)new Random ().Next (0, ushort.MaxValue);
 			var subscribe = new Subscribe (packetId, fooSubscription);

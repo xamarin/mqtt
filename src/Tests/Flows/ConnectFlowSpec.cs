@@ -67,7 +67,7 @@ namespace Tests.Flows
 			var existingSession = new ClientSession (clientId, clean: false);
 
 			sessionRepository
-				.Setup (r => r.Get (It.IsAny<string>()))
+				.Setup (r => r.Read (It.IsAny<string>()))
 				.Returns (existingSession);
 
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -114,7 +114,7 @@ namespace Tests.Flows
 			var existingSession = new ClientSession (clientId, clean: true);
 
 			sessionRepository
-				.Setup (r => r.Get (It.IsAny<string>()))
+				.Setup (r => r.Read (It.IsAny<string>()))
 				.Returns (existingSession);
 
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -160,7 +160,7 @@ namespace Tests.Flows
 			var clientId = Guid.NewGuid ().ToString ();
 
 			sessionRepository
-				.Setup (r => r.Get (It.IsAny<string>()))
+				.Setup (r => r.Read (It.IsAny<string>()))
 				.Returns (default(ClientSession));
 
 			var senderFlow = new Mock<IPublishSenderFlow> ();
@@ -310,7 +310,7 @@ namespace Tests.Flows
 			};
 
 			sessionRepository
-				.Setup(r => r.Get(It.IsAny<string>()))
+				.Setup(r => r.Read(It.IsAny<string>()))
 				.Returns(existingSession);
 
 			var senderFlow = new Mock<IPublishSenderFlow>();

@@ -30,7 +30,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			sessionRepository.Setup(r => r.Get(It.IsAny<string>())).Returns(session);
+			sessionRepository.Setup(r => r.Read(It.IsAny<string>())).Returns(session);
 
 			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
@@ -58,7 +58,7 @@ namespace Tests.Flows
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			sessionRepository.Setup(r => r.Get(It.IsAny<string>())).Returns(session);
+			sessionRepository.Setup(r => r.Read(It.IsAny<string>())).Returns(session);
 
 			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);

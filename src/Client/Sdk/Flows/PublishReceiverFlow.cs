@@ -58,7 +58,7 @@ namespace System.Net.Mqtt.Sdk.Flows
             Validate (publish, clientId);
 
 			var qos = configuration.GetSupportedQos (publish.QualityOfService);
-			var session = sessionRepository.Get (clientId);
+			var session = sessionRepository.Read (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));

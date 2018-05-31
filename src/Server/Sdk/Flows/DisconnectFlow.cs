@@ -35,7 +35,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 				willRepository.Delete (clientId);
 
-				var session = sessionRepository.Get (clientId);
+				var session = sessionRepository.Read (clientId);
 
 				if (session == null) {
 					throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
