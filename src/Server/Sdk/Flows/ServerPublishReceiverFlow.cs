@@ -45,7 +45,7 @@ namespace System.Net.Mqtt.Sdk.Flows
             {
                 var willPublish = new Publish(will.Will.Topic, will.Will.QualityOfService, will.Will.Retain, duplicated: false)
                 {
-                    Payload = Encoding.UTF8.GetBytes(will.Will.Message)
+                    Payload = will.Will.Payload
                 };
 
                 tracer.Info(Server.Properties.Resources.ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);

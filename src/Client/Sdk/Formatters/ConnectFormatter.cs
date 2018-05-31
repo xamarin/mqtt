@@ -59,7 +59,7 @@ namespace System.Net.Mqtt.Sdk.Formatters
 			var cleanSession = connectFlags.IsSet (1);
 
 			var keepAliveLength = 2;
-			var keepAliveBytes = bytes.Bytes(connectFlagsIndex + 1, keepAliveLength);
+			var keepAliveBytes = bytes.Bytes (connectFlagsIndex + 1, keepAliveLength);
 			var keepAlive = keepAliveBytes.ToUInt16 ();
 
 			var payloadStartIndex = connectFlagsIndex + keepAliveLength + 1;
@@ -83,11 +83,14 @@ namespace System.Net.Mqtt.Sdk.Formatters
 			connect.KeepAlive = keepAlive;
 
 			if (willFlag) {
-				var willMessageIndex = 0;
-				var willTopic = bytes.GetString (nextIndex, out willMessageIndex);
-				var willMessage = bytes.GetString (willMessageIndex, out nextIndex);
+				var willTopic = bytes.GetString (nextIndex, out int willMessageIndex);
+				var willMessageLengthBytes = bytes.Bytes (willMessageIndex, count: 2);
+				var willMessageLenght = willMessageLengthBytes.ToUInt16 ();
+
+				var willMessage = bytes.Bytes (willMessageIndex + 2, willMessageLenght);
 
 				connect.Will = new MqttLastWill (willTopic, willQos, willRetain, willMessage);
+				nextIndex = willMessageIndex + 2 + willMessageLenght;
 			}
 
 			if (userNameFlag) {
@@ -194,10 +197,13 @@ namespace System.Net.Mqtt.Sdk.Formatters
 			payload.AddRange (clientIdBytes);
 
 			if (packet.Will != null) {
-				var willTopicBytes = MqttProtocol.Encoding.EncodeString(packet.Will.Topic);
-				var willMessageBytes = MqttProtocol.Encoding.EncodeString(packet.Will.Message);
+				var willTopicBytes = MqttProtocol.Encoding.EncodeString (packet.Will.Topic);
+				var willMessageBytes = packet.Will.Payload;
+				var willMessageLengthBytes = MqttProtocol.Encoding.EncodeInteger (willMessageBytes.Length);
 
 				payload.AddRange (willTopicBytes);
+				payload.Add (willMessageLengthBytes [willMessageLengthBytes.Length - 2]);
+				payload.Add (willMessageLengthBytes [willMessageLengthBytes.Length - 1]);
 				payload.AddRange (willMessageBytes);
 			}
 
