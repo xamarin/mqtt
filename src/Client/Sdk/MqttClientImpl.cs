@@ -78,12 +78,19 @@ namespace System.Net.Mqtt.Sdk
 					throw new MqttClientException (string.Format (Properties.Resources.Client_AlreadyConnected, Id));
 				}
 
-				Id = credentials.ClientId;
-				OpenClientSession (credentials.ClientId, cleanSession);
+				if (string.IsNullOrEmpty (credentials.ClientId) && !cleanSession) {
+					throw new MqttClientException (Properties.Resources.Client_AnonymousClientWithoutCleanSession);
+				}
+
+				Id = string.IsNullOrEmpty (credentials.ClientId) ?
+					MqttClient.GetAnonymousClientId () :
+					credentials.ClientId;
+
+				OpenClientSession (cleanSession);
 
 				await InitializeChannelAsync ().ConfigureAwait (continueOnCapturedContext: false);
 
-				var connect = new Connect (credentials.ClientId, cleanSession) {
+				var connect = new Connect (Id, cleanSession) {
 					UserName = credentials.UserName,
 					Password = credentials.Password,
 					Will = will,
@@ -102,7 +109,7 @@ namespace System.Net.Mqtt.Sdk
 					.Timeout (connectTimeout);
 
 				if (ack == null) {
-					var message = string.Format(Properties.Resources.Client_ConnectionDisconnected, credentials.ClientId);
+					var message = string.Format(Properties.Resources.Client_ConnectionDisconnected, Id);
 
 					throw new MqttClientException (message);
 				}
@@ -116,11 +123,11 @@ namespace System.Net.Mqtt.Sdk
 				return ack.SessionPresent ? SessionState.SessionPresent : SessionState.CleanSession;
 			} catch (TimeoutException timeEx) {
 				Close (timeEx);
-				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, credentials.ClientId), timeEx);
+				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionTimeout, Id), timeEx);
 			} catch (MqttConnectionException connectionEx) {
 				Close (connectionEx);
 
-				var message = string.Format (Properties.Resources.Client_ConnectNotAccepted, credentials.ClientId, connectionEx.ReturnCode);
+				var message = string.Format (Properties.Resources.Client_ConnectNotAccepted, Id, connectionEx.ReturnCode);
 
 				throw new MqttClientException (message, connectionEx);
 			} catch (MqttClientException clientEx) {
@@ -128,9 +135,12 @@ namespace System.Net.Mqtt.Sdk
 				throw;
 			} catch (Exception ex) {
 				Close (ex);
-				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionError, credentials.ClientId), ex);
+				throw new MqttClientException (string.Format (Properties.Resources.Client_ConnectionError, Id), ex);
 			}
 		}
+
+		public Task<SessionState> ConnectAsync (MqttLastWill will = null) =>
+			ConnectAsync (new MqttClientCredentials (), will, cleanSession: true);
 
 		public async Task SubscribeAsync (string topicFilter, MqttQualityOfService qos)
 		{
@@ -342,30 +352,30 @@ namespace System.Net.Mqtt.Sdk
 			ObservePackets ();
 		}
 
-		void OpenClientSession (string clientId, bool cleanSession)
+		void OpenClientSession (bool cleanSession)
 		{
-			var session = sessionRepository.Read (clientId);
+			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Get (Id);
 			var sessionPresent = cleanSession ? false : session != null;
 
 			if (cleanSession && session != null) {
 				sessionRepository.Delete (session.Id);
 				session = null;
 
-				tracer.Info (Properties.Resources.Client_CleanedOldSession, clientId);
+				tracer.Info (Properties.Resources.Client_CleanedOldSession, Id);
 			}
 
 			if (session == null) {
-				session = new ClientSession (clientId, cleanSession);
+				session = new ClientSession (Id, cleanSession);
 
 				sessionRepository.Create (session);
 
-				tracer.Info (Properties.Resources.Client_CreatedSession, clientId);
+				tracer.Info (Properties.Resources.Client_CreatedSession, Id);
 			}
 		}
 
 		void CloseClientSession ()
 		{
-			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Read (Id);
+			var session = string.IsNullOrEmpty (Id) ? default (ClientSession) : sessionRepository.Get (Id);
 
 			if (session == null) {
 				return;

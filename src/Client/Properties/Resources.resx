@@ -237,8 +237,8 @@
   <data name="ConnectFormatter_ClientIdMaxLengthExceeded" xml:space="preserve">
     <value>Client Id cannot exceed 23 bytes</value>
   </data>
-  <data name="ConnectFormatter_ClientIdRequired" xml:space="preserve">
-    <value>Client Id value is required and cannot be null or empty</value>
+  <data name="ConnectFormatter_ClientIdEmptyRequiresCleanSession" xml:space="preserve">
+    <value>Client Ids with zero bytes length requires the Clean Session value to be 1 (true)</value>
   </data>
   <data name="ConnectFormatter_InvalidClientIdFormat" xml:space="preserve">
     <value>{0} is an invalid ClientId. It must contain only numbers and letters</value>
@@ -341,5 +341,8 @@
   </data>
   <data name="Client_AlreadyDisconnected" xml:space="preserve">
     <value>The protocol disconnection cannot be performed because the client is already disconnected</value>
+  </data>
+  <data name="Client_AnonymousClientWithoutCleanSession" xml:space="preserve">
+    <value>Anonymous clients must set the "cleanSession" parameter to true in order to perform the protocol connection</value>
   </data>
 </root>

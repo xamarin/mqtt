@@ -9,12 +9,8 @@ namespace System.Net.Mqtt.Sdk
 
         internal byte[] EncodeString (string text)
 		{
-			if (string.IsNullOrEmpty (text)) {
-				return new byte[] { };
-			}
-
 			var bytes = new List<byte> ();
-			var textBytes = Encoding.UTF8.GetBytes (text);
+			var textBytes = Encoding.UTF8.GetBytes (text ?? string.Empty);
 
 			if (textBytes.Length > MqttProtocol.MaxIntegerLength) {
 				throw new MqttException  (Properties.Resources.ProtocolEncoding_StringMaxLengthExceeded);

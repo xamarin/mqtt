@@ -64,24 +64,41 @@ namespace System.Net.Mqtt
 		/// </remarks>
 		Task<SessionState> ConnectAsync (MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
 
-        /// <summary>
-        /// Represents the protocol subscription, which consists of sending a SUBSCRIBE packet
-        /// and awaiting the corresponding SUBACK packet from the Server
-        /// </summary>
-        /// <param name="topicFilter">
-        /// The topic to subscribe for incoming application messages. 
-        /// Every message sent by the Server that matches a subscribed topic, will go to the <see cref="MessageStream"/> 
-        /// </param>
-        /// <param name="qos">
-        /// The maximum Quality Of Service (QoS) that the Server should maintain when publishing application messages for the subscribed topic to the Client
-        /// This QoS is maximum because it depends on the QoS supported by the Server. 
-        /// See <see cref="MqttQualityOfService" /> for more details about the QoS values
-        /// </param>
-        /// <exception cref="MqttClientException">MqttClientException</exception>
-        /// <remarks>
-        /// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180876">MQTT Subscribe</a>
-        /// for more details about the protocol subscription
-        /// </remarks>
+		/// <summary>
+		/// Represents the protocol connection, which consists of sending a CONNECT packet
+		/// and awaiting the corresponding CONNACK packet from the Server.
+		/// This overload allows to connect without specifying a client id, in which case a random id will be generated
+		/// according to the specification of the protocol.
+		/// </summary>
+		/// <param name="will">
+		/// The last will message to send from the Server when an unexpected Client disconnection occurrs. 
+		/// See <see cref="MqttLastWill" /> for more details about the will message structure
+		/// </param>
+		/// <exception cref="MqttClientException">MqttClientException</exception>
+		/// <remarks>
+		/// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180841">MQTT Connect</a>
+		/// for more details about the protocol connection
+		/// </remarks>
+		Task<IConnectAck> ConnectAsync (MqttLastWill will = null);
+
+		/// <summary>
+		/// Represents the protocol subscription, which consists of sending a SUBSCRIBE packet
+		/// and awaiting the corresponding SUBACK packet from the Server
+		/// </summary>
+		/// <param name="topicFilter">
+		/// The topic to subscribe for incoming application messages. 
+		/// Every message sent by the Server that matches a subscribed topic, will go to the <see cref="MessageStream"/> 
+		/// </param>
+		/// <param name="qos">
+		/// The maximum Quality Of Service (QoS) that the Server should maintain when publishing application messages for the subscribed topic to the Client
+		/// This QoS is maximum because it depends on the QoS supported by the Server. 
+		/// See <see cref="MqttQualityOfService" /> for more details about the QoS values
+		/// </param>
+		/// <exception cref="MqttClientException">MqttClientException</exception>
+		/// <remarks>
+		/// See <a href="http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html#_Toc442180876">MQTT Subscribe</a>
+		/// for more details about the protocol subscription
+		/// </remarks>
 		Task SubscribeAsync (string topicFilter, MqttQualityOfService qos);
 
         /// <summary>
