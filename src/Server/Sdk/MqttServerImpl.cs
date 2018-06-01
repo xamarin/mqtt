@@ -175,10 +175,7 @@ namespace System.Net.Mqtt.Sdk
 
         string GetPrivateClientId ()
         {
-            var clientId = string.Format (
-                "private{0}", 
-                Guid.NewGuid ().ToString ().Replace ("-", string.Empty).Substring (0, 10)
-            );
+			var clientId = MqttClient.GetPrivateClientId ();
 
             if (connectionProvider.PrivateClients.Contains (clientId)) {
                 return GetPrivateClientId ();

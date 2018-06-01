@@ -97,6 +97,15 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Anonymous clients must set the &quot;cleanSession&quot; parameter to true in order to perform the protocol connection.
+        /// </summary>
+        internal static string Client_AnonymousClientWithoutCleanSession {
+            get {
+                return ResourceManager.GetString("Client_AnonymousClientWithoutCleanSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client {0} - Cleaned old session.
         /// </summary>
         internal static string Client_CleanedOldSession {
@@ -349,20 +358,20 @@ namespace System.Net.Mqtt.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client Ids with zero bytes length requires the Clean Session value to be 1 (true).
+        /// </summary>
+        internal static string ConnectFormatter_ClientIdEmptyRequiresCleanSession {
+            get {
+                return ResourceManager.GetString("ConnectFormatter_ClientIdEmptyRequiresCleanSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client Id cannot exceed 23 bytes.
         /// </summary>
         internal static string ConnectFormatter_ClientIdMaxLengthExceeded {
             get {
                 return ResourceManager.GetString("ConnectFormatter_ClientIdMaxLengthExceeded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client Id value is required and cannot be null or empty.
-        /// </summary>
-        internal static string ConnectFormatter_ClientIdRequired {
-            get {
-                return ResourceManager.GetString("ConnectFormatter_ClientIdRequired", resourceCulture);
             }
         }
         

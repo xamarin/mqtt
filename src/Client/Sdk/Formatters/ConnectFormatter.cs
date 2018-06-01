@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Net.Mqtt.Sdk.Packets;
+using System.Text.RegularExpressions;
 
 namespace System.Net.Mqtt.Sdk.Formatters
 {
@@ -66,9 +66,6 @@ namespace System.Net.Mqtt.Sdk.Formatters
 			var nextIndex = 0;
 			var clientId = bytes.GetString (payloadStartIndex, out nextIndex);
 
-			if (string.IsNullOrEmpty (clientId))
-				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, Properties.Resources.ConnectFormatter_ClientIdRequired);
-
 			if (clientId.Length > MqttProtocol.ClientIdMaxLength)
 				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, Properties.Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
@@ -76,6 +73,13 @@ namespace System.Net.Mqtt.Sdk.Formatters
 				var error = string.Format (Properties.Resources.ConnectFormatter_InvalidClientIdFormat, clientId);
 
 				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, error);
+			}
+
+			if (string.IsNullOrEmpty (clientId) && !cleanSession)
+				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, Properties.Resources.ConnectFormatter_ClientIdEmptyRequiresCleanSession);
+
+			if (string.IsNullOrEmpty (clientId)) {
+				clientId = MqttClient.GetAnonymousClientId ();
 			}
 
 			var connect = new Connect (clientId, cleanSession);
@@ -178,9 +182,6 @@ namespace System.Net.Mqtt.Sdk.Formatters
 
 		byte[] GetPayload (Connect packet)
 		{
-			if (string.IsNullOrEmpty (packet.ClientId))
-				throw new MqttException (Properties.Resources.ConnectFormatter_ClientIdRequired);
-
 			if (packet.ClientId.Length > MqttProtocol.ClientIdMaxLength)
 				throw new MqttException (Properties.Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
@@ -192,7 +193,7 @@ namespace System.Net.Mqtt.Sdk.Formatters
 
 			var payload = new List<byte> ();
 
-			var clientIdBytes = MqttProtocol.Encoding.EncodeString(packet.ClientId);
+			var clientIdBytes = MqttProtocol.Encoding.EncodeString (packet.ClientId);
 
 			payload.AddRange (clientIdBytes);
 
@@ -227,6 +228,9 @@ namespace System.Net.Mqtt.Sdk.Formatters
 
 		bool IsValidClientId (string clientId)
 		{
+			if (string.IsNullOrEmpty (clientId))
+				return true;
+
 			var regex = new Regex ("^[a-zA-Z0-9]+$");
 
 			return regex.IsMatch (clientId);
