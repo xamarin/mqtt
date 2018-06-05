@@ -2,9 +2,9 @@
 
 > Code name: Hermes (messenger of the Greek gods)
 
-System.Net.Mqtt is a light weight and simple implementation of the MQTT protocol version 3.1.1, written entirely in C# and divided in two libraries: System.Net.Mqtt and System.Net.Mqtt.Server.
-
 MQTT is a Client Server publish/subscribe messaging transport protocol, designed to be light weight, open and simple to use and implement. This makes it suitable for Internet of Things (IoT) messaging, machine to machine communication, mobile devices, etc.
+
+System.Net.Mqtt is a light weight and simple implementation of the MQTT protocol version 3.1.1, written entirely in C# and divided in two libraries: System.Net.Mqtt and System.Net.Mqtt.Server.
 
 The foundation of the System.Net.Mqtt libraries is to provide an intuitive and very easy to use API, hiding most of the protocol concepts that are not needed to be exposed, letting the consumers to just focus on the main protocol messages that are: CONNECT, SUBSCRIBE, UNSUBSCRIBE, PUBLISH, DISCONNECT. 
 
