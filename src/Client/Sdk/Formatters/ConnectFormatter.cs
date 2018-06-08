@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Net.Mqtt.Sdk.Packets;
+using System.Text.RegularExpressions;
 
 namespace System.Net.Mqtt.Sdk.Formatters
 {
@@ -59,15 +59,12 @@ namespace System.Net.Mqtt.Sdk.Formatters
 			var cleanSession = connectFlags.IsSet (1);
 
 			var keepAliveLength = 2;
-			var keepAliveBytes = bytes.Bytes(connectFlagsIndex + 1, keepAliveLength);
+			var keepAliveBytes = bytes.Bytes (connectFlagsIndex + 1, keepAliveLength);
 			var keepAlive = keepAliveBytes.ToUInt16 ();
 
 			var payloadStartIndex = connectFlagsIndex + keepAliveLength + 1;
 			var nextIndex = 0;
 			var clientId = bytes.GetString (payloadStartIndex, out nextIndex);
-
-			if (string.IsNullOrEmpty (clientId))
-				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, Properties.Resources.ConnectFormatter_ClientIdRequired);
 
 			if (clientId.Length > MqttProtocol.ClientIdMaxLength)
 				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, Properties.Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
@@ -78,16 +75,26 @@ namespace System.Net.Mqtt.Sdk.Formatters
 				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, error);
 			}
 
+			if (string.IsNullOrEmpty (clientId) && !cleanSession)
+				throw new MqttConnectionException (MqttConnectionStatus.IdentifierRejected, Properties.Resources.ConnectFormatter_ClientIdEmptyRequiresCleanSession);
+
+			if (string.IsNullOrEmpty (clientId)) {
+				clientId = MqttClient.GetAnonymousClientId ();
+			}
+
 			var connect = new Connect (clientId, cleanSession);
 
 			connect.KeepAlive = keepAlive;
 
 			if (willFlag) {
-				var willMessageIndex = 0;
-				var willTopic = bytes.GetString (nextIndex, out willMessageIndex);
-				var willMessage = bytes.GetString (willMessageIndex, out nextIndex);
+				var willTopic = bytes.GetString (nextIndex, out int willMessageIndex);
+				var willMessageLengthBytes = bytes.Bytes (willMessageIndex, count: 2);
+				var willMessageLenght = willMessageLengthBytes.ToUInt16 ();
+
+				var willMessage = bytes.Bytes (willMessageIndex + 2, willMessageLenght);
 
 				connect.Will = new MqttLastWill (willTopic, willQos, willRetain, willMessage);
+				nextIndex = willMessageIndex + 2 + willMessageLenght;
 			}
 
 			if (userNameFlag) {
@@ -175,9 +182,6 @@ namespace System.Net.Mqtt.Sdk.Formatters
 
 		byte[] GetPayload (Connect packet)
 		{
-			if (string.IsNullOrEmpty (packet.ClientId))
-				throw new MqttException (Properties.Resources.ConnectFormatter_ClientIdRequired);
-
 			if (packet.ClientId.Length > MqttProtocol.ClientIdMaxLength)
 				throw new MqttException (Properties.Resources.ConnectFormatter_ClientIdMaxLengthExceeded);
 
@@ -189,15 +193,18 @@ namespace System.Net.Mqtt.Sdk.Formatters
 
 			var payload = new List<byte> ();
 
-			var clientIdBytes = MqttProtocol.Encoding.EncodeString(packet.ClientId);
+			var clientIdBytes = MqttProtocol.Encoding.EncodeString (packet.ClientId);
 
 			payload.AddRange (clientIdBytes);
 
 			if (packet.Will != null) {
-				var willTopicBytes = MqttProtocol.Encoding.EncodeString(packet.Will.Topic);
-				var willMessageBytes = MqttProtocol.Encoding.EncodeString(packet.Will.Message);
+				var willTopicBytes = MqttProtocol.Encoding.EncodeString (packet.Will.Topic);
+				var willMessageBytes = packet.Will.Payload;
+				var willMessageLengthBytes = MqttProtocol.Encoding.EncodeInteger (willMessageBytes.Length);
 
 				payload.AddRange (willTopicBytes);
+				payload.Add (willMessageLengthBytes [willMessageLengthBytes.Length - 2]);
+				payload.Add (willMessageLengthBytes [willMessageLengthBytes.Length - 1]);
 				payload.AddRange (willMessageBytes);
 			}
 
@@ -221,6 +228,9 @@ namespace System.Net.Mqtt.Sdk.Formatters
 
 		bool IsValidClientId (string clientId)
 		{
+			if (string.IsNullOrEmpty (clientId))
+				return true;
+
 			var regex = new Regex ("^[a-zA-Z0-9]+$");
 
 			return regex.IsMatch (clientId);

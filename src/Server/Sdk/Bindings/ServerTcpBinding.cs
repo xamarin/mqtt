@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace System.Net.Mqtt.Sdk.Bindings
+﻿namespace System.Net.Mqtt.Sdk.Bindings
 {
 	/// <summary>
 	/// Server binding to use TCP as the underlying MQTT transport protocol
@@ -17,8 +15,6 @@ namespace System.Net.Mqtt.Sdk.Bindings
         /// </param>
         /// <returns>A listener to accept and provide incoming MQTT channels on top of TCP</returns>
         public IMqttChannelListener GetChannelListener (MqttConfiguration configuration)
-        {
-            return new TcpChannelListener (configuration);
-        }
+			=> new TcpChannelListener (configuration);
     }
 }

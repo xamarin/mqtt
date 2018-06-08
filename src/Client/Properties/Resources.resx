@@ -178,10 +178,10 @@
     <value>Client {0} - Created new client session</value>
   </data>
   <data name="Client_DeletedSessionOnDisconnect" xml:space="preserve">
-    <value>Client {0} - Removed client session as part of Disconnect</value>
+    <value>Client {0} - Removed client session</value>
   </data>
-  <data name="Client_Disposing" xml:space="preserve">
-    <value>Client {0} - Disposing. Reason: {1}</value>
+  <data name="Client_Closing" xml:space="preserve">
+    <value>Client {0} - Closing. Reason: {1}</value>
   </data>
   <data name="Client_PacketsObservableCompleted" xml:space="preserve">
     <value>Client - Packet observable sequence has been completed, hence closing the channel</value>
@@ -217,7 +217,7 @@
     <value>Sending packet of {0} bytes</value>
   </data>
   <data name="MqttChannel_StreamDisconnected" xml:space="preserve">
-    <value>The underlying communication stream is not available. The socket could became disconnected</value>
+    <value>The underlying communication stream is not available. The socket could have been disconnected</value>
   </data>
   <data name="Mqtt_Disposing" xml:space="preserve">
     <value>Disposing {0}...</value>
@@ -237,8 +237,8 @@
   <data name="ConnectFormatter_ClientIdMaxLengthExceeded" xml:space="preserve">
     <value>Client Id cannot exceed 23 bytes</value>
   </data>
-  <data name="ConnectFormatter_ClientIdRequired" xml:space="preserve">
-    <value>Client Id value is required and cannot be null or empty</value>
+  <data name="ConnectFormatter_ClientIdEmptyRequiresCleanSession" xml:space="preserve">
+    <value>Client Ids with zero bytes length requires the Clean Session value to be 1 (true)</value>
   </data>
   <data name="ConnectFormatter_InvalidClientIdFormat" xml:space="preserve">
     <value>{0} is an invalid ClientId. It must contain only numbers and letters</value>
@@ -335,5 +335,17 @@
   </data>
   <data name="Client_SubscriptionRejected" xml:space="preserve">
     <value>The server has rejected the subscription of client {0} to topic {1}</value>
+  </data>
+  <data name="Client_AlreadyConnected" xml:space="preserve">
+    <value>The protocol connection cannot be performed because an active connection for client {0} already exists</value>
+  </data>
+  <data name="Client_AlreadyDisconnected" xml:space="preserve">
+    <value>The protocol disconnection cannot be performed because the client is already disconnected</value>
+  </data>
+  <data name="Client_AnonymousClientWithoutCleanSession" xml:space="preserve">
+    <value>Anonymous clients must set the "cleanSession" parameter to true in order to perform the protocol connection</value>
+  </data>
+  <data name="WebSocketChannelFactory_WebSocketClient_Failed" xml:space="preserve">
+    <value>An error occurred while connecting via Web Sockets to the endpoint address {0}, to establish an MQTT connection</value>
   </data>
 </root>

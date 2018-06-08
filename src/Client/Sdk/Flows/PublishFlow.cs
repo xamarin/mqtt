@@ -49,7 +49,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 		protected void RemovePendingAcknowledgement (string clientId, ushort packetId, MqttPacketType type)
 		{
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Read (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));
@@ -97,7 +97,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 				Type = ack.Type
 			};
 
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Read (clientId);
 
 			if (session == null) {
 				throw new MqttException (string.Format (Properties.Resources.SessionRepository_ClientSessionNotFound, clientId));

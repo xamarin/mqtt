@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk;
 using System.Net.Sockets;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Tests;
 using Xunit;
-using System.Net.Mqtt.Sdk;
 
 namespace IntegrationTests
 {
@@ -17,27 +17,31 @@ namespace IntegrationTests
 	{
 		readonly IMqttServer server;
 
-		public ConnectionSpec ()
+		public ConnectionSpec()
 		{
-			server = GetServerAsync ().Result;
+			server = GetServerAsync().Result;
 		}
 
-        [Fact]
-        public async Task when_connecting_client_to_non_existing_server_then_fails()
-        {
-            try
-            {
-                await GetClientAsync();
-            }
-            catch (Exception ex)
-            {
-                Assert.True(ex is MqttClientException);
-                Assert.NotNull(ex.InnerException);
-                Assert.True(ex.InnerException is MqttException);
-                Assert.NotNull(ex.InnerException.InnerException);
-                Assert.True(ex.InnerException.InnerException is SocketException);
-            }
-        }
+		[Fact]
+		public async Task when_connecting_client_to_non_existing_server_then_fails()
+		{
+			try
+			{
+				server.Dispose();
+
+				var client = await GetClientAsync();
+
+				await client.ConnectAsync(new MqttClientCredentials(GetClientId()));
+			}
+			catch (Exception ex)
+			{
+				Assert.True(ex is MqttClientException);
+				Assert.NotNull(ex.InnerException);
+				Assert.True(ex.InnerException is MqttException);
+				Assert.NotNull(ex.InnerException.InnerException);
+				Assert.True(ex.InnerException.InnerException is SocketException);
+			}
+		}
 
 		[Fact]
 		public async Task when_clients_connect_and_disconnect_then_server_raises_events()
@@ -75,333 +79,429 @@ namespace IntegrationTests
 
 			Assert.Equal(new[] { clientId2, clientId1 }, disconnected);
 			Assert.Equal(0, connected.Count);
+
+			fooClient.Dispose();
+			barClient.Dispose();
 		}
 
 		[Fact]
 		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
 		{
-			var fooClient = await GetClientAsync ();
-			var barClient = await GetClientAsync ();
+			var fooClient = await GetClientAsync();
+			var barClient = await GetClientAsync();
 
-			await fooClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-			await barClient.ConnectAsync (new MqttClientCredentials (GetClientId ()));
+			await fooClient.ConnectAsync(new MqttClientCredentials(GetClientId()));
+			await barClient.ConnectAsync(new MqttClientCredentials(GetClientId()));
 
-            var initialConnectedClients = server.ActiveClients.Count ();
+			var initialConnectedClients = server.ActiveClients.Count();
 			var exceptionThrown = false;
 
-			try {
+			try
+			{
 				//Force an exception to be thrown by publishing null message
-				await fooClient.PublishAsync (message: null, qos: MqttQualityOfService.AtMostOnce);
-			} catch {
+				await fooClient.PublishAsync(message: null, qos: MqttQualityOfService.AtMostOnce);
+			}
+			catch
+			{
 				exceptionThrown = true;
 			}
 
-			var serverSignal = new ManualResetEventSlim ();
+			var serverSignal = new ManualResetEventSlim();
 
-			while (!serverSignal.IsSet) {
-				if (server.ActiveConnections == 1 && server.ActiveClients.Count () == 1) {
-					serverSignal.Set ();
+			while (!serverSignal.IsSet)
+			{
+				if (server.ActiveConnections == 1 && server.ActiveClients.Count() == 1)
+				{
+					serverSignal.Set();
 				}
 			}
 
-			serverSignal.Wait ();
+			serverSignal.Wait();
 
-            Assert.Equal (2, initialConnectedClients);
-			Assert.True (exceptionThrown);
-			Assert.Equal (1, server.ActiveConnections);
-			Assert.Equal (1, server.ActiveClients.Count ());
+			Assert.Equal(2, initialConnectedClients);
+			Assert.True(exceptionThrown);
+			Assert.Equal(1, server.ActiveConnections);
+			Assert.Equal(1, server.ActiveClients.Count());
 
-            fooClient.Dispose ();
-			barClient.Dispose ();
+			fooClient.Dispose();
+			barClient.Dispose();
 		}
 
 		[Fact]
 		public async Task when_connect_clients_then_succeeds()
 		{
-			var count = GetTestLoad ();
-			var clients = new List<IMqttClient> ();
-			var tasks = new List<Task> ();
+			var count = GetTestLoad();
+			var clients = new List<IMqttClient>();
+			var clientIds = new List<string>();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
-				var client = await GetClientAsync ();
+			for (var i = 1; i <= count; i++)
+			{
+				var client = await GetClientAsync();
+				var clientId = GetClientId();
 
-				tasks.Add (client.ConnectAsync (new MqttClientCredentials (GetClientId ())));
-				clients.Add (client);
+				tasks.Add(client.ConnectAsync(new MqttClientCredentials(clientId)));
+				clients.Add(client);
+				clientIds.Add(clientId);
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			Assert.Equal (count, server.ActiveClients.Count ());
-			Assert.True (clients.All(c => c.IsConnected));
-			Assert.True (clients.All(c => !string.IsNullOrEmpty (c.Id)));
+			Assert.Equal(count, server.ActiveClients.Where(c => clientIds.Contains (c)).Count());
+			Assert.True(clients.All(c => c.IsConnected));
+			Assert.True(clients.All(c => !string.IsNullOrEmpty(c.Id)));
 
-			foreach (var client in clients) {
-				client.Dispose ();
+			foreach (var client in clients)
+			{
+				client.Dispose();
 			}
 		}
 
-        [Fact]
-        public async Task when_connecting_twice_with_same_client_then_fails()
-        {
-            var client = await GetClientAsync ();
-            var clientId = GetClientId ();
+		[Fact]
+		public async Task when_connecting_twice_with_same_client_with_disconnecting_then_succeeds()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
 
-            var clientDisconnectedEvent = new ManualResetEventSlim ();
+			await client.ConnectAsync(new MqttClientCredentials(clientId));
+			await client.DisconnectAsync();
+			await client.ConnectAsync(new MqttClientCredentials(clientId));
 
-            client.Disconnected += (sender, e) => {
-                if (e.Reason == DisconnectedReason.RemoteDisconnected)
-                {
-                    clientDisconnectedEvent.Set ();
-                }
-            };
+			Assert.Equal(1, server.ActiveConnections);
+			Assert.Equal(1, server.ActiveClients.Count());
 
-            await client.ConnectAsync (new MqttClientCredentials (clientId));
-            await client.ConnectAsync (new MqttClientCredentials (clientId));
+			client.Dispose();
+		}
 
-            var clientRemoteDisconnected = clientDisconnectedEvent.Wait (2000);
+		[Fact]
+		public async Task when_connecting_twice_with_same_client_without_disconnecting_then_fails()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
 
-            Assert.True (clientRemoteDisconnected);
-        }
+			await client.ConnectAsync(new MqttClientCredentials(clientId));
 
-        [Fact]
-        public async Task when_connecting_client_with_invalid_id_then_fails()
-        {
-            var client = await GetClientAsync ();
-            var clientId = "#invalid*client-id";
+			var ex = Assert.Throws<AggregateException>(() => client.ConnectAsync(new MqttClientCredentials(clientId)).Wait());
 
-            var ex = Assert.Throws<AggregateException> (() => client.ConnectAsync (new MqttClientCredentials (clientId)).Wait ());
+			Assert.NotNull(ex);
+			Assert.NotNull(ex.InnerException);
+			Assert.True(ex.InnerException is MqttClientException);
+		}
 
-            Assert.NotNull (ex);
-            Assert.NotNull (ex.InnerException);
-            Assert.True (ex.InnerException is MqttClientException);
-            Assert.NotNull (ex.InnerException.InnerException);
-            Assert.True (ex.InnerException.InnerException is MqttException);
-        }
+		[Fact]
+		public async Task when_connecting_client_with_invalid_id_then_fails()
+		{
+			var client = await GetClientAsync();
+			var clientId = "#invalid*client-id";
 
-        [Fact]
-        public async Task when_connecting_client_with_empty_id_then_fails()
-        {
-            var client = await GetClientAsync ();
-            var clientId = string.Empty;
+			var ex = Assert.Throws<AggregateException>(() => client.ConnectAsync(new MqttClientCredentials(clientId)).Wait());
 
-            var ex = Assert.Throws<AggregateException> (() => client.ConnectAsync (new MqttClientCredentials (clientId)).Wait ());
+			Assert.NotNull(ex);
+			Assert.NotNull(ex.InnerException);
+			Assert.True(ex.InnerException is MqttClientException);
+			Assert.NotNull(ex.InnerException.InnerException);
+			Assert.True(ex.InnerException.InnerException is MqttException);
+		}
 
-            Assert.NotNull (ex);
-            Assert.NotNull (ex.InnerException);
-            Assert.True (ex.InnerException is MqttClientException);
-            Assert.NotNull (ex.InnerException.InnerException);
-            Assert.True (ex.InnerException.InnerException is ArgumentNullException);
+		[Fact]
+		public async Task when_connecting_client_with_empty_id_then_succeeds()
+		{
+			var client = await GetClientAsync();
 
-        }
+			await client.ConnectAsync();
 
-        [Fact]
-        public async Task when_server_doesnt_receive_connect_then_disconnects_channel()
-        {
-            var client = await GetClientAsync ();
-            var clientDisconnectedEvent = new ManualResetEventSlim ();
+			Assert.True(client.IsConnected);
+			Assert.False(string.IsNullOrEmpty(client.Id));
+			Assert.True(client.Id.StartsWith("anonymous"));
+		}
 
-            client.Disconnected += (sender, e) => {
-                if (e.Reason == DisconnectedReason.RemoteDisconnected)
-                {
-                    clientDisconnectedEvent.Set ();
-                }
-            };
+		[Fact]
+		public async Task when_connecting_client_with_empty_id_and_clean_session_true_then_succeeds()
+		{
+			var client = await GetClientAsync();
 
-            var clientRemoteDisconnected = clientDisconnectedEvent.Wait (2500);
+			await client.ConnectAsync(new MqttClientCredentials(clientId: null), cleanSession: true);
 
-            Assert.True (clientRemoteDisconnected);
-        }
+			Assert.True(client.IsConnected);
+			Assert.False(string.IsNullOrEmpty(client.Id));
+			Assert.True(client.Id.StartsWith("anonymous"));
+		}
 
-        [Fact]
+		[Fact]
+		public async Task when_connecting_client_with_empty_id_and_clean_session_false_then_fails()
+		{
+			var client = await GetClientAsync();
+			var clientId = string.Empty;
+
+			var ex = Assert.Throws<AggregateException>(() => client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false).Wait());
+
+			Assert.NotNull(ex);
+			Assert.NotNull(ex.InnerException);
+			Assert.True(ex.InnerException is MqttClientException);
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_clean_session_true_then_session_is_not_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.CleanSession, sessionState2);
+
+			client?.Dispose();
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_clean_session_false_and_then_true_then_session_is_not_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: true);
+
+			await client.DisconnectAsync();
+
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.CleanSession, sessionState2);
+
+			client?.Dispose();
+		}
+
+		[Fact]
+		public async Task when_connecting_client_with_clean_session_false_then_session_is_preserved()
+		{
+			var client = await GetClientAsync();
+			var clientId = GetClientId();
+
+			var sessionState1 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			var sessionState2 = await client.ConnectAsync(new MqttClientCredentials(clientId), cleanSession: false);
+
+			await client.DisconnectAsync();
+
+			Assert.Equal(SessionState.CleanSession, sessionState1);
+			Assert.Equal(SessionState.SessionPresent, sessionState2);
+
+			client?.Dispose();
+		}
+
+		[Fact]
 		public async Task when_disconnect_clients_then_succeeds()
 		{
-			var count = GetTestLoad ();
-			var clients = new List<IMqttClient> ();
-			var connectTasks = new List<Task> ();
+			var count = GetTestLoad();
+			var clients = new List<IMqttClient>();
+			var clientIds = new List<string>();
 
-			for (var i = 1; i <= count; i++) {
-				var client = await GetClientAsync ();
+			for (var i = 1; i <= count; i++)
+			{
+				var client = await GetClientAsync();
+				var clientId = GetClientId();
 
-				connectTasks.Add(client.ConnectAsync (new MqttClientCredentials (GetClientId ())));
-				clients.Add (client);
+				await client.ConnectAsync(new MqttClientCredentials(clientId));
+				clients.Add(client);
+				clientIds.Add(clientId);
 			}
 
-			await Task.WhenAll (connectTasks);
+			var initialConnectedClients = server.ActiveClients.Where(c => clientIds.Contains(c)).Count();
 
-            var initialConnectedClients = server.ActiveClients.Count ();
-			var disconnectTasks = new List<Task> ();
-
-			foreach (var client in clients) {
-				disconnectTasks.Add(client.DisconnectAsync ());
+			foreach (var client in clients)
+			{
+				await client.DisconnectAsync();
 			}
 
-			await Task.WhenAll (disconnectTasks);
+			var disconnectedSignal = new ManualResetEventSlim(initialState: false);
 
-			var disconnectedSignal = new ManualResetEventSlim (initialState: false);
-
-			while (!disconnectedSignal.IsSet) {
-				if (server.ActiveClients.Count () == 0 && clients.All(c => !c.IsConnected)) {
-					disconnectedSignal.Set ();
+			while (!disconnectedSignal.IsSet)
+			{
+				if (server.ActiveClients.Where(c => clientIds.Contains (c)).Count() == 0 && clients.All(c => !c.IsConnected))
+				{
+					disconnectedSignal.Set();
 				}
 			}
 
-            Assert.Equal (clients.Count, initialConnectedClients);
-			Assert.Equal (0, server.ActiveClients.Count ());
-			Assert.True (clients.All(c => !c.IsConnected));
-			Assert.True (clients.All(c => string.IsNullOrEmpty (c.Id)));
+			Assert.Equal(clients.Count, initialConnectedClients);
+			Assert.Equal(0, server.ActiveClients.Where(c => clientIds.Contains(c)).Count());
+			Assert.True(clients.All(c => !c.IsConnected));
+			Assert.True(clients.All(c => string.IsNullOrEmpty(c.Id)));
 
-			foreach (var client in clients) {
-				client.Dispose ();
+			foreach (var client in clients)
+			{
+				client.Dispose();
 			}
 		}
 
 		[Fact]
 		public async Task when_disconnect_client_then_server_decrease_active_client_list()
 		{
-			var client = await GetClientAsync ();
+			var client = await GetClientAsync();
 
-			await client.ConnectAsync (new MqttClientCredentials (GetClientId ()))
+			await client.ConnectAsync(new MqttClientCredentials(GetClientId()))
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var clientId = client.Id;
-			var existClientAfterConnect = server.ActiveClients.Any (c => c == clientId);
+			var existClientAfterConnect = server.ActiveClients.Any(c => c == clientId);
 
-			await client.DisconnectAsync ()
+			await client.DisconnectAsync()
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			var clientClosed = new ManualResetEventSlim ();
+			var clientClosed = new ManualResetEventSlim();
 
-			var subscription = Observable.Create<bool> (observer => {
+			var subscription = Observable.Create<bool>(observer =>
+			{
 				var timer = new System.Timers.Timer();
 
 				timer.Interval = 200;
-				timer.Elapsed += (sender, args) => {
-					if (server.ActiveClients.Any (c => c == clientId)) {
-						observer.OnNext (false);
-					} else {
-						observer.OnNext (true);
-						clientClosed.Set ();
-						observer.OnCompleted ();
+				timer.Elapsed += (sender, args) =>
+				{
+					if (server.ActiveClients.Any(c => c == clientId))
+					{
+						observer.OnNext(false);
+					}
+					else
+					{
+						observer.OnNext(true);
+						clientClosed.Set();
+						observer.OnCompleted();
 					}
 				};
 				timer.Start();
 
-				return () => {
+				return () =>
+				{
 					timer.Dispose();
 				};
 			})
-			.Subscribe (
+			.Subscribe(
 				_ => { },
-				ex => { Console.WriteLine (string.Format ("Error: {0}", ex.Message)); });
+				ex => { Console.WriteLine(string.Format("Error: {0}", ex.Message)); });
 
-			var clientDisconnected = clientClosed.Wait (2000);
+			var clientDisconnected = clientClosed.Wait(2000);
 
-			Assert.True (existClientAfterConnect);
-			Assert.True (clientDisconnected);
-			Assert.False (server.ActiveClients.Any (c => c == clientId));
+			Assert.True(existClientAfterConnect);
+			Assert.True(clientDisconnected);
+			Assert.False(server.ActiveClients.Any(c => c == clientId));
 
-			client.Dispose ();
+			client.Dispose();
 		}
 
 		[Fact]
 		public async Task when_client_disconnects_by_protocol_then_will_message_is_not_sent()
 		{
-			var client1 = await GetClientAsync ();
+			var client1 = await GetClientAsync();
 			var client2 = await GetClientAsync();
-            var client3 = await GetClientAsync();
+			var client3 = await GetClientAsync();
 
-            var topic = Guid.NewGuid ().ToString ();
+			var topic = Guid.NewGuid().ToString();
 			var qos = MqttQualityOfService.ExactlyOnce;
 			var retain = true;
-			var message = "Client 1 has been disconnected unexpectedly";
-			var will = new MqttLastWill(topic, qos, retain, message);
+			var willMessage = new FooWillMessage { Message = "Client 1 has been disconnected unexpectedly" };
+			var will = new MqttLastWill(topic, qos, retain, willMessage.GetPayload());
 
-			await client1.ConnectAsync (new MqttClientCredentials (GetClientId ()), will);
-			await client2.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-			await client3.ConnectAsync (new MqttClientCredentials (GetClientId ()));
+			await client1.ConnectAsync(new MqttClientCredentials(GetClientId()), will);
+			await client2.ConnectAsync(new MqttClientCredentials(GetClientId()));
+			await client3.ConnectAsync(new MqttClientCredentials(GetClientId()));
 
 			await client2.SubscribeAsync(topic, MqttQualityOfService.AtMostOnce);
 			await client3.SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce);
 
-			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
+			var willReceivedSignal = new ManualResetEventSlim(initialState: false);
 
-			client2.MessageStream.Subscribe (m => {
-				if (m.Topic == topic) {
-					willReceivedSignal.Set ();
+			client2.MessageStream.Subscribe(m =>
+			{
+				if (m.Topic == topic)
+				{
+					willReceivedSignal.Set();
 				}
 			});
-			client3.MessageStream.Subscribe (m => {
-				if (m.Topic == topic) {
-					willReceivedSignal.Set ();
+			client3.MessageStream.Subscribe(m =>
+			{
+				if (m.Topic == topic)
+				{
+					willReceivedSignal.Set();
 				}
 			});
 
-			await client1.DisconnectAsync ();
+			await client1.DisconnectAsync();
 
-			var willReceived = willReceivedSignal.Wait (2000);
+			var willReceived = willReceivedSignal.Wait(2000);
 
-			Assert.False (willReceived);
+			Assert.False(willReceived);
 
-			client1.Dispose ();
-			client2.Dispose ();
-			client3.Dispose ();
+			client1.Dispose();
+			client2.Dispose();
+			client3.Dispose();
 		}
-		
+
 		[Fact]
 		public async Task when_client_disconnects_unexpectedly_then_will_message_is_sent()
 		{
 			var client1 = await GetClientAsync();
-            var client2 = await GetClientAsync();
-            var client3 = await GetClientAsync();
+			var client2 = await GetClientAsync();
+			var client3 = await GetClientAsync();
 
-            var topic = Guid.NewGuid ().ToString ();
+			var topic = Guid.NewGuid().ToString();
 			var qos = MqttQualityOfService.ExactlyOnce;
 			var retain = true;
-			var message = "Client 1 has been disconnected unexpectedly";
-			var will = new MqttLastWill(topic, qos, retain, message);
+			var willMessage = new FooWillMessage { Message = "Client 1 has been disconnected unexpectedly" };
+			var willMessagePayload = willMessage.GetPayload();
+			var will = new MqttLastWill(topic, qos, retain, willMessagePayload);
 
-			await client1.ConnectAsync (new MqttClientCredentials (GetClientId ()), will);
-			await client2.ConnectAsync (new MqttClientCredentials (GetClientId ()));
-			await client3.ConnectAsync (new MqttClientCredentials (GetClientId ()));
+			await client1.ConnectAsync(new MqttClientCredentials(GetClientId()), will);
+			await client2.ConnectAsync(new MqttClientCredentials(GetClientId()));
+			await client3.ConnectAsync(new MqttClientCredentials(GetClientId()));
 
 			await client2.SubscribeAsync(topic, MqttQualityOfService.AtMostOnce);
 			await client3.SubscribeAsync(topic, MqttQualityOfService.AtLeastOnce);
 
-			var willReceivedSignal = new ManualResetEventSlim (initialState: false);
-			var willMessage = default (MqttApplicationMessage);
+			var willReceivedSignal = new ManualResetEventSlim(initialState: false);
+			var willApplicationMessage = default(MqttApplicationMessage);
 
-			client2.MessageStream.Subscribe (m => {
-				if (m.Topic == topic) {
-					willMessage = m;
-					willReceivedSignal.Set ();
+			client2.MessageStream.Subscribe((Action<MqttApplicationMessage>)(m =>
+			{
+				if (m.Topic == topic)
+				{
+					willApplicationMessage = m;
+					willReceivedSignal.Set();
 				}
-			});
-			client3.MessageStream.Subscribe (m => {
-				if (m.Topic == topic) {
-					willMessage = m;
-					willReceivedSignal.Set ();
+			}));
+			client3.MessageStream.Subscribe((Action<MqttApplicationMessage>)(m =>
+			{
+				if (m.Topic == topic)
+				{
+					willApplicationMessage = m;
+					willReceivedSignal.Set();
 				}
-			});
+			}));
 
-            //Forces socket disconnection without using protocol Disconnect (Disconnect or Dispose Client method)
-            (client1 as MqttClientImpl).Channel.Dispose ();
+			//Forces socket disconnection without using protocol Disconnect (Disconnect or Dispose Client method)
+			(client1 as MqttClientImpl).Channel.Dispose();
 
-			var willReceived = willReceivedSignal.Wait (2000);
+			var willReceived = willReceivedSignal.Wait(2000);
 
-			Assert.True (willReceived);
-			Assert.NotNull (willMessage);
-			Assert.Equal (topic, willMessage.Topic);
-			Assert.Equal (message, Encoding.UTF8.GetString (willMessage.Payload));
+			Assert.True(willReceived);
+			Assert.NotNull(willMessage);
+			Assert.Equal(topic, willApplicationMessage.Topic);
+			Assert.Equal(willMessage.Message, FooWillMessage.GetMessage(willApplicationMessage.Payload).Message);
 
-			client2.Dispose ();
-			client3.Dispose ();
+			client2.Dispose();
+			client3.Dispose();
 		}
 
-		public void Dispose ()
-		{
-			if (server != null) {
-				server.Stop ();
-			}
-		}
+		public void Dispose() => server?.Dispose();
 	}
 }

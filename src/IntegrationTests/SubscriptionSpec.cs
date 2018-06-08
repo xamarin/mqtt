@@ -2,10 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Properties;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Extensions;
-using System.Net.Mqtt.Properties;
 
 namespace IntegrationTests
 {
@@ -21,11 +20,7 @@ namespace IntegrationTests
         [Fact]
         public async Task when_server_is_closed_then_error_occurs_when_client_send_message()
         {
-            var server = await GetServerAsync();
             var client = await GetClientAsync();
-
-            await client.ConnectAsync(new MqttClientCredentials(GetClientId()))
-                .ConfigureAwait(continueOnCapturedContext: false);
 
             server.Stop();
 
@@ -113,7 +108,7 @@ namespace IntegrationTests
 		public async Task when_unsubscribe_topic_then_succeeds()
 		{
 			var client = await GetClientAsync ();
-			var topicsToSubscribe = GetTestLoad();
+			var topicsToSubscribe = GetTestLoad ();
 			var topics = new List<string> ();
 			var tasks = new List<Task> ();
 

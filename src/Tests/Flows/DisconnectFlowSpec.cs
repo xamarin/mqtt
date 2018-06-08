@@ -1,12 +1,11 @@
-﻿using System;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using Moq;
+using System;
+using System.Net.Mqtt.Sdk;
 using System.Net.Mqtt.Sdk.Flows;
 using System.Net.Mqtt.Sdk.Packets;
 using System.Net.Mqtt.Sdk.Storage;
-using Moq;
+using System.Threading.Tasks;
 using Xunit;
-using System.Net.Mqtt.Sdk;
 
 namespace Tests.Flows
 {
@@ -25,23 +24,19 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 			var disconnect = new Disconnect ();
 
-			var session = new ClientSession
-			{
-				ClientId = clientId,
-				Clean = true
-			};
+			var session = new ClientSession (clientId, clean: true);
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			sessionRepository.Setup(r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns(session);
+			sessionRepository.Setup(r => r.Read(It.IsAny<string>())).Returns(session);
 
 			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
-			sessionRepository.Verify(r => r.Delete(It.Is<ClientSession>(s => s == session)));
+			willRepository.Verify (r => r.Delete (It.IsAny<string> ()));
+			sessionRepository.Verify(r => r.Delete(It.Is<string>(s => s == session.Id)));
 		}
 
 		[Fact]
@@ -57,23 +52,19 @@ namespace Tests.Flows
 			var channel = new Mock<IMqttChannel<IPacket>> ();
 			var disconnect = new Disconnect ();
 
-			var session = new ClientSession
-			{
-				ClientId = clientId,
-				Clean = false
-			};
+			var session = new ClientSession(clientId, clean: false);
 
 			connectionProvider
 				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
 				.Returns (channel.Object);
 
-			sessionRepository.Setup(r => r.Get(It.IsAny<Expression<Func<ClientSession, bool>>>())).Returns(session);
+			sessionRepository.Setup(r => r.Read(It.IsAny<string>())).Returns(session);
 
 			await flow.ExecuteAsync (clientId, disconnect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			willRepository.Verify (r => r.Delete (It.IsAny<Expression<Func<ConnectionWill, bool>>> ()));
-			sessionRepository.Verify(r => r.Delete(It.Is<ClientSession>(s => s == session)), Times.Never);
+			willRepository.Verify (r => r.Delete (It.IsAny<string> ()));
+			sessionRepository.Verify(r => r.Delete(It.Is<string>(s => s == session.Id)), Times.Never);
 		}
 	}
 }

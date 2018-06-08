@@ -39,13 +39,13 @@ namespace System.Net.Mqtt.Sdk.Flows
 
         public async Task SendWillAsync(string clientId)
         {
-            var will = willRepository.Get(w => w.ClientId == clientId);
+            var will = willRepository.Read(clientId);
 
             if (will != null && will.Will != null)
             {
                 var willPublish = new Publish(will.Will.Topic, will.Will.QualityOfService, will.Will.Retain, duplicated: false)
                 {
-                    Payload = Encoding.UTF8.GetBytes(will.Will.Message)
+                    Payload = will.Will.Payload
                 };
 
                 tracer.Info(Server.Properties.Resources.ServerPublishReceiverFlow_SendingWill, clientId, willPublish.Topic);
@@ -58,18 +58,16 @@ namespace System.Net.Mqtt.Sdk.Flows
         protected override async Task ProcessPublishAsync (Publish publish, string clientId)
 		{
 			if (publish.Retain) {
-				var existingRetainedMessage = retainedRepository.Get (r => r.Topic == publish.Topic);
+				var existingRetainedMessage = retainedRepository.Read (publish.Topic);
 
 				if (existingRetainedMessage != null) {
-					retainedRepository.Delete (existingRetainedMessage);
+					retainedRepository.Delete (existingRetainedMessage.Id);
 				}
 
 				if (publish.Payload.Length > 0) {
-					var retainedMessage = new RetainedMessage {
-						Topic = publish.Topic,
-						QualityOfService = publish.QualityOfService,
-						Payload = publish.Payload
-					};
+					var retainedMessage = new RetainedMessage (publish.Topic,
+						publish.QualityOfService,
+						publish.Payload);
 
 					retainedRepository.Create (retainedMessage);
 				}
@@ -92,7 +90,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 		async Task DispatchAsync (Publish publish, string clientId, bool isWill = false)
 		{
 			var subscriptions = sessionRepository
-				.GetAll ().ToList ()
+				.ReadAll ().ToList ()
 				.SelectMany (s => s.GetSubscriptions ())
 				.Where (x => topicEvaluator.Matches (publish.Topic, x.TopicFilter));
 

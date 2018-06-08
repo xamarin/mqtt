@@ -2,13 +2,11 @@
 using System.Collections.Concurrent;
 using System.Configuration;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Mqtt;
-using System.Linq;
 using System.Net.Sockets;
-using System.Net.Mqtt.Sdk.Bindings;
 using System.Threading.Tasks;
-using System.Net.Mqtt.Sdk;
 
 namespace IntegrationTests.Context
 {
@@ -16,8 +14,8 @@ namespace IntegrationTests.Context
 	{
 		static readonly ConcurrentBag<int> usedPorts;
 		static readonly Random random = new Random ();
-		static readonly object lockObject = new object ();
 
+		readonly object lockObject = new object ();
 		protected readonly ushort keepAliveSecs;
         protected readonly bool allowWildcardsInTopicFilters;
 
@@ -42,12 +40,10 @@ namespace IntegrationTests.Context
 			try {
 				LoadConfiguration ();
 
-				var binding = new ServerTcpBinding ();
-				var initializer = new MqttServerFactory (binding, authenticationProvider);
-				var server = initializer.CreateServer (Configuration);
+				var server = MqttServer.Create (Configuration, authenticationProvider);
 
 				server.Start ();
-
+				
 				return server;
 			} catch (MqttException protocolEx) {
 				if (protocolEx.InnerException is SocketException) {
@@ -60,14 +56,9 @@ namespace IntegrationTests.Context
 
         protected virtual async Task<IMqttClient> GetClientAsync ()
 		{
-			var binding = new TcpBinding ();
-			var initializer = new MqttClientFactory (IPAddress.Loopback.ToString(), binding);
+			LoadConfiguration ();
 
-			if (Configuration == null) {
-				LoadConfiguration ();
-			}
-
-			return await initializer.CreateClientAsync (Configuration);
+			return await MqttClient.CreateAsync (IPAddress.Loopback.ToString(), Configuration);
 		}
 
 		protected string GetClientId()
@@ -87,15 +78,19 @@ namespace IntegrationTests.Context
 
 		void LoadConfiguration()
 		{
-			lock (lockObject) {
-				Configuration = new MqttConfiguration {
-					BufferSize = 128 * 1024,
-					Port = GetPort (),
-					KeepAliveSecs = keepAliveSecs,
-					WaitTimeoutSecs = 2,
-					MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
-                    AllowWildcardsInTopicFilters = allowWildcardsInTopicFilters
-				};
+			if (Configuration == null) {
+				lock (lockObject) {
+					if (Configuration == null) {
+						Configuration = new MqttConfiguration {
+							BufferSize = 128 * 1024,
+							Port = GetPort (),
+							KeepAliveSecs = keepAliveSecs,
+							WaitTimeoutSecs = 2,
+							MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
+							AllowWildcardsInTopicFilters = allowWildcardsInTopicFilters
+						};
+					}
+				}
 			}
 		}
 

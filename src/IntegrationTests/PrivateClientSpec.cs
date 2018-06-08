@@ -108,10 +108,11 @@ namespace IntegrationTests
         public async Task when_in_process_client_disconnect_then_succeeds()
         {
             var client = await server.CreateClientAsync ();
+			var clientId = client.Id;
 
             await client.DisconnectAsync ();
 
-            Assert.Equal (0, server.ActiveClients.Count ());
+            Assert.False (server.ActiveClients.Any (c => c == clientId));
             Assert.False (client.IsConnected);
             Assert.True (string.IsNullOrEmpty (client.Id));
 

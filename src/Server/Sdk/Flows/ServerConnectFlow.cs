@@ -36,11 +36,11 @@ namespace System.Net.Mqtt.Sdk.Flows
 				throw new MqttConnectionException (MqttConnectionStatus.BadUserNameOrPassword);
 			}
 
-			var session = sessionRepository.Get (s => s.ClientId == clientId);
+			var session = sessionRepository.Read (clientId);
 			var sessionPresent = connect.CleanSession ? false : session != null;
 
 			if (connect.CleanSession && session != null) {
-				sessionRepository.Delete (session);
+				sessionRepository.Delete (session.Id);
 				session = null;
 
 				tracer.Info (Server.Properties.Resources.Server_CleanedOldSession, clientId);
@@ -49,7 +49,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 			var sendPendingMessages = false;
 
 			if (session == null) {
-				session = new ClientSession { ClientId = clientId, Clean = connect.CleanSession };
+				session = new ClientSession (clientId, connect.CleanSession);
 
 				sessionRepository.Create (session);
 
@@ -59,7 +59,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 			}
 
 			if (connect.Will != null) {
-				var connectionWill = new ConnectionWill { ClientId = clientId, Will = connect.Will };
+				var connectionWill = new ConnectionWill (clientId, connect.Will);
 
 				willRepository.Create (connectionWill);
 			}
@@ -78,17 +78,20 @@ namespace System.Net.Mqtt.Sdk.Flows
 		async Task SendPendingMessagesAsync (ClientSession session, IMqttChannel<IPacket> channel)
 		{
 			foreach (var pendingMessage in session.GetPendingMessages ()) {
-				var publish = new Publish(pendingMessage.Topic, pendingMessage.QualityOfService,
-					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId);
+				var publish = new Publish (pendingMessage.Topic, pendingMessage.QualityOfService,
+					pendingMessage.Retain, pendingMessage.Duplicated, pendingMessage.PacketId)
+				{
+					Payload = pendingMessage.Payload
+				};
 
 				if (pendingMessage.Status == PendingMessageStatus.PendingToSend) {
 					session.RemovePendingMessage (pendingMessage);
 					sessionRepository.Update (session);
 
-					await senderFlow.SendPublishAsync (session.ClientId, publish, channel)
+					await senderFlow.SendPublishAsync (session.Id, publish, channel)
 						.ConfigureAwait (continueOnCapturedContext: false);
 				} else {
-					await senderFlow.SendPublishAsync (session.ClientId, publish, channel, PendingMessageStatus.PendingToAcknowledge)
+					await senderFlow.SendPublishAsync (session.Id, publish, channel, PendingMessageStatus.PendingToAcknowledge)
 						.ConfigureAwait (continueOnCapturedContext: false);
 				}
 			}
@@ -104,7 +107,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 				else if (pendingAcknowledgement.Type == MqttPacketType.PublishRelease)
 					ack = new PublishRelease (pendingAcknowledgement.PacketId);
 
-				await senderFlow.SendAckAsync (session.ClientId, ack, channel, PendingMessageStatus.PendingToAcknowledge)
+				await senderFlow.SendAckAsync (session.Id, ack, channel, PendingMessageStatus.PendingToAcknowledge)
 					.ConfigureAwait (continueOnCapturedContext: false);
 			}
 		}

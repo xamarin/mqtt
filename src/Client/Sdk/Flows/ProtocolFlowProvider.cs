@@ -11,6 +11,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 		protected readonly IRepositoryProvider repositoryProvider;
 		protected readonly MqttConfiguration configuration;
 
+		readonly object lockObject = new object ();
 		IDictionary<ProtocolFlowType, IProtocolFlow> flows;
 
 		protected ProtocolFlowProvider (IMqttTopicEvaluator topicEvaluator,
@@ -60,8 +61,12 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 		IDictionary<ProtocolFlowType, IProtocolFlow> GetFlows ()
 		{
-			if (flows == default (IDictionary<ProtocolFlowType, IProtocolFlow>)) {
-				flows = InitializeFlows ();
+			if (flows == null) {
+				lock (lockObject) {
+					if (flows == null){
+						flows = InitializeFlows ();
+					}
+				}
 			}
 
 			return flows;

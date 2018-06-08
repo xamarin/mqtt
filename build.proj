@@ -47,7 +47,7 @@
 	<Target Name="All" DependsOnTargets="Clean;Restore;Build;Test;Publish" />
 
 	<Target Name="Clean">
-		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" Targets="Clean" />
+		<!-- <MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" Targets="Clean" /> -->
 		<Exec Command="rmdir $(PackagesPath) /S /Q" ContinueOnError="true" />
 		<Exec Command="rmdir src\packages /S /Q" ContinueOnError="true" />
 		<Exec Command='for /d /r . %%d in (bin,obj) do @if exist "%%d" rd /s/q "%%d"' WorkingDirectory='src' ContinueOnError='true' />
