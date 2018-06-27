@@ -9,8 +9,7 @@
     <PackageId>$(AssemblyName)</PackageId>
     <DocumentationFile>$(IntermediateOutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 
-    <Title>System.Net.Mqtt.Server: a lightweight C# MQTT messenger server</Title>
-    <Description>A lightweight and high-performance MQTT server.</Description>
+    <Description>A lightweight and simple MQTT Server implementation written entirely in C#.</Description>
   </PropertyGroup>
 
   <ItemGroup>
