@@ -6,12 +6,12 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Authors>Xamarin</Authors>
-		<PackageLicenseUrl>http://https://github.com/xamarin/mqtt/license</PackageLicenseUrl>
+		<Authors>Microsoft</Authors>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseUrl>https://raw.githubusercontent.com/xamarin/mqtt/master/LICENSE</PackageLicenseUrl>
 		<PackageProjectUrl>https://github.com/xamarin/mqtt</PackageProjectUrl>
 		<PackageIconUrl>https://github.com/xamarin/mqtt/raw/master/logo/48px.png</PackageIconUrl>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Copyright>Copyright 2017 Xamarin</Copyright>
+		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
 		<PackageTags>m2m iot sockets mqtt</PackageTags>
 	</PropertyGroup>
 
