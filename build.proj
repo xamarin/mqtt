@@ -22,86 +22,63 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 -->
-<Project ToolsVersion="4.0" DefaultTargets="Rebuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="CoreBuild/1.0.0-alpha" DefaultTargets="Rebuild" TreatAsLocalProperty="Configuration">
 
 	<PropertyGroup>
 		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-		<IntermediateOutputPath>.nuget\</IntermediateOutputPath>
-		<PackagesPath>$(IntermediateOutputPath)packages</PackagesPath>
-		<NuGet>.nuget\nuget.exe</NuGet>
-		<Out>out</Out>
-		<CommonBuildProperties>TrackFileAccess=false;WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration);SkipGitCache=true</CommonBuildProperties>
-		<PS Condition="'$(PS)' == ''">%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PS>
+		<PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildProjectDirectory)\out</PackageOutputPath>
+		 <!-- Whether to verify and initialize the target nuget feed before pushing as necessary. -->
+    	<SleetInit>false</SleetInit>
+    	<CommonBuildProperties>Configuration=$(Configuration);PackageOutputPath=$(PackageOutputPath);GitSkipCache=true</CommonBuildProperties>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Solutions at the root of the src directory are all built automatically unless overriden -->
-		<Solution Include="src\*.sln" Condition="'$(Solution)' == ''" />		
-		<Solution Include="$(Solution)" Condition="'$(Solution)' != ''" />
-		<!-- TODO: include IntegrationTests -->
-		<TestProject Include="src\**\Tests.csproj" />
+		<PackageReference Include="Sleet.Azure" Version="0.2.5" />
+		<PackageReference Include="xunit.runner.msbuild" Version="2.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Solution Include="src\Hermes.sln"  />
+		<TestProject Include="src\Tests\Tests.csproj" />
+		<TestProject Include="src\IntegrationTests\IntegrationTests.csproj" />
 	</ItemGroup>
 
 	<Target Name="Rebuild" DependsOnTargets="Clean;Restore;Build" />
 
-	<Target Name="All" DependsOnTargets="Clean;Restore;Build;Test;Publish" />
+	<Target Name="All" DependsOnTargets="Rebuild;Test" />
 
+	<!-- Clean solutions -->
 	<Target Name="Clean">
-		<!-- <MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" Targets="Clean" /> -->
-		<Exec Command="rmdir $(PackagesPath) /S /Q" ContinueOnError="true" />
-		<Exec Command="rmdir src\packages /S /Q" ContinueOnError="true" />
-		<Exec Command='for /d /r . %%d in (bin,obj) do @if exist "%%d" rd /s/q "%%d"' WorkingDirectory='src' ContinueOnError='true' />
+		<Exec Command="rmdir $(PackageOutputPath) /S /Q" Condition="Exists('$(PackageOutputPath)')" />
+		<!-- Remove all bin/obj recursively under /src -->
+		<Exec Command='for /d /r . %%d in (bin,obj) do @if exist "%%d" rd /s/q "%%d"'
+			WorkingDirectory='$(MSBuildThisFileDirectory)\src' />  
+		<Exec Command="rmdir src\.vs /S /Q" Condition="Exists('src\.vs')" />
 	</Target>
 
-	<Target Name="Restore">
-		<MakeDir Directories=".nuget" Condition="!Exists('.nuget')" />
-		<Exec Command="&quot;$(PS)&quot; -NoProfile -Command &quot;&amp; { Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile &quot;.nuget\nuget.exe&quot; -UseBasicParsing }&quot;"
-			  Condition="!Exists('.nuget\nuget.exe')" />
-		<Exec Command='"$(NuGet)" Install "$(MSBuildThisFileDirectory)packages.config" -OutputDirectory "$(PackagesPath)" -ExcludeVersion' />
+	<Target Name="Delete" DependsOnTargets="_SleetConfigCreate">
+		<Error Condition="'$(PackageId)' == ''" Text="No PackageId was specified for the Delete operation." />
+		<Exec Condition="'$(PackageVersion)' == ''" Command='"$(Sleet)" delete --id "$(PackageId)" -f -s feed -c $(_SleetConfig)' />
+		<Exec Condition="'$(PackageVersion)' != ''" Command='"$(Sleet)" delete --id "$(PackageId)" --version $(PackageVersion) -f -s feed -c $(_SleetConfig)' />
+	</Target>
 
+	<Target Name="_BeforeRestore" BeforeTargets="Restore" DependsOnTargets="Clean">
+		<MakeDir Directories="$(TEMP)\packages" Condition="!Exists('$(TEMP)\packages')" />
+	</Target>
+
+	<Target Name="_RestoreSolutions" AfterTargets="Restore">
 		<MSBuild Projects="@(Solution)" Targets="Restore" />
 	</Target>
 
 	<Target Name="Build">
-		<MakeDir Directories="$(Out)" Condition="!Exists('$(Out)')" />
 		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" />
 	</Target>
 	
 	<Target Name="Test">
-		<MSBuild Projects="@(TestProject)" BuildInParallel="true" Targets="GetTargetPath" Properties="$(CommonBuildProperties)">
-			<Output TaskParameter="TargetOutputs" ItemName="_TestAssembly" />
+		<MSBuild Projects="@(TestProject)" Properties="$(CommonBuildProperties)">
+			<Output ItemName="TestAssembly" TaskParameter="TargetOutputs" />         
 		</MSBuild>
 
-		<ItemGroup>
-			<TestAssembly Include="@(_TestAssembly)" Condition=" Exists('%(_TestAssembly.FullPath)') " />
-		</ItemGroup>
-
-		<PropertyGroup>
-			<XunitConsole>$(PackagesPath)\xunit.runner.console\tools\xunit.console.x86.exe</XunitConsole>
-			<XunitOptions>$(XunitOptions) -html $(Out)\test.html -xml $(Out)\test.xml -parallel all -noshadow</XunitOptions>
-
-			<CoverageConsole>$(PackagesPath)\OpenCover\tools\OpenCover.Console.exe</CoverageConsole>
-			<CoverageOptions>$(CoverageOptions) -output:$(Out)\coverage.xml -nodefaultfilters -returntargetcode -register:user -filter:"+[System.Net.Mqtt*]* -[System.Runtime*]* -[System.Core*]* -[System.Linq*]* -[System.Configuration*]* -[System.Web*]* -[System]* -[xunit*]* -[Tests]* -[IntegrationTests]* -[*]*ThisAssembly* -[*]*IFluentInterface*" -excludebyattribute:*ExcludeFromCodeCoverage*;*CompilerGenerated* -skipautoprops -showunvisited -mergebyhash</CoverageOptions>
-			<CoverageCommand>$(CoverageConsole) $(CoverageOptions) -target:$(XunitConsole) -targetargs:"@(TestAssembly, ' ') $(XunitOptions)"</CoverageCommand>
-		</PropertyGroup>
-
-		<Message Importance="high" Text="Executing: $(CoverageCommand)" />
-		<Exec Command="$(CoverageCommand)" ContinueOnError="ErrorAndContinue" />
+		<xunit Assemblies="@(TestAssembly)" />
 	</Target>
-
-	<Target Name="Publish">
-
-		<ItemGroup>
-			<NuPkg Include="src\**\Release\**\*.nupkg" />
-		</ItemGroup>
-
-		<Message Text="Publishing %(NuPkg.Identity)..." Condition="'@(NuPkg)' != ''" Importance="high" />
-		
-		<Exec Command='$(NuGet) Push "%(NuPkg.Identity)" $(NuGetPushArgs)'
-						StandardErrorImportance="high"
-						StandardOutputImportance="normal" />
-
-		<Copy SourceFiles="@(NuPkg)" DestinationFolder="$(Out)" OverwriteReadOnlyFiles="true" />
-	</Target>
-
 </Project>
