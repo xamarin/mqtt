@@ -70,6 +70,12 @@
 		<MSBuild Projects="@(Solution)" Targets="Restore" />
 	</Target>
 
+	<Target Name="_AddPackage" BeforeTargets="Push">
+		<ItemGroup>
+			<Package Include="$(PackageOutputPath)\*.nupkg" />
+		</ItemGroup>
+	</Target>
+
 	<Target Name="Build">
 		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" />
 	</Target>
