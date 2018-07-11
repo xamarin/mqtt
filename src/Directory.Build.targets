@@ -11,7 +11,7 @@
 
 	<ItemGroup Condition="'$(IncludeTesting)' == 'true'">
 		<PackageReference Include="xunit" Version="2.2.*" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.3.*" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.0-rc.1.build4038" />
 		<PackageReference Include="Moq" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
 	</ItemGroup>
