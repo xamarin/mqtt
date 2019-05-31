@@ -13,6 +13,8 @@
 		<PackageIconUrl>https://github.com/xamarin/mqtt/raw/master/logo/48px.png</PackageIconUrl>
 		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
 		<PackageTags>m2m iot sockets mqtt</PackageTags>
+
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 	</PropertyGroup>
 
 
