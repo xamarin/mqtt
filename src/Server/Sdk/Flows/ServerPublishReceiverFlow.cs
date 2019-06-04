@@ -97,7 +97,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 			if (!subscriptions.Any ()) {
 				tracer.Verbose (Server.Properties.Resources.ServerPublishReceiverFlow_TopicNotSubscribed, publish.Topic, clientId);
 
-				undeliveredMessagesListener.OnNext (new MqttUndeliveredMessage { SenderId = clientId, Message = new MqttApplicationMessage (publish.Topic, publish.Payload) });
+				undeliveredMessagesListener.OnNext (new MqttUndeliveredMessage { SenderId = clientId, Message = new MqttApplicationMessage (publish.Topic, publish.Payload, publish.Retain) });
 			} else {
 				foreach (var subscription in subscriptions) {
 					await DispatchAsync (publish, subscription, isWill)

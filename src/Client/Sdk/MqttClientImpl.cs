@@ -411,7 +411,7 @@ namespace System.Net.Mqtt.Sdk
 				.Subscribe (packet => {
 					if (packet.Type == MqttPacketType.Publish) {
 						var publish = packet as Publish;
-						var message = new MqttApplicationMessage (publish.Topic, publish.Payload);
+						var message = new MqttApplicationMessage (publish.Topic, publish.Payload, publish.Retain);
 
 						receiver.OnNext (message);
 						tracer.Info (Properties.Resources.Client_NewApplicationMessageReceived, Id, publish.Topic);
