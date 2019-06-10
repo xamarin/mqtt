@@ -18,7 +18,7 @@ Finally, this allows the subscribers of the received messages to query and filte
 	
 		var configuration = new MqttConfiguration();	
 		var client = await MqttClient.CreateAsync("192.168.1.10", configuration);
-		var sessionState = await client.ConnectAsync (new `MqttClientCredentials`(clientId: "foo"));
+		var sessionState = await client.ConnectAsync (new MqttClientCredentials(clientId: "foo"));
 	
 	The ConnectAsync method returns once the CONNACK packet has been received from the Server.
 	
@@ -34,7 +34,7 @@ Finally, this allows the subscribers of the received messages to query and filte
 			MaximumQualityOfService = MqttQualityOfService.AtMostOnce,	
 			AllowWildcardsInTopicFilters = true };
 		var client = await MqttClient.CreateAsync("192.168.1.10", configuration);
-		var sessionState = await client.ConnectAsync (new `MqttClientCredentials`(clientId: "foo"), cleanSession: true);
+		var sessionState = await client.ConnectAsync (new MqttClientCredentials(clientId: "foo"), cleanSession: true);
 		
 	The ConnectAsync method returns once the CONNACK packet has been received from the Server
 
