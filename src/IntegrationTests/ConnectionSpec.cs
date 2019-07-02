@@ -502,6 +502,25 @@ namespace IntegrationTests
 			client3.Dispose();
 		}
 
+		[Fact]
+		public async Task when_client_disconnects_then_message_stream_completes()
+		{
+			var streamCompletedSignal = new ManualResetEventSlim(initialState: false);
+			var client = await GetClientAsync();
+
+			await client.ConnectAsync(new MqttClientCredentials(GetClientId()));
+
+			client.MessageStream.Subscribe(_ => { }, onCompleted: () => streamCompletedSignal.Set());
+
+			await client.DisconnectAsync();
+
+			var streamCompleted = streamCompletedSignal.Wait(2000);
+
+			Assert.True(streamCompleted);
+
+			client.Dispose();
+		}
+
 		public void Dispose() => server?.Dispose();
 	}
 }

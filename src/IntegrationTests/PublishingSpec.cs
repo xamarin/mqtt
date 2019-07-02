@@ -524,7 +524,18 @@ namespace IntegrationTests
 				});
 
 			await subscriber.DisconnectAsync();
+
 			var sessionState = await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: false);
+
+			subscriber
+				.MessageStream
+				.Where(m => m.Topic == topic)
+				.Subscribe(m => {
+					subscriberReceived++;
+
+					if (subscriberReceived == count)
+						subscriberDone.Set();
+				});
 
 			var tasks = new List<Task>();
 
@@ -603,6 +614,80 @@ namespace IntegrationTests
 
 			await subscriber.UnsubscribeAsync(topic)
 				.ConfigureAwait(continueOnCapturedContext: false);
+
+			subscriber.Dispose();
+			publisher.Dispose();
+		}
+
+		[Fact]
+		public async Task when_publish_messages_and_client_disconnects_then_message_stream_is_reset()
+		{
+			var topic = Guid.NewGuid().ToString();
+
+			var publisher = await GetClientAsync();
+			var subscriber = await GetClientAsync();
+			var subscriberId = subscriber.Id;
+
+			var goal = default(int);
+			var goalAchieved = new ManualResetEventSlim();
+			var received = 0;
+
+			await subscriber.SubscribeAsync(topic, MqttQualityOfService.AtMostOnce).ConfigureAwait(continueOnCapturedContext: false);
+
+			subscriber
+				.MessageStream
+				.Subscribe(m => {
+					if (m.Topic == topic)
+					{
+						received++;
+
+						if (received == goal)
+							goalAchieved.Set();
+					}
+				});
+
+			goal = 5;
+
+			var tasks = new List<Task>();
+
+			for (var i = 1; i <= goal; i++)
+			{
+				var testMessage = GetTestMessage(i);
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
+
+				tasks.Add(publisher.PublishAsync(message, MqttQualityOfService.AtMostOnce));
+			}
+
+			await Task.WhenAll(tasks);
+
+			var completed = goalAchieved.Wait(TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
+
+			Assert.True(completed);
+			Assert.Equal(goal, received);
+
+			await subscriber.DisconnectAsync();
+
+			goal = 3;
+			goalAchieved.Reset();
+			received = 0;
+			completed = false;
+
+			await subscriber.ConnectAsync(new MqttClientCredentials(subscriberId), cleanSession: false);
+
+			for (var i = 1; i <= goal; i++)
+			{
+				var testMessage = GetTestMessage(i);
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
+
+				tasks.Add(publisher.PublishAsync(message, MqttQualityOfService.AtMostOnce));
+			}
+
+			completed = goalAchieved.Wait(TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
+
+			Assert.False(completed);
+			Assert.Equal(0, received);
+
+			await subscriber.UnsubscribeAsync(topic).ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber.Dispose();
 			publisher.Dispose();
