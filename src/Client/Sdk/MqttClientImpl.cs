@@ -18,9 +18,8 @@ namespace System.Net.Mqtt.Sdk
 		bool isProtocolConnected;
 		IPacketListener packetListener;
 		IDisposable packetsSubscription;
+		Subject<MqttApplicationMessage> receiver;
 
-		readonly Subject<MqttApplicationMessage> receiver;
-		readonly Subject<IPacket> sender;
 		readonly IPacketChannelFactory channelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IRepository<ClientSession> sessionRepository;
@@ -34,9 +33,7 @@ namespace System.Net.Mqtt.Sdk
 			IPacketIdProvider packetIdProvider,
 			MqttConfiguration configuration)
 		{
-			receiver = new Subject<MqttApplicationMessage> ();
-			sender = new Subject<IPacket> ();
-
+			receiver = new Subject<MqttApplicationMessage>();
 			this.channelFactory = channelFactory;
 			this.flowProvider = flowProvider;
 			sessionRepository = repositoryProvider.GetRepository<ClientSession> ();
@@ -314,8 +311,6 @@ namespace System.Net.Mqtt.Sdk
 					await DisconnectAsync ().ConfigureAwait (continueOnCapturedContext: false);
 				}
 
-				sender?.OnCompleted ();
-				receiver?.OnCompleted ();
 				(clientSender as IDisposable)?.Dispose ();
 				disposed = true;
 			}
@@ -334,8 +329,9 @@ namespace System.Net.Mqtt.Sdk
 			CloseClientSession ();
 			packetsSubscription?.Dispose ();
 			packetListener?.Dispose ();
-            Channel?.Dispose ();
-            IsConnected = false;
+			ResetReceiver();
+			Channel?.Dispose ();
+			IsConnected = false;
             Id = null;
 
             Disconnected (this, new MqttEndpointDisconnected (reason, message));
@@ -390,8 +386,6 @@ namespace System.Net.Mqtt.Sdk
 
 		async Task SendPacketAsync (IPacket packet)
 		{
-			sender.OnNext (packet);
-
 			await clientSender.Run (async () => await Channel.SendAsync (packet).ConfigureAwait (continueOnCapturedContext: false))
 				.ConfigureAwait (continueOnCapturedContext: false);
 		}
@@ -422,6 +416,12 @@ namespace System.Net.Mqtt.Sdk
 					tracer.Warn (Properties.Resources.Client_PacketsObservableCompleted);
 					Close (DisconnectedReason.RemoteDisconnected);
 				});
+		}
+
+		void ResetReceiver()
+		{
+			receiver?.OnCompleted();
+			receiver = new Subject<MqttApplicationMessage>();
 		}
 	}
 }

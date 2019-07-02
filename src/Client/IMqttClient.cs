@@ -29,12 +29,17 @@ namespace System.Net.Mqtt
         /// </summary>
 		bool IsConnected { get; }
 
-        /// <summary>
-        /// Represents the incoming application messages received from the Server
-        /// These messages correspond to the topics subscribed,
-        /// by calling <see cref="SubscribeAsync(string, MqttQualityOfService)"/> method 
-        /// See <see cref="MqttApplicationMessage"/> for more details about the application messages
-        /// </summary>
+		/// <summary>
+		/// Represents the incoming application messages received from the Server
+		/// These messages correspond to the topics subscribed,
+		/// by calling <see cref="SubscribeAsync(string, MqttQualityOfService)"/> method 
+		/// See <see cref="MqttApplicationMessage"/> for more details about the application messages
+		/// </summary>
+		/// <remarks>
+		/// The stream lifecycle ends when the client is disconnected, either by a protocol disconnect, 
+		/// an error or a remote disconnection produced by the Server.
+		/// The stream subscritpions should be created again if the client is intended to be re-connected
+		/// </remarks>
 		IObservable<MqttApplicationMessage> MessageStream { get; }
 
 		/// <summary>
