@@ -2,6 +2,7 @@
 
 > Code name: Hermes (messenger of the Greek gods)
 
+[![Build Status](https://dev.azure.com/devdiv/DevDiv/_apis/build/status/Xamarin/System.Net.Mqtt?branchName=master)](https://dev.azure.com/devdiv/DevDiv/_build/latest?definitionId=9488&branchName=master)
 [![Client](https://img.shields.io/nuget/vpre/System.Net.Mqtt.svg?label=client-nuget)](https://www.nuget.org/packages/System.Net.Mqtt)
 [![Downloads](https://img.shields.io/nuget/dt/System.Net.Mqtt.svg?label=client-downloads)](https://www.nuget.org/packages/System.Net.Mqtt)
 [![Server](https://img.shields.io/nuget/vpre/System.Net.Mqtt.Server.svg?label=server-nuget)](https://www.nuget.org/packages/System.Net.Mqtt.Server)
