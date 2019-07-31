@@ -2,15 +2,21 @@
 
 > Code name: Hermes (messenger of the Greek gods)
 
-MQTT is a Client Server publish/subscribe messaging transport protocol, designed to be light weight, open and simple to use and implement. This makes it suitable for Internet of Things (IoT) messaging, machine to machine communication, mobile devices, etc.
+[![Client](https://img.shields.io/nuget/vpre/System.Net.Mqtt.svg?label=client-nuget)](https://www.nuget.org/packages/System.Net.Mqtt)
+[![Downloads](https://img.shields.io/nuget/dt/System.Net.Mqtt.svg?label=client-downloads)](https://www.nuget.org/packages/System.Net.Mqtt)
+[![Server](https://img.shields.io/nuget/vpre/System.Net.Mqtt.Server.svg?label=server-nuget)](https://www.nuget.org/packages/System.Net.Mqtt.Server)
+[![Downloads](https://img.shields.io/nuget/dt/System.Net.Mqtt.Server.svg?label=server-downloads)](https://www.nuget.org/packages/System.Net.Mqtt.Server)
 
-System.Net.Mqtt is a light weight and simple implementation of the MQTT protocol version 3.1.1, written entirely in C# and divided in two libraries: System.Net.Mqtt and System.Net.Mqtt.Server.
 
-The foundation of the System.Net.Mqtt libraries is to provide an intuitive and very easy to use API, hiding most of the protocol concepts that are not needed to be exposed, letting the consumers to just focus on the main protocol messages that are: CONNECT, SUBSCRIBE, UNSUBSCRIBE, PUBLISH, DISCONNECT. 
+MQTT is a Client Server publish/subscribe messaging transport protocol, designed to be lightweight, open and simple to use and implement. This makes it suitable for Internet of Things (IoT) messaging, machine to machine communication, mobile devices, etc.
 
-All the protocol packets acknowledgement happens under the hood in an asynchronous way, adding a level of simplicity reduced to just await the client method calls in a native .net style without worring about low level protocol concepts.
-Also, the reception of the subscribed messages is handled using an IObservable implementation, which makes the stream of messages to receive more naturally and aligned to the concept of Publish/Subscribe on which the protocol already relies.
-Finally, this allows the subscribers of the received messages to query and filter them using Reactive Extensions, which adds an extra level of flexibility and control over the messages outcome.
+System.Net.Mqtt is a lightweight and simple implementation of the MQTT protocol version 3.1.1, written entirely in C# and divided in two libraries: System.Net.Mqtt and System.Net.Mqtt.Server.
+
+The foundation of the System.Net.Mqtt libraries is to provide an intuitive and very easy to use API, hiding most of the protocol concepts that don't need to be exposed, letting consumers just focus on the main protocol operations, which are: CONNECT, SUBSCRIBE, UNSUBSCRIBE, PUBLISH, DISCONNECT.
+
+All the protocol packets acknowledgement happens under the hood in an asynchronous way, adding a level of simplicity reduced to just awaiting the client method calls in a native .net style without worring about low level protocol concepts.
+
+Also, the reception of the subscribed messages is handled using an IObservable implementation, which makes the stream of messages to receive more natural and aligned to the concept of Publish/Subscribe on which the protocol already relies. Finally, this allows subscribers of the received messages to query and filter them using Reactive Extensions, which adds an extra level of flexibility and control over the messages processing.
 
 ## Usage samples
 
