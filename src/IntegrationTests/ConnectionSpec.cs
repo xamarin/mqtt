@@ -88,12 +88,15 @@ namespace IntegrationTests
 		public async Task when_connect_clients_and_one_client_drops_connection_then_other_client_survives()
 		{
 			var fooClient = await GetClientAsync();
+			var fooClientId = GetClientId();
 			var barClient = await GetClientAsync();
+			var barClientId = GetClientId();
 
-			await fooClient.ConnectAsync(new MqttClientCredentials(GetClientId()));
-			await barClient.ConnectAsync(new MqttClientCredentials(GetClientId()));
+			await fooClient.ConnectAsync(new MqttClientCredentials(fooClientId));
+			await barClient.ConnectAsync(new MqttClientCredentials(barClientId));
 
-			var initialConnectedClients = server.ActiveClients.Count();
+			var clientIds = new List<string> { fooClientId, barClientId };
+			var initialConnectedClients = server.ActiveClients.Where(c => clientIds.Contains(c)).Count();
 			var exceptionThrown = false;
 
 			try
@@ -110,7 +113,7 @@ namespace IntegrationTests
 
 			while (!serverSignal.IsSet)
 			{
-				if (server.ActiveConnections == 1 && server.ActiveClients.Count() == 1)
+				if (!server.ActiveClients.Any(c => c == fooClientId))
 				{
 					serverSignal.Set();
 				}
@@ -118,10 +121,11 @@ namespace IntegrationTests
 
 			serverSignal.Wait();
 
+			var finalConnectedClients = server.ActiveClients.Where(c => clientIds.Contains(c)).Count();
+
 			Assert.Equal(2, initialConnectedClients);
 			Assert.True(exceptionThrown);
-			Assert.Equal(1, server.ActiveConnections);
-			Assert.Equal(1, server.ActiveClients.Count());
+			Assert.Equal(1, finalConnectedClients);
 
 			fooClient.Dispose();
 			barClient.Dispose();
@@ -167,8 +171,7 @@ namespace IntegrationTests
 			await client.DisconnectAsync();
 			await client.ConnectAsync(new MqttClientCredentials(clientId));
 
-			Assert.Equal(1, server.ActiveConnections);
-			Assert.Equal(1, server.ActiveClients.Count());
+			Assert.Equal(1, server.ActiveClients.Count(c => c == clientId));
 
 			client.Dispose();
 		}
