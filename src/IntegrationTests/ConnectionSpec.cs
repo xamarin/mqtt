@@ -78,7 +78,7 @@ namespace IntegrationTests
 			await fooClient.DisconnectAsync();
 
 			Assert.Equal(new[] { clientId2, clientId1 }, disconnected);
-			Assert.Equal(0, connected.Count);
+			Assert.Empty(connected);
 
 			fooClient.Dispose();
 			barClient.Dispose();
@@ -215,7 +215,7 @@ namespace IntegrationTests
 
 			Assert.True(client.IsConnected);
 			Assert.False(string.IsNullOrEmpty(client.Id));
-			Assert.True(client.Id.StartsWith("anonymous"));
+			Assert.StartsWith("anonymous", client.Id);
 		}
 
 		[Fact]
@@ -227,7 +227,7 @@ namespace IntegrationTests
 
 			Assert.True(client.IsConnected);
 			Assert.False(string.IsNullOrEmpty(client.Id));
-			Assert.True(client.Id.StartsWith("anonymous"));
+			Assert.StartsWith("anonymous", client.Id);
 		}
 
 		[Fact]
@@ -338,7 +338,7 @@ namespace IntegrationTests
 			}
 
 			Assert.Equal(clients.Count, initialConnectedClients);
-			Assert.Equal(0, server.ActiveClients.Where(c => clientIds.Contains(c)).Count());
+			Assert.Empty(server.ActiveClients.Where(c => clientIds.Contains(c)));
 			Assert.True(clients.All(c => !c.IsConnected));
 			Assert.True(clients.All(c => string.IsNullOrEmpty(c.Id)));
 
@@ -397,7 +397,7 @@ namespace IntegrationTests
 
 			Assert.True(existClientAfterConnect);
 			Assert.True(clientDisconnected);
-			Assert.False(server.ActiveClients.Any(c => c == clientId));
+			Assert.DoesNotContain(server.ActiveClients, c => c == clientId);
 
 			client.Dispose();
 		}

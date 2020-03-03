@@ -25,7 +25,7 @@ namespace IntegrationTests
             Assert.NotNull (client);
             Assert.True (client.IsConnected);
             Assert.False (string.IsNullOrEmpty (client.Id));
-            Assert.True (client.Id.StartsWith ("private"));
+            Assert.StartsWith ("private", client.Id);
 
             client.Dispose ();
         }
@@ -112,7 +112,7 @@ namespace IntegrationTests
 
             await client.DisconnectAsync ();
 
-            Assert.False (server.ActiveClients.Any (c => c == clientId));
+            Assert.DoesNotContain (server.ActiveClients, c => c == clientId);
             Assert.False (client.IsConnected);
             Assert.True (string.IsNullOrEmpty (client.Id));
 

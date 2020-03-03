@@ -383,7 +383,7 @@ namespace Tests.Flows
 			Assert.Equal(MqttConnectionStatus.Accepted, connectAck.Status);
 			Assert.True(connectAck.SessionPresent);
 			Assert.Equal(3, nextPackets.Count);
-			Assert.False(nextPackets.Any(x => x is ConnectAck));
+			Assert.DoesNotContain(nextPackets, x => x is ConnectAck);
 		}
 	}
 }

@@ -62,7 +62,7 @@ namespace IntegrationTests
 
 			Assert.True (existClientAfterConnect);
 			Assert.True (serverDetectedClientClosed);
-			Assert.False (server.ActiveClients.Any (c => c == clientId));
+			Assert.DoesNotContain (server.ActiveClients, c => c == clientId);
 		}
 
 		[Fact]
@@ -76,7 +76,7 @@ namespace IntegrationTests
 
             await Task.Delay (TimeSpan.FromSeconds (keepAliveSecs * 5));
 
-			Assert.True(server.ActiveClients.Any(c => c == clientId));
+			Assert.Contains(server.ActiveClients, c => c == clientId);
 			Assert.True(client.IsConnected);
 			Assert.False (string.IsNullOrEmpty (client.Id));
 
