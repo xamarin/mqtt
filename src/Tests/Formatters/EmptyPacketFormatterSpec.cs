@@ -6,7 +6,6 @@ using System.Net.Mqtt.Sdk.Formatters;
 using System.Net.Mqtt.Sdk.Packets;
 using Moq;
 using Xunit;
-using Xunit.Extensions;
 using System.Net.Mqtt.Sdk;
 
 namespace Tests.Formatters
