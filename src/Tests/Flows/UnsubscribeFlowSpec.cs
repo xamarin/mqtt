@@ -53,7 +53,7 @@ namespace Tests.Flows
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			Assert.NotNull (response);
-			Assert.Equal (0, updatedSession.Subscriptions.Count);
+			Assert.Empty (updatedSession.Subscriptions);
 
 			var unsubscribeAck = response as UnsubscribeAck;
 

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace IntegrationTests
 {
-	public class SubscriptionSpec : ConnectedContext
+	public class SubscriptionSpec : ConnectedContext, IDisposable
 	{
 		readonly IMqttServer server;
 
@@ -86,7 +86,7 @@ namespace IntegrationTests
             Assert.NotNull (ex.InnerException);
             Assert.True (ex.InnerException is MqttClientException);
             Assert.NotNull (ex.InnerException.InnerException);
-            Assert.NotNull (ex.InnerException.InnerException is MqttException);
+            Assert.IsType<MqttException> (ex.InnerException.InnerException);
             Assert.Equal (string.Format (Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter), ex.InnerException.InnerException.Message);
         }
 
@@ -101,7 +101,7 @@ namespace IntegrationTests
             Assert.NotNull (ex.InnerException);
             Assert.True (ex.InnerException is MqttClientException);
             Assert.NotNull (ex.InnerException.InnerException);
-            Assert.NotNull (ex.InnerException.InnerException is MqttProtocolViolationException);
+            Assert.IsType<MqttProtocolViolationException> (ex.InnerException.InnerException);
         }
 
         [Fact]
@@ -137,12 +137,12 @@ namespace IntegrationTests
 
             Assert.NotNull (ex);
             Assert.NotNull (ex.InnerException);
-            Assert.True (ex.InnerException is MqttClientException);
+            Assert.IsType<MqttClientException> (ex.InnerException);
             Assert.NotNull (ex.InnerException.InnerException);
-            Assert.NotNull (ex.InnerException.InnerException is MqttProtocolViolationException);
+            Assert.IsType<MqttProtocolViolationException> (ex.InnerException.InnerException);
 
         }
-        public void Dispose ()
+        void IDisposable.Dispose ()
 		{
 			if (server != null) {
 				server.Stop ();

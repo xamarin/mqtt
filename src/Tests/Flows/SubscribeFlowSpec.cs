@@ -70,8 +70,8 @@ namespace Tests.Flows
 			Assert.NotNull (subscribeAck);
 			Assert.Equal (packetId, subscribeAck.PacketId);
 			Assert.Equal (2, subscribeAck.ReturnCodes.Count ());
-			Assert.True (subscribeAck.ReturnCodes.Any (c => c == SubscribeReturnCode.MaximumQoS0));
-			Assert.True (subscribeAck.ReturnCodes.Any (c => c == SubscribeReturnCode.MaximumQoS1));
+			Assert.Contains (subscribeAck.ReturnCodes, c => c == SubscribeReturnCode.MaximumQoS0);
+			Assert.Contains (subscribeAck.ReturnCodes, c => c == SubscribeReturnCode.MaximumQoS1);
 		}
 
 		[Fact]
@@ -130,8 +130,8 @@ namespace Tests.Flows
 
 			Assert.NotNull (subscribeAck);
 			Assert.Equal (packetId, subscribeAck.PacketId);
-			Assert.Equal (1, subscribeAck.ReturnCodes.Count ());
-			Assert.True (subscribeAck.ReturnCodes.Any (c => c == SubscribeReturnCode.MaximumQoS1));
+			Assert.Single (subscribeAck.ReturnCodes);
+			Assert.Contains (subscribeAck.ReturnCodes, c => c == SubscribeReturnCode.MaximumQoS1);
 		}
 
 		[Fact]
@@ -184,7 +184,7 @@ namespace Tests.Flows
 
 			Assert.NotNull (subscribeAck);
 			Assert.Equal (packetId, subscribeAck.PacketId);
-			Assert.Equal (1, subscribeAck.ReturnCodes.Count ());
+			Assert.Single (subscribeAck.ReturnCodes);
 			Assert.Equal(SubscribeReturnCode.Failure, subscribeAck.ReturnCodes.First());
 		}
 

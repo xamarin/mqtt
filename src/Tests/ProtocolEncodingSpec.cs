@@ -91,9 +91,9 @@ namespace Tests
 			var encoded5 = MqttProtocol.Encoding.EncodeRemainingLength (length5); //0x40
 			var encoded6 = MqttProtocol.Encoding.EncodeRemainingLength (length6); //193 2
 
-			Assert.Equal (1, encoded1From.Length);
+			Assert.Single (encoded1From);
 			Assert.Equal (0x00, encoded1From[0]);
-			Assert.Equal (1, encoded1To.Length);
+			Assert.Single (encoded1To);
 			Assert.Equal (0x7F, encoded1To[0]);
 
 			Assert.Equal (2, encoded2From.Length);
@@ -123,7 +123,7 @@ namespace Tests
 			Assert.Equal (0xFF, encoded4To[2]);
 			Assert.Equal (0x7F, encoded4To[3]);
 
-			Assert.Equal (1, encoded5.Length);
+			Assert.Single (encoded5);
 			Assert.Equal (0x40, encoded5[0]);
 
 			Assert.Equal (2, encoded6.Length);

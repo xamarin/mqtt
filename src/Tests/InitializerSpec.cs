@@ -21,7 +21,7 @@ namespace Tests
 			Assert.Equal (MqttQualityOfService.AtMostOnce, configuration.MaximumQualityOfService);
 			Assert.Equal (0, configuration.KeepAliveSecs);
 			Assert.Equal (5, configuration.WaitTimeoutSecs);
-			Assert.Equal (true, configuration.AllowWildcardsInTopicFilters);
+			Assert.True (configuration.AllowWildcardsInTopicFilters);
 		}
 
 		[Fact]
