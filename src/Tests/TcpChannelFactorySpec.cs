@@ -28,18 +28,16 @@ namespace Tests
 		}
 
 		[Fact]
-		public void when_creating_channel_with_invalid_address_then_fails()
+		public async Task when_creating_channel_with_invalid_address_then_fails()
 		{
-			var configuration = new MqttConfiguration { ConnectionTimeoutSecs = 2 };
+			var configuration = new MqttConfiguration { ConnectionTimeoutSecs = 5 };
 			var factory = new TcpChannelFactory (IPAddress.Loopback.ToString (), configuration);
 
-			var ex = Assert.Throws<AggregateException> (() => factory.CreateAsync ().Result);
+			var ex = await Assert.ThrowsAsync<MqttException> (factory.CreateAsync);
 
 			Assert.NotNull (ex);
 			Assert.NotNull (ex.InnerException);
-			Assert.True (ex.InnerException is MqttException);
-			Assert.NotNull (ex.InnerException.InnerException);
-			Assert.True (ex.InnerException.InnerException is SocketException);
+			Assert.True (ex.InnerException is SocketException);
 		}
 	}
 }
