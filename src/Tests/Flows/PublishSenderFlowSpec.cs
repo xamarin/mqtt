@@ -50,7 +50,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
 
-			connectionProvider.Setup (m => m.GetConnection (It.IsAny<string> ())).Returns (channel.Object);
+			connectionProvider.Setup (m => m.GetConnectionAsync (It.IsAny<string> ())).Returns (Task.FromResult(channel.Object));
 
 			var retrySignal = new ManualResetEventSlim (initialState: false);
 			var retries = 0;
@@ -110,7 +110,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
 
-			connectionProvider.Setup (m => m.GetConnection (It.IsAny<string> ())).Returns (channel.Object);
+			connectionProvider.Setup (m => m.GetConnectionAsync (It.IsAny<string> ())).Returns (Task.FromResult(channel.Object));
 
 			var retrySignal = new ManualResetEventSlim (initialState: false);
 			var retries = 0;
@@ -166,7 +166,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
 
-			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
+			connectionProvider.Setup (m => m.GetConnectionAsync (It.Is<string> (s => s == clientId))).Returns (Task.FromResult(channel.Object));
 
 			var ackSentSignal = new ManualResetEventSlim (initialState: false);
 
@@ -215,7 +215,7 @@ namespace Tests.Flows
 				.Callback<IPacket> (packet => sender.OnNext (packet))
 				.Returns (Task.Delay (0));
 
-			connectionProvider.Setup (m => m.GetConnection (It.Is<string> (s => s == clientId))).Returns (channel.Object);
+			connectionProvider.Setup (m => m.GetConnectionAsync (It.Is<string> (s => s == clientId))).Returns (Task.FromResult(channel.Object));
 
 			var ackSentSignal = new ManualResetEventSlim (initialState: false);
 

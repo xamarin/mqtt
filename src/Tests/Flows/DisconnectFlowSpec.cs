@@ -27,8 +27,8 @@ namespace Tests.Flows
 			var session = new ClientSession (clientId, clean: true);
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			sessionRepository.Setup(r => r.Read(It.IsAny<string>())).Returns(session);
 
@@ -55,8 +55,8 @@ namespace Tests.Flows
 			var session = new ClientSession(clientId, clean: false);
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			sessionRepository.Setup(r => r.Read(It.IsAny<string>())).Returns(session);
 

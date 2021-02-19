@@ -90,7 +90,7 @@ namespace Tests
 
 			receiver.OnNext (connect);
 
-			connectionProvider.Verify (m => m.AddConnection (It.Is<string> (s => s == clientId), It.Is<IMqttChannel<IPacket>> (c => c == packetChannel.Object)));
+			connectionProvider.Verify (m => m.AddConnectionAsync (It.Is<string> (s => s == clientId), It.Is<IMqttChannel<IPacket>> (c => c == packetChannel.Object)));
 		}
 
 		[Fact]
@@ -187,7 +187,7 @@ namespace Tests
 		{
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
-			connectionProvider.Setup (p => p.RemoveConnection (It.IsAny<string> ()));
+			connectionProvider.Setup (p => p.RemoveConnectionAsync (It.IsAny<string> ())).Returns(Task.CompletedTask);
 
             var serverPublishReceiverFlow = new Mock<IServerPublishReceiverFlow>();
             var flowProvider = new Mock<IProtocolFlowProvider> ();
@@ -219,7 +219,7 @@ namespace Tests
 			var errorOccured = errorSignal.Wait (TimeSpan.FromSeconds(1));
 
 			Assert.True (errorOccured);
-			connectionProvider.Verify (p => p.RemoveConnection (It.Is<string> (s => s == clientId)));
+			connectionProvider.Verify (p => p.RemoveConnectionAsync (It.Is<string> (s => s == clientId)));
 		}
 
 		[Fact]
