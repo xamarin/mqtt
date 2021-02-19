@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Concurrency;
@@ -11,15 +10,16 @@ namespace System.Net.Mqtt.Sdk.Bindings
 {
 	internal class TcpChannel : IMqttChannel<byte[]>
 	{
-        static readonly ITracer tracer = Tracer.Get<TcpChannel> ();
+		static readonly ITracer tracer = Tracer.Get<TcpChannel>();
 
-        bool disposed;
+		volatile bool closed;
 
 		readonly TcpClient client;
 		readonly IPacketBuffer buffer;
 		readonly ReplaySubject<byte[]> receiver;
 		readonly ReplaySubject<byte[]> sender;
 		readonly IDisposable streamSubscription;
+		readonly AsyncLock asyncLockObject;
 
 		public TcpChannel (TcpClient client, 
 			IPacketBuffer buffer,
@@ -32,13 +32,14 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			streamSubscription = SubscribeStream ();
+			asyncLockObject = new AsyncLock();
 		}
 
 		public bool IsConnected
 		{
 			get
 			{
-				var connected = !disposed;
+				var connected = !closed;
 
 				try {
 					connected = connected && client.Connected;
@@ -56,50 +57,63 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 		public async Task SendAsync (byte[] message)
 		{
-			if (disposed) {
-				throw new ObjectDisposedException (GetType ().FullName);
-			}
+			if (!closed)
+			{
+				using (await asyncLockObject.LockAsync().ConfigureAwait(continueOnCapturedContext: false))
+				{
+					if (!closed)
+					{
+						if (!IsConnected)
+						{
+							throw new MqttException(Properties.Resources.MqttChannel_ClientNotConnected);
+						}
 
-			if (!IsConnected) {
-				throw new MqttException (Properties.Resources.MqttChannel_ClientNotConnected);
-			}
+						sender.OnNext(message);
 
-			sender.OnNext (message);
+						try
+						{
+							tracer.Verbose(Properties.Resources.MqttChannel_SendingPacket, message.Length);
 
-			try {
-				tracer.Verbose (Properties.Resources.MqttChannel_SendingPacket, message.Length);
-
-				await client.GetStream ()
-					.WriteAsync (message, 0, message.Length)
-					.ConfigureAwait (continueOnCapturedContext: false);
-			} catch (ObjectDisposedException disposedEx) {
-				throw new MqttException (Properties.Resources.MqttChannel_StreamDisconnected, disposedEx);
+							await client
+								.GetStream()
+								.WriteAsync(message, 0, message.Length)
+								.ConfigureAwait(continueOnCapturedContext: false);
+						}
+						catch (ObjectDisposedException disposedEx)
+						{
+							throw new MqttException(Properties.Resources.MqttChannel_StreamDisconnected, disposedEx);
+						}
+					}
+				}
 			}
 		}
 
-		public void Dispose ()
+		public async Task CloseAsync()
 		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
+			if (!closed)
+			{
+				using (await asyncLockObject.LockAsync().ConfigureAwait(continueOnCapturedContext: false))
+				{
+					if (!closed)
+					{
+						tracer.Info(Properties.Resources.Mqtt_Disposing, GetType().FullName);
 
-		protected virtual void Dispose (bool disposing)
-		{
-			if (disposed) return;
+						streamSubscription.Dispose();
+						receiver.OnCompleted();
+						sender.OnCompleted();
 
-            if (disposing) {
-				tracer.Info (Properties.Resources.Mqtt_Disposing, GetType ().FullName);
+						try
+						{
+							client?.Dispose();
+						}
+						catch (SocketException socketEx)
+						{
+							tracer.Error(socketEx, Properties.Resources.MqttChannel_DisposeError, socketEx.SocketErrorCode);
+						}
 
-				streamSubscription.Dispose ();
-				receiver.OnCompleted ();
-
-                try {
-                    client?.Dispose ();
-                } catch (SocketException socketEx) {
-                    tracer.Error (socketEx, Properties.Resources.MqttChannel_DisposeError, socketEx.SocketErrorCode);
-                }
-
-                disposed = true;
+						closed = true;
+					}
+				}
 			}
 		}
 
@@ -117,12 +131,9 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			.TakeWhile (bytes => bytes.Any ())
 			.ObserveOn (NewThreadScheduler.Default)
 			.Subscribe (bytes => {
-				var packets = default (IEnumerable<byte[]>);
-
-				if (buffer.TryGetPackets (bytes, out packets)) {
+				if (buffer.TryGetPackets (bytes, out var packets)) {
 					foreach (var packet in packets) {
 						tracer.Verbose (Properties.Resources.MqttChannel_ReceivedPacket, packet.Length);
-
 						receiver.OnNext (packet);
 					}
 				}

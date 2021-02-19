@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -15,7 +14,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 	{
 		static readonly ITracer tracer = Tracer.Get<WebSocketChannel>();
 
-		bool disposed;
+		volatile bool closed;
 
 		readonly WebSocket client;
 		readonly IPacketBuffer buffer;
@@ -23,6 +22,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 		readonly ReplaySubject<byte[]> receiver;
 		readonly ReplaySubject<byte[]> sender;
 		readonly IDisposable streamSubscription;
+		readonly AsyncLock asyncLockObject;
 
 		public WebSocketChannel (WebSocket client,
 			IPacketBuffer buffer,
@@ -34,13 +34,14 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
 			streamSubscription = SubscribeStream ();
+			asyncLockObject = new AsyncLock();
 		}
 
 		public bool IsConnected
 		{
 			get
 			{
-				var connected = !disposed;
+				var connected = !closed;
 
 				try {
 					connected = connected && client.State == WebSocketState.Open;
@@ -58,54 +59,65 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 		public async Task SendAsync (byte[] message)
 		{
-			if (disposed) {
-				throw new ObjectDisposedException (GetType().FullName);
-			}
+			if (!closed)
+			{
+				using (await asyncLockObject.LockAsync().ConfigureAwait(continueOnCapturedContext: false))
+				{
+					if (!closed)
+					{
+						if (!IsConnected)
+						{
+							throw new MqttException(Properties.Resources.MqttChannel_ClientNotConnected);
+						}
 
-			if (!IsConnected) {
-				throw new MqttException (Properties.Resources.MqttChannel_ClientNotConnected);
-			}
+						sender.OnNext(message);
 
-			sender.OnNext (message);
+						try
+						{
+							tracer.Verbose(Properties.Resources.MqttChannel_SendingPacket, message.Length);
 
-			try {
-				tracer.Verbose (Properties.Resources.MqttChannel_SendingPacket, message.Length);
+							var segment = new ArraySegment<byte>(message);
 
-				var segment = new ArraySegment<byte> (message);
-
-				await client
-					.SendAsync (segment, WebSocketMessageType.Binary, endOfMessage: true, cancellationToken: CancellationToken.None)
-					.ConfigureAwait (continueOnCapturedContext: false);
-			} catch (ObjectDisposedException disposedEx) {
-				throw new MqttException (Properties.Resources.MqttChannel_StreamDisconnected, disposedEx);
+							await client
+								.SendAsync(segment, WebSocketMessageType.Binary, endOfMessage: true, cancellationToken: CancellationToken.None)
+								.ConfigureAwait(continueOnCapturedContext: false);
+						}
+						catch (ObjectDisposedException disposedEx)
+						{
+							throw new MqttException(Properties.Resources.MqttChannel_StreamDisconnected, disposedEx);
+						}
+					}
+				}
 			}
 		}
 
-		public void Dispose ()
+		public async Task CloseAsync()
 		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
+			if (!closed)
+			{
+				using (await asyncLockObject.LockAsync().ConfigureAwait(continueOnCapturedContext: false))
+				{
+					if (!closed)
+					{
+						tracer.Info(Properties.Resources.Mqtt_Disposing, GetType().FullName);
 
-		protected virtual void Dispose (bool disposing)
-		{
-			if (disposed) return;
+						streamSubscription.Dispose();
+						receiver.OnCompleted();
+						sender.OnCompleted();
 
-			if (disposing) {
-				tracer.Info (Properties.Resources.Mqtt_Disposing, GetType ().FullName);
+						try
+						{
+							client?.CloseAsync(WebSocketCloseStatus.NormalClosure, "Dispose", CancellationToken.None).Wait();
+							client?.Dispose();
+						}
+						catch (SocketException socketEx)
+						{
+							tracer.Error(socketEx, Properties.Resources.MqttChannel_DisposeError, socketEx.SocketErrorCode);
+						}
 
-				streamSubscription.Dispose ();
-				receiver.OnCompleted ();
-
-				try {
-					client?.CloseAsync (WebSocketCloseStatus.NormalClosure, "Dispose", CancellationToken.None).Wait ();
-					client?.Dispose ();
+						closed = true;
+					}
 				}
-				catch (SocketException socketEx) {
-					tracer.Error (socketEx, Properties.Resources.MqttChannel_DisposeError, socketEx.SocketErrorCode);
-				}
-
-				disposed = true;
 			}
 		}
 
@@ -123,9 +135,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			.TakeWhile (_ => IsConnected)
 			.ObserveOn (NewThreadScheduler.Default)
 			.Subscribe (bytes => {
-				var packets = default (IEnumerable<byte[]>);
-
-				if (buffer.TryGetPackets (bytes, out packets)) {
+				if (buffer.TryGetPackets (bytes, out var packets)) {
 					foreach (var packet in packets) {
 						tracer.Verbose (Properties.Resources.MqttChannel_ReceivedPacket, packet.Length);
 
