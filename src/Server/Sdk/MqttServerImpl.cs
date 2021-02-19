@@ -11,7 +11,7 @@ using ServerProperties = System.Net.Mqtt.Server.Properties;
 
 namespace System.Net.Mqtt.Sdk
 {
-    internal class MqttServerImpl : IMqttServer
+	internal class MqttServerImpl : IMqttServer
 	{
         static readonly ITracer tracer = Tracer.Get<MqttServerImpl>();
 
@@ -127,7 +127,7 @@ namespace System.Net.Mqtt.Sdk
 
                     foreach (var channel in channels)
                     {
-                        channel.Dispose ();
+                        channel.CloseAsync ().FireAndForget ();
                     }
 
                     channels.Clear ();
@@ -135,7 +135,7 @@ namespace System.Net.Mqtt.Sdk
                     channelSubscription?.Dispose ();
 
                     foreach (var binaryChannelProvider in binaryChannelListeners) {
-                        binaryChannelProvider?.Dispose();
+                        binaryChannelProvider?.Dispose ();
                     }
 
                     Stopped (this, new MqttEndpointDisconnected (DisconnectedReason.SelfDisconnected));
@@ -159,13 +159,13 @@ namespace System.Net.Mqtt.Sdk
 			packetListener.Listen ();
 			packetListener
                 .PacketStream
-                .Subscribe (_ => { }, ex => {
+                .Subscribe (_ => { }, async ex => {
 				        tracer.Error (ex, ServerProperties.Resources.Server_PacketsObservableError);
-				        packetChannel.Dispose ();
+				        await packetChannel.CloseAsync ().ConfigureAwait(continueOnCapturedContext: false);
 				        packetListener.Dispose ();
-			        }, () => {
+			        }, async () => {
 				        tracer.Warn (ServerProperties.Resources.Server_PacketsObservableCompleted);
-				        packetChannel.Dispose ();
+				        await packetChannel.CloseAsync ().ConfigureAwait(continueOnCapturedContext: false);
 				        packetListener.Dispose ();
 			        }
                 );
@@ -207,15 +207,15 @@ namespace System.Net.Mqtt.Sdk
 				this.connections = connections;
 			}
 
-			public void AddConnection(string clientId, IMqttChannel<IPacket> connection)
+			public async Task AddConnectionAsync(string clientId, IMqttChannel<IPacket> connection)
 			{
-				connections.AddConnection(clientId, connection);
+				await connections.AddConnectionAsync(clientId, connection).ConfigureAwait(continueOnCapturedContext: false);
 				server.RaiseClientConnected(clientId);
 			}
 
-			public void RemoveConnection(string clientId)
+			public async Task RemoveConnectionAsync(string clientId)
 			{
-				connections.RemoveConnection(clientId);
+				await connections.RemoveConnectionAsync(clientId).ConfigureAwait(continueOnCapturedContext: false);
 				server.RaiseClientDisconnected(clientId);
 			}
 
@@ -225,7 +225,7 @@ namespace System.Net.Mqtt.Sdk
 
 			public IEnumerable<string> PrivateClients => connections.PrivateClients;
 
-			public IMqttChannel<IPacket> GetConnection(string clientId) => connections.GetConnection(clientId);
+			public Task<IMqttChannel<IPacket>> GetConnectionAsync(string clientId) => connections.GetConnectionAsync(clientId);
 
 			public void RegisterPrivateClient(string clientId) => connections.RegisterPrivateClient(clientId);
 		}

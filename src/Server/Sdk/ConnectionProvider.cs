@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Mqtt.Sdk.Packets;
+using System.Threading.Tasks;
 using ServerProperties = System.Net.Mqtt.Server.Properties;
 
 namespace System.Net.Mqtt.Sdk
@@ -47,28 +48,24 @@ namespace System.Net.Mqtt.Sdk
             }
         }
 
-        public void AddConnection (string clientId, IMqttChannel<IPacket> connection)
+        public async Task AddConnectionAsync (string clientId, IMqttChannel<IPacket> connection)
 		{
-			var existingConnection = default (IMqttChannel<IPacket>);
-
-			if (connections.TryGetValue (clientId, out existingConnection)) {
+			if (connections.TryGetValue (clientId, out var existingConnection)) {
 				tracer.Warn (ServerProperties.Resources.ConnectionProvider_ClientIdExists, clientId);
 
-				RemoveConnection (clientId);
+				await RemoveConnectionAsync (clientId).ConfigureAwait(continueOnCapturedContext: false);
 			}
 
 			connections.TryAdd (clientId, connection);
 		}
 
-		public IMqttChannel<IPacket> GetConnection (string clientId)
+		public async Task<IMqttChannel<IPacket>> GetConnectionAsync (string clientId)
 		{
-			var existingConnection = default(IMqttChannel<IPacket>);
-
-			if (connections.TryGetValue (clientId, out existingConnection)) {
+			if (connections.TryGetValue (clientId, out var existingConnection)) {
 				if (!existingConnection.IsConnected) {
 					tracer.Warn (ServerProperties.Resources.ConnectionProvider_ClientDisconnected, clientId);
 
-					RemoveConnection (clientId);
+					await RemoveConnectionAsync (clientId).ConfigureAwait(continueOnCapturedContext: false);
 					existingConnection = default (IMqttChannel<IPacket>);
 				}
 			}
@@ -76,14 +73,14 @@ namespace System.Net.Mqtt.Sdk
 			return existingConnection;
 		}
 
-		public void RemoveConnection (string clientId)
+		public async Task RemoveConnectionAsync(string clientId)
 		{
-			var existingConnection = default (IMqttChannel<IPacket>);
-
-			if (connections.TryRemove (clientId, out existingConnection)) {
+			if (connections.TryRemove (clientId, out var existingConnection)) {
 				tracer.Info (ServerProperties.Resources.ConnectionProvider_RemovingClient, clientId);
 
-				existingConnection.Dispose ();
+				await existingConnection
+					.CloseAsync ()
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 
             if (privateClients.Contains (clientId))  {

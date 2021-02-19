@@ -115,7 +115,9 @@ namespace System.Net.Mqtt.Sdk.Flows
 			var subscriptionPublish = new Publish (publish.Topic, supportedQos, retain, duplicated: false, packetId: packetId) {
 				Payload = publish.Payload
 			};
-			var clientChannel = connectionProvider.GetConnection (subscription.ClientId);
+			var clientChannel = await connectionProvider
+				.GetConnectionAsync (subscription.ClientId)
+				.ConfigureAwait(continueOnCapturedContext: false);
 
 			await senderFlow.SendPublishAsync (subscription.ClientId, subscriptionPublish, clientChannel)
 				.ConfigureAwait (continueOnCapturedContext: false);

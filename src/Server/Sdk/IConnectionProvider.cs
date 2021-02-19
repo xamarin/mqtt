@@ -1,22 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.Net.Mqtt.Sdk.Packets;
+using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Sdk
 {
-    internal interface IConnectionProvider
+	internal interface IConnectionProvider
 	{
 		int Connections { get; }
 
 		IEnumerable<string> ActiveClients { get; }
 
-        IEnumerable<string> PrivateClients { get; }
+		IEnumerable<string> PrivateClients { get; }
 
-        void RegisterPrivateClient (string clientId);
+		void RegisterPrivateClient(string clientId);
 
-		void AddConnection (string clientId, IMqttChannel<IPacket> connection);
+		Task AddConnectionAsync(string clientId, IMqttChannel<IPacket> connection);
 
-		IMqttChannel<IPacket> GetConnection (string clientId);
+		Task<IMqttChannel<IPacket>> GetConnectionAsync(string clientId);
 
-		void RemoveConnection (string clientId);
+		Task RemoveConnectionAsync(string clientId);
 	}
 }
