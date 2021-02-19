@@ -100,7 +100,10 @@ namespace System.Net.Mqtt.Sdk
 
 					clientId = connect.ClientId;
 					keepAlive = connect.KeepAlive;
-					connectionProvider.AddConnection (clientId, channel);
+
+					await connectionProvider
+						.AddConnectionAsync (clientId, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 
 					tracer.Info (ServerProperties.Resources.ServerPacketListener_ConnectPacketReceived, clientId);
 
@@ -141,7 +144,7 @@ namespace System.Net.Mqtt.Sdk
 					    await NotifyErrorAsync (ex).ConfigureAwait (continueOnCapturedContext: false);
 				    }, async () => {
                         await SendLastWillAsync ().ConfigureAwait (continueOnCapturedContext: false);
-                        CompletePacketStream ();
+                        await CompletePacketStreamAsync ().ConfigureAwait(continueOnCapturedContext: false);
 				    }
                 );
 		}
@@ -252,10 +255,10 @@ namespace System.Net.Mqtt.Sdk
 			tracer.Error (exception, ServerProperties.Resources.ServerPacketListener_Error, clientId ?? "N/A");
 
             listenerDisposable.Dispose ();
-			RemoveClient ();
+			await RemoveClientAsync ().ConfigureAwait(continueOnCapturedContext: false);
             await SendLastWillAsync ().ConfigureAwait (continueOnCapturedContext: false);
             packets.OnError (exception);
-            CompletePacketStream ();
+            await CompletePacketStreamAsync ().ConfigureAwait(continueOnCapturedContext: false);
 		}
 
 		Task NotifyErrorAsync (string message)
@@ -281,19 +284,21 @@ namespace System.Net.Mqtt.Sdk
                 .ConfigureAwait (continueOnCapturedContext: false);
         }
 
-        void RemoveClient()
+        async Task RemoveClientAsync()
         {
             if (string.IsNullOrEmpty (clientId)) {
                 return;
             }
 
-            connectionProvider.RemoveConnection (clientId);
+            await connectionProvider
+				.RemoveConnectionAsync (clientId)
+				.ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        void CompletePacketStream ()
+        async Task CompletePacketStreamAsync ()
         {
             if (!string.IsNullOrEmpty (clientId)) {
-                RemoveClient ();
+                await RemoveClientAsync ().ConfigureAwait(continueOnCapturedContext: false);
             }
 
             tracer.Warn (ServerProperties.Resources.PacketChannelCompleted, clientId ?? "N/A");

@@ -28,7 +28,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 				return;
 			}
 
-			await Task.Run (() => {
+			await Task.Run (async () => {
 				var disconnect = input as Disconnect;
 
 				tracer.Info (Server.Properties.Resources.DisconnectFlow_Disconnecting, clientId);
@@ -47,7 +47,9 @@ namespace System.Net.Mqtt.Sdk.Flows
 					tracer.Info (Server.Properties.Resources.Server_DeletedSessionOnDisconnect, clientId);
 				}
 
-				connectionProvider.RemoveConnection (clientId);
+				await connectionProvider
+					.RemoveConnectionAsync (clientId)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			});
 		}
 	}
