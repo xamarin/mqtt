@@ -50,9 +50,7 @@ namespace System.Net.Mqtt.Sdk
 		{
 			get
 			{
-				CheckUnderlyingConnection();
-
-				return isProtocolConnected && Channel.IsConnected;
+				return VerifyUnderlyingConnection();
 			}
 			private set
 			{
@@ -128,12 +126,12 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (TimeoutException timeEx)
 			{
-				Close(timeEx);
+				await CloseAsync(timeEx).ConfigureAwait(continueOnCapturedContext: false);
 				throw new MqttClientException(string.Format(Properties.Resources.Client_ConnectionTimeout, Id), timeEx);
 			}
 			catch (MqttConnectionException connectionEx)
 			{
-				Close(connectionEx);
+				await CloseAsync(connectionEx).ConfigureAwait(continueOnCapturedContext: false);
 
 				var message = string.Format(Properties.Resources.Client_ConnectNotAccepted, Id, connectionEx.ReturnCode);
 
@@ -141,12 +139,12 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (MqttClientException clientEx)
 			{
-				Close(clientEx);
+				await CloseAsync(clientEx).ConfigureAwait(continueOnCapturedContext: false);
 				throw;
 			}
 			catch (Exception ex)
 			{
-				Close(ex);
+				await CloseAsync(ex).ConfigureAwait(continueOnCapturedContext: false);
 				throw new MqttClientException(string.Format(Properties.Resources.Client_ConnectionError, Id), ex);
 			}
 		}
@@ -199,7 +197,7 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (TimeoutException timeEx)
 			{
-				Close(timeEx);
+				await CloseAsync(timeEx).ConfigureAwait(continueOnCapturedContext: false);
 
 				var message = string.Format(Properties.Resources.Client_SubscribeTimeout, Id, topicFilter);
 
@@ -207,12 +205,12 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (MqttClientException clientEx)
 			{
-				Close(clientEx);
+				await CloseAsync(clientEx).ConfigureAwait(continueOnCapturedContext: false);
 				throw;
 			}
 			catch (Exception ex)
 			{
-				Close(ex);
+				await CloseAsync(ex).ConfigureAwait(continueOnCapturedContext: false);
 
 				var message = string.Format(Properties.Resources.Client_SubscribeError, Id, topicFilter);
 
@@ -245,7 +243,7 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (Exception ex)
 			{
-				Close(ex);
+				await CloseAsync(ex).ConfigureAwait(continueOnCapturedContext: false);
 				throw;
 			}
 		}
@@ -288,7 +286,7 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (TimeoutException timeEx)
 			{
-				Close(timeEx);
+				await CloseAsync(timeEx).ConfigureAwait(continueOnCapturedContext: false);
 
 				var message = string.Format(Properties.Resources.Client_UnsubscribeTimeout, Id, string.Join(", ", topics));
 
@@ -298,12 +296,12 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (MqttClientException clientEx)
 			{
-				Close(clientEx);
+				await CloseAsync(clientEx).ConfigureAwait(continueOnCapturedContext: false);
 				throw;
 			}
 			catch (Exception ex)
 			{
-				Close(ex);
+				await CloseAsync(ex).ConfigureAwait(continueOnCapturedContext: false);
 
 				var message = string.Format(Properties.Resources.Client_UnsubscribeError, Id, string.Join(", ", topics));
 
@@ -331,11 +329,11 @@ namespace System.Net.Mqtt.Sdk
 					.PacketStream
 					.LastOrDefaultAsync();
 
-				Close(DisconnectedReason.SelfDisconnected);
+				await CloseAsync(DisconnectedReason.SelfDisconnected).ConfigureAwait(continueOnCapturedContext: false);
 			}
 			catch (Exception ex)
 			{
-				Close(ex);
+				await CloseAsync(ex).ConfigureAwait(continueOnCapturedContext: false);
 			}
 		}
 
@@ -361,13 +359,13 @@ namespace System.Net.Mqtt.Sdk
 			}
 		}
 
-		void Close(Exception ex)
+		async Task CloseAsync(Exception ex)
 		{
 			tracer.Error(ex);
-			Close(DisconnectedReason.Error, ex.Message);
+			await CloseAsync(DisconnectedReason.Error, ex.Message).ConfigureAwait(continueOnCapturedContext: false);
 		}
 
-		void Close(DisconnectedReason reason, string message = null)
+		async Task CloseAsync(DisconnectedReason reason, string message = null)
 		{
 			tracer.Info(Properties.Resources.Client_Closing, Id, reason);
 
@@ -375,7 +373,12 @@ namespace System.Net.Mqtt.Sdk
 			packetsSubscription?.Dispose();
 			packetListener?.Dispose();
 			ResetReceiver();
-			Channel?.Dispose();
+
+			if(Channel != null)
+			{
+				await Channel.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
+			}
+			
 			IsConnected = false;
 			Id = null;
 
@@ -396,7 +399,6 @@ namespace System.Net.Mqtt.Sdk
 		void OpenClientSession(bool cleanSession)
 		{
 			var session = string.IsNullOrEmpty(Id) ? default(ClientSession) : sessionRepository.Read(Id);
-			var sessionPresent = cleanSession ? false : session != null;
 
 			if (cleanSession && session != null)
 			{
@@ -439,12 +441,14 @@ namespace System.Net.Mqtt.Sdk
 				.ConfigureAwait(continueOnCapturedContext: false);
 		}
 
-		void CheckUnderlyingConnection()
+		bool VerifyUnderlyingConnection()
 		{
 			if (isProtocolConnected && !Channel.IsConnected)
 			{
-				Close(DisconnectedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection);
+				CloseAsync(DisconnectedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection).FireAndForget();
 			}
+
+			return isProtocolConnected && Channel.IsConnected;
 		}
 
 		void ObservePackets()
@@ -464,11 +468,11 @@ namespace System.Net.Mqtt.Sdk
 					}
 				}, ex =>
 				{
-					Close(ex);
+					CloseAsync(ex).FireAndForget();
 				}, () =>
 				{
 					tracer.Warn(Properties.Resources.Client_PacketsObservableCompleted);
-					Close(DisconnectedReason.RemoteDisconnected);
+					CloseAsync(DisconnectedReason.RemoteDisconnected).FireAndForget();
 				});
 		}
 
