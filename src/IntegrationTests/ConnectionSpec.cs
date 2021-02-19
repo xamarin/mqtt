@@ -492,7 +492,7 @@ namespace IntegrationTests
 			}));
 
 			//Forces socket disconnection without using protocol Disconnect (Disconnect or Dispose Client method)
-			(client1 as MqttClientImpl).Channel.Dispose();
+			await (client1 as MqttClientImpl).Channel.CloseAsync();
 
 			var willReceived = willReceivedSignal.Wait(2000);
 

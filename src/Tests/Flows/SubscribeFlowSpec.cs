@@ -52,8 +52,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				retainedMessageRepository, packetIdProvider, senderFlow, configuration);
@@ -112,8 +112,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object,  sessionRepository.Object, 
 				retainedMessageRepository, packetIdProvider,
@@ -168,8 +168,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, sessionRepository.Object, 
 				retainedMessageRepository, packetIdProvider,
@@ -226,8 +226,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerSubscribeFlow (topicEvaluator.Object, 
 				sessionRepository.Object, retainedMessageRepository.Object,

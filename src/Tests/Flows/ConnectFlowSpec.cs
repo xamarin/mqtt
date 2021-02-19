@@ -1,7 +1,6 @@
 ﻿using Moq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Mqtt;
 using System.Net.Mqtt.Sdk;
 using System.Net.Mqtt.Sdk.Flows;
@@ -34,8 +33,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
@@ -83,8 +82,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
@@ -130,8 +129,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
@@ -176,8 +175,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
@@ -216,8 +215,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
@@ -256,8 +255,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider> ();
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (c => c == clientId)))
-				.Returns (channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
+				.Returns (Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
@@ -355,8 +354,8 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup(p => p.GetConnection(It.Is<string>(c => c == clientId)))
-				.Returns(channel.Object);
+				.Setup(p => p.GetConnectionAsync (It.Is<string>(c => c == clientId)))
+				.Returns(Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 

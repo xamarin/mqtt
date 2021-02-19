@@ -75,11 +75,11 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.ReadAll ()).Returns (sessions.AsQueryable());
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId1)))
-				.Returns (client1Channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (s => s == subscribedClientId1)))
+				.Returns (Task.FromResult(client1Channel.Object));
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId2)))
-				.Returns (client2Channel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (s => s == subscribedClientId2)))
+				.Returns (Task.FromResult(client2Channel.Object));
 
 			var publish = new Publish (topic, MqttQualityOfService.AtMostOnce, retain: false, duplicated: false);
 
@@ -149,8 +149,8 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.ReadAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
-				.Returns (clientChannel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (s => s == subscribedClientId)))
+				.Returns (Task.FromResult(clientChannel.Object));
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
 			var publish = new Publish (topic, MqttQualityOfService.AtLeastOnce, retain: false, duplicated: false, packetId: packetId);
@@ -222,8 +222,8 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.ReadAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
-				.Returns (clientChannel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (s => s == subscribedClientId)))
+				.Returns (Task.FromResult(clientChannel.Object));
 
 			var publish = new Publish (topic, MqttQualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
 
@@ -493,8 +493,8 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.ReadAll ()).Returns (sessions.AsQueryable());
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
-				.Returns (clientChannel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (s => s == subscribedClientId)))
+				.Returns (Task.FromResult(clientChannel.Object));
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
 			var publish = new Publish (topic, MqttQualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
@@ -617,8 +617,8 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.ReadAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
-				.Returns (clientChannel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (s => s == subscribedClientId)))
+				.Returns (Task.FromResult(clientChannel.Object));
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
 			var publish = new Publish (topic, MqttQualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);
@@ -694,8 +694,8 @@ namespace Tests.Flows
 			sessionRepository.Setup (r => r.ReadAll ()).Returns ( sessions.AsQueryable());
 
 			connectionProvider
-				.Setup (p => p.GetConnection (It.Is<string> (s => s == subscribedClientId)))
-				.Returns (clientChannel.Object);
+				.Setup (p => p.GetConnectionAsync (It.Is<string> (s => s == subscribedClientId)))
+				.Returns (Task.FromResult(clientChannel.Object));
 
 			var packetId = (ushort?)new Random ().Next (0, ushort.MaxValue);
 			var publish = new Publish (topic, MqttQualityOfService.ExactlyOnce, retain: false, duplicated: false, packetId: packetId);

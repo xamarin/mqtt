@@ -128,7 +128,7 @@ namespace Tests
 
 			server.Stop ();
 
-			packetChannel.Verify (x => x.Dispose ());
+			packetChannel.Verify (x => x.CloseAsync ());
 		}
 
 		[Fact]
@@ -181,7 +181,7 @@ namespace Tests
 
             await Task.Delay (TimeSpan.FromMilliseconds (1000));
 
-            packetChannel.Verify (x => x.Dispose ());
+            packetChannel.Verify (x => x.CloseAsync ());
 		}
 	}
 }

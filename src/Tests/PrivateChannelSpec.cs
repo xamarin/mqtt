@@ -84,13 +84,13 @@ namespace Tests
         }
 
         [Fact]
-        public void when_disposing_channel_then_became_disconnected ()
+        public async Task when_disposing_channel_then_became_disconnected ()
         {
             var configuration = new MqttConfiguration ();
             var stream = new PrivateStream (configuration);
             var channel = new PrivateChannel (stream, EndpointIdentifier.Server, configuration);
 
-            channel.Dispose ();
+            await channel.CloseAsync ();
 
             Assert.False (channel.IsConnected);
         }
