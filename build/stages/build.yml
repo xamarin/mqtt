@@ -1,0 +1,125 @@
+# Build Stage
+
+stages:
+- stage: Build
+  jobs:
+  - job: Windows
+    timeoutInMinutes: 10
+    pool:
+      name: $(WindowsPoolName)
+
+    steps:
+    - checkout: self
+      clean: true
+
+    - task: UseDotNet@2
+      displayName: 'Use .Net Core SDK $(DotNetCoreVersion)'
+      inputs:
+        version: '$(DotNetCoreVersion)'    
+      condition: always()
+
+    - template: install-pwsh/v1.yml@templates
+
+    - script: 'mkdir "$(Build.ArtifactStagingDirectory)\binlogs"'
+      displayName: 'Create Logs Dir'
+      condition: always()
+
+    # Ensure we clear bot-provided feeds, for reliability
+    - pwsh: |
+        $configPath = "$(Build.SourcesDirectory)\NuGet.Config"
+        [xml]$config = get-content $configPath
+        $config.configuration.packageSources.PrependChild($config.CreateElement("clear"))
+        $config.Save($configPath)
+      displayName: 'Ensure Clean NuGet Sources'
+      condition: always()
+
+    - task: NuGetCommand@2
+      displayName: 'Restore Packages'
+      inputs:
+        restoreSolution: '$(Build.SourcesDirectory)/src/Hermes.sln'
+        feedsToUse: config
+        nugetConfigPath: '$(Build.SourcesDirectory)/NuGet.Config'
+      condition: always()
+
+    - task: MSBuild@1
+      displayName: 'Build Solution'
+      inputs:
+        solution: '$(Build.SourcesDirectory)/src/Hermes.sln'
+        msbuildArguments: /t:Build /noautoresponse /bl:"$(Build.ArtifactStagingDirectory)\binlogs\build.binlog" 
+      condition: always()
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: packages'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\pack'
+        ArtifactName: packages
+      continueOnError: true
+      condition: always()
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: unit-tests'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\src\Tests\bin\$(Configuration)'
+        ArtifactName: unit-tests
+      continueOnError: true
+      condition: always()
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: integration-tests'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\src\IntegrationTests\bin\$(Configuration)'
+        ArtifactName: integration-tests
+      continueOnError: true
+      condition: always()
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: logs'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\binlogs'
+        ArtifactName: logs
+      continueOnError: true
+      condition: always()
+
+    - task: CopyFiles@2
+      displayName: 'Copy Symbols'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)/src/Server/bin/$(Configuration)'
+        Contents: |
+          **/System.Net.Mqtt.?(dll|pdb)
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/Symbols'
+        CleanTargetFolder: true
+        FlattenFolders: true
+        OverWrite: true # Check if we should copy to $(TargetFramework) subfolders instead
+      condition: always()
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: symbols'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/Symbols'
+        ArtifactName: symbols
+      condition: always()
+
+    - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+      displayName: 'Component Governance'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
+
+    - pwsh: |
+        $complianceEnabled = if ($env:COMPLIANCEENABLED) { $env:COMPLIANCEENABLED } else { '' }
+
+        if ($complianceEnabled -eq '') { 
+          $branch = '$(Build.SourceBranch)'
+          $reason = '$(Build.Reason)'
+
+          if($branch -eq '$(MainBranch)' -or $reason -eq 'PullRequest') {
+            $complianceEnabled = 'true'
+          } else {
+            $complianceEnabled = 'false'
+          }
+        }
+
+        Write-Host "Source Branch: $branch, Build Reason: $reason"
+        Write-Host "Requires Compliance Stage: $complianceEnabled"
+        Write-Host "##vso[task.setvariable variable=Xamarin.ComplianceEnabled;isOutput=true]$complianceEnabled"
+      name: 'SetComplianceNeed'
+      displayName: 'Evaluate Compliance Need'
+      condition: always()
