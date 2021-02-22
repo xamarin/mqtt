@@ -5,7 +5,7 @@
 		<ThisAssemblyNamespace>System.Net.Mqtt</ThisAssemblyNamespace>
 	</PropertyGroup>
 
-	<PropertyGroup>
+	<PropertyGroup Label="NuGet">
 		<Authors>Microsoft</Authors>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageLicenseUrl>https://raw.githubusercontent.com/xamarin/mqtt/main/LICENSE</PackageLicenseUrl>
@@ -14,13 +14,16 @@
 		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
 		<PackageTags>m2m iot sockets mqtt</PackageTags>
 
+		<PackOnBuild Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</PackOnBuild>
+		<PackageOutputPath Condition="'$(PackOnBuild)' == 'true' And '$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\pack</PackageOutputPath>
+		
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+		<IncludeFrameworkReferencesInPackage>false</IncludeFrameworkReferencesInPackage>
+		<IncludeSymbols>true</IncludeSymbols>
 	</PropertyGroup>
-
 
 	<PropertyGroup>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Hermes.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
-
 </Project>

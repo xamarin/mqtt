@@ -1,0 +1,57 @@
+# Test Stage
+
+stages:
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - job: Unit
+    timeoutInMinutes: 10
+    pool:
+      name: $(WindowsPoolName)
+
+    steps:
+    - checkout: none
+        
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        artifactName: unit-tests
+
+    - task: VSTest@2
+      displayName: 'Unit Tests'
+      timeoutInMinutes: 10
+      inputs:
+        testSelector: 'testAssemblies'
+        testAssemblyVer2: |
+          **\Tests.dll
+        searchFolder: '$(Build.ArtifactStagingDirectory)\unit-tests'
+        testFiltercriteria: 'Flaky!=true'
+        codeCoverageEnabled: true
+        runInParallel: true
+        rerunFailedTests: true
+        rerunMaxAttempts: 5
+
+  - job: Integration
+    timeoutInMinutes: 10
+    pool:
+      name: $(WindowsPoolName)
+
+    steps:
+    - checkout: none
+
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        artifactName: integration-tests
+
+    - task: VSTest@2
+      displayName: 'Integration Tests'
+      timeoutInMinutes: 10
+      inputs:
+        testSelector: 'testAssemblies'
+        testAssemblyVer2: |
+          **\IntegrationTests.dll
+        searchFolder: '$(Build.ArtifactStagingDirectory)\integration-tests'
+        codeCoverageEnabled: false
+        diagnosticsEnabled: false
+        runInParallel: false
+        rerunFailedTests: true
+        rerunMaxAttempts: 5
