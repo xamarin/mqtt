@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
-    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
-
     <AssemblyName>System.Net.Mqtt.Server</AssemblyName>
     <RootNamespace>System.Net.Mqtt.Server</RootNamespace>
-    <PackageId>$(AssemblyName)</PackageId>
     <DocumentationFile>$(IntermediateOutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
 
+  <PropertyGroup Label="NuGet">
+    <PackageId>$(AssemblyName)</PackageId>
     <Description>A lightweight and simple MQTT Server implementation written entirely in C#.</Description>
   </PropertyGroup>
 
@@ -22,5 +21,4 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  
 </Project>

@@ -1,0 +1,24 @@
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    name: xamarin/yaml-templates
+    ref: refs/heads/main
+    endpoint: xamarin
+
+trigger:
+  batch: false
+  branches:
+    include:
+    - main
+pr:
+  - main
+
+variables:
+- template: build/variables.yml
+
+stages:
+- template: build/stages/build.yml
+- template: build/stages/compliance.yml
+- template: build/stages/test.yml
+- template: build/stages/push.yml

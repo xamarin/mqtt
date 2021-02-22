@@ -1,0 +1,21 @@
+# Common Variables
+
+variables:
+- group: Xamarin Release
+- group: Xamarin Signing
+- group: Xamarin Notarization
+- group: Xamarin-Secrets
+- group: xamops-azdev-secrets
+- group: akaxvs-secrets
+- name: MSBUILDDISABLENODEREUSE
+  value: 1
+- name: VSS_NUGET_EXTERNAL_FEED_ENDPOINTS
+  value: $(ExternalFeedEndpoints)
+- name: DotNetCoreVersion
+  value: '3.1.102'
+- name: WindowsPoolName
+  value: $(PoolName)
+- name: Configuration
+  value: Release
+- name: MainBranch
+  value: refs/heads/main

@@ -1,0 +1,37 @@
+# Upload Stage
+
+stages:
+- stage : Package
+  dependsOn:         
+  - Test
+  - Compliance
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
+  jobs:
+  - job: Push
+    displayName: Pack & Push
+    timeoutInMinutes: 10
+    pool:
+      name: $(WindowsPoolName)
+    steps:
+    - checkout: self
+
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Packages
+      inputs:
+        artifactName: packages
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet Update'
+      inputs:
+        command: custom
+        arguments: 'update -self'
+
+    - task: NuGetCommand@2
+      displayName: Push Packages
+      continueOnError: true
+      inputs:
+        command: push
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
+        nuGetFeedType: external
+        publishFeedCredentials: '$(PackagesFeedCredentials)'

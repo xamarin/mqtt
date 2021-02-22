@@ -1,0 +1,101 @@
+# Compliance Stage
+
+stages:
+- stage : Compliance
+  dependsOn: Build
+  condition: eq(stageDependencies.Build.outputs['Windows.SetComplianceNeed.Xamarin.ComplianceEnabled'], 'true')
+  jobs:
+   - job: CodeAnalysis
+     displayName: Security & Analysis
+     pool: $(WindowsPoolName)
+     timeoutInMinutes: 60
+     cancelTimeoutInMinutes: 5 
+     steps:
+     - checkout: self
+       clean: true
+       submodules: recursive
+     - task: DownloadBuildArtifacts@0
+       displayName: Download Symbols
+       inputs:
+        artifactName: symbols
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
+     - task: AntiMalware@3
+       displayName: Run AntiMalware Scan
+       inputs:
+        FileDirPath: $(System.DefaultWorkingDirectory)
+        EnableServices: true
+       continueOnError: true
+       condition: succeededOrFailed()
+     - task: BinSkim@3
+       displayName: Run BinSkim Analysis
+       inputs:
+        InputType: Basic
+        AnalyzeTarget: '$(Build.ArtifactStagingDirectory)\Symbols\*.dll'
+        AnalyzeVerbose: true
+       continueOnError: true
+       condition: succeededOrFailed()
+     - template: security\credscan\v2.yml@templates # from xamarin/yaml-templates repository
+       parameters:
+        suppressionsFile: $(System.DefaultWorkingDirectory)\build\CredScanSuppressions.json
+     - template: security\policheck\v1.yml@templates # from xamarin/yaml-templates repository
+       parameters:
+        exclusionFile: $(System.DefaultWorkingDirectory)\build\PoliCheckExclusions.xml
+     - task: CodeInspector@2
+       displayName: Run Code Inspector Analysis
+       inputs:
+        ProductId: '$(System.TeamProjectId)'
+       continueOnError: true
+       condition: succeededOrFailed()
+     - task: SdtReport@1
+       displayName: Create Security Analysis Report
+       inputs:
+        AntiMalware: true
+        BinSkim: true
+        CredScan: true
+        RoslynAnalyzers: true
+        PoliCheck: true
+        CodeInspector: true
+       continueOnError: true
+       condition: succeededOrFailed()
+     - task: PublishSecurityAnalysisLogs@2
+       displayName: Publish Security Analysis Logs
+       inputs:
+        ArtifactName: ComplianceLogs
+       continueOnError: true
+       condition: succeededOrFailed()
+     - task: PostAnalysis@1
+       displayName: Run Security Post Analysis
+       inputs:
+          AntiMalware: true
+          BinSkim: true
+          CredScan: true
+          RoslynAnalyzers: true
+          PoliCheck: true
+          CodeInspector: true
+       continueOnError: true
+       condition: succeededOrFailed()
+     - task: TSAUpload@1
+       inputs:
+          tsaVersion: 'TsaV2'
+          codebase: 'NewOrUpdate'
+          tsaEnvironment: 'PROD'
+          codeBaseName: 'mqtt_main'
+          notificationAlias: 'xvs@microsoft.com,maagno@microsoft.com'
+          notifyAlwaysV2: false
+          codeBaseAdmins: 'REDMOND\maagno;REDMOND\vsengxamarin'
+          instanceUrlForTsaV2: 'DEVDIV'
+          projectNameDEVDIV: 'DevDiv'
+          areaPath: 'DevDiv\Xamarin Tools\XamarinVS\XMA'
+          iterationPath: 'DevDiv\OneVS'
+          uploadAPIScan: true
+          uploadBinSkim: true
+          uploadCredScan: true
+          uploadFortifySCA: true
+          uploadFxCop: true
+          uploadModernCop: true
+          uploadPoliCheck: true
+          uploadPREfast: true
+          uploadRoslyn: true
+          uploadTSLint: true
+          uploadAsync: true
+       condition: succeededOrFailed()
