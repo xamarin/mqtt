@@ -159,13 +159,13 @@ namespace System.Net.Mqtt.Sdk
 			packetListener.Listen ();
 			packetListener
                 .PacketStream
-                .Subscribe (_ => { }, async ex => {
+                .Subscribe (_ => { }, ex => {
 				        tracer.Error (ex, ServerProperties.Resources.Server_PacketsObservableError);
-				        await packetChannel.CloseAsync ().ConfigureAwait(continueOnCapturedContext: false);
+						packetChannel.CloseAsync ().FireAndForget ();
 				        packetListener.Dispose ();
-			        }, async () => {
+			        }, () => {
 				        tracer.Warn (ServerProperties.Resources.Server_PacketsObservableCompleted);
-				        await packetChannel.CloseAsync ().ConfigureAwait(continueOnCapturedContext: false);
+						packetChannel.CloseAsync ().FireAndForget ();
 				        packetListener.Dispose ();
 			        }
                 );
