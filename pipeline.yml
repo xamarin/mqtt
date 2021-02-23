@@ -21,4 +21,4 @@ stages:
 - template: build/stages/build.yml
 - template: build/stages/compliance.yml
 - template: build/stages/test.yml
-- template: build/stages/push.yml
+- template: build/stages/package.yml
