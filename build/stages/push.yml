@@ -34,4 +34,4 @@ stages:
         command: push
         packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
         nuGetFeedType: external
-        publishFeedCredentials: 'xamarin-impl public feed'
+        publishFeedCredentials: 'Xamarin nuget.org - xamarinc'
