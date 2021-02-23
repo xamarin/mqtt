@@ -36,10 +36,10 @@ stages:
        condition: succeededOrFailed()
      - template: security\credscan\v2.yml@templates # from xamarin/yaml-templates repository
        parameters:
-        suppressionsFile: $(System.DefaultWorkingDirectory)\build\automation\CredScanSuppressions.json
+        suppressionsFile: $(System.DefaultWorkingDirectory)\build\CredScanSuppressions.json
      - template: security\policheck\v1.yml@templates # from xamarin/yaml-templates repository
        parameters:
-        exclusionFile: $(System.DefaultWorkingDirectory)\build\automation\PoliCheckExclusions.xml
+        exclusionFile: $(System.DefaultWorkingDirectory)\build\PoliCheckExclusions.xml
      - task: CodeInspector@2
        displayName: Run Code Inspector Analysis
        inputs:
