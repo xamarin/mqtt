@@ -73,7 +73,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: logs'
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\binlogs'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)\binlogs'
         ArtifactName: logs
       continueOnError: true
       condition: always()
