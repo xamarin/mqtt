@@ -18,14 +18,12 @@ stages:
         version: '$(DotNetCoreVersion)'    
       condition: always()
 
-    - template: install-pwsh/v1.yml@templates
-
     - script: 'mkdir "$(Build.ArtifactStagingDirectory)\binlogs"'
       displayName: 'Create Logs Dir'
       condition: always()
 
     # Ensure we clear bot-provided feeds, for reliability
-    - pwsh: |
+    - powershell: |
         $configPath = "$(Build.SourcesDirectory)\NuGet.Config"
         [xml]$config = get-content $configPath
         $config.configuration.packageSources.PrependChild($config.CreateElement("clear"))
@@ -103,7 +101,7 @@ stages:
       displayName: 'Component Governance'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
 
-    - pwsh: |
+    - powershell: |
         $complianceEnabled = if ($env:COMPLIANCEENABLED) { $env:COMPLIANCEENABLED } else { '' }
 
         if ($complianceEnabled -eq '') { 
