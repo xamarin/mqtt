@@ -5,6 +5,7 @@ stages:
   dependsOn:         
   - Test
   - Compliance
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
   jobs:
   - job: Push
     displayName: Pack & Push
@@ -29,7 +30,6 @@ stages:
     - task: NuGetCommand@2
       displayName: Push Packages
       continueOnError: true
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
       inputs:
         command: push
         packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
