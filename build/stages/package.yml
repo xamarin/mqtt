@@ -28,32 +28,35 @@ stages:
         GitHub.FileStatuses: true
         GitHub.ArtifactsTraversal: 'TopLevel'
 
-  - job: Push
-    displayName: 'Pack & Push'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
-    timeoutInMinutes: 10
-    pool:
-      name: $(WindowsPoolName)
-    steps:
-    - checkout: self
+  # TODO: 
+  # Job disabled until we implement pushing to xamarin-impl as a testing feed. 
+  # Right now the packages will only be pushed to nuget.org through the System.Net.Mqtt release pipeline
+  # - job: Push
+  #   displayName: 'Pack & Push'
+  #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
+  #   timeoutInMinutes: 10
+  #   pool:
+  #     name: $(WindowsPoolName)
+  #   steps:
+  #   - checkout: self
 
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download Packages'
-      inputs:
-        artifactName: packages
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+  #   - task: DownloadBuildArtifacts@0
+  #     displayName: 'Download Packages'
+  #     inputs:
+  #       artifactName: packages
+  #       downloadPath: '$(Build.ArtifactStagingDirectory)'
 
-    - task: NuGetCommand@2
-      displayName: 'NuGet Update'
-      inputs:
-        command: custom
-        arguments: 'update -self'
+  #   - task: NuGetCommand@2
+  #     displayName: 'NuGet Update'
+  #     inputs:
+  #       command: custom
+  #       arguments: 'update -self'
 
-    - task: NuGetCommand@2
-      displayName: 'Push Packages'
-      continueOnError: true
-      inputs:
-        command: push
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
-        nuGetFeedType: external
-        publishFeedCredentials: '$(PackagesFeedCredentials)'
+  #   - task: NuGetCommand@2
+  #     displayName: 'Push Packages'
+  #     continueOnError: true
+  #     inputs:
+  #       command: push
+  #       packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
+  #       nuGetFeedType: external
+  #       publishFeedCredentials: '$(PackagesFeedCredentials)'
