@@ -84,6 +84,7 @@ stages:
         SourceFolder: '$(Build.SourcesDirectory)/src/Server/bin/$(Configuration)'
         Contents: |
           **/System.Net.Mqtt.?(dll|pdb)
+          **/System.Net.Mqtt.Server.?(dll|pdb)
         TargetFolder: '$(Build.ArtifactStagingDirectory)/Symbols'
         CleanTargetFolder: true
         FlattenFolders: true
