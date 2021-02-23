@@ -15,10 +15,10 @@ pr:
   - main
 
 variables:
-- template: build/automation/variables.yml
+- template: build/variables.yml
 
 stages:
-- template: build/automation/stages/build.yml
-- template: build/automation/stages/compliance.yml
-- template: build/automation/stages/test.yml
-- template: build/automation/stages/push.yml
+- template: build/stages/build.yml
+- template: build/stages/compliance.yml
+- template: build/stages/test.yml
+- template: build/stages/push.yml
