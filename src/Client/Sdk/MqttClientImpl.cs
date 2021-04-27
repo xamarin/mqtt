@@ -25,7 +25,6 @@ namespace System.Net.Mqtt.Sdk
 		readonly IRepository<ClientSession> sessionRepository;
 		readonly IPacketIdProvider packetIdProvider;
 		readonly MqttConfiguration configuration;
-		readonly TaskRunner clientSender;
 
 		internal MqttClientImpl(IPacketChannelFactory channelFactory,
 			IProtocolFlowProvider flowProvider,
@@ -39,7 +38,6 @@ namespace System.Net.Mqtt.Sdk
 			sessionRepository = repositoryProvider.GetRepository<ClientSession>();
 			this.packetIdProvider = packetIdProvider;
 			this.configuration = configuration;
-			clientSender = TaskRunner.Get();
 		}
 
 		public event EventHandler<MqttEndpointDisconnected> Disconnected = (sender, args) => { };
@@ -97,13 +95,11 @@ namespace System.Net.Mqtt.Sdk
 					KeepAlive = configuration.KeepAliveSecs
 				};
 
-				await SendPacketAsync(connect)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await Channel.SendAsync(connect).ConfigureAwait(continueOnCapturedContext: false);
 
 				var connectTimeout = TimeSpan.FromSeconds(configuration.WaitTimeoutSecs);
 				var ack = await packetListener
 					.PacketStream
-					.ObserveOn(NewThreadScheduler.Default)
 					.OfType<ConnectAck>()
 					.FirstOrDefaultAsync()
 					.Timeout(connectTimeout);
@@ -167,12 +163,10 @@ namespace System.Net.Mqtt.Sdk
 				var ack = default(SubscribeAck);
 				var subscribeTimeout = TimeSpan.FromSeconds(configuration.WaitTimeoutSecs);
 
-				await SendPacketAsync(subscribe)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await Channel.SendAsync(subscribe).ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await packetListener
 					.PacketStream
-					.ObserveOn(NewThreadScheduler.Default)
 					.OfType<SubscribeAck>()
 					.FirstOrDefaultAsync(x => x.PacketId == packetId)
 					.Timeout(subscribeTimeout);
@@ -235,11 +229,9 @@ namespace System.Net.Mqtt.Sdk
 
 				var senderFlow = flowProvider.GetFlow<PublishSenderFlow>();
 
-				await clientSender.Run(async () =>
-				{
-					await senderFlow.SendPublishAsync(Id, publish, Channel)
-						.ConfigureAwait(continueOnCapturedContext: false);
-				}).ConfigureAwait(continueOnCapturedContext: false);
+				await senderFlow
+					.SendPublishAsync(Id, publish, Channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			}
 			catch (Exception ex)
 			{
@@ -265,12 +257,10 @@ namespace System.Net.Mqtt.Sdk
 				var ack = default(UnsubscribeAck);
 				var unsubscribeTimeout = TimeSpan.FromSeconds(configuration.WaitTimeoutSecs);
 
-				await SendPacketAsync(unsubscribe)
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await Channel.SendAsync(unsubscribe).ConfigureAwait(continueOnCapturedContext: false);
 
 				ack = await packetListener
 					.PacketStream
-					.ObserveOn(NewThreadScheduler.Default)
 					.OfType<UnsubscribeAck>()
 					.FirstOrDefaultAsync(x => x.PacketId == packetId)
 					.Timeout(unsubscribeTimeout);
@@ -322,8 +312,7 @@ namespace System.Net.Mqtt.Sdk
 
 				packetsSubscription?.Dispose();
 
-				await SendPacketAsync(new Disconnect())
-					.ConfigureAwait(continueOnCapturedContext: false);
+				await Channel.SendAsync(new Disconnect()).ConfigureAwait(continueOnCapturedContext: false);
 
 				await packetListener
 					.PacketStream
@@ -354,7 +343,6 @@ namespace System.Net.Mqtt.Sdk
 					await DisconnectAsync().ConfigureAwait(continueOnCapturedContext: false);
 				}
 
-				(clientSender as IDisposable)?.Dispose();
 				disposed = true;
 			}
 		}
@@ -435,12 +423,6 @@ namespace System.Net.Mqtt.Sdk
 			}
 		}
 
-		async Task SendPacketAsync(IPacket packet)
-		{
-			await clientSender.Run(async () => await Channel.SendAsync(packet).ConfigureAwait(continueOnCapturedContext: false))
-				.ConfigureAwait(continueOnCapturedContext: false);
-		}
-
 		bool VerifyUnderlyingConnection()
 		{
 			if (isProtocolConnected && !Channel.IsConnected)
@@ -455,7 +437,6 @@ namespace System.Net.Mqtt.Sdk
 		{
 			packetsSubscription = packetListener
 				.PacketStream
-				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe(packet =>
 				{
 					if (packet.Type == MqttPacketType.Publish)

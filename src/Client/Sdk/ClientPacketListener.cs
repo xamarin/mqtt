@@ -17,7 +17,6 @@ namespace System.Net.Mqtt.Sdk
 		readonly IProtocolFlowProvider flowProvider;
 		readonly MqttConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
-		readonly TaskRunner flowRunner;
 		IDisposable listenerDisposable;
 		bool disposed;
 		string clientId = string.Empty;
@@ -31,7 +30,6 @@ namespace System.Net.Mqtt.Sdk
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
-			flowRunner = TaskRunner.Get ();
 		}
 
 		public IObservable<IPacket> PacketStream { get { return packets; } }
@@ -68,7 +66,6 @@ namespace System.Net.Mqtt.Sdk
 				listenerDisposable.Dispose ();
 				StopKeepAliveMonitor ();
 				packets.OnCompleted ();
-				(flowRunner as IDisposable)?.Dispose ();
 				disposed = true;
 			}
 		}
@@ -144,10 +141,10 @@ namespace System.Net.Mqtt.Sdk
 
 		IDisposable ListenSentDisconnectPacket ()
 		{
-			return channel.SenderStream
+			return channel
+				.SenderStream
 				.OfType<Disconnect> ()
 				.FirstAsync ()
-				.ObserveOn (NewThreadScheduler.Default)
 				.Subscribe (disconnect => {
 					if (configuration.KeepAliveSecs > 0) {
 						StopKeepAliveMonitor ();
@@ -197,19 +194,20 @@ namespace System.Net.Mqtt.Sdk
 				try {
 					packets.OnNext (packet);
 
-					await flowRunner.Run (async () => {
-						var publish = packet as Publish;
+					var publish = packet as Publish;
 
-						if (publish == null) {
-							tracer.Info (Properties.Resources.ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType ().Name);
-						} else {
-							tracer.Info (Properties.Resources.ClientPacketListener_DispatchingPublish, clientId, flow.GetType ().Name, publish.Topic);
-						}
+					if (publish == null)
+					{
+						tracer.Info(Properties.Resources.ClientPacketListener_DispatchingMessage, clientId, packet.Type, flow.GetType().Name);
+					}
+					else
+					{
+						tracer.Info(Properties.Resources.ClientPacketListener_DispatchingPublish, clientId, flow.GetType().Name, publish.Topic);
+					}
 
-						await flow.ExecuteAsync (clientId, packet, channel)
-							.ConfigureAwait (continueOnCapturedContext: false);
-					})
-					.ConfigureAwait (continueOnCapturedContext: false);
+					await flow
+						.ExecuteAsync(clientId, packet, channel)
+						.ConfigureAwait(continueOnCapturedContext: false);
 				} catch (Exception ex) {
 					NotifyError (ex);
 				}
@@ -226,11 +224,6 @@ namespace System.Net.Mqtt.Sdk
 		void NotifyError (string message)
 		{
 			NotifyError (new MqttException (message));
-		}
-
-		void NotifyError (string message, Exception exception)
-		{
-			NotifyError (new MqttException (message, exception));
 		}
 	}
 }
