@@ -129,7 +129,6 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			})
 			.Repeat ()
 			.TakeWhile (bytes => bytes.Any ())
-			.ObserveOn (NewThreadScheduler.Default)
 			.Subscribe (bytes => {
 				if (buffer.TryGetPackets (bytes, out var packets)) {
 					foreach (var packet in packets) {

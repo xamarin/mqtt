@@ -95,7 +95,6 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 			return stream
 				.Receive(senderIdentifier)
-				.ObserveOn(NewThreadScheduler.Default)
 				.Subscribe(packet =>
 				{
 					tracer.Verbose(ClientProperties.Resources.MqttChannel_ReceivedPacket, packet.Length);

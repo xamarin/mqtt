@@ -68,7 +68,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 			where T : IFlowPacket
 		{
 			var intervalSubscription = Observable
-				.Interval (TimeSpan.FromSeconds (configuration.WaitTimeoutSecs), NewThreadScheduler.Default)
+				.Interval (TimeSpan.FromSeconds (configuration.WaitTimeoutSecs), TaskPoolScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
 						tracer.Warn (Properties.Resources.PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
@@ -79,7 +79,6 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 			await channel
                 .ReceiverStream
-				.ObserveOn (NewThreadScheduler.Default)
 				.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId);
 

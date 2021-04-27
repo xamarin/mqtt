@@ -57,7 +57,8 @@ namespace System.Net.Mqtt.Sdk.Flows
 				SaveMessage (message, clientId, PendingMessageStatus.PendingToAcknowledge);
 			}
 
-			await channel.SendAsync (message)
+			await channel
+				.SendAsync (message)
 				.ConfigureAwait (continueOnCapturedContext: false);
 
 			if (qos == MqttQualityOfService.AtLeastOnce) {
@@ -67,7 +68,6 @@ namespace System.Net.Mqtt.Sdk.Flows
 				await MonitorAckAsync<PublishReceived> (message, clientId, channel).ConfigureAwait (continueOnCapturedContext: false);
 				await channel
                     .ReceiverStream
-					.ObserveOn (NewThreadScheduler.Default)
 					.OfType<PublishComplete> ()
 					.FirstOrDefaultAsync (x => x.PacketId == message.PacketId.Value);
 			}
@@ -94,7 +94,7 @@ namespace System.Net.Mqtt.Sdk.Flows
 			where T : IFlowPacket
 		{
 			var intervalSubscription = Observable
-				.Interval (TimeSpan.FromSeconds (configuration.WaitTimeoutSecs), NewThreadScheduler.Default)
+				.Interval (TimeSpan.FromSeconds (configuration.WaitTimeoutSecs), TaskPoolScheduler.Default)
 				.Subscribe (async _ => {
 					if (channel.IsConnected) {
 						tracer.Warn (Properties.Resources.PublishFlow_RetryingQoSFlow, sentMessage.Type, clientId);
@@ -110,7 +110,6 @@ namespace System.Net.Mqtt.Sdk.Flows
 
 			await channel
                 .ReceiverStream
-				.ObserveOn (NewThreadScheduler.Default)
 				.OfType<T> ()
 				.FirstOrDefaultAsync (x => x.PacketId == sentMessage.PacketId.Value);
 

@@ -20,7 +20,6 @@ namespace System.Net.Mqtt.Sdk
 		readonly IProtocolFlowProvider flowProvider;
 		readonly MqttConfiguration configuration;
 		readonly ReplaySubject<IPacket> packets;
-		readonly TaskRunner flowRunner;
 		CompositeDisposable listenerDisposable;
 		bool disposed;
 		string clientId = string.Empty;
@@ -36,7 +35,6 @@ namespace System.Net.Mqtt.Sdk
 			this.flowProvider = flowProvider;
 			this.configuration = configuration;
 			packets = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
-			flowRunner = TaskRunner.Get ();
 		}
 
 		public IObservable<IPacket> PacketStream { get { return packets; } }
@@ -71,7 +69,6 @@ namespace System.Net.Mqtt.Sdk
 
 				listenerDisposable.Dispose ();
 				packets.OnCompleted ();
-				(flowRunner as IDisposable)?.Dispose ();
 				disposed = true;
 			}
 		}
@@ -223,24 +220,27 @@ namespace System.Net.Mqtt.Sdk
 			try {
 				packets.OnNext (packet);
 
-				await flowRunner.Run (async () => {
-					if (packet.Type == MqttPacketType.Publish) {
-						var publish = packet as Publish;
+				if (packet.Type == MqttPacketType.Publish)
+				{
+					var publish = packet as Publish;
 
-						tracer.Info (ServerProperties.Resources.ServerPacketListener_DispatchingPublish, flow.GetType ().Name, clientId, publish.Topic);
-					} else if (packet.Type == MqttPacketType.Subscribe) {
-						var subscribe = packet as Subscribe;
-						var topics = subscribe.Subscriptions == null ? new List<string> () : subscribe.Subscriptions.Select (s => s.TopicFilter);
+					tracer.Info(ServerProperties.Resources.ServerPacketListener_DispatchingPublish, flow.GetType().Name, clientId, publish.Topic);
+				}
+				else if (packet.Type == MqttPacketType.Subscribe)
+				{
+					var subscribe = packet as Subscribe;
+					var topics = subscribe.Subscriptions == null ? new List<string>() : subscribe.Subscriptions.Select(s => s.TopicFilter);
 
-						tracer.Info (ServerProperties.Resources.ServerPacketListener_DispatchingSubscribe, flow.GetType ().Name, clientId, string.Join (", ", topics));
-					} else {
-						tracer.Info (ServerProperties.Resources.ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType ().Name, clientId);
-					}
+					tracer.Info(ServerProperties.Resources.ServerPacketListener_DispatchingSubscribe, flow.GetType().Name, clientId, string.Join(", ", topics));
+				}
+				else
+				{
+					tracer.Info(ServerProperties.Resources.ServerPacketListener_DispatchingMessage, packet.Type, flow.GetType().Name, clientId);
+				}
 
-					await flow.ExecuteAsync (clientId, packet, channel)
-						.ConfigureAwait (continueOnCapturedContext: false);
-				})
-				.ConfigureAwait (continueOnCapturedContext: false);
+				await flow
+					.ExecuteAsync(clientId, packet, channel)
+					.ConfigureAwait(continueOnCapturedContext: false);
 			} catch (Exception ex) {
 				if (flow is ServerConnectFlow) {
 					HandleConnectionExceptionAsync (ex).Wait ();
