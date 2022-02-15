@@ -85,7 +85,7 @@ stages:
           codeBaseAdmins: 'REDMOND\maagno;REDMOND\vsengxamarin'
           instanceUrlForTsaV2: 'DEVDIV'
           projectNameDEVDIV: 'DevDiv'
-          areaPath: 'DevDiv\Xamarin Tools\XamarinVS\XMA'
+          areaPath: 'DevDiv\VS Client - Tools\Platform\Xamarin VS\iOS\XMA'
           iterationPath: 'DevDiv\OneVS'
           uploadAPIScan: true
           uploadBinSkim: true
