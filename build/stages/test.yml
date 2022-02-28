@@ -7,7 +7,9 @@ stages:
   - job: Unit
     timeoutInMinutes: 10
     pool:
-      name: $(WindowsPoolName)
+       name: $(WindowsEOPoolName)
+       demands:
+       - ImageOverride -equals $(WindowsImageOverride)
 
     steps:
     - checkout: none
@@ -33,7 +35,9 @@ stages:
   - job: Integration
     timeoutInMinutes: 10
     pool:
-      name: $(WindowsPoolName)
+       name: $(WindowsEOPoolName)
+       demands:
+       - ImageOverride -equals $(WindowsImageOverride)
 
     steps:
     - checkout: none

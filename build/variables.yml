@@ -12,8 +12,12 @@ variables:
   value: $(ExternalFeedEndpoints)
 - name: DotNetCoreVersion
   value: '3.1.102'
+- name: WindowsEOPoolName
+  value: AzurePipelines-EO
+- name: WindowsImageOverride
+  value: AzurePipelinesWindows2022compliant
 - name: WindowsPoolName
-  value: $(PoolName)
+  value: VSEngSS-MicroBuild2022-1ES
 - name: Configuration
   value: Release
 - name: MainBranch

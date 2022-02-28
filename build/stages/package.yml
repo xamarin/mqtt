@@ -10,7 +10,9 @@ stages:
     displayName: 'Upload to Storage'
     timeoutInMinutes: 10
     pool:
-      name: $(WindowsPoolName)
+       name: $(WindowsEOPoolName)
+       demands:
+       - ImageOverride -equals $(WindowsImageOverride)
     steps:
     - checkout: self
 
