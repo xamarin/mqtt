@@ -89,7 +89,7 @@ stages:
           instanceUrlForTsaV2: 'DEVDIV'
           projectNameDEVDIV: 'DevDiv'
           areaPath: 'DevDiv\VS Client - Tools\Platform\Xamarin VS\iOS\XMA'
-          iterationPath: 'DevDiv\OneVS'
+          iterationPath: 'DevDiv'
           uploadAPIScan: true
           uploadBinSkim: true
           uploadCredScan: true
