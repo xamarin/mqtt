@@ -1,0 +1,6 @@
+# For more details on the syntax of this file,
+# see https://help.github.com/articles/about-codeowners
+
+# Default owner
+#
+*	@xamarin/vscx-tools-platform @mauroa @emaf
