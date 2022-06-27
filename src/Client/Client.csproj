@@ -6,6 +6,26 @@
     <DocumentationFile>$(IntermediateOutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" />
+  </ItemGroup>
+
+  <Target Name="GetFilesToSign" BeforeTargets="SignFiles" Condition=" '$(_SignFiles)' == 'True'">
+    <ItemGroup>
+      <FilesToSign Include="$(OutDir)$(AssemblyName).dll">
+        <Authenticode>Microsoft400</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="SignNupkg" BeforeTargets="SignNuGetPackage" Condition=" '$(_SignFiles)' == 'True'">
+    <ItemGroup>
+      <SignNuGetPackFiles Include="$(PackageOutputPath)\*.nupkg">
+        <Authenticode>NuGet</Authenticode>
+      </SignNuGetPackFiles>
+    </ItemGroup>
+  </Target>
+
   <PropertyGroup Label="NuGet">
     <PackageId>$(AssemblyName)</PackageId>
     <Description>A lightweight and simple MQTT client implementation written entirely in C#.</Description>

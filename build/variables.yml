@@ -22,3 +22,9 @@ variables:
   value: Release
 - name: MainBranch
   value: refs/heads/main
+- name: Xamarin.CodeSignOverride
+  value: ''
+- name: Xamarin.IsRelease                 # Variable set by the jenkins-codesign template
+  value: ''
+- name: Xamarin.SignType                  # Variable set by the jenkins-codesign template
+  value: ''
