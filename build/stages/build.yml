@@ -22,6 +22,32 @@ stages:
       displayName: 'Create Logs Dir'
       condition: always()
 
+    - powershell: |
+        $branch = '$(Build.SourceBranch)'
+        $codeSignOverride = if ($env:XAMARIN_CODESIGNOVERRIDE) { $env:XAMARIN_CODESIGNOVERRIDE } else { '' }
+      
+        if($branch -eq '$(MainBranch)' -or $codeSignOverride -eq 'true') {
+          $codeSignOverride = 'true'
+        }
+
+        Write-Host "Code Sign Override: $codeSignOverride"
+        Write-Host "##vso[task.setvariable variable=Xamarin.CodeSignOverride]$codeSignOverride"
+      name: 'SetCodeSignOnMain'
+      displayName: 'Evaluate CodeSign for Main Branch'
+
+    # Compute (set) Xamarin.IsRelease and Xamarin.SignType needed in subsequent conditions
+    - template: jenkins-codesign/signType.v1.yml@templates
+      parameters:
+        CodeSignOverride: $(Xamarin.CodeSignOverride)
+
+    - task: MicroBuildSigningPlugin@3
+      displayName: "Prepare Signing Tools (MicroBuild)"
+      inputs:
+        signType: '$(Xamarin.SignType)'
+        feedSource: 'https://devdiv.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json'
+      env:
+        TeamName: Xamarin
+
     # Ensure we clear bot-provided feeds, for reliability
     - powershell: |
         $configPath = "$(Build.SourcesDirectory)\NuGet.Config"
@@ -43,7 +69,7 @@ stages:
       displayName: 'Build Solution'
       inputs:
         solution: '$(Build.SourcesDirectory)/src/Hermes.sln'
-        msbuildArguments: /t:Build /noautoresponse /bl:"$(Build.ArtifactStagingDirectory)\binlogs\build.binlog" 
+        msbuildArguments: /t:Build /p:_SignFiles=true /noautoresponse /bl:"$(Build.ArtifactStagingDirectory)\binlogs\build.binlog" 
       condition: always()
 
     - task: PublishBuildArtifacts@1
@@ -53,6 +79,13 @@ stages:
         ArtifactName: packages
       continueOnError: true
       condition: always()
+
+    - task: MicroBuildCodesignVerify@3
+      displayName: 'Verify Signed Files'
+      inputs:
+        TargetFolders: $(System.DefaultWorkingDirectory)\pack
+        ExcludeSNVerify: true
+        ApprovalListPathForCerts: $(Build.SourcesDirectory)\build\sign-verify-ignore.txt
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: unit-tests'
