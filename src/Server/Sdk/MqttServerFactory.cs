@@ -14,34 +14,27 @@ namespace System.Net.Mqtt.Sdk
 	{
 		static readonly ITracer tracer = Tracer.Get<MqttServerFactory>();
 
+		readonly IServerPrivateBinding privateBinding;
 		readonly IMqttServerBinding binding;
 		readonly IMqttAuthenticationProvider authenticationProvider;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="MqttServerFactory" /> class,
-		/// with the option to define an authentication provider to enable authentication
-		/// as part of the connection mechanism.
-		/// It also uses TCP as the default transport protocol binding
+		/// Initializes a new instance of the <see cref="MqttServerFactory" /> class using an in-memory transport protocol binding by default
 		/// </summary>
-		/// <param name="authenticationProvider">
-		/// Optional authentication provider to use, 
-		/// to enable authentication as part of the connection mechanism
-		/// See <see cref="IMqttAuthenticationProvider" /> for more details about how to implement
-		/// an authentication provider
-		/// </param>
-		public MqttServerFactory(IMqttAuthenticationProvider authenticationProvider = null)
-			: this(new ServerTcpBinding(), authenticationProvider)
+		public MqttServerFactory() : this(binding: null)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MqttServerFactory" /> class,
-		/// spcifying the transport protocol binding to use and optionally the 
+		/// spcifying the transport protocol binding to use and optionally an 
 		/// authentication provider to enable authentication as part of the connection mechanism.
 		/// </summary>
 		/// <param name="binding">
-		/// Transport protocol binding to use as the MQTT underlying protocol
-		/// See <see cref="IMqttServerBinding" /> for more details about how to implement it 
+		/// The binding to use as the underlying transport layer.
+		/// Possible values: <see cref="ServerTcpBinding"/>, <see cref="ServerWebSocketBinding"/>
+		/// See <see cref="IMqttServerBinding"/> for more details about how 
+		/// to implement a custom binding
 		/// </param>
 		/// <param name="authenticationProvider">
 		/// Optional authentication provider to use, 
@@ -51,6 +44,7 @@ namespace System.Net.Mqtt.Sdk
 		/// </param>
 		public MqttServerFactory(IMqttServerBinding binding, IMqttAuthenticationProvider authenticationProvider = null)
 		{
+			privateBinding = new ServerPrivateBinding();
 			this.binding = binding;
 			this.authenticationProvider = authenticationProvider ?? NullAuthenticationProvider.Instance;
 		}
@@ -69,8 +63,7 @@ namespace System.Net.Mqtt.Sdk
 			try
 			{
 				var topicEvaluator = new MqttTopicEvaluator(configuration);
-				var channelProvider = binding.GetChannelListener(configuration);
-				var channelFactory = new PacketChannelFactory(topicEvaluator, configuration);
+				var packetChannelFactory = new PacketChannelFactory(topicEvaluator, configuration);
 				var repositoryProvider = new InMemoryRepositoryProvider();
 				var connectionProvider = new ConnectionProvider();
 				var packetIdProvider = new PacketIdProvider();
@@ -78,8 +71,7 @@ namespace System.Net.Mqtt.Sdk
 				var flowProvider = new ServerProtocolFlowProvider(authenticationProvider, connectionProvider, topicEvaluator,
 					repositoryProvider, packetIdProvider, undeliveredMessagesListener, configuration);
 
-				return new MqttServerImpl(channelProvider, channelFactory,
-					flowProvider, connectionProvider, undeliveredMessagesListener, configuration);
+				return new MqttServerImpl(privateBinding, packetChannelFactory, flowProvider, connectionProvider, undeliveredMessagesListener, configuration, binding);
 			}
 			catch (Exception ex)
 			{
