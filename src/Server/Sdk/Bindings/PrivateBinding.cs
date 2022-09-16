@@ -4,18 +4,17 @@ namespace System.Net.Mqtt.Sdk.Bindings
 {
 	internal class PrivateBinding : IMqttBinding
 	{
-		readonly ISubject<PrivateStream> privateStreamListener;
 		readonly EndpointIdentifier identifier;
 
 		public PrivateBinding(ISubject<PrivateStream> privateStreamListener, EndpointIdentifier identifier)
 		{
-			this.privateStreamListener = privateStreamListener;
 			this.identifier = identifier;
+			PrivateStreamListener = privateStreamListener;
 		}
 
+		public ISubject<PrivateStream> PrivateStreamListener { get; }
+
 		public IMqttChannelFactory GetChannelFactory(string hostAddress, MqttConfiguration configuration)
-		{
-			return new PrivateChannelFactory(privateStreamListener, identifier, configuration);
-		}
+			=> new PrivateChannelFactory(PrivateStreamListener, identifier, configuration);
 	}
 }

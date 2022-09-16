@@ -3,12 +3,6 @@ using System.Reactive.Subjects;
 
 namespace System.Net.Mqtt.Sdk.Bindings
 {
-	internal enum EndpointIdentifier
-	{
-		Server,
-		Client
-	}
-
 	internal class PrivateStream : IDisposable
 	{
 		bool disposed;

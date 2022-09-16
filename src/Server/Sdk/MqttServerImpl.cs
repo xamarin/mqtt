@@ -20,25 +20,31 @@ namespace System.Net.Mqtt.Sdk
 		IDisposable channelSubscription;
 		IDisposable streamSubscription;
 
-		readonly IEnumerable<IMqttChannelListener> binaryChannelListeners;
-		readonly IPacketChannelFactory channelFactory;
+		readonly IServerPrivateBinding privateBinding;
+		readonly IList<IMqttChannelListener> binaryChannelListeners = new List<IMqttChannelListener>();
+		readonly IPacketChannelFactory packetChannelFactory;
 		readonly IProtocolFlowProvider flowProvider;
 		readonly IConnectionProvider connectionProvider;
 		readonly ISubject<MqttUndeliveredMessage> undeliveredMessagesListener;
 		readonly MqttConfiguration configuration;
-		readonly ISubject<PrivateStream> privateStreamListener;
 		readonly IList<IMqttChannel<IPacket>> channels = new List<IMqttChannel<IPacket>>();
 
-		internal MqttServerImpl(IMqttChannelListener binaryChannelListener,
-			IPacketChannelFactory channelFactory,
+		internal MqttServerImpl(IServerPrivateBinding privateBinding,
+			IPacketChannelFactory packetChannelFactory,
 			IProtocolFlowProvider flowProvider,
 			IConnectionProvider connectionProvider,
 			ISubject<MqttUndeliveredMessage> undeliveredMessagesListener,
-			MqttConfiguration configuration)
+			MqttConfiguration configuration,
+			IMqttServerBinding binding = null)
 		{
-			privateStreamListener = new Subject<PrivateStream>();
-			binaryChannelListeners = new[] { new PrivateChannelListener(privateStreamListener, configuration), binaryChannelListener };
-			this.channelFactory = channelFactory;
+			if (binding != null)
+			{
+				binaryChannelListeners.Add(binding.GetChannelListener(configuration));
+			}
+
+			binaryChannelListeners.Add(privateBinding.GetChannelListener(configuration));
+			this.privateBinding = privateBinding;
+			this.packetChannelFactory = packetChannelFactory;
 			this.flowProvider = flowProvider;
 			this.connectionProvider = new NotifyingConnectionProvider(this, connectionProvider);
 			this.undeliveredMessagesListener = undeliveredMessagesListener;
@@ -81,7 +87,7 @@ namespace System.Net.Mqtt.Sdk
 			started = true;
 		}
 
-		public async Task<IMqttConnectedClient> CreateClientAsync()
+		public async Task<IMqttConnectedClient> CreateClientAsync(string clientId = null)
 		{
 			if (disposed)
 				throw new ObjectDisposedException(nameof(Server));
@@ -89,11 +95,15 @@ namespace System.Net.Mqtt.Sdk
 			if (!started)
 				throw new InvalidOperationException(ServerProperties.Resources.Server_NotStartedError);
 
-			var factory = new MqttConnectedClientFactory(privateStreamListener);
+			var factory = new MqttConnectedClientFactory(privateBinding.PrivateStreamListener);
 			var client = await factory
 				.CreateClientAsync(configuration)
 				.ConfigureAwait(continueOnCapturedContext: false);
-			var clientId = GetPrivateClientId();
+
+			if (string.IsNullOrEmpty(clientId))
+			{
+				clientId = GetPrivateClientId();
+			}
 
 			await client
 				.ConnectAsync(new MqttClientCredentials(clientId))
@@ -160,7 +170,7 @@ namespace System.Net.Mqtt.Sdk
 		{
 			tracer.Verbose(ServerProperties.Resources.Server_NewSocketAccepted);
 
-			var packetChannel = channelFactory.Create(binaryChannel);
+			var packetChannel = packetChannelFactory.Create(binaryChannel);
 			var packetListener = new ServerPacketListener(packetChannel, connectionProvider, flowProvider, configuration);
 
 			packetListener.Listen();
@@ -204,12 +214,10 @@ namespace System.Net.Mqtt.Sdk
 			ClientDisconnected?.Invoke(this, clientId);
 		}
 
-
 		class NotifyingConnectionProvider : IConnectionProvider
 		{
 			IConnectionProvider connections;
 			MqttServerImpl server;
-
 
 			public NotifyingConnectionProvider(MqttServerImpl server, IConnectionProvider connections)
 			{

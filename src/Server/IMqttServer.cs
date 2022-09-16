@@ -58,12 +58,12 @@ namespace System.Net.Mqtt
 		void Start();
 
 		/// <summary>
-		/// Creates an in process client and establishes the protocol 
-		/// connection before returning it to the caller
+		/// Creates an in process client with an in-memory transport that establishes the protocol connection before returning it to the caller
 		/// See <see cref="IMqttConnectedClient" /> for more details about in process clients 
 		/// </summary>
+		/// <param name="clientId">Identifier of the client to create and connect. If null, a random id will be used</param>
 		/// <returns>Returns a connected client ready to use</returns>
-		Task<IMqttConnectedClient> CreateClientAsync();
+		Task<IMqttConnectedClient> CreateClientAsync(string clientId = null);
 
 		/// <summary>
 		/// Stops the server and disposes it.

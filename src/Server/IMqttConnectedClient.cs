@@ -4,8 +4,7 @@ using System.Threading.Tasks;
 namespace System.Net.Mqtt
 {
 	/// <summary>
-	/// Represents an <see cref="IMqttClient"/> that has already
-	/// performed the protocol connection
+	/// Represents an <see cref="IMqttClient"/> that uses an in-memory transport and that has already performed the protocol connection
 	/// This interface is only provided by the Server when creating in process clients
 	/// doing <see cref="IMqttServer.CreateClientAsync" />, since invoking the 
 	/// <see cref="IMqttClient.ConnectAsync(MqttClientCredentials, MqttLastWill, bool)"/> 
