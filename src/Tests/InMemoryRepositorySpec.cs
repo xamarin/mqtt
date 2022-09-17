@@ -9,7 +9,7 @@ using Xunit;
 namespace Tests
 {
 	public class InMemoryRepositorySpec
-    {
+	{
 		[Fact]
 		public void when_creating_item_then_succeeds()
 		{
@@ -34,7 +34,7 @@ namespace Tests
 			item.Value = 2;
 
 			repository.Update(item);
-			
+
 			Assert.Equal(2, repository.ReadAll().First().Value);
 		}
 
@@ -84,7 +84,8 @@ namespace Tests
 
 			var random = new Random();
 
-			Parallel.For(fromInclusive: 1, toExclusive: count + 1, body: i => {
+			Parallel.For(fromInclusive: 1, toExclusive: count + 1, body: i =>
+			{
 				var value = random.Next(minValue: 1, maxValue: count);
 				var element = repository.Read($"Foo{value}");
 

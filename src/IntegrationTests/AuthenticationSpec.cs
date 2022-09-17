@@ -10,9 +10,9 @@ namespace IntegrationTests
 	{
 		readonly IMqttServer server;
 
-		public AuthenticationSpec ()
+		public AuthenticationSpec()
 		{
-			server = GetServerAsync (new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: "foo123")).Result;
+			server = GetServerAsync(new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: "foo123")).Result;
 		}
 
 		[Fact]
@@ -20,15 +20,15 @@ namespace IntegrationTests
 		{
 			var username = "foo";
 			var password = "foo123456";
-			var client = await GetClientAsync ();
+			var client = await GetClientAsync();
 
-			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync (new MqttClientCredentials (GetClientId (), username, password)).Wait());
+			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync(new MqttClientCredentials(GetClientId(), username, password)).Wait());
 
-			Assert.NotNull (aggregateEx.InnerException);
-			Assert.True (aggregateEx.InnerException is MqttClientException);
-			Assert.NotNull (aggregateEx.InnerException.InnerException);
-			Assert.True (aggregateEx.InnerException.InnerException is MqttConnectionException);
-			Assert.Equal (MqttConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException.InnerException).ReturnCode);
+			Assert.NotNull(aggregateEx.InnerException);
+			Assert.True(aggregateEx.InnerException is MqttClientException);
+			Assert.NotNull(aggregateEx.InnerException.InnerException);
+			Assert.True(aggregateEx.InnerException.InnerException is MqttConnectionException);
+			Assert.Equal(MqttConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException.InnerException).ReturnCode);
 		}
 
 		[Fact]
@@ -36,18 +36,19 @@ namespace IntegrationTests
 		{
 			var username = "foo";
 			var password = "foo123";
-			var client = await GetClientAsync ();
+			var client = await GetClientAsync();
 
-			await client.ConnectAsync (new MqttClientCredentials (GetClientId (), username, password));
+			await client.ConnectAsync(new MqttClientCredentials(GetClientId(), username, password));
 
 			Assert.True(client.IsConnected);
 			Assert.False(string.IsNullOrEmpty(client.Id));
 		}
 
-		public void Dispose ()
+		public void Dispose()
 		{
-			if (server != null) {
-				server.Stop ();
+			if (server != null)
+			{
+				server.Stop();
 			}
 		}
 	}

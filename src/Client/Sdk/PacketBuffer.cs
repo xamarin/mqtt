@@ -3,69 +3,76 @@ using System.Linq;
 
 namespace System.Net.Mqtt.Sdk
 {
-    internal class PacketBuffer : IPacketBuffer
+	internal class PacketBuffer : IPacketBuffer
 	{
 		bool packetReadStarted;
 		bool packetRemainingLengthReadCompleted;
 		int packetRemainingLength = 0;
 		bool isPacketReady;
 
-		readonly object bufferLock = new object ();
+		readonly object bufferLock = new object();
 		readonly IList<byte> mainBuffer;
 		readonly IList<byte> pendingBuffer;
 
-		public PacketBuffer ()
+		public PacketBuffer()
 		{
-			mainBuffer = new List<byte> ();
-			pendingBuffer = new List<byte> ();
+			mainBuffer = new List<byte>();
+			pendingBuffer = new List<byte>();
 		}
 
-		public bool TryGetPackets (IEnumerable<byte> sequence, out IEnumerable<byte[]> packets)
+		public bool TryGetPackets(IEnumerable<byte> sequence, out IEnumerable<byte[]> packets)
 		{
-			var result =  new List<byte[]>();
+			var result = new List<byte[]>();
 
-			lock (bufferLock) {
-				Buffer (sequence);
+			lock (bufferLock)
+			{
+				Buffer(sequence);
 
-				while (isPacketReady) {
-					var packet = mainBuffer.ToArray ();
+				while (isPacketReady)
+				{
+					var packet = mainBuffer.ToArray();
 
-					result.Add (packet);
-					Reset ();
+					result.Add(packet);
+					Reset();
 				}
 
 				packets = result;
 			}
 
-			return result.Any ();
+			return result.Any();
 		}
 
-		void Buffer (IEnumerable<byte> sequence)
+		void Buffer(IEnumerable<byte> sequence)
 		{
-			foreach (var @byte in sequence) {
-				Buffer (@byte);
+			foreach (var @byte in sequence)
+			{
+				Buffer(@byte);
 			}
 		}
 
-		void Buffer (byte @byte)
+		void Buffer(byte @byte)
 		{
-			if (isPacketReady) {
-				pendingBuffer.Add (@byte);
+			if (isPacketReady)
+			{
+				pendingBuffer.Add(@byte);
 				return;
 			}
 
-			mainBuffer.Add (@byte);
+			mainBuffer.Add(@byte);
 
-			if (!packetReadStarted) {
+			if (!packetReadStarted)
+			{
 				packetReadStarted = true;
 				return;
 			}
 
-			if (!packetRemainingLengthReadCompleted) {
-				if ((@byte & 128) == 0) {
-					var bytesLenght = default (int);
+			if (!packetRemainingLengthReadCompleted)
+			{
+				if ((@byte & 128) == 0)
+				{
+					var bytesLenght = default(int);
 
-					packetRemainingLength = MqttProtocol.Encoding.DecodeRemainingLength (mainBuffer.ToArray (), out bytesLenght);
+					packetRemainingLength = MqttProtocol.Encoding.DecodeRemainingLength(mainBuffer.ToArray(), out bytesLenght);
 					packetRemainingLengthReadCompleted = true;
 
 					if (packetRemainingLength == 0)
@@ -75,26 +82,30 @@ namespace System.Net.Mqtt.Sdk
 				return;
 			}
 
-			if (packetRemainingLength == 1) {
+			if (packetRemainingLength == 1)
+			{
 				isPacketReady = true;
-			} else {
+			}
+			else
+			{
 				packetRemainingLength--;
 			}
 		}
 
-		void Reset ()
+		void Reset()
 		{
-			mainBuffer.Clear ();
+			mainBuffer.Clear();
 			packetReadStarted = false;
 			packetRemainingLengthReadCompleted = false;
 			packetRemainingLength = 0;
 			isPacketReady = false;
 
-			if (pendingBuffer.Any ()) {
-				var pendingSequence = pendingBuffer.ToArray ();
+			if (pendingBuffer.Any())
+			{
+				var pendingSequence = pendingBuffer.ToArray();
 
-				pendingBuffer.Clear ();
-				Buffer (pendingSequence);
+				pendingBuffer.Clear();
+				Buffer(pendingSequence);
 			}
 		}
 	}

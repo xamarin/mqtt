@@ -14,7 +14,7 @@
 		/// See <see cref="MqttConfiguration" /> for more details about the supported values
 		/// </param>
 		/// <returns>A factory for creating MQTT channels on top of Web Sockets</returns>
-		public IMqttChannelFactory GetChannelFactory (string hostAddress, MqttConfiguration configuration)
-			=> new WebSocketChannelFactory (hostAddress, configuration);
+		public IMqttChannelFactory GetChannelFactory(string hostAddress, MqttConfiguration configuration)
+			=> new WebSocketChannelFactory(hostAddress, configuration);
 	}
 }

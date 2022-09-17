@@ -2,7 +2,7 @@
 {
 	internal class PublishRelease : IFlowPacket, IEquatable<PublishRelease>
 	{
-		public PublishRelease (ushort packetId)
+		public PublishRelease(ushort packetId)
 		{
 			PacketId = packetId;
 		}
@@ -11,7 +11,7 @@
 
 		public ushort PacketId { get; }
 
-		public bool Equals (PublishRelease other)
+		public bool Equals(PublishRelease other)
 		{
 			if (other == null)
 				return false;
@@ -19,7 +19,7 @@
 			return PacketId == other.PacketId;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -29,28 +29,28 @@
 			if (publishRelease == null)
 				return false;
 
-			return Equals (publishRelease);
+			return Equals(publishRelease);
 		}
 
-		public static bool operator == (PublishRelease publishRelease, PublishRelease other)
+		public static bool operator ==(PublishRelease publishRelease, PublishRelease other)
 		{
 			if ((object)publishRelease == null || (object)other == null)
-				return Object.Equals (publishRelease, other);
+				return Object.Equals(publishRelease, other);
 
-			return publishRelease.Equals (other);
+			return publishRelease.Equals(other);
 		}
 
-		public static bool operator != (PublishRelease publishRelease, PublishRelease other)
+		public static bool operator !=(PublishRelease publishRelease, PublishRelease other)
 		{
 			if ((object)publishRelease == null || (object)other == null)
-				return !Object.Equals (publishRelease, other);
+				return !Object.Equals(publishRelease, other);
 
-			return !publishRelease.Equals (other);
+			return !publishRelease.Equals(other);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return PacketId.GetHashCode ();
+			return PacketId.GetHashCode();
 		}
 	}
 }

@@ -2,7 +2,7 @@
 {
 	internal class RetainedMessage : IStorageObject
 	{
-		public RetainedMessage (string topic, MqttQualityOfService qos, byte[] payload)
+		public RetainedMessage(string topic, MqttQualityOfService qos, byte[] payload)
 		{
 			Id = topic;
 			QualityOfService = qos;

@@ -2,6 +2,6 @@
 {
 	internal interface IRepositoryProvider
 	{
-		IRepository<T> GetRepository<T> () where T : IStorageObject;
+		IRepository<T> GetRepository<T>() where T : IStorageObject;
 	}
 }

@@ -8,17 +8,17 @@ namespace System.Net.Mqtt.Sdk
 		volatile bool isRunning;
 		Task timerTask;
 
-		public Timer () : this (intervalMillisecs: 0)
+		public Timer() : this(intervalMillisecs: 0)
 		{
 		}
 
-		public Timer (int intervalMillisecs, bool autoReset = true)
+		public Timer(int intervalMillisecs, bool autoReset = true)
 		{
 			IntervalMillisecs = intervalMillisecs;
 			AutoReset = autoReset;
 		}
 
-		public event EventHandler Elapsed = (sender, e) => {};
+		public event EventHandler Elapsed = (sender, e) => { };
 
 		public int IntervalMillisecs
 		{
@@ -34,42 +34,47 @@ namespace System.Net.Mqtt.Sdk
 
 		public bool AutoReset { get; set; }
 
-		public void Start ()
+		public void Start()
 		{
-			if (isRunning) {
+			if (isRunning)
+			{
 				return;
 			}
 
-			if (IntervalMillisecs <= 0) {
-				throw new InvalidOperationException ();
+			if (IntervalMillisecs <= 0)
+			{
+				throw new InvalidOperationException();
 			}
 
 			isRunning = true;
-			timerTask = RunAsync ();
+			timerTask = RunAsync();
 		}
 
-		public void Reset ()
+		public void Reset()
 		{
-			Stop ();
-			Start ();
+			Stop();
+			Start();
 		}
 
-		public void Stop ()
+		public void Stop()
 		{
 			isRunning = false;
-			timerTask = Task.FromResult (default (object));
+			timerTask = Task.FromResult(default(object));
 		}
 
-		async Task RunAsync ()
+		async Task RunAsync()
 		{
-			while (isRunning) {
-				await Task.Delay (intervalMillisecs);
+			while (isRunning)
+			{
+				await Task.Delay(intervalMillisecs);
 
-				if (isRunning) {
-					Elapsed (this, EventArgs.Empty);
+				if (isRunning)
+				{
+					Elapsed(this, EventArgs.Empty);
 
-					if (!AutoReset) {
-						Stop ();
+					if (!AutoReset)
+					{
+						Stop();
 					}
 				}
 			}

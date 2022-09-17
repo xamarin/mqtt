@@ -9,23 +9,25 @@ namespace Tests
 	{
 		public string Message { get; set; }
 
-		public byte[] GetPayload ()
+		public byte[] GetPayload()
 		{
-			var formatter = new BinaryFormatter ();
+			var formatter = new BinaryFormatter();
 
-			using (var stream = new MemoryStream ()) {
+			using (var stream = new MemoryStream())
+			{
 				formatter.Serialize(stream, this);
 
 				return stream.ToArray();
 			}
 		}
 
-		public static FooWillMessage GetMessage (byte[] willPayload)
+		public static FooWillMessage GetMessage(byte[] willPayload)
 		{
-			var formatter = new BinaryFormatter ();
+			var formatter = new BinaryFormatter();
 
-			using (var stream = new MemoryStream (willPayload)) {
-				return formatter.Deserialize (stream) as FooWillMessage;
+			using (var stream = new MemoryStream(willPayload))
+			{
+				return formatter.Deserialize(stream) as FooWillMessage;
 			}
 		}
 	}

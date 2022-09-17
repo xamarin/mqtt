@@ -13,57 +13,63 @@ namespace IntegrationTests.Context
 	public abstract class IntegrationContext
 	{
 		static readonly ConcurrentBag<int> usedPorts;
-		static readonly Random random = new Random ();
+		static readonly Random random = new Random();
 
-		readonly object lockObject = new object ();
+		readonly object lockObject = new object();
 		protected readonly ushort keepAliveSecs;
-        protected readonly bool allowWildcardsInTopicFilters;
+		protected readonly bool allowWildcardsInTopicFilters;
 
-        static IntegrationContext()
+		static IntegrationContext()
 		{
-            Tracer.Configuration.AddListener ("System.Net.Mqtt", new TestTracerListener ());
-            Tracer.Configuration.SetTracingLevel ("System.Net.Mqtt", SourceLevels.All);
+			Tracer.Configuration.AddListener("System.Net.Mqtt", new TestTracerListener());
+			Tracer.Configuration.SetTracingLevel("System.Net.Mqtt", SourceLevels.All);
 
-            usedPorts = new ConcurrentBag<int> ();
+			usedPorts = new ConcurrentBag<int>();
 		}
 
-		public IntegrationContext (ushort keepAliveSecs = 0, bool allowWildcardsInTopicFilters = true)
+		public IntegrationContext(ushort keepAliveSecs = 0, bool allowWildcardsInTopicFilters = true)
 		{
 			this.keepAliveSecs = keepAliveSecs;
-            this.allowWildcardsInTopicFilters = allowWildcardsInTopicFilters;
-        }
+			this.allowWildcardsInTopicFilters = allowWildcardsInTopicFilters;
+		}
 
 		protected MqttConfiguration Configuration { get; private set; }
 
-		protected async Task<IMqttServer> GetServerAsync (IMqttAuthenticationProvider authenticationProvider = null)
+		protected async Task<IMqttServer> GetServerAsync(IMqttAuthenticationProvider authenticationProvider = null)
 		{
-			try {
-				LoadConfiguration ();
+			try
+			{
+				LoadConfiguration();
 
-				var server = MqttServer.Create (Configuration, authenticationProvider: authenticationProvider);
+				var server = MqttServer.Create(Configuration, authenticationProvider: authenticationProvider);
 
-				server.Start ();
-				
+				server.Start();
+
 				return server;
-			} catch (MqttException protocolEx) {
-				if (protocolEx.InnerException is SocketException) {
-					return await GetServerAsync ();
-				} else {
+			}
+			catch (MqttException protocolEx)
+			{
+				if (protocolEx.InnerException is SocketException)
+				{
+					return await GetServerAsync();
+				}
+				else
+				{
 					throw;
 				}
 			}
 		}
 
-        protected virtual async Task<IMqttClient> GetClientAsync ()
+		protected virtual async Task<IMqttClient> GetClientAsync()
 		{
-			LoadConfiguration ();
+			LoadConfiguration();
 
-			return await MqttClient.CreateAsync (IPAddress.Loopback.ToString(), Configuration);
+			return await MqttClient.CreateAsync(IPAddress.Loopback.ToString(), Configuration);
 		}
 
 		protected string GetClientId()
 		{
-			return string.Concat ("Client", Guid.NewGuid ().ToString ().Replace("-", string.Empty).Substring (0, 15));
+			return string.Concat("Client", Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 15));
 		}
 
 		protected int GetTestLoad()
@@ -71,19 +77,23 @@ namespace IntegrationTests.Context
 			var testLoad = 0;
 			var loadValue = ConfigurationManager.AppSettings["testLoad"];
 
-			int.TryParse (loadValue, out testLoad);
+			int.TryParse(loadValue, out testLoad);
 
 			return testLoad;
 		}
 
 		void LoadConfiguration()
 		{
-			if (Configuration == null) {
-				lock (lockObject) {
-					if (Configuration == null) {
-						Configuration = new MqttConfiguration {
+			if (Configuration == null)
+			{
+				lock (lockObject)
+				{
+					if (Configuration == null)
+					{
+						Configuration = new MqttConfiguration
+						{
 							BufferSize = 128 * 1024,
-							Port = GetPort (),
+							Port = GetPort(),
 							KeepAliveSecs = keepAliveSecs,
 							WaitTimeoutSecs = 2,
 							MaximumQualityOfService = MqttQualityOfService.ExactlyOnce,
@@ -96,12 +106,15 @@ namespace IntegrationTests.Context
 
 		static int GetPort()
 		{
-			var port = random.Next (minValue: 40000, maxValue: 65535);
+			var port = random.Next(minValue: 40000, maxValue: 65535);
 
-			if(usedPorts.Any(p => p == port)) {
-				port = GetPort ();
-			} else {
-				usedPorts.Add (port);
+			if (usedPorts.Any(p => p == port))
+			{
+				port = GetPort();
+			}
+			else
+			{
+				usedPorts.Add(port);
 			}
 
 			return port;

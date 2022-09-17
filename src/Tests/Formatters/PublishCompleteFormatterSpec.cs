@@ -15,48 +15,48 @@ namespace Tests.Formatters
 		[InlineData("Files/Binaries/PublishComplete.packet", "Files/Packets/PublishComplete.json")]
 		public async Task when_reading_publish_complete_packet_then_succeeds(string packetPath, string jsonPath)
 		{
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
 
-			var expectedPublishComplete = Packet.ReadPacket<PublishComplete> (jsonPath);
+			var expectedPublishComplete = Packet.ReadPacket<PublishComplete>(jsonPath);
 			var formatter = new FlowPacketFormatter<PublishComplete>(MqttPacketType.PublishComplete, id => new PublishComplete(id));
-			var packet = Packet.ReadAllBytes (packetPath);
+			var packet = Packet.ReadAllBytes(packetPath);
 
-			var result = await formatter.FormatAsync (packet)
+			var result = await formatter.FormatAsync(packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Assert.Equal (expectedPublishComplete, result);
+			Assert.Equal(expectedPublishComplete, result);
 		}
 
 		[Theory]
 		[InlineData("Files/Binaries/PublishComplete_Invalid_HeaderFlag.packet")]
 		public void when_reading_invalid_publish_complete_packet_then_fails(string packetPath)
 		{
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
 
-			var formatter = new FlowPacketFormatter<PublishComplete> (MqttPacketType.PublishComplete, id => new PublishComplete(id));
-			var packet = Packet.ReadAllBytes (packetPath);
-			
-			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
+			var formatter = new FlowPacketFormatter<PublishComplete>(MqttPacketType.PublishComplete, id => new PublishComplete(id));
+			var packet = Packet.ReadAllBytes(packetPath);
 
-			Assert.True (ex.InnerException is MqttException);
+			var ex = Assert.Throws<AggregateException>(() => formatter.FormatAsync(packet).Wait());
+
+			Assert.True(ex.InnerException is MqttException);
 		}
 
 		[Theory]
 		[InlineData("Files/Packets/PublishComplete.json", "Files/Binaries/PublishComplete.packet")]
 		public async Task when_writing_publish_complete_packet_then_succeeds(string jsonPath, string packetPath)
 		{
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
 
-			var expectedPacket = Packet.ReadAllBytes (packetPath);
+			var expectedPacket = Packet.ReadAllBytes(packetPath);
 			var formatter = new FlowPacketFormatter<PublishComplete>(MqttPacketType.PublishComplete, id => new PublishComplete(id));
-			var publishComplete = Packet.ReadPacket<PublishComplete> (jsonPath);
+			var publishComplete = Packet.ReadPacket<PublishComplete>(jsonPath);
 
-			var result = await formatter.FormatAsync (publishComplete)
+			var result = await formatter.FormatAsync(publishComplete)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Assert.Equal (expectedPacket, result);
+			Assert.Equal(expectedPacket, result);
 		}
 	}
 }

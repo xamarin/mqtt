@@ -2,6 +2,6 @@
 {
 	internal interface IPacketIdProvider
 	{
-		ushort GetPacketId ();
+		ushort GetPacketId();
 	}
 }

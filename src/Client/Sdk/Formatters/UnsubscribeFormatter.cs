@@ -8,88 +8,90 @@ namespace System.Net.Mqtt.Sdk.Formatters
 	{
 		public override MqttPacketType PacketType { get { return Packets.MqttPacketType.Unsubscribe; } }
 
-		protected override Unsubscribe Read (byte[] bytes)
+		protected override Unsubscribe Read(byte[] bytes)
 		{
-			ValidateHeaderFlag (bytes, t => t == MqttPacketType.Unsubscribe, 0x02);
+			ValidateHeaderFlag(bytes, t => t == MqttPacketType.Unsubscribe, 0x02);
 
 			var remainingLengthBytesLength = 0;
-			var remainingLength = MqttProtocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
+			var remainingLength = MqttProtocol.Encoding.DecodeRemainingLength(bytes, out remainingLengthBytesLength);
 
 			var packetIdentifierStartIndex = remainingLengthBytesLength + 1;
-			var packetIdentifier = bytes.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
+			var packetIdentifier = bytes.Bytes(packetIdentifierStartIndex, 2).ToUInt16();
 
 			var index = 1 + remainingLengthBytesLength + 2;
 
 			if (bytes.Length == index)
-				throw new MqttProtocolViolationException  (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+				throw new MqttProtocolViolationException(Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
-			var topics = new List<string> ();
+			var topics = new List<string>();
 
-			do {
-				var topic = bytes.GetString (index, out index);
+			do
+			{
+				var topic = bytes.GetString(index, out index);
 
-				topics.Add (topic);
+				topics.Add(topic);
 			} while (bytes.Length - index + 1 >= 2);
 
-			return new Unsubscribe (packetIdentifier, topics.ToArray ());
+			return new Unsubscribe(packetIdentifier, topics.ToArray());
 		}
 
-		protected override byte[] Write (Unsubscribe packet)
+		protected override byte[] Write(Unsubscribe packet)
 		{
-			var bytes = new List<byte> ();
+			var bytes = new List<byte>();
 
-			var variableHeader = GetVariableHeader (packet);
-			var payload = GetPayload (packet);
-			var remainingLength = MqttProtocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
-			var fixedHeader = GetFixedHeader (remainingLength);
+			var variableHeader = GetVariableHeader(packet);
+			var payload = GetPayload(packet);
+			var remainingLength = MqttProtocol.Encoding.EncodeRemainingLength(variableHeader.Length + payload.Length);
+			var fixedHeader = GetFixedHeader(remainingLength);
 
-			bytes.AddRange (fixedHeader);
-			bytes.AddRange (variableHeader);
-			bytes.AddRange (payload);
+			bytes.AddRange(fixedHeader);
+			bytes.AddRange(variableHeader);
+			bytes.AddRange(payload);
 
-			return bytes.ToArray ();
+			return bytes.ToArray();
 		}
 
-		byte[] GetFixedHeader (byte[] remainingLength)
+		byte[] GetFixedHeader(byte[] remainingLength)
 		{
-			var fixedHeader = new List<byte> ();
+			var fixedHeader = new List<byte>();
 
 			var flags = 0x02;
 			var type = Convert.ToInt32(MqttPacketType.Unsubscribe) << 4;
 
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 
-			fixedHeader.Add (fixedHeaderByte1);
-			fixedHeader.AddRange (remainingLength);
+			fixedHeader.Add(fixedHeaderByte1);
+			fixedHeader.AddRange(remainingLength);
 
-			return fixedHeader.ToArray ();
+			return fixedHeader.ToArray();
 		}
 
-		byte[] GetVariableHeader (Unsubscribe packet)
+		byte[] GetVariableHeader(Unsubscribe packet)
 		{
-			var variableHeader = new List<byte> ();
+			var variableHeader = new List<byte>();
 
 			var packetIdBytes = MqttProtocol.Encoding.EncodeInteger(packet.PacketId);
 
-			variableHeader.AddRange (packetIdBytes);
+			variableHeader.AddRange(packetIdBytes);
 
-			return variableHeader.ToArray ();
+			return variableHeader.ToArray();
 		}
 
-		byte[] GetPayload (Unsubscribe packet)
+		byte[] GetPayload(Unsubscribe packet)
 		{
-			if (packet.Topics == null || !packet.Topics.Any ())
-				throw new MqttProtocolViolationException  (Properties.Resources.UnsubscribeFormatter_MissingTopics);
+			if (packet.Topics == null || !packet.Topics.Any())
+				throw new MqttProtocolViolationException(Properties.Resources.UnsubscribeFormatter_MissingTopics);
 
-			var payload = new List<byte> ();
+			var payload = new List<byte>();
 
-			foreach (var topic in packet.Topics) {
-				var topicBytes = MqttProtocol.Encoding.EncodeString (topic);
+			foreach (var topic in packet.Topics)
+			{
+				var topicBytes = MqttProtocol.Encoding.EncodeString(topic);
 
-				payload.AddRange (topicBytes);
+				payload.AddRange(topicBytes);
 			}
 
-			return payload.ToArray ();
+			return payload.ToArray();
 		}
 	}
 }

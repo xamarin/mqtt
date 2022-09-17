@@ -24,16 +24,16 @@ namespace System.Net.Mqtt.Sdk.Bindings
 		readonly IDisposable streamSubscription;
 		readonly AsyncLock asyncLockObject;
 
-		public WebSocketChannel (WebSocket client,
+		public WebSocketChannel(WebSocket client,
 			IPacketBuffer buffer,
 			MqttConfiguration configuration)
 		{
 			this.client = client;
 			this.buffer = buffer;
 			this.configuration = configuration;
-			receiver = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
-			sender = new ReplaySubject<byte[]> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
-			streamSubscription = SubscribeStream ();
+			receiver = new ReplaySubject<byte[]>(window: TimeSpan.FromSeconds(configuration.WaitTimeoutSecs));
+			sender = new ReplaySubject<byte[]>(window: TimeSpan.FromSeconds(configuration.WaitTimeoutSecs));
+			streamSubscription = SubscribeStream();
 			asyncLockObject = new AsyncLock();
 		}
 
@@ -43,9 +43,12 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			{
 				var connected = !closed;
 
-				try {
+				try
+				{
 					connected = connected && client.State == WebSocketState.Open;
-				} catch (Exception) {
+				}
+				catch (Exception)
+				{
 					connected = false;
 				}
 
@@ -57,7 +60,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 		public IObservable<byte[]> SenderStream { get { return sender; } }
 
-		public async Task SendAsync (byte[] message)
+		public async Task SendAsync(byte[] message)
 		{
 			if (!closed)
 			{
@@ -121,35 +124,45 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			}
 		}
 
-		IDisposable SubscribeStream ()
+		IDisposable SubscribeStream()
 		{
-			return Observable.Defer (() => {
+			return Observable.Defer(() =>
+			{
 				var buffer = new byte[configuration.BufferSize];
 
-				return Observable.FromAsync (() => {
-					return client.ReceiveAsync (new ArraySegment<byte> (buffer), CancellationToken.None);
+				return Observable.FromAsync(() =>
+				{
+					return client.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 				})
-				.Select (x => buffer.Take (x.Count));
+				.Select(x => buffer.Take(x.Count));
 			})
-			.Repeat ()
-			.TakeWhile (_ => IsConnected)
-			.Subscribe (bytes => {
-				if (buffer.TryGetPackets (bytes, out var packets)) {
-					foreach (var packet in packets) {
-						tracer.Verbose (Properties.Resources.MqttChannel_ReceivedPacket, packet.Length);
+			.Repeat()
+			.TakeWhile(_ => IsConnected)
+			.Subscribe(bytes =>
+			{
+				if (buffer.TryGetPackets(bytes, out var packets))
+				{
+					foreach (var packet in packets)
+					{
+						tracer.Verbose(Properties.Resources.MqttChannel_ReceivedPacket, packet.Length);
 
-						receiver.OnNext (packet);
+						receiver.OnNext(packet);
 					}
 				}
-			}, ex => {
-				if (ex is ObjectDisposedException) {
-					receiver.OnError (new MqttException (Properties.Resources.MqttChannel_StreamDisconnected, ex));
-				} else {
-					receiver.OnError (ex);
+			}, ex =>
+			{
+				if (ex is ObjectDisposedException)
+				{
+					receiver.OnError(new MqttException(Properties.Resources.MqttChannel_StreamDisconnected, ex));
 				}
-			}, () => {
-				tracer.Warn (Properties.Resources.MqttChannel_NetworkStreamCompleted);
-				receiver.OnCompleted ();
+				else
+				{
+					receiver.OnError(ex);
+				}
+			}, () =>
+			{
+				tracer.Warn(Properties.Resources.MqttChannel_NetworkStreamCompleted);
+				receiver.OnCompleted();
 			});
 		}
 	}

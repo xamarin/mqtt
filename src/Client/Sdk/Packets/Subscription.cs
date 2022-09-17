@@ -2,7 +2,7 @@
 {
 	internal class Subscription : IEquatable<Subscription>
 	{
-		public Subscription (string topicFilter, MqttQualityOfService requestedQos)
+		public Subscription(string topicFilter, MqttQualityOfService requestedQos)
 		{
 			TopicFilter = topicFilter;
 			MaximumQualityOfService = requestedQos;
@@ -12,7 +12,7 @@
 
 		public MqttQualityOfService MaximumQualityOfService { get; set; }
 
-		public bool Equals (Subscription other)
+		public bool Equals(Subscription other)
 		{
 			if (other == null)
 				return false;
@@ -21,7 +21,7 @@
 				MaximumQualityOfService == other.MaximumQualityOfService;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -31,28 +31,28 @@
 			if (subscription == null)
 				return false;
 
-			return Equals (subscription);
+			return Equals(subscription);
 		}
 
-		public static bool operator == (Subscription subscription, Subscription other)
+		public static bool operator ==(Subscription subscription, Subscription other)
 		{
 			if ((object)subscription == null || (object)other == null)
-				return Object.Equals (subscription, other);
+				return Object.Equals(subscription, other);
 
-			return subscription.Equals (other);
+			return subscription.Equals(other);
 		}
 
-		public static bool operator != (Subscription subscription, Subscription other)
+		public static bool operator !=(Subscription subscription, Subscription other)
 		{
 			if ((object)subscription == null || (object)other == null)
-				return !Object.Equals (subscription, other);
+				return !Object.Equals(subscription, other);
 
-			return !subscription.Equals (other);
+			return !subscription.Equals(other);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return TopicFilter.GetHashCode () + MaximumQualityOfService.GetHashCode ();
+			return TopicFilter.GetHashCode() + MaximumQualityOfService.GetHashCode();
 		}
 	}
 }

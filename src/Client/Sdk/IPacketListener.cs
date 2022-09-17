@@ -6,6 +6,6 @@ namespace System.Net.Mqtt.Sdk
 	{
 		IObservable<IPacket> PacketStream { get; }
 
-		void Listen ();
+		void Listen();
 	}
 }

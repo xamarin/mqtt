@@ -13,7 +13,7 @@
 		/// See <see cref="MqttConfiguration" /> for more details about the supported values
 		/// </param>
 		/// <returns>A listener to accept and provide incoming MQTT channels on top of Web Sockets</returns>
-		public IMqttChannelListener GetChannelListener (MqttConfiguration configuration)
-			=> new WebSocketChannelListener (configuration);
+		public IMqttChannelListener GetChannelListener(MqttConfiguration configuration)
+			=> new WebSocketChannelListener(configuration);
 	}
 }
