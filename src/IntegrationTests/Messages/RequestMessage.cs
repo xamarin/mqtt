@@ -3,8 +3,8 @@
 namespace IntegrationTests.Messages
 {
 	[Serializable]
-    public class RequestMessage
-    {
+	public class RequestMessage
+	{
 		public Guid Id { get; set; }
 
 		public string Name { get; set; }
@@ -12,5 +12,5 @@ namespace IntegrationTests.Messages
 		public DateTime Date { get; set; }
 
 		public byte[] Content { get; set; }
-    }
+	}
 }

@@ -2,7 +2,7 @@
 {
 	internal class ConnectAck : IPacket, IEquatable<ConnectAck>
 	{
-		public ConnectAck (MqttConnectionStatus status, bool existingSession)
+		public ConnectAck(MqttConnectionStatus status, bool existingSession)
 		{
 			Status = status;
 			SessionPresent = existingSession;
@@ -12,9 +12,9 @@
 
 		public MqttConnectionStatus Status { get; }
 
-		public bool SessionPresent { get;  }
+		public bool SessionPresent { get; }
 
-		public bool Equals (ConnectAck other)
+		public bool Equals(ConnectAck other)
 		{
 			if (other == null)
 				return false;
@@ -23,7 +23,7 @@
 				SessionPresent == other.SessionPresent;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -33,28 +33,28 @@
 			if (connectAck == null)
 				return false;
 
-			return Equals (connectAck);
+			return Equals(connectAck);
 		}
 
-		public static bool operator == (ConnectAck connectAck, ConnectAck other)
+		public static bool operator ==(ConnectAck connectAck, ConnectAck other)
 		{
 			if ((object)connectAck == null || (object)other == null)
-				return Object.Equals (connectAck, other);
+				return Object.Equals(connectAck, other);
 
-			return connectAck.Equals (other);
+			return connectAck.Equals(other);
 		}
 
-		public static bool operator != (ConnectAck connectAck, ConnectAck other)
+		public static bool operator !=(ConnectAck connectAck, ConnectAck other)
 		{
 			if ((object)connectAck == null || (object)other == null)
-				return !Object.Equals (connectAck, other);
+				return !Object.Equals(connectAck, other);
 
-			return !connectAck.Equals (other);
+			return !connectAck.Equals(other);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return Status.GetHashCode () + SessionPresent.GetHashCode ();
+			return Status.GetHashCode() + SessionPresent.GetHashCode();
 		}
 	}
 }

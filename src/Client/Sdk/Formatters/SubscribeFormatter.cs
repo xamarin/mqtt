@@ -8,123 +8,128 @@ namespace System.Net.Mqtt.Sdk.Formatters
 	{
 		readonly IMqttTopicEvaluator topicEvaluator;
 
-		public SubscribeFormatter (IMqttTopicEvaluator topicEvaluator)
+		public SubscribeFormatter(IMqttTopicEvaluator topicEvaluator)
 		{
 			this.topicEvaluator = topicEvaluator;
 		}
 
 		public override MqttPacketType PacketType { get { return Packets.MqttPacketType.Subscribe; } }
 
-		protected override Subscribe Read (byte[] bytes)
+		protected override Subscribe Read(byte[] bytes)
 		{
-			ValidateHeaderFlag (bytes, t => t == MqttPacketType.Subscribe, 0x02);
+			ValidateHeaderFlag(bytes, t => t == MqttPacketType.Subscribe, 0x02);
 
 			var remainingLengthBytesLength = 0;
-			var remainingLength = MqttProtocol.Encoding.DecodeRemainingLength (bytes, out remainingLengthBytesLength);
+			var remainingLength = MqttProtocol.Encoding.DecodeRemainingLength(bytes, out remainingLengthBytesLength);
 
 			var packetIdentifierStartIndex = remainingLengthBytesLength + 1;
-			var packetIdentifier = bytes.Bytes (packetIdentifierStartIndex, 2).ToUInt16();
+			var packetIdentifier = bytes.Bytes(packetIdentifierStartIndex, 2).ToUInt16();
 
 			var headerLength = 1 + remainingLengthBytesLength + 2;
 			var subscriptions = GetSubscriptions(bytes, headerLength, remainingLength);
 
-			return new Subscribe (packetIdentifier, subscriptions.ToArray ());
+			return new Subscribe(packetIdentifier, subscriptions.ToArray());
 		}
 
-		protected override byte[] Write (Subscribe packet)
+		protected override byte[] Write(Subscribe packet)
 		{
-			var bytes = new List<byte> ();
+			var bytes = new List<byte>();
 
-			var variableHeader = GetVariableHeader (packet);
-			var payload = GetPayload (packet);
-			var remainingLength = MqttProtocol.Encoding.EncodeRemainingLength (variableHeader.Length + payload.Length);
-			var fixedHeader = GetFixedHeader (remainingLength);
+			var variableHeader = GetVariableHeader(packet);
+			var payload = GetPayload(packet);
+			var remainingLength = MqttProtocol.Encoding.EncodeRemainingLength(variableHeader.Length + payload.Length);
+			var fixedHeader = GetFixedHeader(remainingLength);
 
-			bytes.AddRange (fixedHeader);
-			bytes.AddRange (variableHeader);
-			bytes.AddRange (payload);
+			bytes.AddRange(fixedHeader);
+			bytes.AddRange(variableHeader);
+			bytes.AddRange(payload);
 
-			return bytes.ToArray ();
+			return bytes.ToArray();
 		}
 
-		byte[] GetFixedHeader (byte[] remainingLength)
+		byte[] GetFixedHeader(byte[] remainingLength)
 		{
-			var fixedHeader = new List<byte> ();
+			var fixedHeader = new List<byte>();
 
 			var flags = 0x02;
 			var type = Convert.ToInt32(MqttPacketType.Subscribe) << 4;
 
 			var fixedHeaderByte1 = Convert.ToByte(flags | type);
 
-			fixedHeader.Add (fixedHeaderByte1);
-			fixedHeader.AddRange (remainingLength);
+			fixedHeader.Add(fixedHeaderByte1);
+			fixedHeader.AddRange(remainingLength);
 
-			return fixedHeader.ToArray ();
+			return fixedHeader.ToArray();
 		}
 
-		byte[] GetVariableHeader (Subscribe packet)
+		byte[] GetVariableHeader(Subscribe packet)
 		{
-			var variableHeader = new List<byte> ();
+			var variableHeader = new List<byte>();
 
 			var packetIdBytes = MqttProtocol.Encoding.EncodeInteger(packet.PacketId);
 
-			variableHeader.AddRange (packetIdBytes);
+			variableHeader.AddRange(packetIdBytes);
 
-			return variableHeader.ToArray ();
+			return variableHeader.ToArray();
 		}
 
-		byte[] GetPayload (Subscribe packet)
+		byte[] GetPayload(Subscribe packet)
 		{
-			if (packet.Subscriptions == null || !packet.Subscriptions.Any ())
-				throw new MqttProtocolViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+			if (packet.Subscriptions == null || !packet.Subscriptions.Any())
+				throw new MqttProtocolViolationException(Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
-			var payload = new List<byte> ();
+			var payload = new List<byte>();
 
-			foreach (var subscription in packet.Subscriptions) {
-                if (string.IsNullOrEmpty (subscription.TopicFilter)) {
-                    throw new MqttProtocolViolationException (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
-                }
-
-				if (!topicEvaluator.IsValidTopicFilter (subscription.TopicFilter)) {
-					var error = string.Format  (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
-
-					throw new MqttException (error);
+			foreach (var subscription in packet.Subscriptions)
+			{
+				if (string.IsNullOrEmpty(subscription.TopicFilter))
+				{
+					throw new MqttProtocolViolationException(Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 				}
 
-				var topicBytes = MqttProtocol.Encoding.EncodeString (subscription.TopicFilter);
-				var requestedQosByte = Convert.ToByte (subscription.MaximumQualityOfService);
+				if (!topicEvaluator.IsValidTopicFilter(subscription.TopicFilter))
+				{
+					var error = string.Format(Properties.Resources.SubscribeFormatter_InvalidTopicFilter, subscription.TopicFilter);
 
-				payload.AddRange (topicBytes);
-				payload.Add (requestedQosByte);
+					throw new MqttException(error);
+				}
+
+				var topicBytes = MqttProtocol.Encoding.EncodeString(subscription.TopicFilter);
+				var requestedQosByte = Convert.ToByte(subscription.MaximumQualityOfService);
+
+				payload.AddRange(topicBytes);
+				payload.Add(requestedQosByte);
 			}
 
-			return payload.ToArray ();
+			return payload.ToArray();
 		}
 
-		IEnumerable<Subscription> GetSubscriptions (byte[] bytes, int headerLength, int remainingLength)
+		IEnumerable<Subscription> GetSubscriptions(byte[] bytes, int headerLength, int remainingLength)
 		{
 			if (bytes.Length - headerLength < 4) //At least 4 bytes required on payload: MSB, LSB, Topic Filter, Requests QoS
-				throw new MqttProtocolViolationException  (Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
+				throw new MqttProtocolViolationException(Properties.Resources.SubscribeFormatter_MissingTopicFilterQosPair);
 
 			var index = headerLength;
 
-			do {
-				var topicFilter = bytes.GetString (index, out index);
+			do
+			{
+				var topicFilter = bytes.GetString(index, out index);
 
-				if (!topicEvaluator.IsValidTopicFilter (topicFilter)) {
-					var error = string.Format  (Properties.Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
+				if (!topicEvaluator.IsValidTopicFilter(topicFilter))
+				{
+					var error = string.Format(Properties.Resources.SubscribeFormatter_InvalidTopicFilter, topicFilter);
 
-					throw new MqttException (error);
+					throw new MqttException(error);
 				}
 
-				var requestedQosByte = bytes.Byte (index);
+				var requestedQosByte = bytes.Byte(index);
 
-				if (!Enum.IsDefined (typeof (MqttQualityOfService), requestedQosByte))
-					throw new MqttProtocolViolationException  (Properties.Resources.Formatter_InvalidQualityOfService);
+				if (!Enum.IsDefined(typeof(MqttQualityOfService), requestedQosByte))
+					throw new MqttProtocolViolationException(Properties.Resources.Formatter_InvalidQualityOfService);
 
 				var requestedQos = (MqttQualityOfService)requestedQosByte;
 
-				yield return new Subscription (topicFilter, requestedQos);
+				yield return new Subscription(topicFilter, requestedQos);
 				index++;
 			} while (bytes.Length - index + 1 >= 2);
 		}

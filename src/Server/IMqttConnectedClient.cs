@@ -12,12 +12,12 @@ namespace System.Net.Mqtt
 	/// is not necessary.
 	/// </summary>
 	public interface IMqttConnectedClient : IMqttClient
-    {
-        /// <summary>
-        /// Hides the unnecessary <see cref="IMqttClient.ConnectAsync(MqttClientCredentials, MqttLastWill, bool)"/> 
+	{
+		/// <summary>
+		/// Hides the unnecessary <see cref="IMqttClient.ConnectAsync(MqttClientCredentials, MqttLastWill, bool)"/> 
 		/// method from the interface.
-        /// </summary>
-        [EditorBrowsable (EditorBrowsableState.Never)]
-        new Task<SessionState> ConnectAsync(MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
-    }
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		new Task<SessionState> ConnectAsync(MqttClientCredentials credentials, MqttLastWill will = null, bool cleanSession = false);
+	}
 }

@@ -12,13 +12,13 @@ namespace System.Net.Mqtt.Sdk.Bindings
 	/// </summary>
 	public class WebSocketChannelListener : IMqttChannelListener
 	{
-		static readonly ITracer tracer = Tracer.Get<WebSocketChannelListener> ();
-		static readonly Subject<WebSocket> listener = new Subject<WebSocket> ();
+		static readonly ITracer tracer = Tracer.Get<WebSocketChannelListener>();
+		static readonly Subject<WebSocket> listener = new Subject<WebSocket>();
 
 		readonly MqttConfiguration configuration;
 		bool disposed;
 
-		internal WebSocketChannelListener (MqttConfiguration configuration)
+		internal WebSocketChannelListener(MqttConfiguration configuration)
 		{
 			this.configuration = configuration;
 		}
@@ -27,41 +27,45 @@ namespace System.Net.Mqtt.Sdk.Bindings
 		/// Accepts an incoming client request as a Web Socket
 		/// </summary>
 		/// <param name="webSocket">The Web Socket instance to accept</param>
-		public static void AcceptWebSocketClient (WebSocket webSocket) => listener.OnNext (webSocket);
+		public static void AcceptWebSocketClient(WebSocket webSocket) => listener.OnNext(webSocket);
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		public IObservable<IMqttChannel<byte[]>> GetChannelStream ()
+		public IObservable<IMqttChannel<byte[]>> GetChannelStream()
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		{
-			if (disposed) {
-				throw new ObjectDisposedException (GetType ().FullName);
+			if (disposed)
+			{
+				throw new ObjectDisposedException(GetType().FullName);
 			}
 
-			return Observable.Create<IMqttChannel<byte[]>> (observer => {
-				return listener.Subscribe (webSocket => {
-					var channel = new WebSocketChannel (webSocket, new PacketBuffer (), configuration);
+			return Observable.Create<IMqttChannel<byte[]>>(observer =>
+			{
+				return listener.Subscribe(webSocket =>
+				{
+					var channel = new WebSocketChannel(webSocket, new PacketBuffer(), configuration);
 
-					observer.OnNext (channel);
+					observer.OnNext(channel);
 				});
 			});
 		}
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		public void Dispose ()
+		public void Dispose()
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-		protected virtual void Dispose (bool disposing)
+		protected virtual void Dispose(bool disposing)
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		{
 			if (disposed) return;
 
-			if (disposing) {
-				listener.Dispose ();
+			if (disposing)
+			{
+				listener.Dispose();
 				disposed = true;
 			}
 		}

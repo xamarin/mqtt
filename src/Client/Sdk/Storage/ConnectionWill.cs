@@ -2,7 +2,7 @@
 {
 	internal class ConnectionWill : IStorageObject
 	{
-		public ConnectionWill (string clientId, MqttLastWill will)
+		public ConnectionWill(string clientId, MqttLastWill will)
 		{
 			Id = clientId;
 			Will = will;

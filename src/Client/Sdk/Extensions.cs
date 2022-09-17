@@ -5,11 +5,12 @@ namespace System.Net.Mqtt.Sdk
 {
 	internal static class Extensions
 	{
-		internal static ProtocolFlowType ToFlowType (this MqttPacketType packetType)
+		internal static ProtocolFlowType ToFlowType(this MqttPacketType packetType)
 		{
-			var flowType = default (ProtocolFlowType);
+			var flowType = default(ProtocolFlowType);
 
-			switch (packetType) {
+			switch (packetType)
+			{
 				case MqttPacketType.Connect:
 				case MqttPacketType.ConnectAck:
 					flowType = ProtocolFlowType.Connect;
@@ -43,18 +44,19 @@ namespace System.Net.Mqtt.Sdk
 			return flowType;
 		}
 
-		internal static MqttQualityOfService GetSupportedQos (this MqttConfiguration configuration, MqttQualityOfService requestedQos)
+		internal static MqttQualityOfService GetSupportedQos(this MqttConfiguration configuration, MqttQualityOfService requestedQos)
 		{
 			return requestedQos > configuration.MaximumQualityOfService ?
 				configuration.MaximumQualityOfService :
 				requestedQos;
 		}
 
-		internal static SubscribeReturnCode ToReturnCode (this MqttQualityOfService qos)
+		internal static SubscribeReturnCode ToReturnCode(this MqttQualityOfService qos)
 		{
-			var returnCode = default (SubscribeReturnCode);
+			var returnCode = default(SubscribeReturnCode);
 
-			switch (qos) {
+			switch (qos)
+			{
 				case MqttQualityOfService.AtMostOnce:
 					returnCode = SubscribeReturnCode.MaximumQoS0;
 					break;

@@ -10,38 +10,38 @@ namespace System.Net.Mqtt.Sdk
 	{
 		readonly IDictionary<MqttPacketType, IFormatter> formatters;
 
-		public PacketManager (params IFormatter[] formatters)
-			: this ((IEnumerable<IFormatter>)formatters)
+		public PacketManager(params IFormatter[] formatters)
+			: this((IEnumerable<IFormatter>)formatters)
 		{
 		}
 
-		public PacketManager (IEnumerable<IFormatter> formatters)
+		public PacketManager(IEnumerable<IFormatter> formatters)
 		{
-			this.formatters = formatters.ToDictionary (f => f.PacketType);
+			this.formatters = formatters.ToDictionary(f => f.PacketType);
 		}
 
-		public async Task<IPacket> GetPacketAsync (byte[] bytes)
+		public async Task<IPacket> GetPacketAsync(byte[] bytes)
 		{
-			var packetType = (MqttPacketType)bytes.Byte (0).Bits (4);
-			var formatter = default (IFormatter);
+			var packetType = (MqttPacketType)bytes.Byte(0).Bits(4);
+			var formatter = default(IFormatter);
 
-			if (!formatters.TryGetValue (packetType, out formatter))
-				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
+			if (!formatters.TryGetValue(packetType, out formatter))
+				throw new MqttException(Properties.Resources.PacketManager_PacketUnknown);
 
-			var packet = await formatter.FormatAsync (bytes)
+			var packet = await formatter.FormatAsync(bytes)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return packet;
 		}
 
-		public async Task<byte[]> GetBytesAsync (IPacket packet)
+		public async Task<byte[]> GetBytesAsync(IPacket packet)
 		{
-			var formatter = default (IFormatter);
+			var formatter = default(IFormatter);
 
-			if (!formatters.TryGetValue (packet.Type, out formatter))
-				throw new MqttException (Properties.Resources.PacketManager_PacketUnknown);
+			if (!formatters.TryGetValue(packet.Type, out formatter))
+				throw new MqttException(Properties.Resources.PacketManager_PacketUnknown);
 
-			var bytes = await formatter.FormatAsync (packet)
+			var bytes = await formatter.FormatAsync(packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			return bytes;

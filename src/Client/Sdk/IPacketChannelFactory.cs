@@ -5,8 +5,8 @@ namespace System.Net.Mqtt.Sdk
 {
 	internal interface IPacketChannelFactory
 	{
-		Task<IMqttChannel<IPacket>> CreateAsync ();
+		Task<IMqttChannel<IPacket>> CreateAsync();
 
-		IMqttChannel<IPacket> Create (IMqttChannel<byte[]> binaryChannel);
+		IMqttChannel<IPacket> Create(IMqttChannel<byte[]> binaryChannel);
 	}
 }

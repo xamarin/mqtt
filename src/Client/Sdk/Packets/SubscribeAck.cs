@@ -5,7 +5,7 @@ namespace System.Net.Mqtt.Sdk.Packets
 {
 	internal class SubscribeAck : IPacket, IEquatable<SubscribeAck>
 	{
-		public SubscribeAck (ushort packetId, params SubscribeReturnCode[] returnCodes)
+		public SubscribeAck(ushort packetId, params SubscribeReturnCode[] returnCodes)
 		{
 			PacketId = packetId;
 			ReturnCodes = returnCodes;
@@ -17,16 +17,16 @@ namespace System.Net.Mqtt.Sdk.Packets
 
 		public IEnumerable<SubscribeReturnCode> ReturnCodes { get; }
 
-		public bool Equals (SubscribeAck other)
+		public bool Equals(SubscribeAck other)
 		{
 			if (other == null)
 				return false;
 
 			return PacketId == other.PacketId &&
-				ReturnCodes.SequenceEqual (other.ReturnCodes);
+				ReturnCodes.SequenceEqual(other.ReturnCodes);
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -36,28 +36,28 @@ namespace System.Net.Mqtt.Sdk.Packets
 			if (subscribeAck == null)
 				return false;
 
-			return Equals (subscribeAck);
+			return Equals(subscribeAck);
 		}
 
-		public static bool operator == (SubscribeAck subscribeAck, SubscribeAck other)
+		public static bool operator ==(SubscribeAck subscribeAck, SubscribeAck other)
 		{
 			if ((object)subscribeAck == null || (object)other == null)
-				return Object.Equals (subscribeAck, other);
+				return Object.Equals(subscribeAck, other);
 
-			return subscribeAck.Equals (other);
+			return subscribeAck.Equals(other);
 		}
 
-		public static bool operator != (SubscribeAck subscribeAck, SubscribeAck other)
+		public static bool operator !=(SubscribeAck subscribeAck, SubscribeAck other)
 		{
 			if ((object)subscribeAck == null || (object)other == null)
-				return !Object.Equals (subscribeAck, other);
+				return !Object.Equals(subscribeAck, other);
 
-			return !subscribeAck.Equals (other);
+			return !subscribeAck.Equals(other);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return PacketId.GetHashCode () + ReturnCodes.GetHashCode ();
+			return PacketId.GetHashCode() + ReturnCodes.GetHashCode();
 		}
 	}
 }

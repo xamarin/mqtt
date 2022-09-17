@@ -7,8 +7,8 @@ namespace System.Net.Mqtt.Sdk.Formatters
 	{
 		MqttPacketType PacketType { get; }
 
-		Task<IPacket> FormatAsync (byte[] bytes);
+		Task<IPacket> FormatAsync(byte[] bytes);
 
-		Task<byte[]> FormatAsync (IPacket packet);
+		Task<byte[]> FormatAsync(IPacket packet);
 	}
 }

@@ -4,18 +4,18 @@
 	{
 		static readonly Lazy<NullAuthenticationProvider> instance;
 
-		static NullAuthenticationProvider ()
+		static NullAuthenticationProvider()
 		{
-			instance = new Lazy<NullAuthenticationProvider> (() => new NullAuthenticationProvider ());
+			instance = new Lazy<NullAuthenticationProvider>(() => new NullAuthenticationProvider());
 		}
 
-		NullAuthenticationProvider ()
+		NullAuthenticationProvider()
 		{
 		}
 
 		public static IMqttAuthenticationProvider Instance { get { return instance.Value; } }
 
-		public bool Authenticate (string clientId, string username, string password)
+		public bool Authenticate(string clientId, string username, string password)
 		{
 			return true;
 		}

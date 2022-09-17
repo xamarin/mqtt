@@ -362,11 +362,11 @@ namespace System.Net.Mqtt.Sdk
 			packetListener?.Dispose();
 			ResetReceiver();
 
-			if(Channel != null)
+			if (Channel != null)
 			{
 				await Channel.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
 			}
-			
+
 			IsConnected = false;
 			Id = null;
 

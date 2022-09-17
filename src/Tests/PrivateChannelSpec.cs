@@ -6,93 +6,95 @@ using Xunit;
 
 namespace Tests
 {
-    public class PrivateChannelSpec
-    {
-        [Fact]
-        public void when_creating_channel_with_stream_ready_then_it_is_connected ()
-        {
-            var configuration = new MqttConfiguration ();
-            var stream = new PrivateStream (configuration);
-            var channel = new PrivateChannel (stream, EndpointIdentifier.Client, configuration);
+	public class PrivateChannelSpec
+	{
+		[Fact]
+		public void when_creating_channel_with_stream_ready_then_it_is_connected()
+		{
+			var configuration = new MqttConfiguration();
+			var stream = new PrivateStream(configuration);
+			var channel = new PrivateChannel(stream, EndpointIdentifier.Client, configuration);
 
-            Assert.True (channel.IsConnected);
-            Assert.NotNull (channel.ReceiverStream);
-            Assert.NotNull (channel.SenderStream);
-        }
+			Assert.True(channel.IsConnected);
+			Assert.NotNull(channel.ReceiverStream);
+			Assert.NotNull(channel.SenderStream);
+		}
 
-        [Fact]
-        public void when_creating_channel_with_stream_disposed_then_fails ()
-        {
-            var configuration = new MqttConfiguration ();
-            var stream = new PrivateStream (configuration);
+		[Fact]
+		public void when_creating_channel_with_stream_disposed_then_fails()
+		{
+			var configuration = new MqttConfiguration();
+			var stream = new PrivateStream(configuration);
 
-            stream.Dispose ();
+			stream.Dispose();
 
-            var ex = Assert.Throws<ObjectDisposedException> (() => new PrivateChannel (stream, EndpointIdentifier.Client, configuration));
+			var ex = Assert.Throws<ObjectDisposedException>(() => new PrivateChannel(stream, EndpointIdentifier.Client, configuration));
 
-            Assert.NotNull (ex);
-         }
+			Assert.NotNull(ex);
+		}
 
-        [Fact]
-        public async Task when_sending_packet_then_stream_receives_successfully ()
-        {
-            var configuration = new MqttConfiguration ();
-            var stream = new PrivateStream (configuration);
-            var channel = new PrivateChannel (stream, EndpointIdentifier.Client, configuration);
+		[Fact]
+		public async Task when_sending_packet_then_stream_receives_successfully()
+		{
+			var configuration = new MqttConfiguration();
+			var stream = new PrivateStream(configuration);
+			var channel = new PrivateChannel(stream, EndpointIdentifier.Client, configuration);
 
-            var packetsReceived = 0;
+			var packetsReceived = 0;
 
-            stream
-                .Receive (EndpointIdentifier.Client)
-                .Subscribe(packet => {
-                    packetsReceived++;
-                });
+			stream
+				.Receive(EndpointIdentifier.Client)
+				.Subscribe(packet =>
+				{
+					packetsReceived++;
+				});
 
-            await channel.SendAsync (new byte[255]);
-            await channel.SendAsync (new byte[10]);
-            await channel.SendAsync (new byte[34]);
-            await channel.SendAsync (new byte[100]);
-            await channel.SendAsync (new byte[50]);
+			await channel.SendAsync(new byte[255]);
+			await channel.SendAsync(new byte[10]);
+			await channel.SendAsync(new byte[34]);
+			await channel.SendAsync(new byte[100]);
+			await channel.SendAsync(new byte[50]);
 
-            await Task.Delay (TimeSpan.FromMilliseconds(1000));
+			await Task.Delay(TimeSpan.FromMilliseconds(1000));
 
-            Assert.Equal (5, packetsReceived);
-        }
+			Assert.Equal(5, packetsReceived);
+		}
 
-        [Fact]
-        public async Task when_sending_to_stream_then_channel_receives_successfully ()
-        {
-            var configuration = new MqttConfiguration ();
-            var stream = new PrivateStream (configuration);
-            var channel = new PrivateChannel (stream, EndpointIdentifier.Server, configuration);
+		[Fact]
+		public async Task when_sending_to_stream_then_channel_receives_successfully()
+		{
+			var configuration = new MqttConfiguration();
+			var stream = new PrivateStream(configuration);
+			var channel = new PrivateChannel(stream, EndpointIdentifier.Server, configuration);
 
-            var packetsReceived = 0;
+			var packetsReceived = 0;
 
-            channel.ReceiverStream.Subscribe (packet => {
-                packetsReceived++;
-            });
+			channel.ReceiverStream.Subscribe(packet =>
+			{
+				packetsReceived++;
+			});
 
-            stream.Send (new byte[255], EndpointIdentifier.Client);
-            stream.Send (new byte[10], EndpointIdentifier.Client);
-            stream.Send (new byte[34], EndpointIdentifier.Client);
-            stream.Send (new byte[100], EndpointIdentifier.Client);
-            stream.Send (new byte[50], EndpointIdentifier.Client);
+			stream.Send(new byte[255], EndpointIdentifier.Client);
+			stream.Send(new byte[10], EndpointIdentifier.Client);
+			stream.Send(new byte[34], EndpointIdentifier.Client);
+			stream.Send(new byte[100], EndpointIdentifier.Client);
+			stream.Send(new byte[50], EndpointIdentifier.Client);
 
-            await Task.Delay (TimeSpan.FromMilliseconds (1000));
+			await Task.Delay(TimeSpan.FromMilliseconds(1000));
 
-            Assert.Equal(5, packetsReceived);
-        }
+			Assert.Equal(5, packetsReceived);
+		}
 
-        [Fact]
-        public async Task when_disposing_channel_then_became_disconnected ()
-        {
-            var configuration = new MqttConfiguration ();
-            var stream = new PrivateStream (configuration);
-            var channel = new PrivateChannel (stream, EndpointIdentifier.Server, configuration);
+		[Fact]
+		public async Task when_disposing_channel_then_became_disconnected()
+		{
+			var configuration = new MqttConfiguration();
+			var stream = new PrivateStream(configuration);
+			var channel = new PrivateChannel(stream, EndpointIdentifier.Server, configuration);
 
-            await channel.CloseAsync ();
+			await channel.CloseAsync();
 
-            Assert.False (channel.IsConnected);
-        }
-    }
+			Assert.False(channel.IsConnected);
+		}
+	}
 }

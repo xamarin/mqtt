@@ -30,35 +30,35 @@ namespace System.Net.Mqtt
 		/// to implement a custom binding
 		/// </param>
 		/// <returns>A new MQTT Client</returns>
-		public static Task<IMqttClient> CreateAsync (string hostAddress, MqttConfiguration configuration, IMqttBinding binding = null) =>
-			new MqttClientFactory (hostAddress, binding ?? new TcpBinding ()).CreateClientAsync (configuration);
+		public static Task<IMqttClient> CreateAsync(string hostAddress, MqttConfiguration configuration, IMqttBinding binding = null) =>
+			new MqttClientFactory(hostAddress, binding ?? new TcpBinding()).CreateClientAsync(configuration);
 
 		/// <summary>
 		/// Creates an <see cref="IMqttClient"/> and connects it to the destination 
 		/// <paramref name="hostAddress"/> server via TCP using the specified port.
 		/// </summary>
 		/// <returns>A new MQTT Client</returns>
-		public static Task<IMqttClient> CreateAsync (string hostAddress, int port) => 
-			new MqttClientFactory (hostAddress).CreateClientAsync (new MqttConfiguration { Port = port });
+		public static Task<IMqttClient> CreateAsync(string hostAddress, int port) =>
+			new MqttClientFactory(hostAddress).CreateClientAsync(new MqttConfiguration { Port = port });
 
 		/// <summary>
 		/// Creates an <see cref="IMqttClient"/> and connects it to the destination 
 		/// <paramref name="hostAddress"/> server via TCP using the protocol defaults.
 		/// </summary>
 		/// <returns>A new MQTT Client</returns>
-		public static Task<IMqttClient> CreateAsync (string hostAddress) =>
-			new MqttClientFactory (hostAddress).CreateClientAsync (new MqttConfiguration ());
+		public static Task<IMqttClient> CreateAsync(string hostAddress) =>
+			new MqttClientFactory(hostAddress).CreateClientAsync(new MqttConfiguration());
 
-		internal static string GetPrivateClientId () =>
-			string.Format (
+		internal static string GetPrivateClientId() =>
+			string.Format(
 				"private{0}",
-				Guid.NewGuid ().ToString ().Replace ("-", string.Empty).Substring (0, 10)
+				Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 10)
 			);
 
-		internal static string GetAnonymousClientId () =>
-			string.Format (
+		internal static string GetAnonymousClientId() =>
+			string.Format(
 				"anonymous{0}",
-				Guid.NewGuid ().ToString ().Replace ("-", string.Empty).Substring (0, 10)
+				Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 10)
 			);
 	}
 }

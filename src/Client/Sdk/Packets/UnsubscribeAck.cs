@@ -2,7 +2,7 @@
 {
 	internal class UnsubscribeAck : IFlowPacket, IEquatable<UnsubscribeAck>
 	{
-		public UnsubscribeAck (ushort packetId)
+		public UnsubscribeAck(ushort packetId)
 		{
 			PacketId = packetId;
 		}
@@ -11,7 +11,7 @@
 
 		public ushort PacketId { get; }
 
-		public bool Equals (UnsubscribeAck other)
+		public bool Equals(UnsubscribeAck other)
 		{
 			if (other == null)
 				return false;
@@ -19,7 +19,7 @@
 			return PacketId == other.PacketId;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -29,28 +29,28 @@
 			if (unsubscribeAck == null)
 				return false;
 
-			return Equals (unsubscribeAck);
+			return Equals(unsubscribeAck);
 		}
 
-		public static bool operator == (UnsubscribeAck unsubscribeAck, UnsubscribeAck other)
+		public static bool operator ==(UnsubscribeAck unsubscribeAck, UnsubscribeAck other)
 		{
 			if ((object)unsubscribeAck == null || (object)other == null)
-				return Object.Equals (unsubscribeAck, other);
+				return Object.Equals(unsubscribeAck, other);
 
-			return unsubscribeAck.Equals (other);
+			return unsubscribeAck.Equals(other);
 		}
 
-		public static bool operator != (UnsubscribeAck unsubscribeAck, UnsubscribeAck other)
+		public static bool operator !=(UnsubscribeAck unsubscribeAck, UnsubscribeAck other)
 		{
 			if ((object)unsubscribeAck == null || (object)other == null)
-				return !Object.Equals (unsubscribeAck, other);
+				return !Object.Equals(unsubscribeAck, other);
 
-			return !unsubscribeAck.Equals (other);
+			return !unsubscribeAck.Equals(other);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return PacketId.GetHashCode ();
+			return PacketId.GetHashCode();
 		}
 	}
 }

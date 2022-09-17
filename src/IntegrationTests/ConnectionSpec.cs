@@ -151,7 +151,7 @@ namespace IntegrationTests
 
 			await Task.WhenAll(tasks);
 
-			Assert.Equal(count, server.ActiveClients.Where(c => clientIds.Contains (c)).Count());
+			Assert.Equal(count, server.ActiveClients.Where(c => clientIds.Contains(c)).Count());
 			Assert.True(clients.All(c => c.IsConnected));
 			Assert.True(clients.All(c => !string.IsNullOrEmpty(c.Id)));
 
@@ -331,7 +331,7 @@ namespace IntegrationTests
 
 			while (!disconnectedSignal.IsSet)
 			{
-				if (server.ActiveClients.Where(c => clientIds.Contains (c)).Count() == 0 && clients.All(c => !c.IsConnected))
+				if (server.ActiveClients.Where(c => clientIds.Contains(c)).Count() == 0 && clients.All(c => !c.IsConnected))
 				{
 					disconnectedSignal.Set();
 				}

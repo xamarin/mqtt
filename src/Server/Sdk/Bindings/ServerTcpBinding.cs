@@ -14,7 +14,7 @@
 		/// See <see cref="MqttConfiguration" /> for more details about the supported values
 		/// </param>
 		/// <returns>A listener to accept and provide incoming MQTT channels on top of TCP</returns>
-		public IMqttChannelListener GetChannelListener (MqttConfiguration configuration)
-			=> new TcpChannelListener (configuration);
+		public IMqttChannelListener GetChannelListener(MqttConfiguration configuration)
+			=> new TcpChannelListener(configuration);
 	}
 }

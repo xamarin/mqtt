@@ -2,8 +2,8 @@
 
 namespace System.Net.Mqtt.Sdk.Flows
 {
-    internal interface IServerPublishReceiverFlow : IProtocolFlow
-    {
-        Task SendWillAsync (string clientId);
-    }
+	internal interface IServerPublishReceiverFlow : IProtocolFlow
+	{
+		Task SendWillAsync(string clientId);
+	}
 }

@@ -17,105 +17,113 @@ namespace IntegrationTests
 	{
 		readonly IMqttServer server;
 
-		public PublishingSpec () 
+		public PublishingSpec()
 			: base(keepAliveSecs: 1)
 		{
-			server = GetServerAsync ().Result;
+			server = GetServerAsync().Result;
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos0_then_succeeds()
 		{
-			var client = await GetClientAsync ();
-			var topic = Guid.NewGuid ().ToString ();
+			var client = await GetClientAsync();
+			var topic = Guid.NewGuid().ToString();
 			var count = GetTestLoad();
-			var tasks = new List<Task> ();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage (i);
-                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
+			for (var i = 1; i <= count; i++)
+			{
+				var testMessage = GetTestMessage(i);
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
 
-				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add(client.PublishAsync(message, MqttQualityOfService.AtMostOnce));
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			Assert.True (client.IsConnected);
+			Assert.True(client.IsConnected);
 
-			client.Dispose ();
+			client.Dispose();
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos1_then_succeeds()
 		{
-			var client = await GetClientAsync ();
-			var topic = Guid.NewGuid ().ToString ();
+			var client = await GetClientAsync();
+			var topic = Guid.NewGuid().ToString();
 			var count = GetTestLoad();
-			var tasks = new List<Task> ();
+			var tasks = new List<Task>();
 
-            var publishAckPackets = 0;
+			var publishAckPackets = 0;
 
-            (client as MqttClientImpl)
-               .Channel
-               .ReceiverStream
-               .Subscribe(packet => {
-                   if (packet is PublishAck)
-                   {
-                       publishAckPackets++;
-                   }
-               });
+			(client as MqttClientImpl)
+			   .Channel
+			   .ReceiverStream
+			   .Subscribe(packet =>
+			   {
+				   if (packet is PublishAck)
+				   {
+					   publishAckPackets++;
+				   }
+			   });
 
-            for (var i = 1; i <= count; i++) {
+			for (var i = 1; i <= count; i++)
+			{
 				var testMessage = GetTestMessage(i);
-                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
 
-				tasks.Add (client.PublishAsync (message, MqttQualityOfService.AtLeastOnce));
+				tasks.Add(client.PublishAsync(message, MqttQualityOfService.AtLeastOnce));
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			Assert.True (client.IsConnected);
-            Assert.True (publishAckPackets >= count);
+			Assert.True(client.IsConnected);
+			Assert.True(publishAckPackets >= count);
 
-            client.Dispose ();
+			client.Dispose();
 		}
 
 		[Fact]
 		public async Task when_publish_messages_with_qos2_then_succeeds()
 		{
-			var client = await GetClientAsync ();
-			var topic = Guid.NewGuid ().ToString ();
+			var client = await GetClientAsync();
+			var topic = Guid.NewGuid().ToString();
 			var count = GetTestLoad();
-			var tasks = new List<Task> ();
+			var tasks = new List<Task>();
 
-            var publishReceivedPackets = 0;
-            var publishCompletePackets = 0;
+			var publishReceivedPackets = 0;
+			var publishCompletePackets = 0;
 
-            (client as MqttClientImpl)
-                .Channel
-                .ReceiverStream
-                .Subscribe(packet =>  {
-                    if (packet is PublishReceived) {
-                        publishReceivedPackets++;
-                    } else if (packet is PublishComplete) {
-                        publishCompletePackets++;
-                    }
-                });
+			(client as MqttClientImpl)
+				.Channel
+				.ReceiverStream
+				.Subscribe(packet =>
+				{
+					if (packet is PublishReceived)
+					{
+						publishReceivedPackets++;
+					}
+					else if (packet is PublishComplete)
+					{
+						publishCompletePackets++;
+					}
+				});
 
-			for (var i = 1; i <= count; i++) {
+			for (var i = 1; i <= count; i++)
+			{
 				var testMessage = GetTestMessage(i);
-                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
 
-				tasks.Add (client.PublishAsync (message, MqttQualityOfService.ExactlyOnce));
+				tasks.Add(client.PublishAsync(message, MqttQualityOfService.ExactlyOnce));
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-            Assert.True (client.IsConnected);
-            Assert.True (publishReceivedPackets >= count);
-            Assert.True (publishCompletePackets >= count);
+			Assert.True(client.IsConnected);
+			Assert.True(publishReceivedPackets >= count);
+			Assert.True(publishCompletePackets >= count);
 
-			client.Dispose ();
+			client.Dispose();
 		}
 
 		[Fact]
@@ -123,69 +131,74 @@ namespace IntegrationTests
 		{
 			var count = GetTestLoad();
 
-			var guid = Guid.NewGuid ().ToString ();
+			var guid = Guid.NewGuid().ToString();
 			var topicFilter = guid + "/#";
 			var topic = guid;
 
-			var publisher = await GetClientAsync ();
-			var subscriber1 = await GetClientAsync ();
-			var subscriber2 = await GetClientAsync ();
+			var publisher = await GetClientAsync();
+			var subscriber1 = await GetClientAsync();
+			var subscriber2 = await GetClientAsync();
 
-			var subscriber1Done = new ManualResetEventSlim ();
-			var subscriber2Done = new ManualResetEventSlim ();
+			var subscriber1Done = new ManualResetEventSlim();
+			var subscriber2Done = new ManualResetEventSlim();
 			var subscriber1Received = 0;
 			var subscriber2Received = 0;
 
-			await subscriber1.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
+			await subscriber1.SubscribeAsync(topicFilter, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
-			await subscriber2.SubscribeAsync (topicFilter, MqttQualityOfService.AtMostOnce)
+			await subscriber2.SubscribeAsync(topicFilter, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber1.MessageStream
-				.Subscribe (m => {
-					if (m.Topic == topic) {
+				.Subscribe(m =>
+				{
+					if (m.Topic == topic)
+					{
 						subscriber1Received++;
 
 						if (subscriber1Received == count)
-							subscriber1Done.Set ();
+							subscriber1Done.Set();
 					}
 				});
 
 			subscriber2.MessageStream
-				.Subscribe (m => {
-					if (m.Topic == topic) {
+				.Subscribe(m =>
+				{
+					if (m.Topic == topic)
+					{
 						subscriber2Received++;
 
 						if (subscriber2Received == count)
-							subscriber2Done.Set ();
+							subscriber2Done.Set();
 					}
 				});
 
-			var tasks = new List<Task> ();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage (i);
-                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
+			for (var i = 1; i <= count; i++)
+			{
+				var testMessage = GetTestMessage(i);
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
 
-				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add(publisher.PublishAsync(message, MqttQualityOfService.AtMostOnce));
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			var completed = WaitHandle.WaitAll (new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
+			var completed = WaitHandle.WaitAll(new WaitHandle[] { subscriber1Done.WaitHandle, subscriber2Done.WaitHandle }, TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
 
-			Assert.Equal (count, subscriber1Received);
-			Assert.Equal (count, subscriber2Received);
-			Assert.True (completed);
+			Assert.Equal(count, subscriber1Received);
+			Assert.Equal(count, subscriber2Received);
+			Assert.True(completed);
 
-			await subscriber1.UnsubscribeAsync (topicFilter)
+			await subscriber1.UnsubscribeAsync(topicFilter)
 				.ConfigureAwait(continueOnCapturedContext: false);
-			await subscriber2.UnsubscribeAsync (topicFilter)
+			await subscriber2.UnsubscribeAsync(topicFilter)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber1.Dispose ();
-			subscriber2.Dispose ();
-			publisher.Dispose ();
+			subscriber1.Dispose();
+			subscriber2.Dispose();
+			publisher.Dispose();
 		}
 
 		[Fact]
@@ -193,36 +206,39 @@ namespace IntegrationTests
 		{
 			var count = GetTestLoad();
 
-			var topic = Guid.NewGuid ().ToString ();
-			var publisher = await GetClientAsync ();
+			var topic = Guid.NewGuid().ToString();
+			var publisher = await GetClientAsync();
 			var topicsNotSubscribedCount = 0;
-			var topicsNotSubscribedDone = new ManualResetEventSlim ();
+			var topicsNotSubscribedDone = new ManualResetEventSlim();
 
-			server.MessageUndelivered += (sender, e) => {
+			server.MessageUndelivered += (sender, e) =>
+			{
 				topicsNotSubscribedCount++;
 
-				if (topicsNotSubscribedCount == count) {
-					topicsNotSubscribedDone.Set ();
+				if (topicsNotSubscribedCount == count)
+				{
+					topicsNotSubscribedDone.Set();
 				}
 			};
 
-			var tasks = new List<Task> ();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
-				var testMessage = GetTestMessage (i);
-                var message = new MqttApplicationMessage (topic, Serializer.Serialize (testMessage));
+			for (var i = 1; i <= count; i++)
+			{
+				var testMessage = GetTestMessage(i);
+				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
 
-				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add(publisher.PublishAsync(message, MqttQualityOfService.AtMostOnce));
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			var success = topicsNotSubscribedDone.Wait (TimeSpan.FromSeconds(keepAliveSecs * 2));
+			var success = topicsNotSubscribedDone.Wait(TimeSpan.FromSeconds(keepAliveSecs * 2));
 
-			Assert.Equal (count, topicsNotSubscribedCount);
-			Assert.True (success);
+			Assert.Equal(count, topicsNotSubscribedCount);
+			Assert.True(success);
 
-			publisher.Dispose ();
+			publisher.Dispose();
 		}
 
 		[Fact]
@@ -230,151 +246,161 @@ namespace IntegrationTests
 		{
 			var count = GetTestLoad();
 
-			var guid = Guid.NewGuid ().ToString ();
+			var guid = Guid.NewGuid().ToString();
 			var requestTopic = guid;
 			var responseTopic = guid + "/response";
 
-			var publisher = await GetClientAsync ();
-			var subscriber = await GetClientAsync ();
+			var publisher = await GetClientAsync();
+			var subscriber = await GetClientAsync();
 
-			var subscriberDone = new ManualResetEventSlim ();
+			var subscriberDone = new ManualResetEventSlim();
 			var subscriberReceived = 0;
 
-			await subscriber.SubscribeAsync (requestTopic, MqttQualityOfService.AtMostOnce)
+			await subscriber.SubscribeAsync(requestTopic, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
-			await publisher.SubscribeAsync (responseTopic, MqttQualityOfService.AtMostOnce)
+			await publisher.SubscribeAsync(responseTopic, MqttQualityOfService.AtMostOnce)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			subscriber.MessageStream
-				.Subscribe (async m => {
-					if (m.Topic == requestTopic) {
+				.Subscribe(async m =>
+				{
+					if (m.Topic == requestTopic)
+					{
 						var request = Serializer.Deserialize<RequestMessage>(m.Payload);
-						var response = GetResponseMessage (request);
-                        var message = new MqttApplicationMessage (responseTopic, Serializer.Serialize (response));
+						var response = GetResponseMessage(request);
+						var message = new MqttApplicationMessage(responseTopic, Serializer.Serialize(response));
 
-						await subscriber.PublishAsync (message, MqttQualityOfService.AtMostOnce)
+						await subscriber.PublishAsync(message, MqttQualityOfService.AtMostOnce)
 							.ConfigureAwait(continueOnCapturedContext: false);
 					}
 				});
 
 			publisher.MessageStream
-				.Subscribe (m => {
-					if (m.Topic == responseTopic) {
+				.Subscribe(m =>
+				{
+					if (m.Topic == responseTopic)
+					{
 						subscriberReceived++;
 
 						if (subscriberReceived == count)
-							subscriberDone.Set ();
+							subscriberDone.Set();
 					}
 				});
 
-			var tasks = new List<Task> ();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
-				var request = GetRequestMessage ();
-                var message = new MqttApplicationMessage (requestTopic, Serializer.Serialize (request));
+			for (var i = 1; i <= count; i++)
+			{
+				var request = GetRequestMessage();
+				var message = new MqttApplicationMessage(requestTopic, Serializer.Serialize(request));
 
-				tasks.Add (publisher.PublishAsync (message, MqttQualityOfService.AtMostOnce));
+				tasks.Add(publisher.PublishAsync(message, MqttQualityOfService.AtMostOnce));
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			var completed = subscriberDone.Wait (TimeSpan.FromSeconds (Configuration.WaitTimeoutSecs));
+			var completed = subscriberDone.Wait(TimeSpan.FromSeconds(Configuration.WaitTimeoutSecs));
 
-			Assert.Equal (count, subscriberReceived);
-			Assert.True (completed);
+			Assert.Equal(count, subscriberReceived);
+			Assert.True(completed);
 
-			await subscriber.UnsubscribeAsync (requestTopic)
+			await subscriber.UnsubscribeAsync(requestTopic)
 				.ConfigureAwait(continueOnCapturedContext: false);
-			await publisher.UnsubscribeAsync (responseTopic)
+			await publisher.UnsubscribeAsync(responseTopic)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			subscriber.Dispose ();
-			publisher.Dispose ();
+			subscriber.Dispose();
+			publisher.Dispose();
 		}
 
 		[Fact]
 		public async Task when_publish_with_qos0_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = await GetClientAsync ();
-			var count = GetTestLoad ();
-			var tasks = new List<Task> ();
+			var client = await GetClientAsync();
+			var count = GetTestLoad();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
+			for (var i = 1; i <= count; i++)
+			{
 				var subscribePublishTask = client
-					.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.AtMostOnce)
-					.ContinueWith(t => client.PublishAsync (new MqttApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtMostOnce));
+					.SubscribeAsync(Guid.NewGuid().ToString(), MqttQualityOfService.AtMostOnce)
+					.ContinueWith(t => client.PublishAsync(new MqttApplicationMessage(Guid.NewGuid().ToString(), Encoding.UTF8.GetBytes("Foo Message")), MqttQualityOfService.AtMostOnce));
 
-				tasks.Add (subscribePublishTask);
+				tasks.Add(subscribePublishTask);
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			Assert.True (client.IsConnected);
+			Assert.True(client.IsConnected);
 		}
 
 		[Fact]
 		public async Task when_publish_with_qos1_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = await GetClientAsync ();
-			var count = GetTestLoad ();
-			var tasks = new List<Task> ();
+			var client = await GetClientAsync();
+			var count = GetTestLoad();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
+			for (var i = 1; i <= count; i++)
+			{
 				var subscribePublishTask = client
-					.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.AtLeastOnce)
-					.ContinueWith(t => client.PublishAsync (new MqttApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.AtLeastOnce));
+					.SubscribeAsync(Guid.NewGuid().ToString(), MqttQualityOfService.AtLeastOnce)
+					.ContinueWith(t => client.PublishAsync(new MqttApplicationMessage(Guid.NewGuid().ToString(), Encoding.UTF8.GetBytes("Foo Message")), MqttQualityOfService.AtLeastOnce));
 
 				tasks.Add(subscribePublishTask);
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			Assert.True (client.IsConnected);
+			Assert.True(client.IsConnected);
 		}
 
 		[Fact]
 		public async Task when_publish_with_qos2_and_subscribe_with_same_client_intensively_then_succeeds()
 		{
-			var client = await GetClientAsync ();
-			var count = GetTestLoad ();
-			var tasks = new List<Task> ();
+			var client = await GetClientAsync();
+			var count = GetTestLoad();
+			var tasks = new List<Task>();
 
-			for (var i = 1; i <= count; i++) {
+			for (var i = 1; i <= count; i++)
+			{
 				var subscribePublishTask = client
-						.SubscribeAsync (Guid.NewGuid ().ToString (), MqttQualityOfService.ExactlyOnce)
-						.ContinueWith(t => client.PublishAsync (new MqttApplicationMessage (Guid.NewGuid ().ToString (), Encoding.UTF8.GetBytes ("Foo Message")), MqttQualityOfService.ExactlyOnce), TaskContinuationOptions.OnlyOnRanToCompletion);
+						.SubscribeAsync(Guid.NewGuid().ToString(), MqttQualityOfService.ExactlyOnce)
+						.ContinueWith(t => client.PublishAsync(new MqttApplicationMessage(Guid.NewGuid().ToString(), Encoding.UTF8.GetBytes("Foo Message")), MqttQualityOfService.ExactlyOnce), TaskContinuationOptions.OnlyOnRanToCompletion);
 
 				tasks.Add(subscribePublishTask);
 			}
 
-			await Task.WhenAll (tasks);
+			await Task.WhenAll(tasks);
 
-			Assert.True (client.IsConnected);
+			Assert.True(client.IsConnected);
 		}
 
-        [Fact]
-        public async Task when_publish_system_messages_then_fails_and_server_disconnects_client()
-        {
-            var client = await GetClientAsync ();
-            var topic = "$SYS/" + Guid.NewGuid ().ToString ();
-            var message = new MqttApplicationMessage (topic, Encoding.UTF8.GetBytes ("Foo Message"));
+		[Fact]
+		public async Task when_publish_system_messages_then_fails_and_server_disconnects_client()
+		{
+			var client = await GetClientAsync();
+			var topic = "$SYS/" + Guid.NewGuid().ToString();
+			var message = new MqttApplicationMessage(topic, Encoding.UTF8.GetBytes("Foo Message"));
 
-            var clientDisconnectedEvent = new ManualResetEventSlim ();
+			var clientDisconnectedEvent = new ManualResetEventSlim();
 
-            client.Disconnected += (sender, e) => {
-                if (e.Reason == DisconnectedReason.RemoteDisconnected) {
-                    clientDisconnectedEvent.Set ();
-                }
-            };
+			client.Disconnected += (sender, e) =>
+			{
+				if (e.Reason == DisconnectedReason.RemoteDisconnected)
+				{
+					clientDisconnectedEvent.Set();
+				}
+			};
 
-            await client.PublishAsync (message, MqttQualityOfService.ExactlyOnce);
+			await client.PublishAsync(message, MqttQualityOfService.ExactlyOnce);
 
-            var clientRemoteDisconnected = clientDisconnectedEvent.Wait (2000);
+			var clientRemoteDisconnected = clientDisconnectedEvent.Wait(2000);
 
-            Assert.True (clientRemoteDisconnected);
+			Assert.True(clientRemoteDisconnected);
 
-            client.Dispose();
-        }
+			client.Dispose();
+		}
 
 		[Fact]
 		public async Task when_publish_without_clean_session_then_pending_messages_are_sent_when_reconnect()
@@ -398,7 +424,8 @@ namespace IntegrationTests
 			var subscription1 = client1
 				.MessageStream
 				.Where(m => m.Topic == topic)
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					client1Received++;
 
 					if (client1Received == messagesBeforeDisconnect)
@@ -408,14 +435,16 @@ namespace IntegrationTests
 			var subscription2 = client2
 				.MessageStream
 				.Where(m => m.Topic == topic)
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					client2Received++;
 
 					if (client2Received == messagesBeforeDisconnect)
 						client2Done.Set();
 				});
 
-			for (var i = 1; i <= messagesBeforeDisconnect; i++) {
+			for (var i = 1; i <= messagesBeforeDisconnect; i++)
+			{
 				var testMessage = GetTestMessage(i);
 				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
 
@@ -443,7 +472,8 @@ namespace IntegrationTests
 			subscription1 = client1
 				.MessageStream
 				.Where(m => m.Topic == topic)
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					var testMessage = Serializer.Deserialize<TestMessage>(m.Payload);
 
 					if (testMessage.Id > messagesBeforeDisconnect)
@@ -458,7 +488,8 @@ namespace IntegrationTests
 			subscription2 = client2
 				.MessageStream
 				.Where(m => m.Topic == topic)
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					var testMessage = Serializer.Deserialize<TestMessage>(m.Payload);
 
 					if (testMessage.Id > messagesBeforeDisconnect)
@@ -470,7 +501,8 @@ namespace IntegrationTests
 						client2Done.Set();
 				});
 
-			for (var i = messagesBeforeDisconnect + 1; i <= messagesBeforeDisconnect + messagesAfterReconnect; i++) {
+			for (var i = messagesBeforeDisconnect + 1; i <= messagesBeforeDisconnect + messagesAfterReconnect; i++)
+			{
 				var testMessage = GetTestMessage(i);
 				var message = new MqttApplicationMessage(topic, Serializer.Serialize(testMessage));
 
@@ -516,7 +548,8 @@ namespace IntegrationTests
 			subscriber
 				.MessageStream
 				.Where(m => m.Topic == topic)
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					subscriberReceived++;
 
 					if (subscriberReceived == count)
@@ -530,7 +563,8 @@ namespace IntegrationTests
 			subscriber
 				.MessageStream
 				.Where(m => m.Topic == topic)
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					subscriberReceived++;
 
 					if (subscriberReceived == count)
@@ -584,7 +618,8 @@ namespace IntegrationTests
 			subscriber
 				.MessageStream
 				.Where(m => m.Topic == topic)
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					subscriberReceived++;
 
 					if (subscriberReceived == count)
@@ -636,7 +671,8 @@ namespace IntegrationTests
 
 			subscriber
 				.MessageStream
-				.Subscribe(m => {
+				.Subscribe(m =>
+				{
 					if (m.Topic == topic)
 					{
 						received++;
@@ -693,16 +729,18 @@ namespace IntegrationTests
 			publisher.Dispose();
 		}
 
-		public void Dispose ()
+		public void Dispose()
 		{
-			if (server != null) {
-				server.Stop ();
+			if (server != null)
+			{
+				server.Stop();
 			}
 		}
 
 		TestMessage GetTestMessage(int id)
 		{
-			return new TestMessage {
+			return new TestMessage
+			{
 				Id = id,
 				Name = string.Concat("Message ", Guid.NewGuid().ToString().Substring(0, 4)),
 				Value = new Random().Next()
@@ -711,7 +749,8 @@ namespace IntegrationTests
 
 		RequestMessage GetRequestMessage()
 		{
-			return new RequestMessage {
+			return new RequestMessage
+			{
 				Id = Guid.NewGuid(),
 				Name = string.Concat("Request ", Guid.NewGuid().ToString().Substring(0, 4)),
 				Date = DateTime.Now,
@@ -721,7 +760,8 @@ namespace IntegrationTests
 
 		ResponseMessage GetResponseMessage(RequestMessage request)
 		{
-			return new ResponseMessage {
+			return new ResponseMessage
+			{
 				Name = request.Name,
 				Ok = true
 			};

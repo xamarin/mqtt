@@ -16,255 +16,255 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_connect_then_session_is_created_and_ack_is_sent()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
-			var senderFlow = new Mock<IPublishSenderFlow> ();
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider>(p => p.Authenticate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()) == true);
+			var sessionRepository = new Mock<IRepository<ClientSession>>();
+			var willRepository = new Mock<IRepository<ConnectionWill>>();
+			var senderFlow = new Mock<IPublishSenderFlow>();
 
-			var clientId = Guid.NewGuid ().ToString ();
-			var connect = new Connect (clientId, cleanSession: true);
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var clientId = Guid.NewGuid().ToString();
+			var connect = new Connect(clientId, cleanSession: true);
+			var channel = new Mock<IMqttChannel<IPacket>>();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
+			channel.Setup(c => c.SendAsync(It.IsAny<IPacket>()))
+				.Callback<IPacket>(packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var connectionProvider = new Mock<IConnectionProvider> ();
+			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
-				.Returns (Task.FromResult(channel.Object));
+				.Setup(p => p.GetConnectionAsync(It.Is<string>(c => c == clientId)))
+				.Returns(Task.FromResult(channel.Object));
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object)
+			await flow.ExecuteAsync(clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.Id == clientId && s.Clean == true)));
-			sessionRepository.Verify (r => r.Delete (It.IsAny<string> ()), Times.Never);
-			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
+			sessionRepository.Verify(r => r.Create(It.Is<ClientSession>(s => s.Id == clientId && s.Clean == true)));
+			sessionRepository.Verify(r => r.Delete(It.IsAny<string>()), Times.Never);
+			willRepository.Verify(r => r.Create(It.IsAny<ConnectionWill>()), Times.Never);
 
-			Assert.NotNull (sentPacket);
+			Assert.NotNull(sentPacket);
 
 			var connectAck = sentPacket as ConnectAck;
 
-			Assert.NotNull (connectAck);
-			Assert.Equal (MqttPacketType.ConnectAck, connectAck.Type);
-			Assert.Equal (MqttConnectionStatus.Accepted, connectAck.Status);
-			Assert.False (connectAck.SessionPresent);
+			Assert.NotNull(connectAck);
+			Assert.Equal(MqttPacketType.ConnectAck, connectAck.Type);
+			Assert.Equal(MqttConnectionStatus.Accepted, connectAck.Status);
+			Assert.False(connectAck.SessionPresent);
 		}
 
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_without_clean_session_then_session_is_not_deleted_and_ack_is_sent_with_session_present()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider>(p => p.Authenticate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()) == true);
+			var sessionRepository = new Mock<IRepository<ClientSession>>();
+			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			var clientId = Guid.NewGuid ().ToString ();
-			var existingSession = new ClientSession (clientId, clean: false);
+			var clientId = Guid.NewGuid().ToString();
+			var existingSession = new ClientSession(clientId, clean: false);
 
 			sessionRepository
-				.Setup (r => r.Read (It.IsAny<string>()))
-				.Returns (existingSession);
+				.Setup(r => r.Read(It.IsAny<string>()))
+				.Returns(existingSession);
 
-			var senderFlow = new Mock<IPublishSenderFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow>();
 
-			var connect = new Connect (clientId, cleanSession: false);
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var connect = new Connect(clientId, cleanSession: false);
+			var channel = new Mock<IMqttChannel<IPacket>>();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
+			channel.Setup(c => c.SendAsync(It.IsAny<IPacket>()))
+				.Callback<IPacket>(packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var connectionProvider = new Mock<IConnectionProvider> ();
+			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
-				.Returns (Task.FromResult(channel.Object));
+				.Setup(p => p.GetConnectionAsync(It.Is<string>(c => c == clientId)))
+				.Returns(Task.FromResult(channel.Object));
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object)
+			await flow.ExecuteAsync(clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			sessionRepository.Verify (r => r.Create (It.IsAny<ClientSession> ()), Times.Never);
-			sessionRepository.Verify (r => r.Delete (It.IsAny<string> ()), Times.Never);
-			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
+			sessionRepository.Verify(r => r.Create(It.IsAny<ClientSession>()), Times.Never);
+			sessionRepository.Verify(r => r.Delete(It.IsAny<string>()), Times.Never);
+			willRepository.Verify(r => r.Create(It.IsAny<ConnectionWill>()), Times.Never);
 
 			var connectAck = sentPacket as ConnectAck;
 
-			Assert.NotNull (connectAck);
-			Assert.Equal (MqttPacketType.ConnectAck, connectAck.Type);
-			Assert.Equal (MqttConnectionStatus.Accepted, connectAck.Status);
-			Assert.True (connectAck.SessionPresent);
+			Assert.NotNull(connectAck);
+			Assert.Equal(MqttPacketType.ConnectAck, connectAck.Type);
+			Assert.Equal(MqttConnectionStatus.Accepted, connectAck.Status);
+			Assert.True(connectAck.SessionPresent);
 		}
 
 		[Fact]
 		public async Task when_sending_connect_with_existing_session_and_clean_session_then_session_is_deleted_and_ack_is_sent_with_session_present()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider>(p => p.Authenticate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()) == true);
+			var sessionRepository = new Mock<IRepository<ClientSession>>();
+			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			var clientId = Guid.NewGuid ().ToString ();
-			var existingSession = new ClientSession (clientId, clean: true);
+			var clientId = Guid.NewGuid().ToString();
+			var existingSession = new ClientSession(clientId, clean: true);
 
 			sessionRepository
-				.Setup (r => r.Read (It.IsAny<string>()))
-				.Returns (existingSession);
+				.Setup(r => r.Read(It.IsAny<string>()))
+				.Returns(existingSession);
 
-			var senderFlow = new Mock<IPublishSenderFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow>();
 
-			var connect = new Connect (clientId, cleanSession: true);
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var connect = new Connect(clientId, cleanSession: true);
+			var channel = new Mock<IMqttChannel<IPacket>>();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
+			channel.Setup(c => c.SendAsync(It.IsAny<IPacket>()))
+				.Callback<IPacket>(packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var connectionProvider = new Mock<IConnectionProvider> ();
+			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
-				.Returns (Task.FromResult(channel.Object));
+				.Setup(p => p.GetConnectionAsync(It.Is<string>(c => c == clientId)))
+				.Returns(Task.FromResult(channel.Object));
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object)
+			await flow.ExecuteAsync(clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var connectAck = sentPacket as ConnectAck;
 
-			sessionRepository.Verify (r => r.Delete (It.Is<string> (s => s == existingSession.Id)));
-			sessionRepository.Verify (r => r.Create(It.Is<ClientSession> (s => s.Clean == true)));
-			willRepository.Verify (r => r.Create (It.IsAny<ConnectionWill> ()), Times.Never);
+			sessionRepository.Verify(r => r.Delete(It.Is<string>(s => s == existingSession.Id)));
+			sessionRepository.Verify(r => r.Create(It.Is<ClientSession>(s => s.Clean == true)));
+			willRepository.Verify(r => r.Create(It.IsAny<ConnectionWill>()), Times.Never);
 
-			Assert.NotNull (connectAck);
-			Assert.Equal (MqttPacketType.ConnectAck, connectAck.Type);
-			Assert.Equal (MqttConnectionStatus.Accepted, connectAck.Status);
-			Assert.False (connectAck.SessionPresent);
+			Assert.NotNull(connectAck);
+			Assert.Equal(MqttPacketType.ConnectAck, connectAck.Type);
+			Assert.Equal(MqttConnectionStatus.Accepted, connectAck.Status);
+			Assert.False(connectAck.SessionPresent);
 		}
 
 		[Fact]
 		public async Task when_sending_connect_without_existing_session_and_without_clean_session_then_ack_is_sent_with_no_session_present()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider>(p => p.Authenticate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()) == true);
+			var sessionRepository = new Mock<IRepository<ClientSession>>();
+			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			var clientId = Guid.NewGuid ().ToString ();
+			var clientId = Guid.NewGuid().ToString();
 
 			sessionRepository
-				.Setup (r => r.Read (It.IsAny<string>()))
-				.Returns (default(ClientSession));
+				.Setup(r => r.Read(It.IsAny<string>()))
+				.Returns(default(ClientSession));
 
-			var senderFlow = new Mock<IPublishSenderFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow>();
 
-			var connect = new Connect (clientId, cleanSession: false);
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var connect = new Connect(clientId, cleanSession: false);
+			var channel = new Mock<IMqttChannel<IPacket>>();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
+			channel.Setup(c => c.SendAsync(It.IsAny<IPacket>()))
+				.Callback<IPacket>(packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var connectionProvider = new Mock<IConnectionProvider> ();
+			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
-				.Returns (Task.FromResult(channel.Object));
+				.Setup(p => p.GetConnectionAsync(It.Is<string>(c => c == clientId)))
+				.Returns(Task.FromResult(channel.Object));
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object)
+			await flow.ExecuteAsync(clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var connectAck = sentPacket as ConnectAck;
 
-			Assert.False (connectAck.SessionPresent);
+			Assert.False(connectAck.SessionPresent);
 		}
 
 		[Fact]
 		public async Task when_sending_connect_with_will_then_will_is_created_and_ack_is_sent()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == true);
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider>(p => p.Authenticate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()) == true);
+			var sessionRepository = new Mock<IRepository<ClientSession>>();
+			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
-			var senderFlow = new Mock<IPublishSenderFlow> ();
+			var senderFlow = new Mock<IPublishSenderFlow>();
 
-			var clientId = Guid.NewGuid ().ToString ();
-			var connect = new Connect (clientId, cleanSession: true);
+			var clientId = Guid.NewGuid().ToString();
+			var connect = new Connect(clientId, cleanSession: true);
 
 			var willMessage = new FooWillMessage { Message = "Foo Will Message" };
-			var will = new MqttLastWill ("foo/bar", MqttQualityOfService.AtLeastOnce, retain: true, payload: willMessage.GetPayload());
+			var will = new MqttLastWill("foo/bar", MqttQualityOfService.AtLeastOnce, retain: true, payload: willMessage.GetPayload());
 
 			connect.Will = will;
 
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var channel = new Mock<IMqttChannel<IPacket>>();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
+			channel.Setup(c => c.SendAsync(It.IsAny<IPacket>()))
+				.Callback<IPacket>(packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var connectionProvider = new Mock<IConnectionProvider> ();
+			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
-				.Returns (Task.FromResult(channel.Object));
+				.Setup(p => p.GetConnectionAsync(It.Is<string>(c => c == clientId)))
+				.Returns(Task.FromResult(channel.Object));
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			await flow.ExecuteAsync (clientId, connect, channel.Object)
+			await flow.ExecuteAsync(clientId, connect, channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var connectAck = sentPacket as ConnectAck;
 
-			sessionRepository.Verify (r => r.Delete (It.IsAny<string> ()), Times.Never);
-			sessionRepository.Verify (r => r.Create (It.Is<ClientSession> (s => s.Id == clientId && s.Clean == true)));
-			willRepository.Verify (r => r.Create (It.Is<ConnectionWill> (w => w.Id == clientId && w.Will == will)));
+			sessionRepository.Verify(r => r.Delete(It.IsAny<string>()), Times.Never);
+			sessionRepository.Verify(r => r.Create(It.Is<ClientSession>(s => s.Id == clientId && s.Clean == true)));
+			willRepository.Verify(r => r.Create(It.Is<ConnectionWill>(w => w.Id == clientId && w.Will == will)));
 
-			Assert.NotNull (connectAck);
-			Assert.Equal (MqttPacketType.ConnectAck, connectAck.Type);
-			Assert.Equal (MqttConnectionStatus.Accepted, connectAck.Status);
-			Assert.False (connectAck.SessionPresent);
+			Assert.NotNull(connectAck);
+			Assert.Equal(MqttPacketType.ConnectAck, connectAck.Type);
+			Assert.Equal(MqttConnectionStatus.Accepted, connectAck.Status);
+			Assert.False(connectAck.SessionPresent);
 		}
 
 		[Fact]
 		public void when_sending_connect_with_invalid_user_credentials_then_connection_exception_is_thrown()
 		{
-			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider> (p => p.Authenticate (It.IsAny<string>(), It.IsAny<string> (), It.IsAny<string> ()) == false);
-			var sessionRepository = new Mock<IRepository<ClientSession>> ();
-			var willRepository = new Mock<IRepository<ConnectionWill>> ();
-			var senderFlow = new Mock<IPublishSenderFlow> ();
+			var authenticationProvider = Mock.Of<IMqttAuthenticationProvider>(p => p.Authenticate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()) == false);
+			var sessionRepository = new Mock<IRepository<ClientSession>>();
+			var willRepository = new Mock<IRepository<ConnectionWill>>();
+			var senderFlow = new Mock<IPublishSenderFlow>();
 
-			var clientId = Guid.NewGuid ().ToString ();
-			var connect = new Connect (clientId, cleanSession: true);
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var clientId = Guid.NewGuid().ToString();
+			var connect = new Connect(clientId, cleanSession: true);
+			var channel = new Mock<IMqttChannel<IPacket>>();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
+			channel.Setup(c => c.SendAsync(It.IsAny<IPacket>()))
+				.Callback<IPacket>(packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var connectionProvider = new Mock<IConnectionProvider> ();
+			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup (p => p.GetConnectionAsync (It.Is<string> (c => c == clientId)))
-				.Returns (Task.FromResult(channel.Object));
+				.Setup(p => p.GetConnectionAsync(It.Is<string>(c => c == clientId)))
+				.Returns(Task.FromResult(channel.Object));
 
-			var flow = new ServerConnectFlow (authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
+			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);
 
-			var aggregateEx = Assert.Throws<AggregateException>(() => flow.ExecuteAsync (clientId, connect, channel.Object).Wait());
+			var aggregateEx = Assert.Throws<AggregateException>(() => flow.ExecuteAsync(clientId, connect, channel.Object).Wait());
 
-			Assert.NotNull (aggregateEx.InnerException);
-			Assert.True (aggregateEx.InnerException is MqttConnectionException);
-			Assert.Equal (MqttConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException).ReturnCode);
+			Assert.NotNull(aggregateEx.InnerException);
+			Assert.True(aggregateEx.InnerException is MqttConnectionException);
+			Assert.Equal(MqttConnectionStatus.BadUserNameOrPassword, ((MqttConnectionException)aggregateEx.InnerException).ReturnCode);
 		}
 
 		[Fact]
@@ -275,7 +275,7 @@ namespace Tests.Flows
 			var willRepository = new Mock<IRepository<ConnectionWill>>();
 
 			var clientId = Guid.NewGuid().ToString();
-			var existingSession = new ClientSession (clientId, clean: false);
+			var existingSession = new ClientSession(clientId, clean: false);
 
 			var topic = "foo/bar";
 			var payload = new byte[10];
@@ -354,7 +354,7 @@ namespace Tests.Flows
 			var connectionProvider = new Mock<IConnectionProvider>();
 
 			connectionProvider
-				.Setup(p => p.GetConnectionAsync (It.Is<string>(c => c == clientId)))
+				.Setup(p => p.GetConnectionAsync(It.Is<string>(c => c == clientId)))
 				.Returns(Task.FromResult(channel.Object));
 
 			var flow = new ServerConnectFlow(authenticationProvider, sessionRepository.Object, willRepository.Object, senderFlow.Object);

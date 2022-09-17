@@ -7,7 +7,7 @@ namespace System.Net.Mqtt.Sdk
 {
 	internal class PacketChannel : IMqttChannel<IPacket>
 	{
-        static readonly ITracer tracer = Tracer.Get<PacketChannel> ();
+		static readonly ITracer tracer = Tracer.Get<PacketChannel>();
 
 		volatile bool closed;
 
@@ -18,15 +18,15 @@ namespace System.Net.Mqtt.Sdk
 		readonly IDisposable subscription;
 		readonly AsyncLock asyncLockObject;
 
-		public PacketChannel (IMqttChannel<byte[]> innerChannel, 
-			IPacketManager manager, 
+		public PacketChannel(IMqttChannel<byte[]> innerChannel,
+			IPacketManager manager,
 			MqttConfiguration configuration)
 		{
 			this.innerChannel = innerChannel;
 			this.manager = manager;
 
-			receiver = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
-			sender = new ReplaySubject<IPacket> (window: TimeSpan.FromSeconds (configuration.WaitTimeoutSecs));
+			receiver = new ReplaySubject<IPacket>(window: TimeSpan.FromSeconds(configuration.WaitTimeoutSecs));
+			sender = new ReplaySubject<IPacket>(window: TimeSpan.FromSeconds(configuration.WaitTimeoutSecs));
 			subscription = innerChannel
 				.ReceiverStream
 				.Subscribe(async bytes =>
@@ -52,7 +52,7 @@ namespace System.Net.Mqtt.Sdk
 
 		public IObservable<IPacket> SenderStream { get { return sender; } }
 
-		public async Task SendAsync (IPacket packet)
+		public async Task SendAsync(IPacket packet)
 		{
 			if (!closed)
 			{

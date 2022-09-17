@@ -8,16 +8,16 @@
 	/// for more details about default and supported transport protocols for MQTT
 	/// </remarks>
 	public interface IMqttServerBinding : IMqttBinding
-    {
-        /// <summary>
-        /// Provides a listener for incoming MQTT channels on top of an underlying transport protocol
-        /// See <see cref="IMqttChannelListener" /> for more details about the listener 
-        /// </summary>
-        /// <param name="configuration">
-        /// The configuration used for creating the listener
-        /// See <see cref="MqttConfiguration" /> for more details about the supported values
-        /// </param>
-        /// <returns>A listener to accept and provide incoming MQTT channels on top of an underlying transport protocol</returns>
-        IMqttChannelListener GetChannelListener (MqttConfiguration configuration);
-    }
+	{
+		/// <summary>
+		/// Provides a listener for incoming MQTT channels on top of an underlying transport protocol
+		/// See <see cref="IMqttChannelListener" /> for more details about the listener 
+		/// </summary>
+		/// <param name="configuration">
+		/// The configuration used for creating the listener
+		/// See <see cref="MqttConfiguration" /> for more details about the supported values
+		/// </param>
+		/// <returns>A listener to accept and provide incoming MQTT channels on top of an underlying transport protocol</returns>
+		IMqttChannelListener GetChannelListener(MqttConfiguration configuration);
+	}
 }

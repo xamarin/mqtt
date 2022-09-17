@@ -15,17 +15,17 @@ namespace Tests.Formatters
 		[InlineData("Files/Binaries/Connect_Min.packet", "Files/Packets/Connect_Min.json")]
 		public async Task when_reading_connect_packet_then_succeeds(string packetPath, string jsonPath)
 		{
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
 
-			var expectedConnect = Packet.ReadPacket<Connect> (jsonPath);
-			var formatter = new ConnectFormatter ();
-			var packet = Packet.ReadAllBytes (packetPath);
+			var expectedConnect = Packet.ReadPacket<Connect>(jsonPath);
+			var formatter = new ConnectFormatter();
+			var packet = Packet.ReadAllBytes(packetPath);
 
-			var result = await formatter.FormatAsync (packet)
+			var result = await formatter.FormatAsync(packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Assert.Equal (expectedConnect, result);
+			Assert.Equal(expectedConnect, result);
 		}
 
 		[Theory]
@@ -38,29 +38,29 @@ namespace Tests.Formatters
 		[InlineData("Files/Binaries/Connect_Invalid_ProtocolLevel.packet")]
 		public void when_reading_invalid_connect_packet_then_fails(string packetPath)
 		{
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
 
-			var formatter = new ConnectFormatter ();
-			var packet = Packet.ReadAllBytes (packetPath);
-			
-			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
+			var formatter = new ConnectFormatter();
+			var packet = Packet.ReadAllBytes(packetPath);
 
-			Assert.True (ex.InnerException is MqttException);
+			var ex = Assert.Throws<AggregateException>(() => formatter.FormatAsync(packet).Wait());
+
+			Assert.True(ex.InnerException is MqttException);
 		}
 
 		[Theory]
 		[InlineData("Files/Binaries/Connect_Invalid_ClientIdEmptyAndNoCleanSession.packet")]
 		[InlineData("Files/Binaries/Connect_Invalid_ClientIdBadFormat.packet")]
-        public void when_reading_invalid_client_id_in_connect_packet_then_fails(string packetPath)
+		public void when_reading_invalid_client_id_in_connect_packet_then_fails(string packetPath)
 		{
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
 
-			var formatter = new ConnectFormatter ();
-			var packet = Packet.ReadAllBytes (packetPath);
+			var formatter = new ConnectFormatter();
+			var packet = Packet.ReadAllBytes(packetPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException>(() => formatter.FormatAsync(packet).Wait());
 
-			Assert.True (ex.InnerException is MqttConnectionException);
+			Assert.True(ex.InnerException is MqttConnectionException);
 		}
 
 		[Theory]
@@ -68,17 +68,17 @@ namespace Tests.Formatters
 		[InlineData("Files/Packets/Connect_Min.json", "Files/Binaries/Connect_Min.packet")]
 		public async Task when_writing_connect_packet_then_succeeds(string jsonPath, string packetPath)
 		{
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
 
-			var expectedPacket = Packet.ReadAllBytes (packetPath);
-			var formatter = new ConnectFormatter ();
-			var connect = Packet.ReadPacket<Connect> (jsonPath);
+			var expectedPacket = Packet.ReadAllBytes(packetPath);
+			var formatter = new ConnectFormatter();
+			var connect = Packet.ReadPacket<Connect>(jsonPath);
 
-			var result = await formatter.FormatAsync (connect)
+			var result = await formatter.FormatAsync(connect)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Assert.Equal (expectedPacket, result);
+			Assert.Equal(expectedPacket, result);
 		}
 
 		[Theory]
@@ -87,14 +87,14 @@ namespace Tests.Formatters
 		[InlineData("Files/Packets/Connect_Invalid_ClientIdInvalidLength.json")]
 		public void when_writing_invalid_connect_packet_then_fails(string jsonPath)
 		{
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
 
-			var formatter = new ConnectFormatter ();
-			var connect = Packet.ReadPacket<Connect> (jsonPath);
+			var formatter = new ConnectFormatter();
+			var connect = Packet.ReadPacket<Connect>(jsonPath);
 
-			var ex = Assert.Throws<AggregateException> (() => formatter.FormatAsync (connect).Wait());
+			var ex = Assert.Throws<AggregateException>(() => formatter.FormatAsync(connect).Wait());
 
-			Assert.True (ex.InnerException is MqttException);
+			Assert.True(ex.InnerException is MqttException);
 		}
 	}
 }

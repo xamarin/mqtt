@@ -2,10 +2,11 @@
 {
 	internal class Connect : IPacket, IEquatable<Connect>
 	{
-		public Connect (string clientId, bool cleanSession)
+		public Connect(string clientId, bool cleanSession)
 		{
-			if (string.IsNullOrEmpty (clientId)) {
-				throw new ArgumentNullException ("clientId");
+			if (string.IsNullOrEmpty(clientId))
+			{
+				throw new ArgumentNullException("clientId");
 			}
 
 			ClientId = clientId;
@@ -13,7 +14,7 @@
 			KeepAlive = 0;
 		}
 
-		public Connect ()
+		public Connect()
 		{
 			CleanSession = true;
 			KeepAlive = 0;
@@ -33,7 +34,7 @@
 
 		public string Password { get; set; }
 
-		public bool Equals (Connect other)
+		public bool Equals(Connect other)
 		{
 			if (other == null)
 				return false;
@@ -46,7 +47,7 @@
 				Password == other.Password;
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
@@ -56,28 +57,28 @@
 			if (connect == null)
 				return false;
 
-			return Equals (connect);
+			return Equals(connect);
 		}
 
-		public static bool operator == (Connect connect, Connect other)
+		public static bool operator ==(Connect connect, Connect other)
 		{
 			if ((object)connect == null || (object)other == null)
-				return Object.Equals (connect, other);
+				return Object.Equals(connect, other);
 
-			return connect.Equals (other);
+			return connect.Equals(other);
 		}
 
-		public static bool operator != (Connect connect, Connect other)
+		public static bool operator !=(Connect connect, Connect other)
 		{
 			if ((object)connect == null || (object)other == null)
-				return !Object.Equals (connect, other);
+				return !Object.Equals(connect, other);
 
-			return !connect.Equals (other);
+			return !connect.Equals(other);
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
-			return ClientId.GetHashCode ();
+			return ClientId.GetHashCode();
 		}
 	}
 }

@@ -33,26 +33,26 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck), MqttPacketType.UnsubscribeAck)]
 		public async Task when_managing_packet_bytes_then_succeeds(string packetPath, string jsonPath, Type packetType, MqttPacketType type)
 		{
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
-			
-			var bytes = Packet.ReadAllBytes (packetPath);
-			
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
-			
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
+
+			var bytes = Packet.ReadAllBytes(packetPath);
+
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
+
 			var packet = Packet.ReadPacket(jsonPath, packetType);
-			var formatter = new Mock<IFormatter> ();
+			var formatter = new Mock<IFormatter>();
 
 			formatter.Setup(f => f.PacketType).Returns(type);
 
 			formatter
-				.Setup (f => f.FormatAsync (It.Is<byte[]> (b => b.ToList().SequenceEqual(bytes))))
-				.Returns (Task.FromResult<IPacket>((IPacket)packet));
+				.Setup(f => f.FormatAsync(It.Is<byte[]>(b => b.ToList().SequenceEqual(bytes))))
+				.Returns(Task.FromResult<IPacket>((IPacket)packet));
 
-			var packetManager = new PacketManager (formatter.Object);
-			var result =  await packetManager.GetPacketAsync (bytes)
+			var packetManager = new PacketManager(formatter.Object);
+			var result = await packetManager.GetPacketAsync(bytes)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Assert.Equal (packet, result);
+			Assert.Equal(packet, result);
 		}
 
 		[Theory]
@@ -74,26 +74,26 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet", "Files/Packets/UnsubscribeAck.json", typeof(UnsubscribeAck), MqttPacketType.UnsubscribeAck)]
 		public async Task when_managing_packet_from_source_then_succeeds(string packetPath, string jsonPath, Type packetType, MqttPacketType type)
 		{
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
-			
-			var packet = Packet.ReadPacket (jsonPath, packetType) as IPacket;
-			
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
-			
-			var bytes = Packet.ReadAllBytes (packetPath);
-			var formatter = new Mock<IFormatter> ();
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
+
+			var packet = Packet.ReadPacket(jsonPath, packetType) as IPacket;
+
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
+
+			var bytes = Packet.ReadAllBytes(packetPath);
+			var formatter = new Mock<IFormatter>();
 
 			formatter.Setup(f => f.PacketType).Returns(type);
 
 			formatter
-				.Setup (f => f.FormatAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)))
-				.Returns (Task.FromResult(bytes));
+				.Setup(f => f.FormatAsync(It.Is<IPacket>(p => Convert.ChangeType(p, packetType) == packet)))
+				.Returns(Task.FromResult(bytes));
 
-			var packetManager = new PacketManager (formatter.Object);
-			var result = await packetManager.GetBytesAsync (packet)
+			var packetManager = new PacketManager(formatter.Object);
+			var result = await packetManager.GetBytesAsync(packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Assert.Equal (bytes, result);
+			Assert.Equal(bytes, result);
 		}
 
 		[Theory]
@@ -102,24 +102,24 @@ namespace Tests
 		[InlineData("Files/Binaries/PingResponse.packet", typeof(PingResponse), MqttPacketType.PingResponse)]
 		public async Task when_managing_packet_then_succeeds(string packetPath, Type packetType, MqttPacketType type)
 		{
-			var packet = Activator.CreateInstance (packetType) as IPacket;
-			
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
-			
-			var bytes = Packet.ReadAllBytes (packetPath);
-			var formatter = new Mock<IFormatter> ();
+			var packet = Activator.CreateInstance(packetType) as IPacket;
+
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
+
+			var bytes = Packet.ReadAllBytes(packetPath);
+			var formatter = new Mock<IFormatter>();
 
 			formatter.Setup(f => f.PacketType).Returns(type);
 
 			formatter
-				.Setup (f => f.FormatAsync (It.Is<IPacket> (p => Convert.ChangeType(p, packetType) == packet)))
-				.Returns (Task.FromResult(bytes));
+				.Setup(f => f.FormatAsync(It.Is<IPacket>(p => Convert.ChangeType(p, packetType) == packet)))
+				.Returns(Task.FromResult(bytes));
 
-			var packetManager = new PacketManager (formatter.Object);
-			var result = await packetManager.GetBytesAsync (packet)
+			var packetManager = new PacketManager(formatter.Object);
+			var result = await packetManager.GetBytesAsync(packet)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
-			Assert.Equal (bytes, result);
+			Assert.Equal(bytes, result);
 		}
 
 		[Theory]
@@ -144,15 +144,15 @@ namespace Tests
 		[InlineData("Files/Binaries/UnsubscribeAck.packet")]
 		public void when_managing_unknown_packet_bytes_then_fails(string packetPath)
 		{
-			packetPath = Path.Combine (Environment.CurrentDirectory, packetPath);
+			packetPath = Path.Combine(Environment.CurrentDirectory, packetPath);
 
-			var packet = Packet.ReadAllBytes (packetPath);
-			var formatter = new Mock<IFormatter> ();
-			var packetManager = new PacketManager (formatter.Object);
+			var packet = Packet.ReadAllBytes(packetPath);
+			var formatter = new Mock<IFormatter>();
+			var packetManager = new PacketManager(formatter.Object);
 
-			var ex = Assert.Throws<AggregateException> (() => packetManager.GetPacketAsync (packet).Wait());
+			var ex = Assert.Throws<AggregateException>(() => packetManager.GetPacketAsync(packet).Wait());
 
-			Assert.True (ex.InnerException is MqttException);
+			Assert.True(ex.InnerException is MqttException);
 		}
 
 		[Theory]
@@ -174,15 +174,15 @@ namespace Tests
 		[InlineData("Files/Packets/UnsubscribeAck.json")]
 		public void when_managing_unknown_packet_then_fails(string jsonPath)
 		{
-			jsonPath = Path.Combine (Environment.CurrentDirectory, jsonPath);
-			
-			var packet = Packet.ReadPacket<Connect> (jsonPath);
-			var formatter = new Mock<IFormatter> ();
-			var packetManager = new PacketManager (formatter.Object);
+			jsonPath = Path.Combine(Environment.CurrentDirectory, jsonPath);
 
-			var ex = Assert.Throws<AggregateException> (() => packetManager.GetBytesAsync (packet).Wait());
+			var packet = Packet.ReadPacket<Connect>(jsonPath);
+			var formatter = new Mock<IFormatter>();
+			var packetManager = new PacketManager(formatter.Object);
 
-			Assert.True (ex.InnerException is MqttException);
+			var ex = Assert.Throws<AggregateException>(() => packetManager.GetBytesAsync(packet).Wait());
+
+			Assert.True(ex.InnerException is MqttException);
 		}
 	}
 }

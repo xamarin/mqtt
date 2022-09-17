@@ -2,10 +2,10 @@
 
 namespace System.Net.Mqtt.Sdk
 {
-    /// <summary>
-    /// Provides a factory for creating channels of byte[].
-    /// See <see cref="IMqttChannel{T}" /> to know more about channel capabilities.
-    /// </summary>
+	/// <summary>
+	/// Provides a factory for creating channels of byte[].
+	/// See <see cref="IMqttChannel{T}" /> to know more about channel capabilities.
+	/// </summary>
 	public interface IMqttChannelFactory
 	{
 		/// <summary>
@@ -13,6 +13,6 @@ namespace System.Net.Mqtt.Sdk
 		/// </summary>
 		/// <returns>An MQTT channel of byte[].</returns>
 		/// <exception cref="MqttException">MqttException</exception>
-		Task<IMqttChannel<byte[]>> CreateAsync ();
+		Task<IMqttChannel<byte[]>> CreateAsync();
 	}
 }

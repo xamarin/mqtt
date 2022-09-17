@@ -13,23 +13,23 @@ namespace Tests.Flows
 		[Fact]
 		public async Task when_sending_ping_request_then_ping_response_is_sent()
 		{
-			var clientId = Guid.NewGuid ().ToString ();
-			var channel = new Mock<IMqttChannel<IPacket>> ();
+			var clientId = Guid.NewGuid().ToString();
+			var channel = new Mock<IMqttChannel<IPacket>>();
 			var sentPacket = default(IPacket);
 
-			channel.Setup (c => c.SendAsync (It.IsAny<IPacket> ()))
-				.Callback<IPacket> (packet => sentPacket = packet)
+			channel.Setup(c => c.SendAsync(It.IsAny<IPacket>()))
+				.Callback<IPacket>(packet => sentPacket = packet)
 				.Returns(Task.Delay(0));
 
-			var flow = new PingFlow ();
+			var flow = new PingFlow();
 
-			await flow.ExecuteAsync (clientId, new PingRequest(), channel.Object)
+			await flow.ExecuteAsync(clientId, new PingRequest(), channel.Object)
 				.ConfigureAwait(continueOnCapturedContext: false);
 
 			var pingResponse = sentPacket as PingResponse;
 
-			Assert.NotNull (pingResponse);
-			Assert.Equal (MqttPacketType.PingResponse, pingResponse.Type);
+			Assert.NotNull(pingResponse);
+			Assert.Equal(MqttPacketType.PingResponse, pingResponse.Type);
 		}
 	}
 }

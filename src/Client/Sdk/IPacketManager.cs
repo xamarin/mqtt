@@ -5,8 +5,8 @@ namespace System.Net.Mqtt.Sdk
 {
 	internal interface IPacketManager
 	{
-		Task<IPacket> GetPacketAsync (byte[] bytes);
+		Task<IPacket> GetPacketAsync(byte[] bytes);
 
-		Task<byte[]> GetBytesAsync (IPacket packet);
+		Task<byte[]> GetBytesAsync(IPacket packet);
 	}
 }

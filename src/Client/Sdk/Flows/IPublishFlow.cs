@@ -6,6 +6,6 @@ namespace System.Net.Mqtt.Sdk.Flows
 {
 	internal interface IPublishFlow : IProtocolFlow
 	{
-		Task SendAckAsync (string clientId, IFlowPacket ack, IMqttChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend);
+		Task SendAckAsync(string clientId, IFlowPacket ack, IMqttChannel<IPacket> channel, PendingMessageStatus status = PendingMessageStatus.PendingToSend);
 	}
 }

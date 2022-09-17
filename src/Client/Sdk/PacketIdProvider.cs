@@ -5,20 +5,24 @@
 		readonly object lockObject;
 		volatile ushort lastValue;
 
-		public PacketIdProvider ()
+		public PacketIdProvider()
 		{
-			lockObject = new object ();
+			lockObject = new object();
 			lastValue = 0;
 		}
 
-		public ushort GetPacketId ()
+		public ushort GetPacketId()
 		{
-			var id = default (ushort);
+			var id = default(ushort);
 
-			lock (lockObject) {
-				if (lastValue == ushort.MaxValue) {
+			lock (lockObject)
+			{
+				if (lastValue == ushort.MaxValue)
+				{
 					id = 1;
-				} else {
+				}
+				else
+				{
 					id = (ushort)(lastValue + 1);
 				}
 
