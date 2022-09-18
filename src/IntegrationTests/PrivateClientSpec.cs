@@ -1,7 +1,6 @@
 ﻿using IntegrationTests.Context;
 using IntegrationTests.Messages;
 using System;
-using System.Linq;
 using System.Net.Mqtt;
 using System.Threading.Tasks;
 using Xunit;
@@ -26,6 +25,20 @@ namespace IntegrationTests
 			Assert.True(client.IsConnected);
 			Assert.False(string.IsNullOrEmpty(client.Id));
 			Assert.StartsWith("private", client.Id);
+
+			client.Dispose();
+		}
+
+		[Fact]
+		public async Task when_creating_in_process_client_with_custom_id_then_it_is_already_connected()
+		{
+			var clientId = "fooClient";
+			var client = await server.CreateClientAsync(clientId);
+
+			Assert.NotNull(client);
+			Assert.True(client.IsConnected);
+			Assert.False(string.IsNullOrEmpty(client.Id));
+			Assert.Equal(clientId, client.Id);
 
 			client.Dispose();
 		}
@@ -204,6 +217,31 @@ namespace IntegrationTests
 
 			inProcessClient.Dispose();
 			remoteClient.Dispose();
+		}
+
+		[Fact]
+		public async Task when_creating_in_process_clients_with_in_memory_server_then_succeeds()
+		{
+			var inMemoryServer = MqttServer.CreateInMemory();
+
+			inMemoryServer.Start();
+
+			var client1 = await inMemoryServer.CreateClientAsync();
+			var clientId = "testClient";
+			var client2 = await inMemoryServer.CreateClientAsync(clientId);
+
+			Assert.NotNull(client1);
+			Assert.NotNull(client2);
+			Assert.True(client1.IsConnected);
+			Assert.True(client2.IsConnected);
+			Assert.False(string.IsNullOrEmpty(client1.Id));
+			Assert.False(string.IsNullOrEmpty(client2.Id));
+			Assert.StartsWith("private", client1.Id);
+			Assert.Equal(clientId, client2.Id);
+
+			client1.Dispose();
+			client2.Dispose();
+			inMemoryServer.Stop();
 		}
 
 		public void Dispose()

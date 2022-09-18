@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Mqtt;
+using System.Net.Mqtt.Sdk.Bindings;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -41,7 +42,7 @@ namespace IntegrationTests.Context
 			{
 				LoadConfiguration();
 
-				var server = MqttServer.Create(Configuration, authenticationProvider: authenticationProvider);
+				var server = MqttServer.Create(Configuration, new ServerTcpBinding(), authenticationProvider: authenticationProvider);
 
 				server.Start();
 
