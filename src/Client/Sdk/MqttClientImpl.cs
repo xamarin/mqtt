@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net.Mqtt.Sdk.Flows;
 using System.Net.Mqtt.Sdk.Packets;
 using System.Net.Mqtt.Sdk.Storage;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -46,14 +45,8 @@ namespace System.Net.Mqtt.Sdk
 
 		public bool IsConnected
 		{
-			get
-			{
-				return VerifyUnderlyingConnection();
-			}
-			private set
-			{
-				isProtocolConnected = value;
-			}
+			get => isProtocolConnected && Channel.IsConnected;
+			private set => isProtocolConnected = value;
 		}
 
 		public IObservable<MqttApplicationMessage> MessageStream { get { return receiver; } }
@@ -157,6 +150,8 @@ namespace System.Net.Mqtt.Sdk
 
 			try
 			{
+				VerifyUnderlyingConnection();
+
 				var packetId = packetIdProvider.GetPacketId();
 				var subscribe = new Subscribe(packetId, new Subscription(topicFilter, qos));
 
@@ -221,6 +216,8 @@ namespace System.Net.Mqtt.Sdk
 
 			try
 			{
+				VerifyUnderlyingConnection();
+
 				ushort? packetId = qos == MqttQualityOfService.AtMostOnce ? null : (ushort?)packetIdProvider.GetPacketId();
 				var publish = new Publish(message.Topic, qos, retain, duplicated: false, packetId: packetId)
 				{
@@ -249,6 +246,8 @@ namespace System.Net.Mqtt.Sdk
 
 			try
 			{
+				VerifyUnderlyingConnection();
+
 				topics = topics ?? new string[] { };
 
 				var packetId = packetIdProvider.GetPacketId();
@@ -305,6 +304,8 @@ namespace System.Net.Mqtt.Sdk
 		{
 			try
 			{
+				VerifyUnderlyingConnection();
+
 				if (!IsConnected)
 				{
 					throw new MqttClientException(Properties.Resources.Client_AlreadyDisconnected);
@@ -355,22 +356,30 @@ namespace System.Net.Mqtt.Sdk
 
 		async Task CloseAsync(DisconnectedReason reason, string message = null)
 		{
-			tracer.Info(Properties.Resources.Client_Closing, Id, reason);
-
-			CloseClientSession();
-			packetsSubscription?.Dispose();
-			packetListener?.Dispose();
-			ResetReceiver();
-
-			if (Channel != null)
+			try
 			{
-				await Channel.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
+				tracer.Info(Properties.Resources.Client_Closing, Id, reason);
+
+				CloseClientSession();
+				packetsSubscription?.Dispose();
+				packetListener?.Dispose();
+				ResetReceiver();
+
+				if (Channel != null)
+				{
+					await Channel.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
+				}
+
+				IsConnected = false;
+				Id = null;
+
+				Disconnected(this, new MqttEndpointDisconnected(reason, message));
 			}
-
-			IsConnected = false;
-			Id = null;
-
-			Disconnected(this, new MqttEndpointDisconnected(reason, message));
+			catch(Exception ex)
+			{
+				tracer.Error(ex);
+				Disconnected(this, new MqttEndpointDisconnected(reason, message));
+			}
 		}
 
 		async Task InitializeChannelAsync()
@@ -423,14 +432,12 @@ namespace System.Net.Mqtt.Sdk
 			}
 		}
 
-		bool VerifyUnderlyingConnection()
+		void VerifyUnderlyingConnection()
 		{
 			if (isProtocolConnected && !Channel.IsConnected)
 			{
-				CloseAsync(DisconnectedReason.Error, Properties.Resources.Client_UnexpectedChannelDisconnection).FireAndForget();
+				throw new MqttClientException(Properties.Resources.Client_UnexpectedChannelDisconnection);
 			}
-
-			return isProtocolConnected && Channel.IsConnected;
 		}
 
 		void ObservePackets()
