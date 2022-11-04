@@ -14,7 +14,6 @@ variables:
 - group: Xamarin-Secrets
 - group: Xamarin Release
 - group: Xamarin Signing
-- group: Xamarin Notarization
 - name: MSBUILDDISABLENODEREUSE
   value: 1
 - name: VSS_NUGET_EXTERNAL_FEED_ENDPOINTS
