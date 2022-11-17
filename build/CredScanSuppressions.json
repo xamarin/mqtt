@@ -1,6 +1,6 @@
 {
     "tool": "Credential Scanner",
-    "suppressions": [ 
+    "suppressions": [
         {
             "file": "src\\IntegrationTests\\AuthenticationSpec.cs",
             "_justification": "Dummy credentials for testing purposes"

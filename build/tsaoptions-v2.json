@@ -1,16 +1,14 @@
 {
-	"codebaseName": "xamarinmqtt_main",
-	"notificationAliases": [
-		"vscx-tools-platform@microsoft.com"
-	],
-	"codebaseAdmins": [
-		"REDMOND\\vsengxamarin"
-	],
-	"instanceUrl": "DEVDIV",
-	"projectName": "DevDiv",
-	"areaPath": "DevDiv\\VS Client - Tools\\Platform\\Xamarin VS",
-	"iterationPath": "DevDiv",
-	"tools": [
-		"CodeQL"
-	]
+    "codebaseName": "xamarinmqtt_main",
+    "notificationAliases": [
+        "vscx-tools-platform@microsoft.com"
+    ],
+    "codebaseAdmins": [
+        "REDMOND\\vsengxamarin"
+    ],
+    "instanceUrl": "https://devdiv.visualstudio.com/",
+    "projectName": "DevDiv",
+    "areaPath": "DevDiv\\VS Client - Tools\\Platform\\Xamarin VS",
+    "iterationPath": "DevDiv",
+    "allTools": true
 }

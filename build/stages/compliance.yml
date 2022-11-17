@@ -1,104 +1,94 @@
-# Compliance Stage
-
 stages:
 - stage : Compliance
   dependsOn: Build
-  condition: eq(stageDependencies.Build.outputs['Windows.SetComplianceNeed.Xamarin.ComplianceEnabled'], 'true')
+  condition: eq(stageDependencies.Build.Windows.outputs['SetComplianceNeed.Xamarin.ComplianceEnabled'], 'true')
   jobs:
-   - job: CodeAnalysis
-     displayName: Security & Analysis
-     pool:
-       name: $(WindowsEOPoolName)
-       demands:
-       - ImageOverride -equals $(WindowsImageOverride)
-     timeoutInMinutes: 60
-     cancelTimeoutInMinutes: 5 
-     steps:
-     - checkout: self
-       clean: true
-       submodules: recursive
-     - task: DownloadBuildArtifacts@0
-       displayName: Download Symbols
-       inputs:
+  - job: Compliance
+    displayName: Security & Analysis
+    pool:
+      name: $(WindowsEOPoolName)
+      demands:
+      - ImageOverride -equals $(WindowsImageOverride)
+    timeoutInMinutes: 60
+    cancelTimeoutInMinutes: 5
+    steps:
+    - checkout: self
+      clean: true
+      submodules: recursive
+
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Symbols
+      inputs:
         artifactName: symbols
         downloadPath: '$(Build.ArtifactStagingDirectory)'
-     - task: AntiMalware@3
-       displayName: Run AntiMalware Scan
-       inputs:
-        FileDirPath: $(System.DefaultWorkingDirectory)
+
+    - task: AntiMalware@4
+      displayName: Run AntiMalware Scan
+      inputs:
+        InputType: 'Basic'
+        ScanType: 'CustomScan'
+        FileDirPath: '$(System.DefaultWorkingDirectory)'
         EnableServices: true
-       continueOnError: true
-       condition: succeededOrFailed()
-     - task: BinSkim@3
-       displayName: Run BinSkim Analysis
-       inputs:
+        TreatSignatureUpdateFailureAs: 'Warning'
+        SignatureFreshness: 'UpToDate'
+        TreatStaleSignatureAs: 'Error'
+
+    - task: BinSkim@4
+      displayName: Run BinSkim Analysis
+      inputs:
         InputType: Basic
-        AnalyzeTarget: '$(Build.ArtifactStagingDirectory)\Symbols\*.dll'
+        Function: 'analyze'
+        TargetPattern: 'guardianGlob'
+        AnalyzeTargetGlob: '$(Build.ArtifactStagingDirectory)\Symbols\*.dll;$(Build.ArtifactStagingDirectory)\Symbols\*.exe'
         AnalyzeVerbose: true
-       continueOnError: true
-       condition: succeededOrFailed()
-     - template: security\credscan\v2.yml@templates # from xamarin/yaml-templates repository
-       parameters:
+
+    - template: security\credscan\v3.yml@templates # from xamarin/yaml-templates repository
+      parameters:
         suppressionsFile: $(System.DefaultWorkingDirectory)\build\CredScanSuppressions.json
-     - template: security\policheck\v1.yml@templates # from xamarin/yaml-templates repository
-       parameters:
+
+    - template: security\policheck\v2.yml@templates # from xamarin/yaml-templates repository
+      parameters:
         exclusionFile: $(System.DefaultWorkingDirectory)\build\PoliCheckExclusions.xml
-     - task: CodeInspector@2
-       displayName: Run Code Inspector Analysis
-       inputs:
+        pE: '1|2|3|4'
+
+    - task: CodeInspector@2
+      displayName: Run Code Inspector Analysis
+      inputs:
         ProductId: '$(System.TeamProjectId)'
-       continueOnError: true
-       condition: succeededOrFailed()
-     - task: SdtReport@1
-       displayName: Create Security Analysis Report
-       inputs:
-        AntiMalware: true
-        BinSkim: true
-        CredScan: true
-        RoslynAnalyzers: true
-        PoliCheck: true
-        CodeInspector: true
-       continueOnError: true
-       condition: succeededOrFailed()
-     - task: PublishSecurityAnalysisLogs@2
-       displayName: Publish Security Analysis Logs
-       inputs:
+
+    - task: SdtReport@2
+      displayName: Create Security Analysis Report
+      inputs:
+        GdnExportAllTools: true
+        GdnExportOutputSuppressionFile: 'source.gdnsuppress'
+
+    - task: PublishSecurityAnalysisLogs@3
+      displayName: Publish Security Analysis Logs
+      inputs:
         ArtifactName: ComplianceLogs
-       continueOnError: true
-       condition: succeededOrFailed()
-     - task: PostAnalysis@1
-       displayName: Run Security Post Analysis
-       inputs:
-          AntiMalware: true
-          BinSkim: true
-          CredScan: true
-          RoslynAnalyzers: true
-          PoliCheck: true
-          CodeInspector: true
-       continueOnError: true
-       condition: succeededOrFailed()
-     - task: TSAUpload@1
-       inputs:
-          tsaVersion: 'TsaV2'
-          codebase: 'NewOrUpdate'
-          tsaEnvironment: 'PROD'
-          codeBaseName: 'mqtt_main'
-          notificationAlias: 'xvs@microsoft.com,maagno@microsoft.com'
-          notifyAlwaysV2: false
-          codeBaseAdmins: 'REDMOND\maagno;REDMOND\vsengxamarin'
-          instanceUrlForTsaV2: 'DEVDIV'
-          projectNameDEVDIV: 'DevDiv'
-          areaPath: 'DevDiv\VS Client - Tools\Platform\Xamarin VS\iOS\XMA'
-          iterationPath: 'DevDiv'
-          uploadAPIScan: true
-          uploadBinSkim: true
-          uploadCredScan: true
-          uploadFortifySCA: true
-          uploadFxCop: true
-          uploadModernCop: true
-          uploadPoliCheck: true
-          uploadPREfast: true
-          uploadRoslyn: true
-          uploadTSLint: true
-          uploadAsync: true
-       condition: succeededOrFailed()
+        ArtifactType: 'Container'
+        AllTools: true
+        ToolLogsNotFoundAction: 'Standard'
+
+    - task: PostAnalysis@2
+      displayName: Run Security Post Analysis
+      inputs:
+        GdnBreakAllTools: true
+        GdnBreakSuppressionFiles: '$(System.DefaultWorkingDirectory)\build\source.gdnsuppress'
+        GdnBreakSuppressionSets: 'default'
+
+    - pwsh: |
+        $tsaConfig = '$(System.DefaultWorkingDirectory)\build\tsaoptions-v2.json'
+        $tsaConfigJson = Get-Content $tsaConfig | ConvertFrom-Json
+        $tsaConfigJson | Add-Member -Type NoteProperty -Name 'SuppressionFiles' -Value @("$(System.DefaultWorkingDirectory)\build\source.gdnsuppress")
+        $tsaConfigJson | Add-Member -Type NoteProperty -Name 'SuppressionSets' -Value @("default")
+        $tsaConfigJson | ConvertTo-Json | Out-File $tsaConfig
+        cat $tsaConfig
+      displayName: Update TSA suppressions
+      condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+
+    - task: TSAUpload@2
+      inputs:
+        GdnPublishTsaOnboard: true
+        GdnPublishTsaConfigFile: '$(System.DefaultWorkingDirectory)\build\tsaoptions-v2.json'
+      condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
