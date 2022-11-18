@@ -1,10 +1,10 @@
 stages:
 - stage : Compliance
   dependsOn: Build
-  condition: eq(stageDependencies.Build.Windows.outputs['SetComplianceNeed.Xamarin.ComplianceEnabled'], 'true')
   jobs:
   - job: Compliance
     displayName: Security & Analysis
+    condition: eq(stageDependencies.Build.Windows.outputs['SetComplianceNeed.Xamarin.ComplianceEnabled'], 'true')
     pool:
       name: $(WindowsEOPoolName)
       demands:
