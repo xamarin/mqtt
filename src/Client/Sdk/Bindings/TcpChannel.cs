@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -13,6 +12,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 		static readonly ITracer tracer = Tracer.Get<TcpChannel>();
 
 		volatile bool closed;
+		volatile bool completed;
 
 		readonly TcpClient client;
 		readonly IPacketBuffer buffer;
@@ -39,18 +39,14 @@ namespace System.Net.Mqtt.Sdk.Bindings
 		{
 			get
 			{
-				var connected = !closed;
-
 				try
 				{
-					connected = connected && client.Connected;
+					return !closed && !completed && client.Connected;
 				}
 				catch (Exception)
 				{
-					connected = false;
+					return false;
 				}
-
-				return connected;
 			}
 		}
 
@@ -60,11 +56,11 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 		public async Task SendAsync(byte[] message)
 		{
-			if (!closed)
+			if (!closed && !completed)
 			{
 				using (await asyncLockObject.LockAsync().ConfigureAwait(continueOnCapturedContext: false))
 				{
-					if (!closed)
+					if (!closed && !completed)
 					{
 						if (!IsConnected)
 						{
@@ -126,7 +122,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			{
 				var buffer = new byte[client.ReceiveBufferSize];
 
-				return Observable.FromAsync<int>(() =>
+				return Observable.FromAsync(() =>
 				{
 					return client.GetStream().ReadAsync(buffer, 0, buffer.Length);
 				})
@@ -157,6 +153,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			}, () =>
 			{
 				tracer.Warn(Properties.Resources.MqttChannel_NetworkStreamCompleted);
+				completed = true;
 				receiver.OnCompleted();
 			});
 		}
