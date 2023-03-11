@@ -19,7 +19,7 @@ updates:
       time: '20:00'
     registries:
       - nuget-azure-devops
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     assignees:
     - xamarin/vscx-tools-platform
 
@@ -28,6 +28,6 @@ updates:
     schedule:
       interval: daily
       time: '20:00'
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     assignees:
     - xamarin/vscx-tools-platform
