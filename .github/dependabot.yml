@@ -8,7 +8,7 @@ version: 2
 registries:
   nuget-azure-devops:
     type: nuget-feed
-    url: https://pkgs.dev.azure.com/devdiv/DevDiv/_packaging/xamarin-xvs/nuget/v3/index.json
+    url: https://devdiv.pkgs.visualstudio.com/_packaging/xamarin-xvs/nuget/v3/index.json
     token: ${{secrets.ADO_FEEDPAT}}
 
 updates:
