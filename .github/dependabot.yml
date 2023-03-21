@@ -15,8 +15,9 @@ updates:
   - package-ecosystem: nuget
     directory: "/"
     schedule:
-      interval: daily
-      time: '20:00'
+      interval: weekly
+      day: thursday
+      time: '07:00'
     registries:
       - nuget-azure-devops
     open-pull-requests-limit: 10
@@ -26,8 +27,9 @@ updates:
   - package-ecosystem: gitsubmodule
     directory: "/"
     schedule:
-      interval: daily
-      time: '20:00'
+      interval: weekly
+      day: thursday
+      time: '07:00'
     open-pull-requests-limit: 10
     assignees:
     - xamarin/vscx-tools-platform
