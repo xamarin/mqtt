@@ -6,7 +6,7 @@
 		<PackageReference Include="GitInfo" Version="2.3.0" PrivateAssets="all" />
 		<PackageReference Include="System.Diagnostics.Tracer" Version="2.1.0-alpha" />
 		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-		<PackageReference Include="System.Reactive" Version="5.0.0" />
+		<PackageReference Include="System.Reactive" Version="6.0.0" />
 		<PackageReference Include="NuGetizer" Version="1.0.4" />
 	</ItemGroup>
 
