@@ -23,6 +23,10 @@ updates:
     open-pull-requests-limit: 10
     assignees:
     - xamarin/vscx-tools-platform
+    ignore:
+      # https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_workitems/edit/1785587
+      - dependency-name: "GitInfo"
+        versions: [">=3.0.3"]
 
   - package-ecosystem: gitsubmodule
     directory: "/"
