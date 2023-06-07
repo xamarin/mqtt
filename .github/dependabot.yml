@@ -15,9 +15,7 @@ updates:
   - package-ecosystem: nuget
     directory: "/"
     schedule:
-      interval: weekly
-      day: thursday
-      time: '07:00'
+      interval: monthly
     registries:
       - nuget-azure-devops
     open-pull-requests-limit: 10
