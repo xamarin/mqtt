@@ -7,7 +7,7 @@
 		<PackageReference Include="System.Diagnostics.Tracer" Version="2.1.0-alpha" />
 		<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
 		<PackageReference Include="System.Reactive" Version="6.0.0" />
-		<PackageReference Include="NuGetizer" Version="0.9.1" />
+		<PackageReference Include="NuGetizer" Version="1.2.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(IncludeTesting)' == 'true'">
