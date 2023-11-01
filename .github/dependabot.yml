@@ -28,6 +28,9 @@ updates:
       # https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1867849
       - dependency-name: "NuGetizer"
         versions: [">0.9.1"]
+      # https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1867849
+      - dependency-name: "Moq"
+        versions: [">4.18.4"]
 
   - package-ecosystem: gitsubmodule
     directory: "/"
