@@ -15,7 +15,7 @@
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.4" />
 		<PackageReference Include="xunit.runner.msbuild" Version="2.6.2" />
 		<PackageReference Include="Moq" Version="4.18.4" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="2021.2.19.2" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(GitInfoImported)' == 'true'">
