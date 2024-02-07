@@ -31,6 +31,8 @@ updates:
       # https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1867849
       - dependency-name: "Moq"
         versions: [">4.18.4"]
+      - dependency-name: "Newtonsoft.JSon"
+        versions: [">13.0.3"]
 
   - package-ecosystem: gitsubmodule
     directory: "/"
