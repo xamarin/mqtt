@@ -2,7 +2,7 @@
 
 stages:
 - stage: Package
-  dependsOn:         
+  dependsOn:
   - Test
   - Compliance
   jobs:
@@ -34,7 +34,7 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
     timeoutInMinutes: 10
     pool:
-      name: $(WindowsPoolName)
+      name: VSEngSS-MicroBuild2022-1ES
     templateContext:
       outputs:
       - output: nuget
