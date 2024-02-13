@@ -4,7 +4,7 @@ stages:
   - job: Windows
     timeoutInMinutes: 20
     pool:
-      name: $(WindowsPoolName)
+      name: VSEngSS-MicroBuild2022-1ES
     templateContext:
       outputs:
       - output: pipelineArtifact
