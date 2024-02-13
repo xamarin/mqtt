@@ -1,5 +1,3 @@
-# Build Stage
-
 stages:
 - stage: Build
   jobs:
@@ -7,7 +5,33 @@ stages:
     timeoutInMinutes: 20
     pool:
       name: $(WindowsPoolName)
-
+    templateContext:
+      outputs:
+      - output: pipelineArtifact
+        displayName: 'Publish Artifact: packages'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)\pack'
+        artifactName: packages
+      - output: pipelineArtifact
+        displayName: 'Publish Artifact: unit-tests'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)\src\Tests\bin\$(Configuration)'
+        artifactName: unit-tests
+      - output: pipelineArtifact
+        displayName: 'Publish Artifact: integration-tests'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)\src\IntegrationTests\bin\$(Configuration)'
+        artifactName: integration-tests
+      - output: pipelineArtifact
+        displayName: 'Publish Artifact: logs'
+        condition: always()
+        targetPath: '$(Build.ArtifactStagingDirectory)\binlogs'
+        artifactName: logs
+      - output: pipelineArtifact
+        displayName: 'Publish Artifact: symbols'
+        condition: always()
+        targetPath: '$(Build.ArtifactStagingDirectory)/Symbols'
+        artifactName: symbols
     steps:
     - checkout: self
       clean: true
@@ -15,7 +39,7 @@ stages:
     - task: UseDotNet@2
       displayName: 'Use .Net Core SDK $(DotNetCoreVersion)'
       inputs:
-        version: '$(DotNetCoreVersion)'    
+        version: '$(DotNetCoreVersion)'
       condition: always()
 
     - script: 'mkdir "$(Build.ArtifactStagingDirectory)\binlogs"'
@@ -25,22 +49,19 @@ stages:
     - powershell: |
         $branch = '$(Build.SourceBranch)'
         $codeSignOverride = if ($env:XAMARIN_CODESIGNOVERRIDE) { $env:XAMARIN_CODESIGNOVERRIDE } else { '' }
-      
         if($branch -eq '$(MainBranch)' -or $codeSignOverride -eq 'true') {
           $codeSignOverride = 'true'
         }
-
         Write-Host "Code Sign Override: $codeSignOverride"
         Write-Host "##vso[task.setvariable variable=Xamarin.CodeSignOverride]$codeSignOverride"
       name: 'SetCodeSignOnMain'
       displayName: 'Evaluate CodeSign for Main Branch'
 
-    # Compute (set) Xamarin.IsRelease and Xamarin.SignType needed in subsequent conditions
     - template: jenkins-codesign/signType.v1.yml@templates
       parameters:
         CodeSignOverride: $(Xamarin.CodeSignOverride)
 
-    - task: MicroBuildSigningPlugin@3
+    - task: MicroBuildSigningPlugin@4
       displayName: "Prepare Signing Tools (MicroBuild)"
       inputs:
         signType: '$(Xamarin.SignType)'
@@ -48,7 +69,6 @@ stages:
       env:
         TeamName: Xamarin
 
-    # Ensure we clear bot-provided feeds, for reliability
     - powershell: |
         $configPath = "$(Build.SourcesDirectory)\NuGet.Config"
         [xml]$config = get-content $configPath
@@ -69,15 +89,7 @@ stages:
       displayName: 'Build Solution'
       inputs:
         solution: '$(Build.SourcesDirectory)/src/Hermes.sln'
-        msbuildArguments: /t:Build /p:_SignFiles=true /noautoresponse /bl:"$(Build.ArtifactStagingDirectory)\binlogs\build.binlog" 
-      condition: always()
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: packages'
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\pack'
-        ArtifactName: packages
-      continueOnError: true
+        msbuildArguments: /t:Build /p:_SignFiles=true /noautoresponse /bl:"$(Build.ArtifactStagingDirectory)\binlogs\build.binlog"
       condition: always()
 
     - task: MicroBuildCodesignVerify@3
@@ -86,30 +98,6 @@ stages:
         TargetFolders: $(System.DefaultWorkingDirectory)\pack
         ExcludeSNVerify: true
         ApprovalListPathForCerts: $(Build.SourcesDirectory)\build\sign-verify-ignore.txt
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: unit-tests'
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\src\Tests\bin\$(Configuration)'
-        ArtifactName: unit-tests
-      continueOnError: true
-      condition: always()
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: integration-tests'
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\src\IntegrationTests\bin\$(Configuration)'
-        ArtifactName: integration-tests
-      continueOnError: true
-      condition: always()
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: logs'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)\binlogs'
-        ArtifactName: logs
-      continueOnError: true
-      condition: always()
 
     - task: CopyFiles@2
       displayName: 'Copy Symbols'
@@ -121,34 +109,20 @@ stages:
         TargetFolder: '$(Build.ArtifactStagingDirectory)/Symbols'
         CleanTargetFolder: true
         FlattenFolders: true
-        OverWrite: true # Check if we should copy to $(TargetFramework) subfolders instead
+        OverWrite: true
       condition: always()
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: symbols'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/Symbols'
-        ArtifactName: symbols
-      condition: always()
-
-    - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-      displayName: 'Component Governance'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
 
     - powershell: |
         $complianceEnabled = if ($env:COMPLIANCEENABLED) { $env:COMPLIANCEENABLED } else { '' }
-
         if ($complianceEnabled -eq '') { 
           $branch = '$(Build.SourceBranch)'
           $reason = '$(Build.Reason)'
-
           if($branch -eq '$(MainBranch)' -or $reason -eq 'PullRequest') {
             $complianceEnabled = 'true'
           } else {
             $complianceEnabled = 'false'
           }
         }
-
         Write-Host "Source Branch: $branch, Build Reason: $reason"
         Write-Host "Requires Compliance Stage: $complianceEnabled"
         Write-Host "##vso[task.setvariable variable=Xamarin.ComplianceEnabled;isOutput=true]$complianceEnabled"

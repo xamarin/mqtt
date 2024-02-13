@@ -35,6 +35,14 @@ stages:
     timeoutInMinutes: 10
     pool:
       name: $(WindowsPoolName)
+    templateContext:
+      outputs:
+      - output: nuget
+        displayName: 'Push Packages'
+        packageParentPath: '$(Build.ArtifactStagingDirectory)'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
+        nuGetFeedType: external
+        publishFeedCredentials: 'xamarin-impl public feed'
     steps:
     - checkout: self
 
@@ -49,12 +57,3 @@ stages:
       inputs:
         command: custom
         arguments: 'update -self'
-
-    - task: NuGetCommand@2
-      displayName: 'Push Packages'
-      continueOnError: true
-      inputs:
-        command: push
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
-        nuGetFeedType: external
-        publishFeedCredentials: 'xamarin-impl public feed'

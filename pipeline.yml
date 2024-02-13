@@ -1,10 +1,14 @@
 resources:
   repositories:
-  - repository: templates
+  - repository: templates # TODO: Can I remove this?
     type: github
     name: xamarin/yaml-templates
     ref: refs/heads/main
     endpoint: xamarin
+  - repository: MicroBuildTemplate
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
 
 trigger:
   batch: false
@@ -16,9 +20,19 @@ pr:
 
 variables:
 - template: build/variables.yml
-
-stages:
-- template: build/stages/build.yml
-- template: build/stages/compliance.yml
-- template: build/stages/test.yml
-- template: build/stages/package.yml
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  parameters:
+    sdl:
+      sourceAnalysisPool: <AgentPoolPlaceHolder>
+    pool:
+      name: AzurePipelines-EO
+      image: AzurePipelinesWindows2022compliantGPT
+      os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - template: build/stages/build.yml
+    - template: build/stages/compliance.yml
+    - template: build/stages/test.yml
+    - template: build/stages/package.yml
