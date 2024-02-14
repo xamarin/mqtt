@@ -42,3 +42,5 @@ variables:
   value: ${{ parameters.EnableCodeQLTSA }}
 - name: Codeql.TSAOptionsPath
   value: ${{ parameters.CodeQLTSASettings }}
+- name: TeamName
+  value: 'Xamarin'
