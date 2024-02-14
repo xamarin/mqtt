@@ -17,21 +17,25 @@ stages:
         condition: always()
         targetPath: '$(Build.SourcesDirectory)\src\Tests\bin\$(Configuration)'
         artifactName: unit-tests
+        sbomEnabled: false
       - output: pipelineArtifact
         displayName: 'Publish Artifact: integration-tests'
         condition: always()
         targetPath: '$(Build.SourcesDirectory)\src\IntegrationTests\bin\$(Configuration)'
         artifactName: integration-tests
+        sbomEnabled: false
       - output: pipelineArtifact
         displayName: 'Publish Artifact: logs'
         condition: always()
         targetPath: '$(Build.ArtifactStagingDirectory)\binlogs'
         artifactName: logs
+        sbomEnabled: false
       - output: pipelineArtifact
         displayName: 'Publish Artifact: symbols'
         condition: always()
         targetPath: '$(Build.ArtifactStagingDirectory)/Symbols'
         artifactName: symbols
+        sbomEnabled: false
     steps:
     - checkout: self
       clean: true

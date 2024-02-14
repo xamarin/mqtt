@@ -24,6 +24,9 @@ extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
     sdl:
+      tsa:
+        enabled: true
+        configFile: $(Build.SourcesDirectory)\automation\tsaoptions-v2.json
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
     pool:
       name: AzurePipelines-EO

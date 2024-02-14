@@ -22,30 +22,6 @@ stages:
         artifactName: symbols
         downloadPath: '$(Build.ArtifactStagingDirectory)'
 
-    - task: AntiMalware@4
-      displayName: Run AntiMalware Scan
-      inputs:
-        InputType: 'Basic'
-        ScanType: 'CustomScan'
-        FileDirPath: '$(System.DefaultWorkingDirectory)'
-        EnableServices: true
-        TreatSignatureUpdateFailureAs: 'Warning'
-        SignatureFreshness: 'UpToDate'
-        TreatStaleSignatureAs: 'Error'
-
-    - task: BinSkim@4
-      displayName: Run BinSkim Analysis
-      inputs:
-        InputType: Basic
-        Function: 'analyze'
-        TargetPattern: 'guardianGlob'
-        AnalyzeTargetGlob: '$(Build.ArtifactStagingDirectory)\Symbols\*.dll;$(Build.ArtifactStagingDirectory)\Symbols\*.exe'
-        AnalyzeVerbose: true
-
-    - template: security\credscan\v3.yml@templates # from xamarin/yaml-templates repository
-      parameters:
-        suppressionsFile: $(System.DefaultWorkingDirectory)\build\CredScanSuppressions.json
-
     - template: security\policheck\v2.yml@templates # from xamarin/yaml-templates repository
       parameters:
         exclusionFile: $(System.DefaultWorkingDirectory)\build\PoliCheckExclusions.xml
@@ -55,40 +31,3 @@ stages:
       displayName: Run Code Inspector Analysis
       inputs:
         ProductId: '$(System.TeamProjectId)'
-
-    - task: SdtReport@2
-      displayName: Create Security Analysis Report
-      inputs:
-        GdnExportAllTools: true
-        GdnExportOutputSuppressionFile: 'source.gdnsuppress'
-
-    - task: PublishSecurityAnalysisLogs@3
-      displayName: Publish Security Analysis Logs
-      inputs:
-        ArtifactName: ComplianceLogs
-        ArtifactType: 'Container'
-        AllTools: true
-        ToolLogsNotFoundAction: 'Standard'
-
-    - task: PostAnalysis@2
-      displayName: Run Security Post Analysis
-      inputs:
-        GdnBreakAllTools: true
-        GdnBreakSuppressionFiles: '$(System.DefaultWorkingDirectory)\build\source.gdnsuppress'
-        GdnBreakSuppressionSets: 'default'
-
-    - pwsh: |
-        $tsaConfig = '$(System.DefaultWorkingDirectory)\build\tsaoptions-v2.json'
-        $tsaConfigJson = Get-Content $tsaConfig | ConvertFrom-Json
-        $tsaConfigJson | Add-Member -Type NoteProperty -Name 'SuppressionFiles' -Value @("$(System.DefaultWorkingDirectory)\build\source.gdnsuppress")
-        $tsaConfigJson | Add-Member -Type NoteProperty -Name 'SuppressionSets' -Value @("default")
-        $tsaConfigJson | ConvertTo-Json | Out-File $tsaConfig
-        cat $tsaConfig
-      displayName: Update TSA suppressions
-      condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
-
-    - task: TSAUpload@2
-      inputs:
-        GdnPublishTsaOnboard: true
-        GdnPublishTsaConfigFile: '$(System.DefaultWorkingDirectory)\build\tsaoptions-v2.json'
-      condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
