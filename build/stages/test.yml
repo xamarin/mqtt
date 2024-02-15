@@ -13,8 +13,8 @@ stages:
 
     steps:
     - checkout: none
-        
-    - task: DownloadBuildArtifacts@0
+
+    - task: DownloadBuildArtifacts@1
       inputs:
         artifactName: unit-tests
 
@@ -25,7 +25,7 @@ stages:
         testSelector: 'testAssemblies'
         testAssemblyVer2: |
           **\Tests.dll
-        searchFolder: '$(Build.ArtifactStagingDirectory)\unit-tests'
+        searchFolder: '$(System.ArtifactsDirectory)\unit-tests'
         testFiltercriteria: 'Flaky!=true'
         codeCoverageEnabled: true
         runInParallel: true
@@ -42,7 +42,7 @@ stages:
     steps:
     - checkout: none
 
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadBuildArtifacts@1
       inputs:
         artifactName: integration-tests
 
@@ -53,7 +53,7 @@ stages:
         testSelector: 'testAssemblies'
         testAssemblyVer2: |
           **\IntegrationTests.dll
-        searchFolder: '$(Build.ArtifactStagingDirectory)\integration-tests'
+        searchFolder: '$(System.ArtifactsDirectory)\integration-tests'
         codeCoverageEnabled: false
         diagnosticsEnabled: false
         runInParallel: false
