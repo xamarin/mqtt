@@ -16,11 +16,11 @@ stages:
     steps:
     - checkout: self
 
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadBuildArtifacts@1
       displayName: 'Download Packages'
       inputs:
         artifactName: packages
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+        downloadPath: '$(Build.ArtifactStagingDirectory)/packages'
 
     - template: upload-to-storage/win/v1.yml@templates
       parameters:
@@ -46,11 +46,11 @@ stages:
     steps:
     - checkout: self
 
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadBuildArtifacts@1
       displayName: 'Download Packages'
       inputs:
         artifactName: packages
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+        downloadPath: '$(Build.ArtifactStagingDirectory)/packages'
 
     - task: NuGetCommand@2
       displayName: 'NuGet Update'
