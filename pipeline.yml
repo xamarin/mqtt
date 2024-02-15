@@ -29,6 +29,8 @@ extends:
         configFile: $(Build.SourcesDirectory)\build\tsaoptions-v2.json
       credscan:
         suppressionsFile: $(Build.SourcesDirectory)\build\CredScanSuppressions.json
+      codeinspector:
+        enabled: true
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
     pool:
       name: AzurePipelines-EO

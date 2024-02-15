@@ -16,18 +16,7 @@ stages:
       clean: true
       submodules: recursive
 
-    - task: DownloadBuildArtifacts@0
-      displayName: Download Symbols
-      inputs:
-        artifactName: symbols
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
-
     - template: security\policheck\v2.yml@templates # from xamarin/yaml-templates repository
       parameters:
         exclusionFile: $(System.DefaultWorkingDirectory)\build\PoliCheckExclusions.xml
         pE: '1|2|3|4'
-
-    - task: CodeInspector@2
-      displayName: Run Code Inspector Analysis
-      inputs:
-        ProductId: '$(System.TeamProjectId)'
