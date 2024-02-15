@@ -1,25 +1,28 @@
 ﻿using System;
+using System.IO;
+using System.Net.Mqtt;
 using System.Threading.Tasks;
 using IntegrationTests.Context;
 using Xunit;
-using System.Net.Mqtt;
 
 namespace IntegrationTests
 {
 	public class AuthenticationSpec : IntegrationContext, IDisposable
 	{
 		readonly IMqttServer server;
+		readonly string Expected;
 
 		public AuthenticationSpec()
 		{
-			server = GetServerAsync(new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: "foo123")).Result;
+			Expected = Path.GetTempFileName();
+			server = GetServerAsync(new TestAuthenticationProvider(expectedUsername: "foo", expectedPassword: Expected)).Result;
 		}
 
 		[Fact]
 		public async Task when_client_connects_with_invalid_credentials_and_authentication_is_supported_then_connection_is_closed()
 		{
 			var username = "foo";
-			var password = "foo123456";
+			var password = "bar" + Expected;
 			var client = await GetClientAsync();
 
 			var aggregateEx = Assert.Throws<AggregateException>(() => client.ConnectAsync(new MqttClientCredentials(GetClientId(), username, password)).Wait());
@@ -35,7 +38,7 @@ namespace IntegrationTests
 		public async Task when_client_connects_with_valid_credentials_and_authentication_is_supported_then_connection_succeeds()
 		{
 			var username = "foo";
-			var password = "foo123";
+			var password = Expected;
 			var client = await GetClientAsync();
 
 			await client.ConnectAsync(new MqttClientCredentials(GetClientId(), username, password));
@@ -46,10 +49,7 @@ namespace IntegrationTests
 
 		public void Dispose()
 		{
-			if (server != null)
-			{
-				server.Stop();
-			}
+			server?.Stop();
 		}
 	}
 }

@@ -2,9 +2,7 @@
 
 stages:
 - stage: Package
-  dependsOn:         
-  - Test
-  - Compliance
+  dependsOn: Test
   jobs:
   - job: Upload
     displayName: 'Upload to Storage'
@@ -16,11 +14,11 @@ stages:
     steps:
     - checkout: self
 
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadBuildArtifacts@1
       displayName: 'Download Packages'
       inputs:
         artifactName: packages
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+        downloadPath: '$(Build.ArtifactStagingDirectory)/packages'
 
     - template: upload-to-storage/win/v1.yml@templates
       parameters:
@@ -34,27 +32,26 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
     timeoutInMinutes: 10
     pool:
-      name: $(WindowsPoolName)
+      name: VSEngSS-MicroBuild2022-1ES
+    templateContext:
+      outputs:
+      - output: nuget
+        displayName: 'Push Packages'
+        packageParentPath: '$(Build.ArtifactStagingDirectory)'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
+        nuGetFeedType: external
+        publishFeedCredentials: 'xamarin-impl public feed'
     steps:
     - checkout: self
 
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadBuildArtifacts@1
       displayName: 'Download Packages'
       inputs:
         artifactName: packages
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+        downloadPath: '$(Build.ArtifactStagingDirectory)/packages'
 
     - task: NuGetCommand@2
       displayName: 'NuGet Update'
       inputs:
         command: custom
         arguments: 'update -self'
-
-    - task: NuGetCommand@2
-      displayName: 'Push Packages'
-      continueOnError: true
-      inputs:
-        command: push
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
-        nuGetFeedType: external
-        publishFeedCredentials: 'xamarin-impl public feed'
