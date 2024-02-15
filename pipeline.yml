@@ -1,6 +1,8 @@
+# https://devdiv.visualstudio.com/DevDiv/_build?definitionId=14205&_a=summary
+
 resources:
   repositories:
-  - repository: templates # TODO: Can I remove this?
+  - repository: templates
     type: github
     name: xamarin/yaml-templates
     ref: refs/heads/main

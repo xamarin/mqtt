@@ -115,21 +115,3 @@ stages:
         FlattenFolders: true
         OverWrite: true
       condition: always()
-
-    - powershell: |
-        $complianceEnabled = if ($env:COMPLIANCEENABLED) { $env:COMPLIANCEENABLED } else { '' }
-        if ($complianceEnabled -eq '') { 
-          $branch = '$(Build.SourceBranch)'
-          $reason = '$(Build.Reason)'
-          if($branch -eq '$(MainBranch)' -or $reason -eq 'PullRequest') {
-            $complianceEnabled = 'true'
-          } else {
-            $complianceEnabled = 'false'
-          }
-        }
-        Write-Host "Source Branch: $branch, Build Reason: $reason"
-        Write-Host "Requires Compliance Stage: $complianceEnabled"
-        Write-Host "##vso[task.setvariable variable=Xamarin.ComplianceEnabled;isOutput=true]$complianceEnabled"
-      name: 'SetComplianceNeed'
-      displayName: 'Evaluate Compliance Need'
-      condition: always()
