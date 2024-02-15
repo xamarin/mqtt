@@ -31,6 +31,9 @@ extends:
         suppressionsFile: $(Build.SourcesDirectory)\build\CredScanSuppressions.json
       codeinspector:
         enabled: true
+      policheck:
+        enabled: true
+        exclusionsFile: $(Build.SourcesDirectory)\build\PoliCheckExclusions.xml
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
     pool:
       name: AzurePipelines-EO
@@ -40,6 +43,5 @@ extends:
     - ES365AIMigrationTooling
     stages:
     - template: build/stages/build.yml
-    - template: build/stages/compliance.yml
     - template: build/stages/test.yml
     - template: build/stages/package.yml
