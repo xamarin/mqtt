@@ -1,14 +1,3 @@
-parameters:
-- name: EnableCodeQL
-  type: boolean
-  default: false
-- name: EnableCodeQLTSA
-  type: boolean
-  default: false
-- name: CodeQLTSASettings
-  type: string
-  default: ''
-
 variables:
 - group: xamops-azdev-secrets
 - group: Xamarin-Secrets
@@ -36,11 +25,5 @@ variables:
   value: ''
 - name: Xamarin.SignType                  # Variable set by the jenkins-codesign template
   value: ''
-- name: Codeql.Enabled
-  value: ${{ parameters.EnableCodeQL }}
-- name: Codeql.TSAEnabled
-  value: ${{ parameters.EnableCodeQLTSA }}
-- name: Codeql.TSAOptionsPath
-  value: ${{ parameters.CodeQLTSASettings }}
 - name: TeamName
   value: 'Xamarin'
