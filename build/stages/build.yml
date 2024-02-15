@@ -63,6 +63,7 @@ stages:
       name: 'SetCodeSignOnMain'
       displayName: 'Evaluate CodeSign for Main Branch'
 
+    # Compute (set) Xamarin.IsRelease and Xamarin.SignType needed in subsequent conditions
     - template: jenkins-codesign/signType.v1.yml@templates
       parameters:
         CodeSignOverride: $(Xamarin.CodeSignOverride)
@@ -75,6 +76,7 @@ stages:
       env:
         TeamName: '$(TeamName)'
 
+    # Ensure we clear bot-provided feeds, for reliability
     - powershell: |
         $configPath = "$(Build.SourcesDirectory)\NuGet.Config"
         [xml]$config = get-content $configPath
@@ -115,5 +117,5 @@ stages:
         TargetFolder: '$(Build.ArtifactStagingDirectory)/Symbols'
         CleanTargetFolder: true
         FlattenFolders: true
-        OverWrite: true
+        OverWrite: true # Check if we should copy to $(TargetFramework) subfolders instead
       condition: always()
