@@ -4,7 +4,7 @@ stages:
 - stage: Build
   jobs:
   - job: Windows
-    timeoutInMinutes: 20
+    timeoutInMinutes: 60
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     templateContext:
