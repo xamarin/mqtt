@@ -2,9 +2,7 @@
 
 stages:
 - stage: Package
-  dependsOn:
-  - Test
-  - Compliance
+  dependsOn: Test
   jobs:
   - job: Upload
     displayName: 'Upload to Storage'
