@@ -19,11 +19,6 @@ stages:
         artifactName: unit-tests
         downloadPath: '$(System.ArtifactsDirectory)\unit-tests'
 
-    - powershell: |
-        Get-ChildItem -Path $(System.ArtifactsDirectory)\* -Force
-      name: 'OutDirUnit'
-      displayName: 'Our Dir Unit'
-
     - task: VSTest@2
       displayName: 'Unit Tests'
       timeoutInMinutes: 10
@@ -52,11 +47,6 @@ stages:
       inputs:
         artifactName: integration-tests
         downloadPath: '$(System.ArtifactsDirectory)\integration-tests'
-
-    - powershell: |
-        Get-ChildItem -Path $(System.ArtifactsDirectory)\* -Force
-      name: 'OutDirIntegration'
-      displayName: 'Our Dir Integration'
 
     - task: VSTest@2
       displayName: 'Integration Tests'
