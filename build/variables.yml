@@ -12,7 +12,7 @@ variables:
 - name: WindowsEOPoolName
   value: AzurePipelines-EO
 - name: WindowsImageOverride
-  value: AzurePipelinesWindows2022compliantGPT
+  value: 1ESPT-Windows2022
 - name: WindowsPoolName
   value: VSEngSS-MicroBuild2022-1ES
 - name: Configuration
