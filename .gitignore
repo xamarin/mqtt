@@ -3,6 +3,7 @@ out
 bin
 obj
 packages
+pack
 *.nuget.targets
 *.nuget.props
 *.lock.json
@@ -12,3 +13,4 @@ packages
 .vs
 .*
 log.txt
+*.binlog
