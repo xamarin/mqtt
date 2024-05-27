@@ -7,6 +7,32 @@ using System.Threading.Tasks;
 
 namespace System.Net.Mqtt.Sdk.Bindings
 {
+	internal static class Log {
+		public static void WriteLine (string message)
+		{
+			Console.Error.WriteLine ($"{System.Diagnostics.Process.GetCurrentProcess ().Id} {System.DateTime.UtcNow.ToString ("O")} {message}");
+		}
+		public static void WriteLine (string format, params string[] args)
+		{
+			WriteLine (string.Format (format, args));
+		}
+
+		public static string AsString (this byte[] bytes)
+		{
+			var sb = new System.Text.StringBuilder ();
+			sb.Append ($"Length: {bytes.Length}");
+			for (var i = 0; i < Math.Min (16, bytes.Length); i++) {
+				var b = bytes [i];
+				if (b > 20) {
+					sb.Append ($" 0x{b:2x} = {(char) b}");
+				} else {
+					sb.Append ($" 0x{b:2x} = ?");
+				}
+			}
+			return sb.ToString ();
+		}
+	}
+
 	internal class TcpChannel : IMqttChannel<byte[]>
 	{
 		static readonly ITracer tracer = Tracer.Get<TcpChannel>();
@@ -25,6 +51,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			IPacketBuffer buffer,
 			MqttConfiguration configuration)
 		{
+			Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.TcpChannel () {System.Environment.StackTrace}");
 			this.client = client;
 			this.client.ReceiveBufferSize = configuration.BufferSize;
 			this.client.SendBufferSize = configuration.BufferSize;
@@ -72,14 +99,17 @@ namespace System.Net.Mqtt.Sdk.Bindings
 						try
 						{
 							tracer.Verbose(Properties.Resources.MqttChannel_SendingPacket, message.Length);
+							Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.TcpChannel.SendAsync () bytes: {message.AsString ()}");
 
 							await client
 								.GetStream()
 								.WriteAsync(message, 0, message.Length)
 								.ConfigureAwait(continueOnCapturedContext: false);
+							Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.TcpChannel.SendAsync () DONE bytes: {message.AsString ()}");
 						}
 						catch (ObjectDisposedException disposedEx)
 						{
+							Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.SendAsync () EXCEPTION bytes: {message.AsString ()} {disposedEx}");
 							throw new MqttException(Properties.Resources.MqttChannel_StreamDisconnected, disposedEx);
 						}
 					}
