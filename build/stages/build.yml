@@ -1,5 +1,9 @@
 # Build Stage
 
+parameters:
+- name: PublishSymbols
+  type: boolean
+
 stages:
 - stage: Build
   jobs:
@@ -119,3 +123,34 @@ stages:
         FlattenFolders: true
         OverWrite: true # Check if we should copy to $(TargetFramework) subfolders instead
       condition: always()
+
+    # Set variable to publish symbols to symbol server if we are on main or release branches, or if the parameter is set
+    - powershell: |
+        $publishSymbols = '${{ parameters.PublishSymbols }}'
+
+        if ($publishSymbols -eq 'false') {
+          $branch = '$(Build.SourceBranch)'
+          $isRelease = '$(Xamarin.IsRelease)'
+        
+          if($branch -eq '$(MainBranch)' -or $isRelease -eq 'true') {
+            $publishSymbols = 'true'
+          }
+        }
+
+        Write-Host "Publish Symbols: $publishSymbols"
+        Write-Host "##vso[task.setvariable variable=Xamarin.PublishSymbols]$publishSymbols"
+      name: 'SetPublishSymbols'
+      displayName: 'Evaluate Publish Symbols'
+
+    # See: https://devdiv.visualstudio.com/DevDiv/_wiki/wikis/DevDiv.wiki/671/Manage-Your-Symbols
+    # For more details on how to publish symbols to the symbol server
+    - task: PublishSymbols@2
+      inputs:
+        SymbolsFolder: $(Build.ArtifactStagingDirectory)/Symbols
+        SearchPattern: '**\*.pdb'
+        SymbolServerType: TeamServices
+        ArtifactServices.Symbol.AccountName: devdiv
+        ArtifactServices.Symbol.PAT: $(System.AccessToken)
+        ArtifactServices.Symbol.UseAAD: false
+      displayName: Publish Symbols to Symbol Server
+      condition: and(succeeded(), eq(variables['Xamarin.PublishSymbols'], 'true'))
