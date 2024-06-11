@@ -40,7 +40,7 @@ stages:
         packageParentPath: '$(Build.ArtifactStagingDirectory)'
         packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
         nuGetFeedType: external
-        publishFeedCredentials: 'xamarin-impl public feed'
+        publishFeedCredentials: 'xamarin-impl public feed' # The PAT based service connection (has spaces)
     steps:
     - checkout: self
 
@@ -55,3 +55,20 @@ stages:
       inputs:
         command: custom
         arguments: 'update -self'
+
+    # This step is required to override the apitoken for 'xamarin-impl public feed' with a federated token from 'xamarin-impl-public-feed'
+    - task: AzureCLI@2
+      displayName: 'Set Xamarin Impl token'
+      inputs:
+        azureSubscription: 'xamarin-impl-public-feed' # The managed identity based service connection (no spaces)
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          $accessToken = az account get-access-token --query accessToken --resource 499b84ac-1321-427f-aa17-267ca6975798 -o tsv
+
+          # Set the access token as a secret, so it doesn't get leaked in the logs
+          Write-Host "##vso[task.setsecret]$accessToken"
+
+          # Override the apitoken of the nuget service connection, for the duration of this stage
+          # xamarin-impl public feed = d567a069-5a03-4f36-b4c6-0dec6f32b697
+          Write-Host "##vso[task.setendpoint id=d567a069-5a03-4f36-b4c6-0dec6f32b697;field=authParameter;key=apitoken]$accessToken"
