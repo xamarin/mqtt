@@ -17,7 +17,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 		public static void WriteLine (ITracer tracer, string format, params string[] args)
 		{
-			WriteLine (string.Format (format, args));
+			WriteLine (tracer, string.Format (format, args));
 		}
 
 		public static string AsString (this byte[] bytes)
