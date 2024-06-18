@@ -8,11 +8,14 @@ using System.Threading.Tasks;
 namespace System.Net.Mqtt.Sdk.Bindings
 {
 	internal static class Log {
-		public static void WriteLine (string message)
+		public static void WriteLine (ITracer tracer, string message)
 		{
-			Console.Error.WriteLine ($"{System.Diagnostics.Process.GetCurrentProcess ().Id} {System.DateTime.UtcNow.ToString ("O")} {message}");
+			var msg = $"{System.Diagnostics.Process.GetCurrentProcess ().Id} {System.DateTime.UtcNow.ToString ("O")} {message}";
+			Console.Error.WriteLine (msg);
+			tracer.Verbose(msg);
 		}
-		public static void WriteLine (string format, params string[] args)
+
+		public static void WriteLine (ITracer tracer, string format, params string[] args)
 		{
 			WriteLine (string.Format (format, args));
 		}
@@ -51,7 +54,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 			IPacketBuffer buffer,
 			MqttConfiguration configuration)
 		{
-			Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.TcpChannel () {System.Environment.StackTrace}");
+			Log.WriteLine (tracer, $"System.Net.Mqtt.Sdk.Bindings.TcpChannel () {System.Environment.StackTrace}");
 			this.client = client;
 			this.client.ReceiveBufferSize = configuration.BufferSize;
 			this.client.SendBufferSize = configuration.BufferSize;
@@ -99,17 +102,17 @@ namespace System.Net.Mqtt.Sdk.Bindings
 						try
 						{
 							tracer.Verbose(Properties.Resources.MqttChannel_SendingPacket, message.Length);
-							Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.TcpChannel.SendAsync () bytes: {message.AsString ()}");
+							Log.WriteLine (tracer, $"System.Net.Mqtt.Sdk.Bindings.TcpChannel.SendAsync () bytes: {message.AsString ()}");
 
 							await client
 								.GetStream()
 								.WriteAsync(message, 0, message.Length)
 								.ConfigureAwait(continueOnCapturedContext: false);
-							Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.TcpChannel.SendAsync () DONE bytes: {message.AsString ()}");
+							Log.WriteLine (tracer, $"System.Net.Mqtt.Sdk.Bindings.TcpChannel.SendAsync () DONE bytes: {message.AsString ()}");
 						}
 						catch (ObjectDisposedException disposedEx)
 						{
-							Log.WriteLine ($"System.Net.Mqtt.Sdk.Bindings.SendAsync () EXCEPTION bytes: {message.AsString ()} {disposedEx}");
+							Log.WriteLine (tracer, $"System.Net.Mqtt.Sdk.Bindings.SendAsync () EXCEPTION bytes: {message.AsString ()} {disposedEx}");
 							throw new MqttException(Properties.Resources.MqttChannel_StreamDisconnected, disposedEx);
 						}
 					}
