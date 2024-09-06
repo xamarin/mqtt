@@ -4,30 +4,6 @@ stages:
 - stage: Package
   dependsOn: Test
   jobs:
-  - job: Upload
-    displayName: 'Upload to Storage'
-    timeoutInMinutes: 10
-    pool:
-       name: $(WindowsEOPoolName)
-       demands:
-       - ImageOverride -equals $(WindowsImageOverride)
-    steps:
-    - checkout: self
-
-    - task: DownloadBuildArtifacts@1
-      displayName: 'Download Packages'
-      inputs:
-        artifactName: packages
-        downloadPath: '$(Build.ArtifactStagingDirectory)/packages'
-
-    - template: upload-to-storage/win/v1.yml@templates
-      parameters:
-        ArtifactsDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-        Azure.ContainerName: 'mqtt'
-        GitHub.Context: 'VSTS: Artifacts'
-        GitHub.FileStatuses: true
-        GitHub.ArtifactsTraversal: 'TopLevel'
-
   - job: Push
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['MainBranch']))
     timeoutInMinutes: 10
