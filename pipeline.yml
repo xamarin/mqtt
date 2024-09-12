@@ -36,6 +36,9 @@ extends:
       policheck:
         enabled: true
         exclusionsFile: $(Build.SourcesDirectory)\build\PoliCheckExclusions.xml
+      codeSignValidation:
+        enabled: true
+        break: true
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
     pool:
       name: AzurePipelines-EO
