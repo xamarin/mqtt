@@ -141,6 +141,7 @@ namespace System.Net.Mqtt.Sdk
 		public Task<SessionState> ConnectAsync(MqttLastWill will = null) =>
 			ConnectAsync(new MqttClientCredentials(), will, cleanSession: true);
 
+		static int subscribeId;
 		public async Task SubscribeAsync(string topicFilter, MqttQualityOfService qos)
 		{
 			if (disposed)
@@ -148,8 +149,10 @@ namespace System.Net.Mqtt.Sdk
 				throw new ObjectDisposedException(GetType().FullName);
 			}
 
+			var subId = System.Threading.Interlocked.Increment (ref subscribeId);
 			try
 			{
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} START");
 				VerifyUnderlyingConnection();
 
 				var packetId = packetIdProvider.GetPacketId();
@@ -158,16 +161,24 @@ namespace System.Net.Mqtt.Sdk
 				var ack = default(SubscribeAck);
 				var subscribeTimeout = TimeSpan.FromSeconds(configuration.WaitTimeoutSecs);
 
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} SEND packetId={packetId}");
 				await Channel.SendAsync(subscribe).ConfigureAwait(continueOnCapturedContext: false);
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} SENT packetId={packetId}");
 
 				ack = await packetListener
 					.PacketStream
 					.OfType<SubscribeAck>()
-					.FirstOrDefaultAsync(x => x.PacketId == packetId)
+					.FirstOrDefaultAsync(x => {
+						var rv = x.PacketId == packetId;
+						tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} PACKET RECEIVED expected packetId={packetId} actual packetId={x.PacketId} type={x.Type} class={x.GetType ()} {rv}");
+						return rv;
+					})
 					.Timeout(subscribeTimeout);
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} AWAITED packetId={packetId}");
 
 				if (ack == null)
 				{
+					tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} NO ACK packetId={packetId}");
 					var message = string.Format(Properties.Resources.Client_SubscriptionDisconnected, Id, topicFilter);
 
 					tracer.Error(message);
@@ -177,6 +188,7 @@ namespace System.Net.Mqtt.Sdk
 
 				if (ack.ReturnCodes.FirstOrDefault() == SubscribeReturnCode.Failure)
 				{
+					tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} FAILURE packetId={packetId}");
 					var message = string.Format(Properties.Resources.Client_SubscriptionRejected, Id, topicFilter);
 
 					tracer.Error(message);
@@ -186,7 +198,9 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (TimeoutException timeEx)
 			{
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} EXC TimeoutException {timeEx}");
 				await CloseAsync(timeEx).ConfigureAwait(continueOnCapturedContext: false);
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} EXC TimeoutException CLOSED {timeEx}");
 
 				var message = string.Format(Properties.Resources.Client_SubscribeTimeout, Id, topicFilter);
 
@@ -194,16 +208,22 @@ namespace System.Net.Mqtt.Sdk
 			}
 			catch (MqttClientException clientEx)
 			{
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} EXC HttpClientException {clientEx}");
 				await CloseAsync(clientEx).ConfigureAwait(continueOnCapturedContext: false);
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} EXC HttpClientException CLOSED {clientEx}");
 				throw;
 			}
 			catch (Exception ex)
 			{
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} EXC Exception {ex}");
 				await CloseAsync(ex).ConfigureAwait(continueOnCapturedContext: false);
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} EXC Exception CLOSED {ex}");
 
 				var message = string.Format(Properties.Resources.Client_SubscribeError, Id, topicFilter);
 
 				throw new MqttClientException(message, ex);
+			} finally {
+				tracer.Info ($"{System.DateTime.UtcNow.ToString("o")} SubscribeAsync ({topicFilter}) subid: {subId} FINALLY");
 			}
 		}
 
