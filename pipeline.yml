@@ -39,6 +39,10 @@ extends:
       codeSignValidation:
         enabled: true
         break: true
+        tdl: $(System.DefaultWorkingDirectory)\pack
+        targetPathExclusionPattern: \"**\*.xml\"
+        ${{ if not(and(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+          policyFile: $(MBSIGN_APPFOLDER)\CSVTestSignPolicy.xml
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
     pool:
       name: AzurePipelines-EO
