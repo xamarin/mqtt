@@ -100,6 +100,13 @@ stages:
         msbuildArguments: /t:Build /p:_SignFiles=true /noautoresponse /bl:"$(Build.ArtifactStagingDirectory)\binlogs\build.binlog"
       condition: always()
 
+    - task: MicroBuildCodesignVerify@3
+      displayName: 'Verify Signed Files'
+      inputs:
+        TargetFolders: $(System.DefaultWorkingDirectory)\pack
+        ExcludeSNVerify: true
+        ApprovalListPathForCerts: $(Build.SourcesDirectory)\build\sign-verify-ignore.txt
+
     - task: CopyFiles@2
       displayName: 'Copy Symbols'
       inputs:
