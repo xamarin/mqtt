@@ -24,14 +24,19 @@ namespace System.Net.Mqtt.Sdk.Bindings
 		{
 			var sb = new System.Text.StringBuilder ();
 			sb.Append ($"Length: {bytes.Length}");
+			var sb2 = new System.Text.StringBuilder ();
 			for (var i = 0; i < Math.Min (16, bytes.Length); i++) {
 				var b = bytes [i];
 				if (b > 20) {
-					sb.Append ($" 0x{b:2x} = {(char) b}");
+					sb.Append ($" 0x{b:x2} = {(char) b}");
+					sb2.Append ((char) b);
 				} else {
-					sb.Append ($" 0x{b:2x} = ?");
+					sb.Append ($" 0x{b:x2} = ?");
+					sb2.Append ('?');
 				}
 			}
+			sb.Append (" = ");
+			sb.Append (sb2);
 			return sb.ToString ();
 		}
 	}
