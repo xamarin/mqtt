@@ -37,7 +37,6 @@ extends:
         enabled: true
         exclusionsFile: $(Build.SourcesDirectory)\build\PoliCheckExclusions.xml
       codeSignValidation:
-        enabled: true
         break: true
         targetPathExclusionPattern: \"**\*.xml\"
         ${{ if not(and(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
