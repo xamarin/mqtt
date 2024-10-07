@@ -36,6 +36,11 @@ extends:
       policheck:
         enabled: true
         exclusionsFile: $(Build.SourcesDirectory)\build\PoliCheckExclusions.xml
+      codeSignValidation:
+        break: true
+        targetPathExclusionPattern: \"**\*.xml\"
+        ${{ if not(and(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+          policyFile: $(MBSIGN_APPFOLDER)\CSVTestSignPolicy.xml
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
     pool:
       name: AzurePipelines-EO
