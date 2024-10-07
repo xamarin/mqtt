@@ -21,7 +21,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 		public async Task<IMqttChannel<byte[]>> CreateAsync()
 		{
 			var tcpClient = new TcpClient();
-
+			var st = System.Environment.StackTrace;
 			try
 			{
 				var connectTask = tcpClient.ConnectAsync(hostAddress, configuration.Port);
@@ -31,7 +31,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				if (resultTask == timeoutTask)
-					throw new TimeoutException();
+					throw new TimeoutException($"TCP connection timed out after {configuration.ConnectionTimeoutSecs} seconds. Original stack trace: {st}");
 
 				if (resultTask.IsFaulted)
 					ExceptionDispatchInfo.Capture(resultTask.Exception.InnerException).Throw();

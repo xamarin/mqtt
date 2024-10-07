@@ -21,6 +21,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 
 		public async Task<IMqttChannel<byte[]>> CreateAsync()
 		{
+			var st = System.Environment.StackTrace;
 			var webSocketClient = new ClientWebSocket();
 
 			try
@@ -32,7 +33,7 @@ namespace System.Net.Mqtt.Sdk.Bindings
 					.ConfigureAwait(continueOnCapturedContext: false);
 
 				if (resultTask == timeoutTask)
-					throw new TimeoutException();
+					throw new TimeoutException($"Web socket timed out after {configuration.ConnectionTimeoutSecs} seconds. Original stack trace: {st}");
 
 				if (resultTask.IsFaulted)
 					ExceptionDispatchInfo.Capture(resultTask.Exception.InnerException).Throw();
