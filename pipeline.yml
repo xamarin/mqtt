@@ -20,6 +20,12 @@ trigger:
 pr:
   - main
 
+parameters:
+- name: PublishSymbols
+  displayName: Publish Symbols to Symbol Server
+  type: boolean
+  default: false
+
 variables:
 - template: build/variables.yml
 extends:
@@ -50,5 +56,7 @@ extends:
     - ES365AIMigrationTooling
     stages:
     - template: build/stages/build.yml
+      parameters:
+        PublishSymbols: ${{ parameters.PublishSymbols }}
     - template: build/stages/test.yml
     - template: build/stages/package.yml
