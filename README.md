@@ -1,3 +1,10 @@
+> [!WARNING]
+> **This repository is no longer maintained and has been archived.**
+> 
+> We recommend using [MQTTnet](https://github.com/dotnet/MQTTnet) instead, which offers similar functionality and is actively maintained.
+> 
+> Thank you for your support and contributions!
+
 ## Introduction
 
 > Code name: Hermes (messenger of the Greek gods)
